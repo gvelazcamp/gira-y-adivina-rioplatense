@@ -4068,7 +4068,12 @@ function abrirResolver(jugador){
   if(esToss){
     const j=tossRespondedor!==null?tossRespondedor:(modo==="guest"?1:0);
     tossRespondedor=j;
-    if(V.tossPausado||(V.tossBloq&&V.tossBloq[j])){tossRespondedor=null;return;}
+    if(V.tossPausado||(V.tossBloq&&V.tossBloq[j])){
+      tossRespondedor=null;
+      if(V.tossPausado)$("aviso").innerHTML="<span>⏳ "+(V.jug[V.tossRespondedor]?V.jug[V.tossRespondedor].n:"Otro jugador")+" ya está respondiendo. Esperá tu turno.</span>";
+      else $("aviso").innerHTML="<span>Ya usaste tu intento en esta prueba. Esperá a que termine.</span>";
+      return;
+    }
     if(modo==="guest")enviar({a:"toss_pausa"});
     else if(!pausarToss(j)){tossRespondedor=null;return;}
   }else if(!esBonus){
