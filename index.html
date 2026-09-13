@@ -3046,6 +3046,7 @@ function iniciarPartida(n1,n2,cats,av1,av2,frame1,frame2){
   iniciarPartidaJugadores([{n:n1,av:av1,frame:frame1},{n:n2,av:av2,frame:frame2}],cats);
 }
 function nuevaRonda(){
+  if($("modalSobreConseguido").classList.contains("ver")){accionTrasSobre=nuevaRonda;return;}
   limpiarToss();
 
   // Secuencia de pareja / Mundo Uruguay:
@@ -3116,7 +3117,7 @@ function pausarToss(jugador){
   const ahora=Date.now();
   S.tossRestante=Math.max(0,S.tossFin-ahora);
   S.tossHastaProx=Math.max(0,S.tossProx-ahora);
-  S.tossPausado=true;S.tossRespondedor=jugador;
+  S.tossPausado=true;S.tossRespondedor=jugador;S.tossRespuestaFin=ahora+TOSS_RESPUESTA_DURACION;
   if(tossTimer){clearInterval(tossTimer);tossTimer=null;}
   if(tossRespuestaTimer)clearTimeout(tossRespuestaTimer);
   tossRespuestaTimer=setTimeout(()=>finRespuestaToss(jugador),TOSS_RESPUESTA_DURACION);
@@ -3308,10 +3309,10 @@ function publicar(txt,fx,mantenerReloj){
      embarrado y sigue corriendo mientras limpia, para que sienta la presión del tiempo. */
   const vivo=(S.fase==="girar"||S.fase==="consonante"||S.fase==="vocal"||S.fase==="lodo")&&!animando;
   if(vivo){if(!mantenerReloj)arrancarReloj();}else pararReloj();
-  const tossMs=esToss?(S.tossPausado?Math.max(0,S.tossRestante||0):Math.max(0,S.tossFin-Date.now())):0;
+  const tossMs=esToss?(S.tossPausado?Math.max(0,(S.tossRespuestaFin||Date.now())-Date.now()):Math.max(0,S.tossFin-Date.now())):0;
   V.seg=esToss?Math.max(1,Math.ceil(tossMs/1000)):
     (esBonusReloj?Math.max(1,Math.ceil((S.bonusFin-Date.now())/1000)):(vivo?Math.max(1,Math.round((S.tFin-Date.now())/1000)):0));
-  V.relojMax=esToss?15:(esBonusReloj?10:25);
+  V.relojMax=esToss?(S.tossPausado?Math.ceil(TOSS_RESPUESTA_DURACION/1000):15):(esBonusReloj?10:25);
   if(modo==="bot")setTimeout(programarBot,0);
   if(modo!=="local"&&modo!=="bot")enviar({tipo:"estado",v:V});
   pintarTodo();
