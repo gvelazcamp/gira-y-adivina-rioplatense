@@ -4361,7 +4361,7 @@ $("confirmar").onclick=()=>{
 };
 $("fSalir").onclick=()=>location.reload();
 function csCargarImg(src){
-  return new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=src;});
+  return new Promise((res,rej)=>{const im=new Image();im.crossOrigin="anonymous";im.onload=()=>res(im);im.onerror=rej;im.src=src;});
 }
 function csDibujarFrase(cx,mask,x,y,maxW,boxH){
   const palabras=mask.split(" ").filter(p=>p.length);
@@ -4433,21 +4433,19 @@ async function generarCanvasCompartir(){
   stats.forEach(([scx,val])=>cx.fillText(String(val),scx,1245));
   return cv;
 }
+function csDescargarBlob(blob){
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");a.href=url;a.download="gira-y-adivina-resultado.png";
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),4000);
+  mostrarToast("📤","Imagen descargada. ¡Compartila donde quieras!");
+}
 $("fCompartir").onclick=async()=>{
   musicaCompartida=true;if(musicaOn)sincronizarMusica();
+  let blob;
   try{
     const cv=await generarCanvasCompartir();
-    const blob=await new Promise(res=>cv.toBlob(res,"image/png"));
-    const archivo=new File([blob],"gira-y-adivina-resultado.png",{type:"image/png"});
-    if(navigator.canShare&&navigator.canShare({files:[archivo]})){
-      await navigator.share({files:[archivo],text:"Jugá vos también en Girá y Adiviná Rioplatense: "+location.href});
-      return;
-    }
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement("a");a.href=url;a.download="gira-y-adivina-resultado.png";
-    document.body.appendChild(a);a.click();a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),4000);
-    mostrarToast("📤","Imagen descargada. ¡Compartila donde quieras!");
+    blob=await new Promise((res,rej)=>cv.toBlob(b=>b?res(b):rej(new Error("toBlob vacío")),"image/png"));
   }catch(e){
     const texto=($("fTitulo").textContent+". "+$("fTexto").textContent).replace(/\s+/g," ").trim()+
       " — Jugá vos también en Girá y Adiviná Rioplatense: "+location.href;
@@ -4456,6 +4454,18 @@ $("fCompartir").onclick=async()=>{
       try{await navigator.clipboard.writeText(texto);mostrarToast("📤","Copiado. ¡Pegalo donde quieras!");}
       catch(e2){window.open("https://wa.me/?text="+encodeURIComponent(texto),"_blank");}
     }
+    return;
+  }
+  try{
+    const archivo=new File([blob],"gira-y-adivina-resultado.png",{type:"image/png"});
+    if(navigator.canShare&&navigator.canShare({files:[archivo]})){
+      await navigator.share({files:[archivo],text:"Jugá vos también en Girá y Adiviná Rioplatense: "+location.href});
+      return;
+    }
+    csDescargarBlob(blob);
+  }catch(e){
+    if(e&&e.name==="AbortError")return;
+    csDescargarBlob(blob);
   }
 };
 $("bCompartirJuego").onclick=async()=>{
