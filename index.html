@@ -1277,6 +1277,13 @@ let musicaOn=(()=>{try{return localStorage.getItem("gya_musica")!=="off";}catch(
 const guardarMusica=()=>{try{localStorage.setItem("gya_musica",musicaOn?"on":"off");}catch(e){}};
 let audioMusica=null;
 let musicaCompartida=false;
+let audioRuletaGiro=null;
+function sonarRuletaGiro(){
+  try{
+    if(!audioRuletaGiro){audioRuletaGiro=new Audio("assets/audio/ruido-ruleta.mp3");audioRuletaGiro.volume=.55;}
+    audioRuletaGiro.currentTime=0;audioRuletaGiro.play().catch(()=>{});
+  }catch(e){}
+}
 function contextoMusicaActual(){
   if($("modalFin").classList.contains("ver"))return musicaCompartida?"menu":"bonus";
   musicaCompartida=false;
@@ -1381,6 +1388,7 @@ function animarRueda(destino,alFinal){
   animando=true;pintar();
   $("salioGiro").textContent="Girando…";
   $("capaRueda").classList.add("ver");
+  sonarRuletaGiro();
   const paso=360/SEG.length,ini=giroActual,dur=4200,t0=performance.now();
   const ag=document.querySelector(".aguja");
   let ult=-1,tAnt=t0,gAnt=ini;
@@ -1393,7 +1401,6 @@ function animarRueda(destino,alFinal){
       if(ult>=0){
         const vel=Math.min((giroActual-gAnt)/Math.max(t-tAnt,1)/paso,1.6);
         const r=vel/1.6;
-        bip(430+r*820+Math.random()*40,.055-r*.032,"square",.075-r*.055);
         if(r<.55){ag.style.transform="translateX(-50%) rotate("+(9-r*9).toFixed(1)+"deg)";
           setTimeout(()=>ag.style.transform="translateX(-50%)",70);}
       }
