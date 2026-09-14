@@ -501,8 +501,8 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 .marco-selector span{flex:1;text-align:center;font-size:.82rem;font-weight:700;color:var(--crema);
  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tablero.con-marco{background-color:transparent;background-repeat:no-repeat;background-size:100% 100%;
- background-position:center;border:none;padding:78px 25%}
-@media(max-width:480px){.tablero.con-marco{padding:64px 25%}}
+ background-position:center;border:none;padding:78px 15%}
+@media(max-width:480px){.tablero.con-marco{padding:64px 11%}}
 .frase{display:flex;flex-wrap:wrap;justify-content:center;gap:14px}
 .palabra{display:flex;gap:5px}
 .ficha{width:clamp(24px,6.6vw,42px);height:clamp(34px,8.8vw,56px);border-radius:6px;background:#2A1A3C;
@@ -3104,7 +3104,7 @@ function iniciarPartidaJugadores(jugadores,cats){
   const js=jugadores.map((j,i)=>({id:j.id||null,n:(j.n||("Jugador "+(i+1))).slice(0,12),av:j.av||null,frame:j.frame||null,tot:0,ronda:0,rg:0,
     escudo:false,hielo:{},lodo:false,comodin:false,poderesRonda:[],poderUsadoTurno:false}));
   arranca=((arranca%js.length)+js.length)%js.length;
-  S={jug:js,turno:arranca,rondas:rondasElegidas,ronda:0,cats:cats||null,mazo:nuevoMazo(cats),finYa:false,valor:0,fase:"girar",abiertas:new Set(),usadas:new Set(),pistaPos:new Set(),frase:"",cat:"",normalesDesdeToss:0,poderRondaId:0};
+  S={jug:js,turno:arranca,rondas:rondasElegidas,ronda:0,cats:cats||null,mazo:nuevoMazo(cats),finYa:false,valor:0,fase:"girar",abiertas:new Set(),usadas:new Set(),pistaPos:new Set(),frase:"",cat:"",normalesDesdeToss:0,poderRondaId:0,pierdeSeguidas:0};
   nuevaRonda();
 }
 function armarTecladoTV(){
@@ -3622,11 +3622,17 @@ function hostGirar(){
   if(S.fase!=="girar"||animando||consRestantes()===0)return;
   if(modo!=="bot"||S.turno===miJug)objSumar("giros",1);
   pararReloj();
-  const destino=giroActual+360*5+Math.random()*360;
+  const paso=360/SEG.length;
+  let destino,s,intentos=0;
+  do{
+    destino=giroActual+360*5+Math.random()*360;
+    const local=((270-(destino%360))%360+360)%360;
+    s=SEG[Math.floor(local/paso)%SEG.length];
+    intentos++;
+  }while(s.t==="PIERDE"&&(S.pierdeSeguidas||0)>=2&&intentos<40);
+  S.pierdeSeguidas=s.t==="PIERDE"?(S.pierdeSeguidas||0)+1:0;
   if(modo!=="local"&&modo!=="bot")enviar({tipo:"giro",destino});
   animarRueda(destino,()=>{
-    const paso=360/SEG.length,local=((270-(destino%360))%360+360)%360;
-    const s=SEG[Math.floor(local/paso)%SEG.length];
     if(s.t==="QUIEBRA"){bip(120,.5,"sawtooth",.09);S.jug[S.turno].ronda=0;
       publicar("<b>QUIEBRA</b> — "+S.jug[S.turno].n+" pierde la plata de la ronda.","quiebra");
       setTimeout(tk(cambiarTurno),1800);return;}
