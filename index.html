@@ -255,6 +255,9 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 .tn-comprar-real{background:var(--agua);color:var(--tinta);font-weight:800;border-radius:10px;padding:10px 14px;
  flex-shrink:0;font-size:.85rem;white-space:nowrap;position:relative}
 .tn-proximamente{font-size:.62rem;color:#B49FCE;text-align:center;margin:2px 0 12px}
+.tn-precios{display:flex;flex-direction:column;gap:5px;align-items:stretch;flex-shrink:0}
+.tn-comprar-mini{background:transparent;color:var(--agua);font-weight:700;border:1px solid #37D6C066;
+ border-radius:8px;padding:5px 10px;font-size:.7rem;white-space:nowrap}
 .tn-comprar:disabled{opacity:1;background:#4A3D5C;color:#C9B8DE;cursor:not-allowed;box-shadow:none}
 
 /* Logros */
@@ -1784,6 +1787,29 @@ $("bTienda").onclick=()=>{tnActualizar();tnRenderFrames();$("capaTienda").classL
 document.querySelectorAll(".tn-comprar-real").forEach(b=>{
   b.onclick=()=>mostrarToast("🚧","Disponible cuando el juego esté en la Play Store");
 });
+const PRECIOS_REALES={150:"$0.49",200:"$0.59",500:"$0.99",600:"$1.29",700:"$1.49",800:"$1.79",
+  900:"$1.99",1000:"$2.29",1100:"$2.49",1200:"$2.99",1500:"$3.99",2000:"$4.99"};
+function precioRealDeMonedas(m){
+  return PRECIOS_REALES[m]||("$"+Math.max(.49,Math.ceil(m/500*.99*100)/100).toFixed(2));
+}
+function tnAgregarBotonReal(btn,monedas){
+  if(!btn||btn.dataset.realAgregado)return;
+  btn.dataset.realAgregado="1";
+  const wrap=document.createElement("span");wrap.className="tn-precios";
+  btn.parentNode.insertBefore(wrap,btn);
+  wrap.appendChild(btn);
+  const mini=document.createElement("button");
+  mini.className="tn-comprar-mini";mini.type="button";
+  mini.textContent="💳 "+precioRealDeMonedas(monedas);
+  mini.onclick=()=>mostrarToast("🚧","Disponible cuando el juego esté en la Play Store");
+  wrap.appendChild(mini);
+}
+function tnAgregarPreciosReales(){
+  document.querySelectorAll(".tn-item .tn-comprar[data-precio]").forEach(b=>{
+    tnAgregarBotonReal(b,+b.dataset.precio);
+  });
+}
+tnAgregarPreciosReales();
 $("tnCerrar").onclick=()=>$("capaTienda").classList.remove("ver");
 document.querySelectorAll(".tn-comprar").forEach(b=>{
   b.onclick=()=>{
@@ -2031,6 +2057,7 @@ function tnRenderFrames(){
         equiparMarco(f.id);
         bip(190,.16,"triangle",.07);
       };
+      tnAgregarBotonReal(btn,f.precio);
     }
     cont.appendChild(card);
   });
