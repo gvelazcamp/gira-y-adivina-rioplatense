@@ -377,8 +377,33 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 .stat-monedas{color:var(--oro)}
 .stat-vidas{color:#FF6E96}
 .stat-racha{color:#FF9640}
-#btnMusica{font-size:.9rem;background:#FFFFFF14;width:26px;height:26px;border-radius:50%;
+#btnMusica,#bMasOpciones{font-size:.9rem;background:#FFFFFF14;width:26px;height:26px;border-radius:50%;
  display:inline-grid;place-items:center;padding:0;flex:0 0 auto;color:var(--crema)}
+.cta-jugar{display:flex;align-items:center;justify-content:flex-start;gap:14px;text-align:left;
+ background:linear-gradient(135deg,#FF3D94,#C21368);padding:18px 20px;box-shadow:0 6px 0 #8E0D4B}
+.cta-play{flex:0 0 auto;width:46px;height:46px;border-radius:50%;background:#FFFFFF2E;
+ display:grid;place-items:center;font-size:1.15rem}
+.cta-txt{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.cta-txt b{font-size:1.2rem}
+.cta-txt small{font-weight:600;opacity:.85;font-size:.76rem}
+.menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:4px 0 4px}
+.menu-card{border-radius:18px;padding:16px 12px;display:flex;flex-direction:column;align-items:flex-start;
+ gap:3px;text-align:left;color:#fff;position:relative;min-height:104px;justify-content:flex-end}
+.menu-card .mc-ico{position:absolute;top:12px;left:12px;font-size:1.55rem;filter:drop-shadow(0 2px 4px #0004)}
+.menu-card .mc-tit{font-weight:800;font-size:.96rem;line-height:1.15}
+.menu-card .mc-sub{font-size:.68rem;opacity:.85;font-weight:600;line-height:1.25}
+.mc-rosa{background:linear-gradient(150deg,#9A3FD1,#6423A8)}
+.mc-azul{background:linear-gradient(150deg,#4A5FE0,#2F3FAE)}
+.mc-naranja{background:linear-gradient(150deg,#F5A301,#D9660F)}
+.mc-verde{background:linear-gradient(150deg,#12B87A,#0D8A63)}
+.mini-tit{margin:18px 0 10px;color:#E9C9F0;font-weight:700;font-size:.9rem}
+.mini-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.mini-card{background:#2A1A3C;border-radius:16px;padding:12px 4px 10px;display:flex;flex-direction:column;
+ align-items:center;gap:6px;color:var(--crema);position:relative}
+.mini-card .mn-ico{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;
+ font-size:1.1rem;background:#FFFFFF14}
+.mini-card .mn-tit{font-size:.64rem;font-weight:700;text-align:center;line-height:1.2}
+.mini-card .rw-badge{position:absolute;top:6px;right:6px;margin:0;padding:2px 6px;font-size:.6rem}
 .setup-menu{display:flex;flex-direction:column;margin-top:6px}
 .setup-menu .btn-grande{display:flex;align-items:center;gap:12px;text-align:left}
 .setup-menu .btn-txt{flex:1}
@@ -673,6 +698,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
       <span class="stat-pill stat-monedas" id="setupMonedas" title="Monedas: se ganan jugando y sirven para comprar en la Tienda">🪙 <b>0</b> monedas</span>
       <span class="stat-pill stat-vidas" id="setupVidas">❤️ <b>0</b></span>
       <button id="btnMusica" type="button" title="Silenciar música">🔊</button>
+      <button id="bMasOpciones" type="button" title="Más opciones">⚙️</button>
     </div>
   </div>
   <div class="campo" id="campoNombre"><span>Tu nombre</span><input id="miNombre" placeholder="escribí tu nombre" maxlength="12" autocomplete="off"></div>
@@ -682,20 +708,22 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <button data-r="7" aria-pressed="false">7 rondas</button>
   </div>
   <p class="estado" id="stockFrases" style="margin:-2px 0 14px"></p>
-  <div class="setup-menu">
-    <button class="btn-grande" id="bInstalar" style="display:none"><span class="btn-ico">📲</span><span class="btn-txt">Instalar app en el celular</span></button>
-    <button class="btn-grande sec" id="bBot"><span class="btn-ico">🇺🇾</span><span class="btn-txt">Uruguay - Jugar</span></button>
-    <button class="btn-grande sec" id="bCrear"><span class="btn-ico">👥</span><span class="btn-txt">Crear sala y pasar el código</span></button>
-    <button class="btn-grande sec" id="bUnirse"><span class="btn-ico">🎟️</span><span class="btn-txt">Entrar con un código</span></button>
-    <button class="btn-grande sec rw-boton" id="bRuleta"><span class="btn-ico">🎡</span><span class="btn-txt">Ruleta de premios</span><span id="rwBotonEstado" class="rw-badge"></span></button>
-    <button class="btn-grande sec" id="bTienda"><span class="btn-ico">🛍️</span><span class="btn-txt">Tienda</span></button>
-    <button class="btn-grande sec" id="bCompartirJuego"><span class="btn-ico">📤</span><span class="btn-txt">Compartir el juego</span></button>
-    <button class="btn-grande sec" id="bObjetivos"><span class="btn-ico">🎯</span><span class="btn-txt">Objetivos diarios</span></button>
-    <button class="btn-grande sec" id="bLogros"><span class="btn-ico">🏅</span><span class="btn-txt">Logros</span></button>
-    <button class="btn-grande sec" id="bRecords"><span class="btn-ico">🏆</span><span class="btn-txt">Mis récords</span></button>
-    <button class="btn-grande sec" id="bRanking"><span class="btn-ico">🥇</span><span class="btn-txt">Ranking de amigos</span></button>
-    <button class="btn-grande sec" id="bTV"><span class="btn-ico">📺</span><span class="btn-txt">Sala TV / Familia</span></button>
-    <button class="btn-grande sec" id="bEntrarTV"><span class="btn-ico">📱</span><span class="btn-txt">Entrar a Sala TV</span></button>
+  <button class="btn-grande cta-jugar" id="bBot">
+    <span class="cta-play">▶</span>
+    <span class="cta-txt"><b>¡Jugar ahora!</b><small>Uruguay, vos contra la máquina</small></span>
+  </button>
+  <div class="menu-grid">
+    <button class="menu-card mc-rosa" id="bTV"><span class="mc-ico">📺</span><span class="mc-tit">Sala TV / Familia</span><span class="mc-sub">Jugá todos juntos</span></button>
+    <button class="menu-card mc-azul" id="bCrear"><span class="mc-ico">👥</span><span class="mc-tit">Crear sala</span><span class="mc-sub">Invitá a tus amigos</span></button>
+    <button class="menu-card mc-naranja" id="bUnirse"><span class="mc-ico">🎟️</span><span class="mc-tit">Entrar con código</span><span class="mc-sub">Unite a una sala</span></button>
+    <button class="menu-card mc-verde" id="bRanking"><span class="mc-ico">🏆</span><span class="mc-tit">Ranking de amigos</span><span class="mc-sub">Mirá quién sabe más</span></button>
+  </div>
+  <p class="mini-tit">Más para disfrutar</p>
+  <div class="mini-grid">
+    <button class="mini-card rw-boton" id="bRuleta"><span class="mn-ico">🎡</span><span class="mn-tit">Ruleta de premios</span><span id="rwBotonEstado" class="rw-badge"></span></button>
+    <button class="mini-card" id="bTienda"><span class="mn-ico">🛍️</span><span class="mn-tit">Tienda</span></button>
+    <button class="mini-card" id="bObjetivos"><span class="mn-ico">🎯</span><span class="mn-tit">Objetivos diarios</span></button>
+    <button class="mini-card" id="bLogros"><span class="mn-ico">🏅</span><span class="mn-tit">Logros</span></button>
   </div>
   <p class="setup-tagline">✨ Elegí un modo para empezar ✨</p>
   <div class="setup-ola" aria-hidden="true">
@@ -875,6 +903,17 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <p class="sub" id="objReinicio" style="margin:2px 0 12px"></p>
   <div class="lg-lista" id="objLista"></div>
   <button class="no" id="objCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
+</div></div>
+
+<div class="capa" id="capaMas"><div class="caja rk-caja">
+  <h2>⚙️ Más opciones</h2>
+  <div class="setup-menu" style="margin-top:14px">
+    <button class="btn-grande sec" id="bRecords"><span class="btn-ico">🏆</span><span class="btn-txt">Mis récords</span></button>
+    <button class="btn-grande sec" id="bCompartirJuego"><span class="btn-ico">📤</span><span class="btn-txt">Compartir el juego</span></button>
+    <button class="btn-grande sec" id="bEntrarTV"><span class="btn-ico">📱</span><span class="btn-txt">Entrar a Sala TV</span></button>
+    <button class="btn-grande" id="bInstalar" style="display:none"><span class="btn-ico">📲</span><span class="btn-txt">Instalar app en el celular</span></button>
+  </div>
+  <button class="no" id="masCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
 </div></div>
 
 <div class="capa" id="capaRecords"><div class="caja">
@@ -2022,7 +2061,13 @@ function mostrarToast(icono,texto){
   logroToastTimer=setTimeout(()=>$("logroToast").classList.remove("ver"),2600);
 }
 const MENUS_CON_X={capaRuleta:"rwCerrar",capaTienda:"tnCerrar",capaLogros:"lgCerrar",
-  capaObjetivos:"objCerrar",capaRecords:"recCerrar",capaRanking:"rkCerrar"};
+  capaObjetivos:"objCerrar",capaRecords:"recCerrar",capaRanking:"rkCerrar",capaMas:"masCerrar"};
+$("bMasOpciones").onclick=()=>$("capaMas").classList.add("ver");
+$("masCerrar").onclick=()=>$("capaMas").classList.remove("ver");
+$("capaMas").addEventListener("click",e=>{
+  const b=e.target.closest("button");
+  if(b&&b.id!=="masCerrar")$("capaMas").classList.remove("ver");
+});
 function xGlobalActualizar(){
   const idAbierta=Object.keys(MENUS_CON_X).find(id=>{const el=$(id);return el&&el.classList.contains("ver");});
   const boton=$("xGlobalCerrar");
