@@ -1078,7 +1078,6 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <div id="zonaCodigo">
     <p class="sub" style="margin-bottom:6px">Pasale este código a la otra persona</p>
     <div class="codigo" id="miCodigo">····</div>
-    <button class="btn-grande" id="bCompartirInvitacion"><span class="btn-ico">📤</span><span class="btn-txt">Compartir invitación</span></button>
     <button class="btn-grande sec" id="bWpp">Enviar invitación por WhatsApp</button>
     <button class="btn-grande sec" id="bCopiar">Copiar invitación</button>
   </div>
@@ -4484,64 +4483,17 @@ $("fCompartir").onclick=async()=>{
   await csCompartirImagen(generarCanvasCompartir,"gira-y-adivina-resultado.png",
     "Jugá vos también en Girá y Adiviná Rioplatense: "+location.href,textoFallback);
 };
-async function generarCanvasInvitacion(){
+async function generarCanvasCompartirJuego(){
+  const bg=await csCargarImg("assets/compartir/plantilla-juego.webp");
   const cv=document.createElement("canvas");
-  cv.width=941;cv.height=1672;
-  const cx=cv.getContext("2d");
-  const bg=await csCargarImg("assets/compartir/plantilla-invitacion.webp");
-  cx.drawImage(bg,0,0,941,1672);
-  try{await document.fonts.load("700 32px 'Archivo Black'");await document.fonts.load("700 22px Outfit");}catch(e){}
-  const px=100,pw=741;
-  let cy=470;
-  if(perfil.avatar){
-    try{
-      const av=await csCargarImg("assets/avatars/"+perfil.avatar+".webp");
-      const r=56,acx=px+r+6,acy=cy+r;
-      cx.save();cx.beginPath();cx.arc(acx,acy,r,0,Math.PI*2);cx.clip();
-      cx.drawImage(av,acx-r,acy-r,r*2,r*2);cx.restore();
-      cx.strokeStyle="#F5B301";cx.lineWidth=3;cx.beginPath();cx.arc(acx,acy,r,0,Math.PI*2);cx.stroke();
-    }catch(e){}
-  }
-  cx.fillStyle="#F6EFE2";cx.font="700 30px Outfit,sans-serif";cx.textAlign="left";cx.textBaseline="middle";
-  cx.fillText((perfil.nombre||"Vos")+" te desafía",px+128,cy+40);
-  cx.fillStyle="#B49FCE";cx.font="600 19px Outfit,sans-serif";
-  cx.fillText("¿Te animás? A ver si sabés más que yo 😏",px+128,cy+78);
-  cy+=170;
-  const wcx=px+pw/2,wcy=cy+150,wr=130;
-  const colores=["#F5B301","#E5197C","#37D6C0","#7B3FE4","#F97316","#2DA8FF"];
-  colores.forEach((c,i)=>{
-    cx.beginPath();cx.moveTo(wcx,wcy);
-    cx.arc(wcx,wcy,wr,(i/6)*Math.PI*2-Math.PI/2,((i+1)/6)*Math.PI*2-Math.PI/2);
-    cx.closePath();cx.fillStyle=c;cx.fill();
-  });
-  cx.beginPath();cx.arc(wcx,wcy,46,0,Math.PI*2);cx.fillStyle="#1A1024";cx.fill();
-  cx.strokeStyle="#F6EFE2";cx.lineWidth=3;cx.stroke();
-  cx.fillStyle="#F6EFE2";cx.font="800 22px 'Archivo Black',sans-serif";cx.textAlign="center";cx.textBaseline="middle";
-  cx.fillText("GIRÁ",wcx,wcy+2);
-  cy+=wr*2+40;
-  cx.fillStyle="#37D6C0";cx.font="700 21px Outfit,sans-serif";cx.textAlign="center";
-  cx.fillText("🎡 Girá la ruleta y adiviná la frase",wcx,cy);
-  const codY=1046+150;
-  cx.fillStyle="#B49FCE";cx.font="700 22px Outfit,sans-serif";cx.textAlign="center";
-  cx.fillText("Código de sala",470,codY-55);
-  cx.fillStyle="#F6EFE2";cx.font="800 64px 'Archivo Black',sans-serif";
-  cx.fillText((sala||"----").toUpperCase(),470,codY+15);
+  cv.width=bg.width;cv.height=bg.height;
+  cv.getContext("2d").drawImage(bg,0,0);
   return cv;
 }
-$("bCompartirInvitacion").onclick=async()=>{
-  const textoFallback="Jugamos a Girá y Adiviná\n"+location.origin+location.pathname+"?sala="+sala+"\nCódigo: "+sala;
-  await csCompartirImagen(generarCanvasInvitacion,"gira-y-adivina-invitacion.png",
-    "Jugamos a Girá y Adiviná Rioplatense — entrá con el código "+sala+": "+location.origin+location.pathname+"?sala="+sala,
-    textoFallback);
-};
 $("bCompartirJuego").onclick=async()=>{
   const texto="🎡 Girá y Adiviná Rioplatense — girá la ruleta y adiviná la frase. ¡Jugá conmigo!: "+
     location.origin+location.pathname;
-  if(navigator.share){try{await navigator.share({text:texto});}catch(e){}}
-  else{
-    try{await navigator.clipboard.writeText(texto);mostrarToast("📤","Copiado. ¡Pegalo donde quieras!");}
-    catch(e){window.open("https://wa.me/?text="+encodeURIComponent(texto),"_blank");}
-  }
+  await csCompartirImagen(generarCanvasCompartirJuego,"gira-y-adivina.png",texto,texto);
 };
 $("fMapa").onclick=()=>{matchToken++;botPausado=0;$("modalFin").classList.remove("ver");
   const continuar=()=>{
