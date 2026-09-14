@@ -4421,14 +4421,14 @@ async function generarCanvasCompartir(){
   if(perfil.avatar){
     try{
       const av=await csCargarImg("assets/avatars/"+perfil.avatar+".webp");
-      const r=68,acx=175,acy=1197;
+      const r=68,acx=175,acy=1208;
       cx.save();cx.beginPath();cx.arc(acx,acy,r,0,Math.PI*2);cx.clip();
       cx.drawImage(av,acx-r,acy-r,r*2,r*2);cx.restore();
     }catch(e){}
   }
   const stats=[[370,meta.monedas],[505,(meta.mejorRachaVictorias||0)],[645,ganados.size+"/"+MUNDO.length],[780,logrosGanados.size]];
   cx.fillStyle="#F6EFE2";cx.font="700 19px Outfit,sans-serif";cx.textAlign="center";cx.textBaseline="middle";
-  stats.forEach(([scx,val])=>cx.fillText(String(val),scx,1228));
+  stats.forEach(([scx,val])=>cx.fillText(String(val),scx,1237));
   return cv;
 }
 $("fCompartir").onclick=async()=>{
