@@ -756,6 +756,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <button class="mini-card" id="bObjetivos"><span class="mn-ico">🎯</span><span class="mn-tit">Objetivos diarios</span></button>
     <button class="mini-card" id="bLogros"><span class="mn-ico">🏅</span><span class="mn-tit">Logros</span></button>
   </div>
+  <button class="btn-grande" id="bEntrarTV" style="display:none;margin-top:10px"><span class="btn-ico">📱</span><span class="btn-txt">Entrar a Sala TV</span></button>
   <img src="assets/decor/tagline.png" alt="Cultura. Amigos. Trivia. Rioplatense." class="deco-tagline">
   <div class="setup-ola" aria-hidden="true">
     <svg viewBox="0 0 1440 120" preserveAspectRatio="none"><path d="M0,40 C240,90 480,0 720,30 C960,60 1200,100 1440,50 L1440,120 L0,120 Z" fill="#BFE3F5"></path></svg>
@@ -947,10 +948,19 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <div class="setup-menu" style="margin-top:14px">
     <button class="btn-grande sec" id="bRecords"><span class="btn-ico">🏆</span><span class="btn-txt">Mis récords</span></button>
     <button class="btn-grande sec" id="bCompartirJuego"><span class="btn-ico">📤</span><span class="btn-txt">Compartir el juego</span></button>
-    <button class="btn-grande sec" id="bEntrarTV"><span class="btn-ico">📱</span><span class="btn-txt">Entrar a Sala TV</span></button>
     <button class="btn-grande" id="bInstalar" style="display:none"><span class="btn-ico">📲</span><span class="btn-txt">Instalar app en el celular</span></button>
   </div>
   <button class="no" id="masCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
+</div></div>
+
+<div class="capa" id="capaSalaTVMenu"><div class="caja">
+  <h2>📺 Sala TV / Familia</h2>
+  <p class="sub" style="margin:2px 0 14px">Jugá con varios celulares usando la tele como pantalla grande.</p>
+  <div class="setup-menu">
+    <button class="btn-grande" id="bSalaTVCrear"><span class="btn-ico">📺</span><span class="btn-txt">Crear sala (la pantalla es la tele)</span></button>
+    <button class="btn-grande sec" id="bSalaTVEntrar"><span class="btn-ico">🎟️</span><span class="btn-txt">Entrar con código (jugás desde tu celular)</span></button>
+  </div>
+  <button class="no" id="salaTVMenuCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
 </div></div>
 
 <div class="capa" id="capaRecords"><div class="caja">
@@ -2103,7 +2113,8 @@ function mostrarToast(icono,texto){
   logroToastTimer=setTimeout(()=>$("logroToast").classList.remove("ver"),2600);
 }
 const MENUS_CON_X={capaRuleta:"rwCerrar",capaTienda:"tnCerrar",capaLogros:"lgCerrar",
-  capaObjetivos:"objCerrar",capaRecords:"recCerrar",capaRanking:"rkCerrar",capaMas:"masCerrar"};
+  capaObjetivos:"objCerrar",capaRecords:"recCerrar",capaRanking:"rkCerrar",capaMas:"masCerrar",
+  capaSalaTVMenu:"salaTVMenuCerrar"};
 $("bMasOpciones").onclick=()=>$("capaMas").classList.add("ver");
 $("masCerrar").onclick=()=>$("capaMas").classList.remove("ver");
 $("capaMas").addEventListener("click",e=>{
@@ -3010,7 +3021,10 @@ function renderTVControl(){
   });
 }
 
-$("bTV").onclick=crearSalaTV;
+$("bTV").onclick=()=>$("capaSalaTVMenu").classList.add("ver");
+$("salaTVMenuCerrar").onclick=()=>$("capaSalaTVMenu").classList.remove("ver");
+$("bSalaTVCrear").onclick=()=>{$("capaSalaTVMenu").classList.remove("ver");crearSalaTV();};
+$("bSalaTVEntrar").onclick=()=>{$("capaSalaTVMenu").classList.remove("ver");$("bEntrarTV").click();};
 $("bEntrarTV").onclick=()=>{
   modo="tvguest";$("setup").style.display="none";$("lobby").style.display="block";
   document.querySelector("#lobby h1").textContent="ENTRAR A TV";$("zonaCodigo").style.display="none";$("zonaEntrar").style.display="block";
@@ -3090,7 +3104,7 @@ const tvEnLink=(new URLSearchParams(location.search).get("tv")||"").toUpperCase(
 if(tvEnLink){
   $("bCrear").style.display="none";$("bBot").style.display="none";$("bTV").style.display="none";$("bUnirse").style.display="none";
   document.querySelector("#setup p.sub").textContent="Te invitaron a una Sala TV. Escribí tu nombre y entrá.";
-  $("bEntrarTV").className="btn-grande";$("bEntrarTV").textContent="Entrar a Sala TV "+tvEnLink;
+  $("bEntrarTV").className="btn-grande";$("bEntrarTV").style.display="";$("bEntrarTV").textContent="Entrar a Sala TV "+tvEnLink;
   $("bEntrarTV").onclick=()=>{const n=$("miNombre").value.trim();if(!n){$("miNombre").focus();return;}try{localStorage.setItem("larueda_nombre",n);}catch(e){}unirseTV(tvEnLink);};
 }
 const salaEnLink=(new URLSearchParams(location.search).get("sala")||"").toUpperCase();
