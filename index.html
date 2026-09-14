@@ -1078,7 +1078,8 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <div id="zonaCodigo">
     <p class="sub" style="margin-bottom:6px">Pasale este código a la otra persona</p>
     <div class="codigo" id="miCodigo">····</div>
-    <button class="btn-grande" id="bWpp">Enviar invitación por WhatsApp</button>
+    <button class="btn-grande" id="bCompartirInvitacion"><span class="btn-ico">📤</span><span class="btn-txt">Compartir invitación</span></button>
+    <button class="btn-grande sec" id="bWpp">Enviar invitación por WhatsApp</button>
     <button class="btn-grande sec" id="bCopiar">Copiar invitación</button>
   </div>
   <div id="zonaEntrar" style="display:none">
@@ -4444,40 +4445,94 @@ async function generarCanvasCompartir(){
   stats.forEach(([scx,val])=>cx.fillText(String(val),scx,1245));
   return cv;
 }
-function csDescargarBlob(blob){
+function csDescargarBlob(blob,nombreArchivo){
   const url=URL.createObjectURL(blob);
-  const a=document.createElement("a");a.href=url;a.download="gira-y-adivina-resultado.png";
+  const a=document.createElement("a");a.href=url;a.download=nombreArchivo;
   document.body.appendChild(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),4000);
   mostrarToast("📤","Imagen descargada. ¡Compartila donde quieras!");
 }
-$("fCompartir").onclick=async()=>{
-  musicaCompartida=true;if(musicaOn)sincronizarMusica();
+async function csCompartirImagen(generarCv,nombreArchivo,textoShare,textoFallback){
   let blob;
   try{
-    const cv=await generarCanvasCompartir();
+    const cv=await generarCv();
     blob=await new Promise((res,rej)=>cv.toBlob(b=>b?res(b):rej(new Error("toBlob vacío")),"image/png"));
   }catch(e){
-    const texto=($("fTitulo").textContent+". "+$("fTexto").textContent).replace(/\s+/g," ").trim()+
-      " — Jugá vos también en Girá y Adiviná Rioplatense: "+location.href;
-    if(navigator.share){try{await navigator.share({text:texto});}catch(e2){}}
+    if(navigator.share){try{await navigator.share({text:textoFallback});}catch(e2){}}
     else{
-      try{await navigator.clipboard.writeText(texto);mostrarToast("📤","Copiado. ¡Pegalo donde quieras!");}
-      catch(e2){window.open("https://wa.me/?text="+encodeURIComponent(texto),"_blank");}
+      try{await navigator.clipboard.writeText(textoFallback);mostrarToast("📤","Copiado. ¡Pegalo donde quieras!");}
+      catch(e2){window.open("https://wa.me/?text="+encodeURIComponent(textoFallback),"_blank");}
     }
     return;
   }
   try{
-    const archivo=new File([blob],"gira-y-adivina-resultado.png",{type:"image/png"});
+    const archivo=new File([blob],nombreArchivo,{type:"image/png"});
     if(navigator.canShare&&navigator.canShare({files:[archivo]})){
-      await navigator.share({files:[archivo],text:"Jugá vos también en Girá y Adiviná Rioplatense: "+location.href});
+      await navigator.share({files:[archivo],text:textoShare});
       return;
     }
-    csDescargarBlob(blob);
+    csDescargarBlob(blob,nombreArchivo);
   }catch(e){
     if(e&&e.name==="AbortError")return;
-    csDescargarBlob(blob);
+    csDescargarBlob(blob,nombreArchivo);
   }
+}
+$("fCompartir").onclick=async()=>{
+  musicaCompartida=true;if(musicaOn)sincronizarMusica();
+  const textoFallback=($("fTitulo").textContent+". "+$("fTexto").textContent).replace(/\s+/g," ").trim()+
+    " — Jugá vos también en Girá y Adiviná Rioplatense: "+location.href;
+  await csCompartirImagen(generarCanvasCompartir,"gira-y-adivina-resultado.png",
+    "Jugá vos también en Girá y Adiviná Rioplatense: "+location.href,textoFallback);
+};
+async function generarCanvasInvitacion(){
+  const cv=document.createElement("canvas");
+  cv.width=941;cv.height=1672;
+  const cx=cv.getContext("2d");
+  const bg=await csCargarImg("assets/compartir/plantilla-invitacion.webp");
+  cx.drawImage(bg,0,0,941,1672);
+  try{await document.fonts.load("700 32px 'Archivo Black'");await document.fonts.load("700 22px Outfit");}catch(e){}
+  const px=100,pw=741;
+  let cy=470;
+  if(perfil.avatar){
+    try{
+      const av=await csCargarImg("assets/avatars/"+perfil.avatar+".webp");
+      const r=56,acx=px+r+6,acy=cy+r;
+      cx.save();cx.beginPath();cx.arc(acx,acy,r,0,Math.PI*2);cx.clip();
+      cx.drawImage(av,acx-r,acy-r,r*2,r*2);cx.restore();
+      cx.strokeStyle="#F5B301";cx.lineWidth=3;cx.beginPath();cx.arc(acx,acy,r,0,Math.PI*2);cx.stroke();
+    }catch(e){}
+  }
+  cx.fillStyle="#F6EFE2";cx.font="700 30px Outfit,sans-serif";cx.textAlign="left";cx.textBaseline="middle";
+  cx.fillText((perfil.nombre||"Vos")+" te desafía",px+128,cy+40);
+  cx.fillStyle="#B49FCE";cx.font="600 19px Outfit,sans-serif";
+  cx.fillText("¿Te animás? A ver si sabés más que yo 😏",px+128,cy+78);
+  cy+=170;
+  const wcx=px+pw/2,wcy=cy+150,wr=130;
+  const colores=["#F5B301","#E5197C","#37D6C0","#7B3FE4","#F97316","#2DA8FF"];
+  colores.forEach((c,i)=>{
+    cx.beginPath();cx.moveTo(wcx,wcy);
+    cx.arc(wcx,wcy,wr,(i/6)*Math.PI*2-Math.PI/2,((i+1)/6)*Math.PI*2-Math.PI/2);
+    cx.closePath();cx.fillStyle=c;cx.fill();
+  });
+  cx.beginPath();cx.arc(wcx,wcy,46,0,Math.PI*2);cx.fillStyle="#1A1024";cx.fill();
+  cx.strokeStyle="#F6EFE2";cx.lineWidth=3;cx.stroke();
+  cx.fillStyle="#F6EFE2";cx.font="800 22px 'Archivo Black',sans-serif";cx.textAlign="center";cx.textBaseline="middle";
+  cx.fillText("GIRÁ",wcx,wcy+2);
+  cy+=wr*2+40;
+  cx.fillStyle="#37D6C0";cx.font="700 21px Outfit,sans-serif";cx.textAlign="center";
+  cx.fillText("🎡 Girá la ruleta y adiviná la frase",wcx,cy);
+  const codY=1046+150;
+  cx.fillStyle="#B49FCE";cx.font="700 22px Outfit,sans-serif";cx.textAlign="center";
+  cx.fillText("Código de sala",470,codY-55);
+  cx.fillStyle="#F6EFE2";cx.font="800 64px 'Archivo Black',sans-serif";
+  cx.fillText((sala||"----").toUpperCase(),470,codY+15);
+  return cv;
+}
+$("bCompartirInvitacion").onclick=async()=>{
+  const textoFallback="Jugamos a Girá y Adiviná\n"+location.origin+location.pathname+"?sala="+sala+"\nCódigo: "+sala;
+  await csCompartirImagen(generarCanvasInvitacion,"gira-y-adivina-invitacion.png",
+    "Jugamos a Girá y Adiviná Rioplatense — entrá con el código "+sala+": "+location.origin+location.pathname+"?sala="+sala,
+    textoFallback);
 };
 $("bCompartirJuego").onclick=async()=>{
   const texto="🎡 Girá y Adiviná Rioplatense — girá la ruleta y adiviná la frase. ¡Jugá conmigo!: "+
