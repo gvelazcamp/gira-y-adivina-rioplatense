@@ -4360,7 +4360,7 @@ $("fSalir").onclick=()=>location.reload();
 function csCargarImg(src){
   return new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=src;});
 }
-function csDibujarFrase(cx,mask,x,y,maxW){
+function csDibujarFrase(cx,mask,x,y,maxW,boxH){
   const palabras=mask.split(" ").filter(p=>p.length);
   let tile=38,gap=6,wgap=16;
   const anchoPalabra=p=>p.length*(tile+gap)-gap;
@@ -4379,8 +4379,7 @@ function csDibujarFrase(cx,mask,x,y,maxW){
   while(lineas.length>3&&tile>20){tile-=2;gap=Math.max(4,gap-1);lineas=armarLineas();}
   const lineH=tile+14;
   const altoTotal=lineas.length*lineH;
-  let cy=y+(altoTotal-lineH)/-2+altoTotal/2-altoTotal+lineH/2;
-  cy=y;
+  let cy=boxH?y+Math.max(0,(boxH-altoTotal)/2):y;
   lineas.forEach(linea=>{
     const anchoLinea=linea.reduce((s,p,i)=>s+anchoPalabra(p)+(i?wgap:0),0);
     let cxPos=x+(maxW-anchoLinea)/2;
@@ -4416,19 +4415,19 @@ async function generarCanvasCompartir(){
     cx.fillStyle="#37D6C0";cx.font="700 20px Outfit,sans-serif";cx.textAlign="center";cx.textBaseline="middle";
     cx.fillText((S.catRaw||"").toUpperCase(),470,617);
   }
-  const px1=115,py1=730,pw1=710;
-  if(S&&S.frase){csDibujarFrase(cx,mask(),px1,py1,pw1);}
+  const px1=115,py1=715,pw1=710,pbh1=330;
+  if(S&&S.frase){csDibujarFrase(cx,mask(),px1,py1,pw1,pbh1);}
   if(perfil.avatar){
     try{
       const av=await csCargarImg("assets/avatars/"+perfil.avatar+".webp");
-      const r=68,acx=175,acy=1208;
+      const r=68,acx=175,acy=1216;
       cx.save();cx.beginPath();cx.arc(acx,acy,r,0,Math.PI*2);cx.clip();
       cx.drawImage(av,acx-r,acy-r,r*2,r*2);cx.restore();
     }catch(e){}
   }
   const stats=[[370,meta.monedas],[505,(meta.mejorRachaVictorias||0)],[645,ganados.size+"/"+MUNDO.length],[780,logrosGanados.size]];
   cx.fillStyle="#F6EFE2";cx.font="700 19px Outfit,sans-serif";cx.textAlign="center";cx.textBaseline="middle";
-  stats.forEach(([scx,val])=>cx.fillText(String(val),scx,1237));
+  stats.forEach(([scx,val])=>cx.fillText(String(val),scx,1245));
   return cv;
 }
 $("fCompartir").onclick=async()=>{
