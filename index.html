@@ -251,6 +251,10 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 .tn-info span{font-size:.76rem;color:#B49FCE}
 .tn-comprar{background:var(--oro);color:var(--tinta);font-weight:800;border-radius:10px;padding:10px 14px;
  flex-shrink:0;font-size:.85rem;white-space:nowrap}
+.tn-item.tn-real{border-color:#37D6C066;background:linear-gradient(135deg,#37D6C01A,#7B3FE41A)}
+.tn-comprar-real{background:var(--agua);color:var(--tinta);font-weight:800;border-radius:10px;padding:10px 14px;
+ flex-shrink:0;font-size:.85rem;white-space:nowrap;position:relative}
+.tn-proximamente{font-size:.62rem;color:#B49FCE;text-align:center;margin:2px 0 12px}
 .tn-comprar:disabled{opacity:1;background:#4A3D5C;color:#C9B8DE;cursor:not-allowed;box-shadow:none}
 
 /* Logros */
@@ -893,6 +897,39 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
 <div class="capa" id="capaTienda"><div class="caja tn-caja">
   <h2>🛍️ Tienda</h2>
   <p class="tn-monedas">🪙 <span id="tnMonedas">500</span></p>
+  <h3 class="tn-subtitulo">💳 Paquetes con dinero real</h3>
+  <p class="tn-proximamente">Disponibles cuando el juego esté en la Play Store</p>
+  <div class="tn-item tn-real">
+    <div class="tn-icono">🪙</div>
+    <div class="tn-info"><b>500 monedas</b><span>Paquete chico</span></div>
+    <button class="tn-comprar-real" data-real="1">$0.99</button>
+  </div>
+  <div class="tn-item tn-real">
+    <div class="tn-icono">🪙</div>
+    <div class="tn-info"><b>1.350 monedas</b><span>1.200 + 150 de regalo</span></div>
+    <button class="tn-comprar-real" data-real="1">$1.99</button>
+  </div>
+  <div class="tn-item tn-real">
+    <div class="tn-icono">🪙</div>
+    <div class="tn-info"><b>3.500 monedas</b><span>3.000 + 500 de regalo</span></div>
+    <button class="tn-comprar-real" data-real="1">$4.99</button>
+  </div>
+  <div class="tn-item tn-real">
+    <div class="tn-icono">🪙</div>
+    <div class="tn-info"><b>8.500 monedas</b><span>7.000 + 1.500 de regalo</span></div>
+    <button class="tn-comprar-real" data-real="1">$9.99</button>
+  </div>
+  <div class="tn-item tn-real">
+    <div class="tn-icono">❤️</div>
+    <div class="tn-info"><b>Vidas llenas al instante</b><span>Para cuando no tenés monedas</span></div>
+    <button class="tn-comprar-real" data-real="1">$0.99</button>
+  </div>
+  <div class="tn-item tn-real">
+    <div class="tn-icono">♾️</div>
+    <div class="tn-info"><b>Vidas infinitas 24hs</b><span>Jugá sin límite por un día</span></div>
+    <button class="tn-comprar-real" data-real="1">$1.99</button>
+  </div>
+  <h3 class="tn-subtitulo">🪙 Con tus monedas</h3>
   <div class="tn-item">
     <div class="tn-icono">❤️</div>
     <div class="tn-info"><b>Vida instantánea</b><span>+1 vida al toque</span></div>
@@ -1744,6 +1781,9 @@ function tnActualizar(){
   });
 }
 $("bTienda").onclick=()=>{tnActualizar();tnRenderFrames();$("capaTienda").classList.add("ver");};
+document.querySelectorAll(".tn-comprar-real").forEach(b=>{
+  b.onclick=()=>mostrarToast("🚧","Disponible cuando el juego esté en la Play Store");
+});
 $("tnCerrar").onclick=()=>$("capaTienda").classList.remove("ver");
 document.querySelectorAll(".tn-comprar").forEach(b=>{
   b.onclick=()=>{
