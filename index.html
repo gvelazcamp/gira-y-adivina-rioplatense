@@ -33,9 +33,9 @@
 #splash{position:fixed;inset:0;z-index:50;background:var(--noche);
  display:grid;place-items:center;transition:opacity .7s ease;overflow:hidden}
 #splash.ido{opacity:0;pointer-events:none}
-#splashFondo{position:absolute;inset:-40px;background-image:url('assets/splash.webp');
+#splashFondo{position:absolute;inset:-40px;background-image:url('assets/splash.webp?v=2');
  background-size:cover;background-position:center;filter:blur(34px) brightness(.45)}
-#splashArte{position:absolute;inset:0;background-image:url('assets/splash.webp');
+#splashArte{position:absolute;inset:0;background-image:url('assets/splash.webp?v=2');
  background-size:contain;background-repeat:no-repeat;background-position:center;
  animation:respira 9s ease-in-out infinite}
 @keyframes respira{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
@@ -4219,7 +4219,7 @@ $("fBoton").onclick=()=>{
 };
 (function splash(){
   const barra=$("splashBarra").firstElementChild,cap=$("splash");
-  const urls=["assets/splash.webp"].concat(MUNDO.map(d=>d.bg).filter(Boolean));
+  const urls=["assets/splash.webp?v=2"].concat(MUNDO.map(d=>d.bg).filter(Boolean));
   let hechas=0;const t0=performance.now();
   const paso=()=>{hechas++;barra.style.width=Math.round(hechas/urls.length*100)+"%";
     if(hechas>=urls.length)cerrar();};
