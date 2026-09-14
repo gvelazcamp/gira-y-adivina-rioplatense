@@ -1290,13 +1290,13 @@ function sincronizarMusica(){
   if(!src){detenerMusica();return;}
   if(!audioMusica){
     audioMusica=new Audio();
-    audioMusica.loop=true;
     audioMusica.volume=VOLUMEN_MUSICA;
     audioMusica.preload="auto";
   }
   if(audioMusica.dataset.pista!==contexto){
     audioMusica.src=src;
     audioMusica.dataset.pista=contexto;
+    audioMusica.loop=(contexto!=="bonus"); // el countdown de Bonus/Final suena una sola vez, sin loop
   }
   if(audioMusica.paused)audioMusica.play().catch(()=>{});
 }
