@@ -4412,36 +4412,23 @@ async function generarCanvasCompartir(){
   const bg=await csCargarImg("assets/compartir/plantilla-resultado.webp");
   cx.drawImage(bg,0,0,941,1672);
   try{await document.fonts.load("700 32px 'Archivo Black'");await document.fonts.load("700 22px Outfit");}catch(e){}
-  const px1=185,py1=655,pw1=680;
-  let curY=py1;
+  if(S&&S.catRaw){
+    cx.fillStyle="#37D6C0";cx.font="700 20px Outfit,sans-serif";cx.textAlign="center";cx.textBaseline="middle";
+    cx.fillText((S.catRaw||"").toUpperCase(),470,617);
+  }
+  const px1=115,py1=730,pw1=710;
+  if(S&&S.frase){csDibujarFrase(cx,mask(),px1,py1,pw1);}
   if(perfil.avatar){
     try{
       const av=await csCargarImg("assets/avatars/"+perfil.avatar+".webp");
-      const r=38,acx=px1+r,acy=py1+r;
+      const r=68,acx=175,acy=1197;
       cx.save();cx.beginPath();cx.arc(acx,acy,r,0,Math.PI*2);cx.clip();
       cx.drawImage(av,acx-r,acy-r,r*2,r*2);cx.restore();
-      cx.strokeStyle="#F5B301";cx.lineWidth=3;cx.beginPath();cx.arc(acx,acy,r,0,Math.PI*2);cx.stroke();
     }catch(e){}
   }
-  cx.fillStyle="#F6EFE2";cx.font="700 30px Outfit,sans-serif";cx.textAlign="left";cx.textBaseline="middle";
-  cx.fillText(perfil.nombre||"Vos",px1+90,py1+38);
-  curY=py1+96;
-  if(S&&S.catRaw){
-    cx.fillStyle="#37D6C0";cx.font="700 19px Outfit,sans-serif";cx.textAlign="center";
-    cx.fillText((S.catRaw||"").toUpperCase(),px1+pw1/2,curY);
-    curY+=34;
-  }
-  if(S&&S.frase){csDibujarFrase(cx,mask(),px1,curY,pw1);}
-  const px2=185,py2=1130,pw2=610;
-  const stats=[["🪙",meta.monedas+" monedas"],["🔥",(meta.mejorRachaVictorias||0)+" racha"],["🗺️",ganados.size+"/"+MUNDO.length+" destinos"]];
-  const colW=pw2/stats.length;
-  stats.forEach((s,i)=>{
-    const scx=px2+colW*i+colW/2;
-    cx.font="34px sans-serif";cx.textAlign="center";cx.textBaseline="alphabetic";
-    cx.fillText(s[0],scx,py2+55);
-    cx.fillStyle="#F6EFE2";cx.font="700 18px Outfit,sans-serif";
-    cx.fillText(s[1],scx,py2+90);
-  });
+  const stats=[[370,meta.monedas],[505,(meta.mejorRachaVictorias||0)],[645,ganados.size+"/"+MUNDO.length],[780,logrosGanados.size]];
+  cx.fillStyle="#F6EFE2";cx.font="700 19px Outfit,sans-serif";cx.textAlign="center";cx.textBaseline="middle";
+  stats.forEach(([scx,val])=>cx.fillText(String(val),scx,1228));
   return cv;
 }
 $("fCompartir").onclick=async()=>{
