@@ -321,6 +321,15 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 h1.titulo{font-size:clamp(2.6rem,10vw,4.2rem);line-height:.92;color:var(--oro);
  text-shadow:0 6px 0 #7A2E00,0 0 40px rgba(245,179,1,.35)}
 .logo-inicio{width:min(64vw,280px);display:block;margin:0 auto;filter:drop-shadow(0 6px 18px #00000066)}
+.deco-mate,.deco-banderas{position:absolute;top:0;z-index:1;pointer-events:none;
+ filter:drop-shadow(0 4px 10px #00000066);width:min(24vw,96px)}
+.deco-mate{left:0;transform:rotate(-4deg)}
+.deco-banderas{right:0;transform:rotate(3deg)}
+.mini-tit-fila{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;
+ gap:6px 14px;margin:18px 0 10px}
+.deco-mas-disfrutar{height:26px;width:auto}
+.deco-pequenos-desafios{height:34px;width:auto;opacity:.9}
+.deco-tagline{display:block;margin:6px auto 0;width:min(78vw,340px);height:auto}
 p.sub{margin:14px 0 24px;color:#C9B8DE}
 .campo{display:flex;align-items:center;gap:10px;background:#00000033;border:1px solid #FFFFFF1F;
  border-radius:14px;padding:10px 14px;margin-bottom:12px}
@@ -685,6 +694,8 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <span class="estrella e1">✦</span><span class="estrella e2">✧</span><span class="estrella e3">✦</span>
     <span class="estrella e4">✧</span><span class="estrella e5">✦</span><span class="estrella e6">✧</span>
   </div>
+  <img src="assets/decor/mate.png" alt="" class="deco-mate" aria-hidden="true">
+  <img src="assets/decor/banderas.png" alt="" class="deco-banderas" aria-hidden="true">
   <img src="assets/logo.webp" alt="Girá y Adiviná Rioplatense" class="logo-inicio">
   <p class="sub">Girá, pedí una consonante y adiviná la frase antes que el otro.</p>
   <div class="setup-topbar">
@@ -718,14 +729,17 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <button class="menu-card mc-naranja" id="bUnirse"><span class="mc-ico">🎟️</span><span class="mc-tit">Entrar con código</span><span class="mc-sub">Unite a una sala</span></button>
     <button class="menu-card mc-verde" id="bRanking"><span class="mc-ico">🏆</span><span class="mc-tit">Ranking de amigos</span><span class="mc-sub">Mirá quién sabe más</span></button>
   </div>
-  <p class="mini-tit">Más para disfrutar</p>
+  <div class="mini-tit-fila">
+    <img src="assets/decor/mas-disfrutar.png" alt="Más para disfrutar" class="deco-mas-disfrutar">
+    <img src="assets/decor/pequenos-desafios.png" alt="Pequeños desafíos, grandes momentos" class="deco-pequenos-desafios">
+  </div>
   <div class="mini-grid">
     <button class="mini-card rw-boton" id="bRuleta"><span class="mn-ico">🎡</span><span class="mn-tit">Ruleta de premios</span><span id="rwBotonEstado" class="rw-badge"></span></button>
     <button class="mini-card" id="bTienda"><span class="mn-ico">🛍️</span><span class="mn-tit">Tienda</span></button>
     <button class="mini-card" id="bObjetivos"><span class="mn-ico">🎯</span><span class="mn-tit">Objetivos diarios</span></button>
     <button class="mini-card" id="bLogros"><span class="mn-ico">🏅</span><span class="mn-tit">Logros</span></button>
   </div>
-  <p class="setup-tagline">✨ Elegí un modo para empezar ✨</p>
+  <img src="assets/decor/tagline.png" alt="Cultura. Amigos. Trivia. Rioplatense." class="deco-tagline">
   <div class="setup-ola" aria-hidden="true">
     <svg viewBox="0 0 1440 120" preserveAspectRatio="none"><path d="M0,40 C240,90 480,0 720,30 C960,60 1200,100 1440,50 L1440,120 L0,120 Z" fill="#BFE3F5"></path></svg>
     <svg viewBox="0 0 1440 120" preserveAspectRatio="none" class="ola-blanca"><path d="M0,70 C260,20 520,110 780,60 C1040,10 1300,80 1440,40 L1440,120 L0,120 Z" fill="#F6EFE2"></path></svg>
