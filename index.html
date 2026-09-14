@@ -3327,6 +3327,10 @@ function arrancarIntervaloToss(){
     const ahora=Date.now();
     let cambio=false;
     while(S.tossOrden.length&&ahora>=S.tossProx){S.tossPos.add(S.tossOrden.shift());S.tossProx+=TOSS_PASO;cambio=true;}
+    if(!S.tossOrden.length){
+      if(!S.tossTodoDesde)S.tossTodoDesde=ahora;
+      if(ahora-S.tossTodoDesde>=1800){finTossTiempo();return;}
+    }
     if(ahora>=S.tossFin){finTossTiempo();return;}
     if(cambio)publicar("<b>PRUEBA DE VELOCIDAD</b> — mirá bien y resolvé cuando la sepas.");
   },120);
@@ -3335,7 +3339,7 @@ function iniciarTossUp(f){
   S.fase="tossup";S.tossPos=new Set();S.tossBloq=Array(S.jug.length).fill(false);
   S.tossPausado=false;S.tossRespondedor=null;S.tossRestante=TOSS_DURACION;S.tossHastaProx=TOSS_PASO;
   S.tossOrden=[...S.frase].map((c,i)=>c===" "?null:i).filter(i=>i!==null).sort(()=>Math.random()-.5);
-  S.tossFin=Date.now()+TOSS_DURACION;S.tossProx=Date.now()+TOSS_PASO;
+  S.tossFin=Date.now()+TOSS_DURACION;S.tossProx=Date.now()+TOSS_PASO;S.tossTodoDesde=null;
   S.cat=(destino!==null&&modo==="bot"?MUNDO[destino].n+" · ":"")+"⚡ Prueba de velocidad · "+f.c;
   publicar("<b>PRUEBA DE VELOCIDAD</b> — las letras aparecen solas. Resolvé antes de que se terminen los 20 segundos.");
   arrancarIntervaloToss();
