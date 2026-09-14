@@ -2,7 +2,7 @@
  "id": "/rueda-de-la-fortuna/",
  "name": "Girá y Adiviná Rioplatense",
  "short_name": "Girá y Adiviná",
- "description": "El juego de frases estilo rueda de la fortuna con acento rioplatense. ¡Jugá solo o con amigos!",
+ "description": "El juego de Girá y Adiviná, con acento rioplatense: girá la ruleta y adiviná la frase. ¡Jugá solo o con amigos!",
  "start_url": "./index.html",
  "scope": "./",
  "display": "standalone",
