@@ -742,9 +742,8 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   </button>
   <div class="menu-grid">
     <button class="menu-card mc-rosa" id="bTV"><span class="mc-ico">📺</span><span class="mc-tit">Sala TV / Familia</span><span class="mc-sub">Jugá todos juntos</span></button>
-    <button class="menu-card mc-azul" id="bCrear"><span class="mc-ico">👥</span><span class="mc-tit">Crear sala</span><span class="mc-sub">Invitá a tus amigos</span></button>
-    <button class="menu-card mc-naranja" id="bUnirse"><span class="mc-ico">🎟️</span><span class="mc-tit">Entrar con código</span><span class="mc-sub">Unite a una sala</span></button>
-    <button class="menu-card mc-verde" id="bRanking"><span class="mc-ico">🏆</span><span class="mc-tit">Ranking de amigos</span><span class="mc-sub">Mirá quién sabe más</span></button>
+    <button class="menu-card mc-azul" id="bJugarOnline"><span class="mc-ico">👥</span><span class="mc-tit">Jugar con amigos</span><span class="mc-sub">Crear sala o entrar con código</span></button>
+    <button class="menu-card mc-verde" id="bRanking" style="grid-column:1/-1"><span class="mc-ico">🏆</span><span class="mc-tit">Ranking de amigos</span><span class="mc-sub">Mirá quién sabe más</span></button>
   </div>
   <div class="mini-tit-fila">
     <img src="assets/decor/mas-disfrutar.png" alt="Más para disfrutar" class="deco-mas-disfrutar">
@@ -757,6 +756,8 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <button class="mini-card" id="bLogros"><span class="mn-ico">🏅</span><span class="mn-tit">Logros</span></button>
   </div>
   <button class="btn-grande" id="bEntrarTV" style="display:none;margin-top:10px"><span class="btn-ico">📱</span><span class="btn-txt">Entrar a Sala TV</span></button>
+  <button class="btn-grande" id="bCrear" style="display:none;margin-top:10px"><span class="btn-ico">👥</span><span class="btn-txt">Crear sala</span></button>
+  <button class="btn-grande" id="bUnirse" style="display:none;margin-top:10px"><span class="btn-ico">🎟️</span><span class="btn-txt">Entrar con código</span></button>
   <img src="assets/decor/tagline.png" alt="Cultura. Amigos. Trivia. Rioplatense." class="deco-tagline">
   <div class="setup-ola" aria-hidden="true">
     <svg viewBox="0 0 1440 120" preserveAspectRatio="none"><path d="M0,40 C240,90 480,0 720,30 C960,60 1200,100 1440,50 L1440,120 L0,120 Z" fill="#BFE3F5"></path></svg>
@@ -963,6 +964,16 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="no" id="salaTVMenuCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
 </div></div>
 
+<div class="capa" id="capaJugarOnlineMenu"><div class="caja">
+  <h2>👥 Jugar con amigos</h2>
+  <p class="sub" style="margin:2px 0 14px">Jugá 1 contra 1 a la distancia, cada uno desde su celular.</p>
+  <div class="setup-menu">
+    <button class="btn-grande" id="bMenuCrearSala"><span class="btn-ico">👥</span><span class="btn-txt">Crear sala</span></button>
+    <button class="btn-grande sec" id="bMenuEntrarCodigo"><span class="btn-ico">🎟️</span><span class="btn-txt">Entrar con código</span></button>
+  </div>
+  <button class="no" id="jugarOnlineMenuCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
+</div></div>
+
 <div class="capa" id="capaRecords"><div class="caja">
   <h2>🏆 Mis récords</h2>
   <div class="rec-lista" id="recLista"></div>
@@ -1047,6 +1058,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <button class="btn-grande" id="bConectar">Entrar a la sala</button>
   </div>
   <p class="estado" id="estado">Conectando…</p>
+  <button class="btn-grande sec" id="bLobbySalir" style="margin-top:14px">Volver al inicio</button>
 </section>
 
 <section id="tvLobby">
@@ -2114,7 +2126,7 @@ function mostrarToast(icono,texto){
 }
 const MENUS_CON_X={capaRuleta:"rwCerrar",capaTienda:"tnCerrar",capaLogros:"lgCerrar",
   capaObjetivos:"objCerrar",capaRecords:"recCerrar",capaRanking:"rkCerrar",capaMas:"masCerrar",
-  capaSalaTVMenu:"salaTVMenuCerrar"};
+  capaSalaTVMenu:"salaTVMenuCerrar",capaJugarOnlineMenu:"jugarOnlineMenuCerrar"};
 $("bMasOpciones").onclick=()=>$("capaMas").classList.add("ver");
 $("masCerrar").onclick=()=>$("capaMas").classList.remove("ver");
 $("capaMas").addEventListener("click",e=>{
@@ -3050,6 +3062,12 @@ $("tvcEnviarResp").onclick=()=>{const t=$("tvcRespuesta").value.trim();if(!t)ret
 $("tvcRespuesta").addEventListener("keydown",e=>{if(e.key==="Enter")$("tvcEnviarResp").click();});
 $("tvcReacciones").addEventListener("click",e=>{const b=e.target.closest("button");if(b)enviar({a:"reaccion",e:b.dataset.e});});
 
+$("bJugarOnline").onclick=()=>$("capaJugarOnlineMenu").classList.add("ver");
+$("jugarOnlineMenuCerrar").onclick=()=>$("capaJugarOnlineMenu").classList.remove("ver");
+$("bMenuCrearSala").onclick=()=>{$("capaJugarOnlineMenu").classList.remove("ver");$("bCrear").click();};
+$("bMenuEntrarCodigo").onclick=()=>{$("capaJugarOnlineMenu").classList.remove("ver");$("bUnirse").click();};
+$("bLobbySalir").onclick=()=>location.href=location.origin+location.pathname;
+
 $("bCrear").onclick=()=>{
   modo="host";miJug=0;
   $("setup").style.display="none";$("lobby").style.display="block";
@@ -3102,17 +3120,17 @@ $("miNombre").addEventListener("change",()=>{try{localStorage.setItem("larueda_n
 
 const tvEnLink=(new URLSearchParams(location.search).get("tv")||"").toUpperCase();
 if(tvEnLink){
-  $("bCrear").style.display="none";$("bBot").style.display="none";$("bTV").style.display="none";$("bUnirse").style.display="none";
+  $("bJugarOnline").style.display="none";$("bBot").style.display="none";$("bTV").style.display="none";
   document.querySelector("#setup p.sub").textContent="Te invitaron a una Sala TV. Escribí tu nombre y entrá.";
   $("bEntrarTV").className="btn-grande";$("bEntrarTV").style.display="";$("bEntrarTV").textContent="Entrar a Sala TV "+tvEnLink;
   $("bEntrarTV").onclick=()=>{const n=$("miNombre").value.trim();if(!n){$("miNombre").focus();return;}try{localStorage.setItem("larueda_nombre",n);}catch(e){}unirseTV(tvEnLink);};
 }
 const salaEnLink=(new URLSearchParams(location.search).get("sala")||"").toUpperCase();
 if(salaEnLink){
-  $("bCrear").style.display="none";
+  $("bJugarOnline").style.display="none";
   $("bBot").style.display="none";$("bTV").style.display="none";$("bEntrarTV").style.display="none";
   document.querySelector("#setup p.sub").textContent="Te invitaron a jugar. Poné tu nombre y entrá.";
-  $("bUnirse").className="btn-grande";
+  $("bUnirse").className="btn-grande";$("bUnirse").style.display="";
   $("bUnirse").textContent="Entrar a la sala "+salaEnLink;
   $("bUnirse").onclick=()=>{
     const n=$("miNombre").value.trim();
