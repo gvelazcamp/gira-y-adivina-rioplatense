@@ -2968,7 +2968,6 @@ function jugarOnlineFalso(){
       destino=null;pasoActual=null;modo="bot";miJug=0;
       $("setup").style.display="none";$("juego").style.display="block";
       armarTeclado();
-      $("marcoSelector").style.display="flex";marcoTableroIdx=0;aplicarMarcoTablero();
       iniciarPartida(perfil.nombre||"Vos",rival.n,undefined,perfil.avatar||null,rival.a,frameEquipado||null,null);
     },900);
   },1500+Math.random()*900);
