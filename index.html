@@ -2777,14 +2777,20 @@ $("bBot").onclick=()=>{
 /* ---- Jugar online: todavía no hay jugadores reales conectados, así que
    arma un partido rápido contra la máquina con un rival "de mentira" con
    nombre y avatar al azar, para que se sienta como un matcheo real. */
-const NOMBRES_ONLINE=["Fede_UY","Male98","Euge.Rosario","PatoCanario","Vale_Punta","Tomi_ARG",
-  "LaNegra21","CamiMdeo","Bruno.Salto","Ro_Colonia","NatyPaysandu","Gonza_Tacua","Meli_BsAs",
-  "ElTanoUY","Fabi_Rocha","Juanma22","LauriUY","Nacho.Rivera","Sole_Maldo","Ceci_Artigas"];
+const NOMBRES_ONLINE=[
+  {n:"Fede_UY",g:"m"},{n:"Male98",g:"f"},{n:"Euge.Rosario",g:"f"},{n:"PatoCanario",g:"m"},
+  {n:"Vale_Punta",g:"f"},{n:"Tomi_ARG",g:"m"},{n:"LaNegra21",g:"f"},{n:"CamiMdeo",g:"f"},
+  {n:"Bruno.Salto",g:"m"},{n:"Ro_Colonia",g:"f"},{n:"NatyPaysandu",g:"f"},{n:"Gonza_Tacua",g:"m"},
+  {n:"Meli_BsAs",g:"f"},{n:"ElTanoUY",g:"m"},{n:"Fabi_Rocha",g:"f"},{n:"Juanma22",g:"m"},
+  {n:"LauriUY",g:"f"},{n:"Nacho.Rivera",g:"m"},{n:"Sole_Maldo",g:"f"},{n:"Ceci_Artigas",g:"f"}];
+const AVATARES_M=["avatar-01","avatar-03","avatar-05","avatar-07"];
+const AVATARES_F=["avatar-02","avatar-04","avatar-06","avatar-08"];
 function rivalOnlineFalso(){
   const nombreExcl=(perfil.nombre||"").trim().toLowerCase();
-  let n;do{n=NOMBRES_ONLINE[Math.floor(Math.random()*NOMBRES_ONLINE.length)];}while(n.toLowerCase()===nombreExcl);
-  let a;do{a=AVATARES[Math.floor(Math.random()*AVATARES.length)];}while(a===perfil.avatar&&AVATARES.length>1);
-  return{n,a};
+  let cand;do{cand=NOMBRES_ONLINE[Math.floor(Math.random()*NOMBRES_ONLINE.length)];}while(cand.n.toLowerCase()===nombreExcl);
+  const pool=cand.g==="m"?AVATARES_M:AVATARES_F;
+  let a;do{a=pool[Math.floor(Math.random()*pool.length)];}while(a===perfil.avatar&&pool.length>1);
+  return{n:cand.n,a};
 }
 function jugarOnlineFalso(){
   if(!perfilExiste()){abrirPerfil(jugarOnlineFalso);return;}
