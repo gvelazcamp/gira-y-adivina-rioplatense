@@ -3,6 +3,6 @@
       "target": {
         "namespace": "android_app",
         "package_name": "io.github.gvelazcamp.twa",
-        "sha256_cert_fingerprints": ["2D:68:D1:D1:BE:9A:DE:49:CA:9D:70:E1:AB:CE:AE:8A:56:10:E0:00:A9:5B:B2:9D:9F:8B:54:D8:FB:2D:39:1C"]
+        "sha256_cert_fingerprints": ["31:32:13:B7:0B:9D:30:ED:6A:7D:DB:EC:F6:F8:A9:6F:A9:0A:3D:30:D1:78:04:CA:9E:1B:15:40:6D:9D:8B:42"]
       }
     }]
