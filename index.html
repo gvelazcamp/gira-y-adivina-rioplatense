@@ -2730,7 +2730,7 @@ $("salirMundo").onclick=()=>{$("mundo").style.display="none";$("setup").style.di
 
 /* ---- Expansión a Argentina: todavía no es jugable, por ahora es un
    teaser animado que se desbloquea al ganar las 9 ciudades de Uruguay. ---- */
-function uruguayCompleto(){return true;/*TEMPORAL:prueba del teaser, volver a MUNDO.every(d=>ganados.has(d.id))*/}
+function uruguayCompleto(){return MUNDO.every(d=>ganados.has(d.id));}
 function actualizarBotonExpansion(){
   const b=$("bExpansion");if(!b)return;
   const listo=uruguayCompleto();
