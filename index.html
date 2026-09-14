@@ -158,6 +158,17 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 #dzBoton:disabled{opacity:.5}
 .mundo-hud{display:flex;justify-content:center;align-items:center;gap:18px;margin-bottom:10px;font-weight:700}
 .mundo-hud .mh-monedas{color:var(--oro)}
+#bExpansion.bloqueado-exp{opacity:.55}
+#expansionAnim{position:fixed;inset:0;z-index:55;background:#04121f;display:none}
+#expansionAnim.ver{display:block}
+#expansionAnim img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+ opacity:0;transition:opacity .6s ease}
+#expansionAnim img.ver{opacity:1}
+#mundoArgentina{display:none;position:fixed;inset:0;z-index:40;place-items:center}
+#mundoArgentina.ver{display:grid}
+.arg-fondo{position:absolute;inset:0;background-size:cover;background-position:center 20%;filter:brightness(.4)}
+.arg-caja{position:relative;z-index:1;max-width:420px;width:88%;text-align:center;
+ background:#0C0616CC;border:1px solid #FFFFFF26;border-radius:20px;padding:28px 22px}
 
 /* Pasaporte de Durazno */
 .passport-backdrop{position:fixed;inset:0;z-index:100;display:none;place-items:center;
@@ -792,7 +803,23 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <div class="mundo-hud"><span id="mhVidas">❤️ 5</span><span class="mh-monedas" id="mhMonedas" title="Monedas: se ganan jugando y sirven para comprar en la Tienda">🪙 500 monedas</span></div>
   <p class="sub" id="subMundo">Ganale a cada rival y andá abriendo el país.</p>
   <div id="mapa"></div>
+  <button class="btn-grande" id="bExpansion" style="margin-top:4px">🔒 Continuar expansión</button>
   <button class="btn-grande sec" id="salirMundo">Volver al inicio</button>
+</section>
+
+<div id="expansionAnim" aria-hidden="true">
+  <img id="expImg1" src="assets/expansion/expansion-1-bloqueada.webp" class="ver" alt="">
+  <img id="expImg2" src="assets/expansion/expansion-2-cruzando.webp" alt="">
+  <img id="expImg3" src="assets/expansion/expansion-3-argentina.webp" alt="">
+</div>
+
+<section id="mundoArgentina">
+  <div class="arg-fondo" style="background-image:url('assets/expansion/expansion-3-argentina.webp')"></div>
+  <div class="arg-caja">
+    <h1 class="titulo" style="font-size:2.1rem">ARGENTINA</h1>
+    <p class="sub">🔒 Muy pronto vas a poder cruzar el Río de la Plata y jugar acá.</p>
+    <button class="btn-grande sec" id="bVolverDeArgentina">Volver a Uruguay</button>
+  </div>
 </section>
 
 <section id="pantDurazno">
@@ -2619,6 +2646,7 @@ function verMundo(){
   $("mundo").style.display="block";
   mundoActualizarHud();
   $("subMundo").textContent="Ganaste "+ganados.size+" de "+MUNDO.length+" destinos.";
+  actualizarBotonExpansion();
   const m=$("mapa");m.innerHTML="";
   const tira=document.createElement("div");tira.className="tira";
   const N=MUNDO.length;
@@ -2699,6 +2727,40 @@ function verMundo(){
 }
 $("salirMundo").onclick=()=>{$("mundo").style.display="none";$("setup").style.display="block";
   $("fondoMundo").classList.remove("ver");};
+
+/* ---- Expansión a Argentina: todavía no es jugable, por ahora es un
+   teaser animado que se desbloquea al ganar las 9 ciudades de Uruguay. ---- */
+function uruguayCompleto(){return MUNDO.every(d=>ganados.has(d.id));}
+function actualizarBotonExpansion(){
+  const b=$("bExpansion");if(!b)return;
+  const listo=uruguayCompleto();
+  b.textContent=listo?"⛵ Continuar expansión":"🔒 Continuar expansión";
+  b.classList.toggle("bloqueado-exp",!listo);
+}
+function jugarAnimacionExpansion(){
+  const imgs=[$("expImg1"),$("expImg2"),$("expImg3")];
+  imgs.forEach((im,i)=>im.classList.toggle("ver",i===0));
+  $("expansionAnim").classList.add("ver");
+  let i=0;
+  const paso=()=>{
+    i++;
+    if(i<imgs.length){imgs.forEach((im,k)=>im.classList.toggle("ver",k===i));setTimeout(paso,950);}
+    else setTimeout(()=>{
+      $("expansionAnim").classList.remove("ver");
+      $("mundo").style.display="none";
+      $("mundoArgentina").classList.add("ver");
+    },1100);
+  };
+  setTimeout(paso,950);
+}
+$("bExpansion").onclick=()=>{
+  if(!uruguayCompleto()){mostrarToast("🔒","Ganá las 9 ciudades de Uruguay para desbloquear la expansión.");return;}
+  jugarAnimacionExpansion();
+};
+$("bVolverDeArgentina").onclick=()=>{
+  $("mundoArgentina").classList.remove("ver");
+  verMundo();
+};
 
 function empezarDestino(i,paso){
   if(!gastarVida())return;
