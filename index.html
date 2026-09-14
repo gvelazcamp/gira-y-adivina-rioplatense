@@ -1275,8 +1275,10 @@ const VOLUMEN_MUSICA=.28;
 let musicaOn=(()=>{try{return localStorage.getItem("gya_musica")!=="off";}catch(e){return true;}})();
 const guardarMusica=()=>{try{localStorage.setItem("gya_musica",musicaOn?"on":"off");}catch(e){}};
 let audioMusica=null;
+let musicaCompartida=false;
 function contextoMusicaActual(){
-  if($("modalFin").classList.contains("ver"))return"bonus";
+  if($("modalFin").classList.contains("ver"))return musicaCompartida?"menu":"bonus";
+  musicaCompartida=false;
   if(S&&(S.fase==="bonus_elegir"||S.fase==="bonus_resolver"||S.fase==="bonus_fin"))return"bonus";
   if($("juego").style.display==="block")return"partida";
   if($("setup").style.display!=="none"||$("mundo").style.display==="block"||$("pantDurazno").style.display==="block")return"menu";
@@ -4431,6 +4433,7 @@ async function generarCanvasCompartir(){
   return cv;
 }
 $("fCompartir").onclick=async()=>{
+  musicaCompartida=true;if(musicaOn)sincronizarMusica();
   try{
     const cv=await generarCanvasCompartir();
     const blob=await new Promise(res=>cv.toBlob(res,"image/png"));
