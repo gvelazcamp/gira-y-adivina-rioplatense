@@ -395,6 +395,10 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 .cta-txt{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
 .cta-txt b{font-size:1.2rem}
 .cta-txt small{font-weight:600;opacity:.85;font-size:.76rem}
+.cta-online{background:linear-gradient(135deg,#18C2A8,#0E8C79);box-shadow:0 6px 0 #0B6656;margin-top:10px}
+.buscando-spinner{width:52px;height:52px;margin:0 auto;border-radius:50%;
+ border:5px solid #FFFFFF26;border-top-color:var(--agua);animation:girarBuscando .9s linear infinite}
+@keyframes girarBuscando{to{transform:rotate(360deg)}}
 .menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:4px 0 4px}
 .menu-card{border-radius:18px;padding:16px 12px;display:flex;flex-direction:column;align-items:flex-start;
  gap:3px;text-align:left;color:#fff;position:relative;min-height:104px;justify-content:flex-end}
@@ -723,6 +727,10 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <span class="cta-play">▶</span>
     <span class="cta-txt"><b>¡Jugar ahora!</b><small>Uruguay, vos contra la máquina</small></span>
   </button>
+  <button class="btn-grande cta-jugar cta-online" id="bOnline">
+    <span class="cta-play">🌐</span>
+    <span class="cta-txt"><b>Jugar online</b><small>Buscá un rival y arrancá ya</small></span>
+  </button>
   <div class="menu-grid">
     <button class="menu-card mc-rosa" id="bTV"><span class="mc-ico">📺</span><span class="mc-tit">Sala TV / Familia</span><span class="mc-sub">Jugá todos juntos</span></button>
     <button class="menu-card mc-azul" id="bCrear"><span class="mc-ico">👥</span><span class="mc-tit">Crear sala</span><span class="mc-sub">Invitá a tus amigos</span></button>
@@ -759,6 +767,12 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <div id="splashArte"></div>
   <div id="splashBarra"><i></i></div>
 </div>
+
+<div class="capa" id="capaBuscando"><div class="caja" style="max-width:320px">
+  <div class="buscando-spinner"></div>
+  <h2 id="buscandoTit" style="margin-top:16px">🌐 Buscando rival…</h2>
+  <p class="sub" id="buscandoTxt" style="margin:4px 0 0">Conectando con jugadores online</p>
+</div></div>
 
 <div id="fondoMundo"></div>
 
@@ -2745,6 +2759,38 @@ $("bBot").onclick=()=>{
   if(!perfilExiste()){abrirPerfil(()=>verMundo());return;}
   verMundo();
 };
+
+/* ---- Jugar online: todavía no hay jugadores reales conectados, así que
+   arma un partido rápido contra la máquina con un rival "de mentira" con
+   nombre y avatar al azar, para que se sienta como un matcheo real. */
+const NOMBRES_ONLINE=["Fede_UY","Male98","Euge.Rosario","PatoCanario","Vale_Punta","Tomi_ARG",
+  "LaNegra21","CamiMdeo","Bruno.Salto","Ro_Colonia","NatyPaysandu","Gonza_Tacua","Meli_BsAs",
+  "ElTanoUY","Fabi_Rocha","Juanma22","LauriUY","Nacho.Rivera","Sole_Maldo","Ceci_Artigas"];
+function rivalOnlineFalso(){
+  const nombreExcl=(perfil.nombre||"").trim().toLowerCase();
+  let n;do{n=NOMBRES_ONLINE[Math.floor(Math.random()*NOMBRES_ONLINE.length)];}while(n.toLowerCase()===nombreExcl);
+  let a;do{a=AVATARES[Math.floor(Math.random()*AVATARES.length)];}while(a===perfil.avatar&&AVATARES.length>1);
+  return{n,a};
+}
+function jugarOnlineFalso(){
+  if(!perfilExiste()){abrirPerfil(jugarOnlineFalso);return;}
+  const rival=rivalOnlineFalso();
+  $("buscandoTit").textContent="🌐 Buscando rival…";
+  $("buscandoTxt").textContent="Conectando con jugadores online";
+  $("capaBuscando").classList.add("ver");
+  setTimeout(()=>{
+    $("buscandoTit").textContent="✅ ¡Encontramos a "+rival.n+"!";
+    $("buscandoTxt").textContent="Arrancando la partida…";
+    setTimeout(()=>{
+      $("capaBuscando").classList.remove("ver");
+      destino=null;pasoActual=null;modo="bot";miJug=0;
+      $("setup").style.display="none";$("juego").style.display="block";
+      armarTeclado();
+      iniciarPartida(perfil.nombre||"Vos",rival.n,undefined,perfil.avatar||null,rival.a,frameEquipado||null,null);
+    },900);
+  },1500+Math.random()*900);
+}
+$("bOnline").onclick=jugarOnlineFalso;
 
 function candidatos(){
   const mk=mask();
