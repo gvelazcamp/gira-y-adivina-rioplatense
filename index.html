@@ -481,9 +481,9 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
  font-size:1.1rem;font-weight:800;flex:0 0 auto;display:grid;place-items:center}
 .marco-selector span{flex:1;text-align:center;font-size:.82rem;font-weight:700;color:var(--crema);
  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.frase.con-marco{padding:34px 15%;min-height:96px;background-repeat:no-repeat,no-repeat;
- background-position:left center,right center;background-size:auto 100%,auto 100%}
-@media(max-width:480px){.frase.con-marco{padding:26px 12%}}
+.tablero.con-marco{background-color:transparent;background-repeat:no-repeat;background-size:100% 100%;
+ background-position:center;border:none;padding:34px 15%}
+@media(max-width:480px){.tablero.con-marco{padding:26px 11%}}
 .frase{display:flex;flex-wrap:wrap;justify-content:center;gap:14px}
 .palabra{display:flex;gap:5px}
 .ficha{width:clamp(24px,6.6vw,42px);height:clamp(34px,8.8vw,56px);border-radius:6px;background:#2A1A3C;
@@ -1108,7 +1108,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <span id="marcoNombre">Sin marco</span>
     <button id="marcoNext" type="button" title="Marco siguiente">›</button>
   </div>
-  <div class="tablero"><div class="categoria" id="cat"></div><div class="frase" id="frase"></div></div>
+  <div class="tablero" id="tablero"><div class="categoria" id="cat"></div><div class="frase" id="frase"></div></div>
   <div class="zona">
     <div class="panel">
       <div class="aviso" id="aviso"></div>
@@ -3936,8 +3936,8 @@ function armarTeclado(){
     if(VOCALES.includes(l))b.classList.add("vocal");
     b.onclick=()=>accionLetra(l);$("teclado").appendChild(b);});
   $("marcoSelector").style.display="none";
-  $("frase").classList.remove("con-marco");
-  $("frase").style.backgroundImage="";
+  $("tablero").classList.remove("con-marco");
+  $("tablero").style.backgroundImage="";
 }
 
 /* ---- Marcos de tablero (en prueba): todavía no están en la Tienda,
@@ -3953,14 +3953,13 @@ const MARCOS_TABLERO=[
 ];
 let marcoTableroIdx=0;
 function aplicarMarcoTablero(){
-  const m=MARCOS_TABLERO[marcoTableroIdx],frase=$("frase");
+  const m=MARCOS_TABLERO[marcoTableroIdx],tablero=$("tablero");
   if(m.id){
-    const url="url('assets/tableros/"+m.id+".webp')";
-    frase.style.backgroundImage=url+", "+url;
-    frase.classList.add("con-marco");
+    tablero.style.backgroundImage="url('assets/tableros/"+m.id+".webp')";
+    tablero.classList.add("con-marco");
   }else{
-    frase.style.backgroundImage="";
-    frase.classList.remove("con-marco");
+    tablero.style.backgroundImage="";
+    tablero.classList.remove("con-marco");
   }
   $("marcoNombre").textContent=m.nombre;
 }
