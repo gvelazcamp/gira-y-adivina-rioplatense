@@ -622,6 +622,7 @@ body.tvhost #juego .marcador{grid-template-columns:repeat(auto-fit,minmax(145px,
 body.tvhost #juego .acciones,body.tvhost #juego .teclado,body.tvhost #juego .reacciones,body.tvhost #tossBuzz,
 body.tvhost #juego .poderes,body.tvhost #juego .lodo-zona,body.tvhost #juego .confirm-poder,
 body.tvhost #jgHud{display:none!important}
+#poderesFila,#tvcPoderes,#confirmPoder,#tvcConfirmPoder{display:none!important}
 body.tvhost #juego .tablero{padding:26px 18px}
 body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66px);font-size:clamp(1.1rem,2.6vw,1.8rem)}
 @media(max-width:600px){#tvLista{grid-template-columns:1fr 1fr}.tv-codigo{font-size:3rem}}
@@ -1358,7 +1359,6 @@ const OBJETIVOS=[
   {id:"partidas",nombre:"Jugá 2 partidas",icono:"🎮",meta:2,premio:60},
   {id:"giros",nombre:"Girá la rueda 6 veces",icono:"🎡",meta:6,premio:60},
   {id:"vocales",nombre:"Comprá 1 vocal",icono:"🔤",meta:1,premio:50},
-  {id:"poderes",nombre:"Usá 1 poder",icono:"⚡",meta:1,premio:80},
   {id:"victorias",nombre:"Ganá 1 ciudad o paso",icono:"🏆",meta:1,premio:100}
 ];
 const OBJ_PREMIO_TODOS=200;
