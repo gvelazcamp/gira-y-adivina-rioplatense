@@ -494,15 +494,9 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 .aro.apagada{filter:grayscale(1) brightness(.3)}
 .tablero{background:#0C0616;border:1px solid #FFFFFF14;border-radius:20px;padding:18px 14px;text-align:center}
 .categoria{font-size:.82rem;color:var(--agua);margin-bottom:14px}
-.marco-selector{display:flex;align-items:center;justify-content:center;gap:12px;margin:0 0 10px;
- background:#00000038;border:1px solid #FFFFFF1F;border-radius:99px;padding:6px 10px;max-width:280px;margin-inline:auto}
-.marco-selector button{width:28px;height:28px;border-radius:50%;background:#FFFFFF17;color:var(--crema);
- font-size:1.1rem;font-weight:800;flex:0 0 auto;display:grid;place-items:center}
-.marco-selector span{flex:1;text-align:center;font-size:.82rem;font-weight:700;color:var(--crema);
- overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tablero.con-marco{background-color:transparent;background-repeat:no-repeat;background-size:100% 100%;
- background-position:center;border:none;padding:78px 25%}
-@media(max-width:480px){.tablero.con-marco{padding:64px 25%}}
+.tablero.con-marco{background:#0C0616 url('assets/tableros/fondo-uruguay-1.webp') center/100% 100% no-repeat;
+ border:none;padding:100px 15%}
+@media(max-width:704px){.tablero.con-marco{padding:85px 14%}}
 .frase{display:flex;flex-wrap:wrap;justify-content:center;gap:14px}
 .palabra{display:flex;gap:5px}
 .ficha{width:clamp(24px,6.6vw,42px);height:clamp(34px,8.8vw,56px);border-radius:6px;background:#2A1A3C;
@@ -1192,11 +1186,6 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
       <div class="cifras"><div>ronda<b class="ronda">$0</b></div><div>total<b class="total">$0</b></div></div></div>
     <div class="jug" id="j1"><div class="nom"><span class="quien"><span class="avatar-wrap"><img class="av"><img class="avatar-frame"></span><span class="n"></span></span><span class="turno">turno</span></div>
       <div class="cifras"><div>ronda<b class="ronda">$0</b></div><div>total<b class="total">$0</b></div></div></div>
-  </div>
-  <div class="marco-selector" id="marcoSelector" style="display:none">
-    <button id="marcoPrev" type="button" title="Marco anterior">‹</button>
-    <span id="marcoNombre">Sin marco</span>
-    <button id="marcoNext" type="button" title="Marco siguiente">›</button>
   </div>
   <div class="tablero" id="tablero"><div class="categoria" id="cat"></div><div class="frase" id="frase"></div></div>
   <div class="zona">
@@ -2968,7 +2957,7 @@ function jugarOnlineFalso(){
       destino=null;pasoActual=null;modo="bot";miJug=0;
       $("setup").style.display="none";$("juego").style.display="block";
       armarTeclado();
-      $("marcoSelector").style.display="flex";marcoTableroIdx=0;aplicarMarcoTablero();
+      aplicarMarcoTablero();
       iniciarPartida(perfil.nombre||"Vos",rival.n,undefined,perfil.avatar||null,rival.a,frameEquipado||null,null);
     },900);
   },1500+Math.random()*900);
@@ -4122,36 +4111,14 @@ function armarTeclado(){
   LETRAS.forEach(l=>{const b=document.createElement("button");b.textContent=l;b.dataset.l=l;
     if(VOCALES.includes(l))b.classList.add("vocal");
     b.onclick=()=>accionLetra(l);$("teclado").appendChild(b);});
-  $("marcoSelector").style.display="none";
   $("tablero").classList.remove("con-marco");
-  $("tablero").style.backgroundImage="";
 }
 
-/* ---- Marcos de tablero (en prueba): todavía no están en la Tienda,
-   por ahora se pueden probar gratis solo en "Jugar online". ---- */
-const MARCOS_TABLERO=[
-  {id:null,nombre:"Sin marco"},
-  {id:"marco-1",nombre:"Mate clásico"},
-  {id:"marco-2",nombre:"Diamantes celestes"},
-  {id:"marco-3",nombre:"Cintas cruzadas"},
-  {id:"marco-4",nombre:"Sol dorado"},
-  {id:"marco-5",nombre:"Hojas y bandera"},
-  {id:"marco-6",nombre:"Doble bandera"}
-];
-let marcoTableroIdx=0;
+/* ---- Marco de tablero (en prueba): todavía no está en la Tienda,
+   por ahora se ve gratis solo en "Jugar online". ---- */
 function aplicarMarcoTablero(){
-  const m=MARCOS_TABLERO[marcoTableroIdx],tablero=$("tablero");
-  if(m.id){
-    tablero.style.backgroundImage="url('assets/tableros/"+m.id+".webp')";
-    tablero.classList.add("con-marco");
-  }else{
-    tablero.style.backgroundImage="";
-    tablero.classList.remove("con-marco");
-  }
-  $("marcoNombre").textContent=m.nombre;
+  $("tablero").classList.add("con-marco");
 }
-$("marcoPrev").onclick=()=>{marcoTableroIdx=(marcoTableroIdx-1+MARCOS_TABLERO.length)%MARCOS_TABLERO.length;aplicarMarcoTablero();};
-$("marcoNext").onclick=()=>{marcoTableroIdx=(marcoTableroIdx+1)%MARCOS_TABLERO.length;aplicarMarcoTablero();};
 let maskPrevia="",fxVisto=0,catPrevia="";
 function papelitos(){
   const cols=["#F5B301","#E5197C","#37D6C0","#7B3FE4","#F97316","#2DA8FF"],cap=$("capaResuelto");
