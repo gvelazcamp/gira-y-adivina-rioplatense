@@ -1013,6 +1013,11 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <div class="tn-info"><b>Sobre de Artigas</b><span>Un sobre para tu colección — 1 por día</span></div>
     <button class="tn-comprar" data-tipo="sobre_artigas" data-precio="1200">🪙 1200</button>
   </div>
+  <div class="tn-item">
+    <div class="tn-icono">🎁</div>
+    <div class="tn-info"><b>Sobre de Canelones</b><span>Un sobre para tu colección — 1 por día</span></div>
+    <button class="tn-comprar" data-tipo="sobre_canelones" data-precio="1200">🪙 1200</button>
+  </div>
   <h3 class="tn-subtitulo">🖼️ Marcos de avatar</h3>
   <div class="frame-grid" id="frameGrid"></div>
   <button class="no" id="tnCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
@@ -1510,7 +1515,7 @@ const MUNDO=[
  {id:"polonio",pasos:[[46, 16], [38, 28], [30, 40], [36, 52]],nx:45,ny:62,bg:"assets/worlds/cabo-polonio.webp",n:"Cabo Polonio",r:"El Farolero",rondas:5,cats:["Musica y fiesta","Escuela e infancia"],rica:true},
  {id:"colonia",pasos:[[20, 20], [32, 28], [24, 38], [38, 48]],nx:56,ny:44,bg:"assets/worlds/colonia.webp",n:"Colonia",r:"El Cinéfilo",rondas:5,cats:["Pelicula","Programa de TV"],rica:true},
  {id:"artigas",pasos:[[22, 18], [34, 26], [24, 38], [38, 50]],nx:48,ny:58,bg:"assets/worlds/artigas.webp",n:"Artigas",r:"El Prócer",rondas:6,cats:["Historia de Uruguay","Persona"],rica:true},
- {id:"canelones",pasos:[[24, 20], [36, 28], [26, 40], [40, 50]],nx:58,ny:48,bg:"assets/worlds/canelones.webp",n:"Canelones",r:"El Quintero",rondas:6,cats:["Ciudades de Uruguay","Comida"],rica:false},
+ {id:"canelones",pasos:[[24, 20], [36, 28], [26, 40], [40, 50]],nx:58,ny:48,bg:"assets/worlds/canelones.webp",n:"Canelones",r:"El Quintero",rondas:6,cats:["Ciudades de Uruguay","Comida"],rica:true},
  {id:"cerro-largo",pasos:[[20, 18], [32, 26], [22, 38], [36, 48]],nx:46,ny:60,bg:"assets/worlds/cerro-largo.webp",n:"Melo",r:"El Domador",rondas:6,cats:["Animales","Deporte"],rica:false},
  {id:"flores",pasos:[[26, 20], [38, 28], [28, 40], [42, 50]],nx:56,ny:50,bg:"assets/worlds/flores.webp",n:"Trinidad",r:"La Chacarera",rondas:6,cats:["Cosa","Viaje"],rica:false},
  {id:"florida",pasos:[[22, 16], [34, 24], [24, 36], [38, 48]],nx:50,ny:62,bg:"assets/worlds/florida.webp",n:"Florida",r:"El Patriota",rondas:6,cats:["Historia de Uruguay","Lugar"],rica:false},
@@ -2238,6 +2243,20 @@ const COLECCIONES={
       {id:"cana",nombre:"Caña de Azúcar",img:"assets/collectibles/artigas/coleccion-artigas-cana.webp"}
     ]
   },
+  canelones:{
+    nombre:"Canelones",
+    sobreCerrado:"assets/collectibles/canelones/sobre-canelones.webp",
+    sobreAbierto:"assets/collectibles/canelones/sobre-canelones-abierto.webp",
+    frameExclusivo:"frame-canelones", // preparado a futuro: NO activar hasta subir assets/frames/frame-canelones.png
+    items:[
+      {id:"barril",nombre:"Barril de Vino",img:"assets/collectibles/canelones/coleccion-canelones-barril.webp"},
+      {id:"uvas",nombre:"Racimo de Uvas",img:"assets/collectibles/canelones/coleccion-canelones-uvas.webp"},
+      {id:"catedral",nombre:"Catedral de Canelones",img:"assets/collectibles/canelones/coleccion-canelones-catedral.webp"},
+      {id:"vino",nombre:"Vino de la Viña",img:"assets/collectibles/canelones/coleccion-canelones-vino.webp"},
+      {id:"jinete",nombre:"Monumento al Jinete",img:"assets/collectibles/canelones/coleccion-canelones-jinete.webp"},
+      {id:"frutas",nombre:"Cajón de Frutas",img:"assets/collectibles/canelones/coleccion-canelones-frutas.webp"}
+    ]
+  },
   centenario:{
     nombre:"Estadio Centenario",
     sobreCerrado:"assets/collectibles/centenario/sobre-centenario.webp",
@@ -2628,6 +2647,22 @@ const CIUDAD_RICA={
       {img:"assets/passport/artigas-sello-3.webp",nombre:"Amatistas"},
       {img:"assets/passport/artigas-sello-4.webp",nombre:"Bella Unión"},
       {img:"assets/passport/artigas-sello-rival.webp",nombre:"El Prócer"}
+    ]
+  },
+  canelones:{
+    nodos:[
+      {tipo:"paso",x:28,y:20},
+      {tipo:"paso",x:46,y:32},
+      {tipo:"paso",x:32,y:50},
+      {tipo:"paso",x:50,y:68},
+      {tipo:"rival",x:36,y:88}
+    ],
+    sellos:[
+      {img:"assets/passport/canelones-sello-1.webp",nombre:"La Catedral"},
+      {img:"assets/passport/canelones-sello-2.webp",nombre:"La Plaza"},
+      {img:"assets/passport/canelones-sello-3.webp",nombre:"Los Viñedos"},
+      {img:"assets/passport/canelones-sello-4.webp",nombre:"El Jinete"},
+      {img:"assets/passport/canelones-sello-rival.webp",nombre:"El Quintero"}
     ]
   },
   centenario:{
