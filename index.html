@@ -754,7 +754,6 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <button data-r="5" aria-pressed="false">5 rondas</button>
     <button data-r="7" aria-pressed="false">7 rondas</button>
   </div>
-  <p class="estado" id="stockFrases" style="margin:-2px 0 14px"></p>
   <button class="btn-grande cta-jugar" id="bBot">
     <span class="cta-play">▶</span>
     <span class="cta-txt"><b>¡Jugar ahora!</b><small>Uruguay, vos contra la máquina</small></span>
@@ -2979,13 +2978,6 @@ function empezarDestino(i,paso){
 }
 
 let botT=null;
-function verStock(){
-  const q=FRASES.filter(f=>!vistas.has(f.t)).length;
-  $("stockFrases").innerHTML=q+" frases nuevas de "+FRASES.length+
-    ' · <a href="#" id="resetFrases" style="color:var(--agua)">reiniciar</a>';
-  $("resetFrases").onclick=e=>{e.preventDefault();vistas=new Set();guardarVistas();verStock();};
-}
-setTimeout(verStock,0);
 
 /* ---- Perfil del jugador (nombre + avatar) ---- */
 const AVATARES=Array.from({length:8},(_,i)=>"avatar-"+String(i+1).padStart(2,"0"));
