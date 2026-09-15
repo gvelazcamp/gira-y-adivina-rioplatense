@@ -505,13 +505,13 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 @media(max-width:704px){.tablero.con-marco{padding:34px 9% 18px}}
 .frase{display:flex;flex-wrap:wrap;justify-content:center;gap:14px}
 .palabra{display:flex;gap:5px}
-.ficha{width:clamp(24px,6.6vw,42px);height:clamp(34px,8.8vw,56px);border-radius:6px;background:#2A1A3C;
+.ficha{width:var(--ficha-w,clamp(24px,6.6vw,42px));height:var(--ficha-h,clamp(34px,8.8vw,56px));border-radius:6px;background:#2A1A3C;
  border:1px solid #FFFFFF14;display:grid;place-items:center;font-family:'Archivo Black';
- font-size:clamp(.95rem,3.8vw,1.5rem);color:transparent;transition:background .18s,color .18s}
+ font-size:var(--ficha-fs,clamp(.95rem,3.8vw,1.5rem));color:transparent;transition:background .18s,color .18s}
 .tablero.con-marco .frase{gap:10px}
 .tablero.con-marco .palabra{gap:4px}
-.tablero.con-marco .ficha{width:clamp(20px,5.6vw,36px);height:clamp(28px,7.4vw,48px);
- font-size:clamp(.82rem,3.2vw,1.3rem)}
+.tablero.con-marco .ficha{width:var(--ficha-w,clamp(20px,5.6vw,36px));height:var(--ficha-h,clamp(28px,7.4vw,48px));
+ font-size:var(--ficha-fs,clamp(.82rem,3.2vw,1.3rem))}
 .ficha.abierta{background:var(--crema);color:var(--tinta)}
 .ficha.entra{animation:entraFicha .4s cubic-bezier(.2,1.5,.4,1) backwards}
 @keyframes entraFicha{0%{opacity:0;transform:scale(.2) rotateY(90deg)}
@@ -4336,6 +4336,39 @@ function asegurarMarcador(){
   while(m.children.length<V.jug.length){const i=m.children.length,d=document.createElement("div");d.className="jug";d.id="j"+i;d.innerHTML='<div class="nom"><span class="quien"><span class="avatar-wrap"><img class="av"><img class="avatar-frame"></span><span class="n"></span></span><span class="turno">turno</span></div><div class="cifras"><div>ronda<b class="ronda">$0</b></div><div>total<b class="total">$0</b></div></div>';m.appendChild(d);}
   while(m.children.length>V.jug.length)m.lastElementChild.remove();
 }
+function ajustarFichas(){
+  const tablero=$("tablero"),cont=$("frase");
+  const palabras=[...cont.querySelectorAll(".palabra")];
+  if(!palabras.length)return;
+  tablero.style.removeProperty("--ficha-w");
+  tablero.style.removeProperty("--ficha-h");
+  tablero.style.removeProperty("--ficha-fs");
+  const maxLen=Math.max(...palabras.map(p=>p.children.length));
+  const pal=palabras.find(p=>p.children.length===maxLen);
+  const primeraFicha=pal&&pal.querySelector(".ficha");
+  if(!primeraFicha)return;
+  const natural=primeraFicha.getBoundingClientRect().width;
+  if(!natural)return;
+  const gap=parseFloat(getComputedStyle(pal).gap)||5;
+  const padL=parseFloat(getComputedStyle(tablero).paddingLeft)||0;
+  const padR=parseFloat(getComputedStyle(tablero).paddingRight)||0;
+  const avail=tablero.clientWidth-padL-padR-4;
+  let fichaW=(avail-gap*(maxLen-1))/maxLen;
+  if(fichaW<natural-.5){
+    fichaW=Math.max(14,fichaW);
+    const ratio=fichaW/natural;
+    const naturalH=primeraFicha.getBoundingClientRect().height;
+    const naturalFs=parseFloat(getComputedStyle(primeraFicha).fontSize);
+    tablero.style.setProperty("--ficha-w",fichaW+"px");
+    tablero.style.setProperty("--ficha-h",(naturalH*ratio)+"px");
+    tablero.style.setProperty("--ficha-fs",(naturalFs*ratio)+"px");
+  }
+}
+let ajustarFichasTimer=null;
+window.addEventListener("resize",()=>{
+  clearTimeout(ajustarFichasTimer);
+  ajustarFichasTimer=setTimeout(ajustarFichas,150);
+});
 function pintarTodo(){
   $("cat").textContent=V.cat;
   const cont=$("frase");cont.innerHTML="";
@@ -4357,6 +4390,7 @@ function pintarTodo(){
     });
     cont.appendChild(w);
   });
+  ajustarFichas();
   if(rondaNueva)for(let q=0;q<orden;q+=3)setTimeout(()=>bip(900+q*8,.03,"square",.03),q*45);
   maskPrevia=V.mask;
   if(V.mask&&V.mask.indexOf("_")<0&&!vistas.has(V.mask)){vistas.add(V.mask);guardarVistas();}
