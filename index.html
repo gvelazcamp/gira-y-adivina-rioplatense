@@ -487,13 +487,12 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 .jug.activo .cifras b.ronda{color:var(--oro)}
 
 .tablero.mal{animation:tiembla .5s ease-in-out}
-@keyframes tiembla{0%,100%{transform:translateX(0);box-shadow:inset 0 0 0 999px transparent}
- 15%{transform:translateX(-11px);box-shadow:inset 0 0 0 999px #4A1119B0}45%{transform:translateX(9px);box-shadow:inset 0 0 0 999px #4A1119B0}
- 70%{transform:translateX(-5px);box-shadow:inset 0 0 0 999px #2A0B12A0}}
+@keyframes tiembla{0%,100%{transform:translateX(0);background:#0C0616}
+ 15%{transform:translateX(-11px);background:#4A1119}45%{transform:translateX(9px);background:#4A1119}
+ 70%{transform:translateX(-5px);background:#2A0B12}}
 .aro{transition:filter .25s}
 .aro.apagada{filter:grayscale(1) brightness(.3)}
-.tablero{background:#0C0616 url('assets/tableros/fondo-uruguay-1.webp') center/100% 100% no-repeat;
- border:1px solid #FFFFFF14;border-radius:20px;padding:100px 15%;text-align:center}
+.tablero{background:#0C0616;border:1px solid #FFFFFF14;border-radius:20px;padding:18px 14px;text-align:center}
 .categoria{font-size:.82rem;color:var(--agua);margin-bottom:14px}
 .marco-selector{display:flex;align-items:center;justify-content:center;gap:12px;margin:0 0 10px;
  background:#00000038;border:1px solid #FFFFFF1F;border-radius:99px;padding:6px 10px;max-width:280px;margin-inline:auto}
@@ -625,7 +624,7 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
  18%{opacity:1;transform:translateY(-30px) scale(1.25)}
  100%{transform:translateY(-240px) scale(1);opacity:0}}
 .tablero.bien{animation:bien .6s ease-out}
-@keyframes bien{0%,100%{box-shadow:inset 0 0 0 999px transparent}40%{box-shadow:inset 0 0 0 999px #2E2405B0,0 0 40px #F5B30155}}
+@keyframes bien{0%,100%{background:#0C0616}40%{background:#2E2405;box-shadow:0 0 40px #F5B30155}}
 .capa{position:fixed;inset:0;background:#0A0412E6;display:none;place-items:center;padding:20px;z-index:9;overflow-y:auto}
 #modalFin{z-index:30}
 .capa.ver{display:grid}
@@ -702,7 +701,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   .jug .turno{font-size:.62rem;padding:1px 6px}
   .jug .cifras{gap:10px;margin-top:2px;font-size:.66rem}
   .jug .cifras b{font-size:.98rem}
-  .tablero{padding:85px 14%;border-radius:14px}
+  .tablero{padding:10px 8px;border-radius:14px}
   .categoria{margin-bottom:6px;font-size:.7rem}
   .frase{gap:12px;row-gap:8px}
   .zona{margin-top:8px}
