@@ -33,6 +33,17 @@
 #splash{position:fixed;inset:0;z-index:50;background:var(--noche);
  display:grid;place-items:center;transition:opacity .7s ease;overflow:hidden}
 #splash.ido{opacity:0;pointer-events:none}
+.pios-ico{width:56px;height:56px;border-radius:15px;box-shadow:0 8px 18px -6px #000000AA;margin-bottom:10px}
+.pios-intro{margin:0 0 14px;opacity:.78;font-size:.9rem;line-height:1.45}
+.pios-pasos{display:flex;flex-direction:column;gap:9px;text-align:left}
+.pios-paso{display:flex;align-items:center;gap:10px;background:#00000038;border:1px solid #FFFFFF1A;
+ border-radius:12px;padding:10px 12px}
+#instalarIOSPaso1{display:none}
+.pios-n{flex-shrink:0;width:22px;height:22px;border-radius:50%;background:var(--oro);color:#2A1500;
+ font-weight:800;font-size:.78rem;display:grid;place-items:center;font-family:'Archivo Black'}
+.pios-icon{flex-shrink:0;font-size:1.15rem}
+.pios-txt{font-size:.86rem;line-height:1.35;color:var(--crema)}
+.pios-txt b{color:var(--agua)}
 #splashFondo{position:absolute;inset:-40px;background-image:url('assets/splash.webp?v=2');
  background-size:cover;background-position:center;filter:blur(34px) brightness(.45)}
 #splashArte{position:absolute;inset:0;background-image:url('assets/splash.webp?v=2');
@@ -1091,11 +1102,23 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="no" id="rkCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
 </div></div>
 
-<div class="capa" id="capaInstalarIOS"><div class="caja" style="text-align:left">
-  <h2 style="text-align:center">📲 Instalar en el celular</h2>
-  <p id="instalarIOSPaso1">Si abriste este link desde WhatsApp, primero tocá <b>···</b> (o el ícono de compartir) arriba de la pantalla y elegí <b>"Abrir en Safari"</b>.</p>
-  <p>Ya en Safari, tocá el ícono de <b>Compartir</b> ⬆️ (abajo o arriba de la pantalla) y elegí <b>"Agregar a la pantalla de inicio"</b>.</p>
-  <button class="no" id="cerrarInstalarIOS" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Entendido</button>
+<div class="capa" id="capaInstalarIOS"><div class="caja pios-caja">
+  <img class="pios-ico" src="icono-192.png" alt="">
+  <h2>Instalá Girá y Adiviná</h2>
+  <p class="pios-intro">Para jugar mejor (a pantalla completa, sin barra del navegador) agregalo a tu pantalla de inicio:</p>
+  <div class="pios-pasos">
+    <div class="pios-paso" id="instalarIOSPaso1">
+      <span class="pios-icon">↗️</span>
+      <span class="pios-txt">Si abriste este link desde WhatsApp, tocá <b>···</b> arriba y elegí <b>"Abrir en Safari"</b></span>
+    </div>
+    <div class="pios-paso"><span class="pios-n">1</span><span class="pios-icon">⬆️</span>
+      <span class="pios-txt">Tocá el botón <b>Compartir</b> de Safari</span></div>
+    <div class="pios-paso"><span class="pios-n">2</span><span class="pios-icon">➕</span>
+      <span class="pios-txt">Elegí <b>"Agregar a pantalla de inicio"</b></span></div>
+    <div class="pios-paso"><span class="pios-n">3</span><span class="pios-icon">🎉</span>
+      <span class="pios-txt">Tocá <b>"Agregar"</b> — listo, ya tenés tu ícono</span></div>
+  </div>
+  <button class="no" id="cerrarInstalarIOS" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:14px">Entendido</button>
 </div></div>
 
 <div class="capa" id="modalSobreConseguido"><div class="caja">
@@ -1400,13 +1423,18 @@ let installPromptEvent=null;
 try{if(!yaInstalada)$("bInstalar").style.display="";}catch(e){}
 try{window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installPromptEvent=e;});}catch(e){}
 try{window.addEventListener("appinstalled",()=>{$("bInstalar").style.display="none";installPromptEvent=null;});}catch(e){}
+function abrirInstalarIOS(){
+  const desdeWhatsapp=(document.referrer||"").indexOf("whatsapp")>=0||navigator.userAgent.indexOf("WhatsApp")>=0;
+  $("instalarIOSPaso1").style.display=desdeWhatsapp?"flex":"none";
+  $("capaInstalarIOS").classList.add("ver");
+}
 $("bInstalar").onclick=async()=>{
   if(installPromptEvent){
     installPromptEvent.prompt();
     await installPromptEvent.userChoice;
     installPromptEvent=null;
   }else if(esIOS){
-    $("capaInstalarIOS").classList.add("ver");
+    abrirInstalarIOS();
   }else{
     mostrarToast("📲","Buscá \"Instalar app\" o \"Agregar a inicio\" en el menú de tu navegador.");
   }
@@ -4760,12 +4788,24 @@ $("fBoton").onclick=()=>{
     if(hechas>=urls.length)cerrar();};
   const cerrar=()=>{
     const espera=Math.max(0,1700-(performance.now()-t0));
-    setTimeout(()=>{cap.classList.add("ido");setTimeout(()=>cap.remove(),800);},espera);
+    setTimeout(()=>{cap.classList.add("ido");setTimeout(()=>cap.remove(),800);mostrarPromptIOS();},espera);
   };
   urls.forEach(u=>{const im=new Image();im.onload=paso;im.onerror=paso;im.src=u;});
   setTimeout(()=>{barra.style.width="100%";cerrar();},7000);
-  cap.onclick=()=>{cap.classList.add("ido");setTimeout(()=>cap.remove(),800);};
+  cap.onclick=()=>{cap.classList.add("ido");setTimeout(()=>cap.remove(),800);mostrarPromptIOS();};
 })();
+
+/* ---- Mostrar el cartel de instalación a los de iPhone la primera vez, sin que
+   tengan que encontrar el botón "Instalar" solos ---- */
+const PIOS_KEY="gya_ios_prompt_visto";
+function mostrarPromptIOS(){
+  try{
+    if(localStorage.getItem(PIOS_KEY))return;
+    if(!esIOS||yaInstalada)return;
+    abrirInstalarIOS();
+    localStorage.setItem(PIOS_KEY,"1");
+  }catch(e){}
+}
 
 document.addEventListener("keydown",e=>{
   if($("modalResolver").classList.contains("ver"))return;
