@@ -2347,9 +2347,9 @@ function colAbrirSobre(cual){
   $("sobreAnimImg").src=COLECCIONES[cual].sobreCerrado;
   $("capaAbrirSobre").classList.add("ver");
   bip(400,.15,"triangle",.06);
-  setTimeout(()=>{
+  setTimeout(()=>{try{
     $("sobreAnimImg").src=COLECCIONES[cual].sobreAbierto;
-    setTimeout(()=>{
+    setTimeout(()=>{try{
       if(cm.completada){
         const premio=colPremioExtra();
         $("sobreAnimFase").style.display="none";
@@ -2391,7 +2391,9 @@ function colAbrirSobre(cual){
       colVerificarCompletada(cual);
       bip(700,.2,"sine",.08);
       colAbriendo=false;
+    }catch(e){colAbriendo=false;$("capaAbrirSobre").classList.remove("ver");}
     },900);
+  }catch(e){colAbriendo=false;$("capaAbrirSobre").classList.remove("ver");}
   },700);
 }
 function colRenderModal(cual){
@@ -2426,6 +2428,16 @@ $("sobrePremioCerrar").onclick=()=>{
   if(colVolverAModal){colRenderModal(colSobreCualActual);$("capaColeccion").classList.add("ver");}
   else continuarTrasSobre();
 };
+// Salvavidas: si algo trabó la animación de apertura (fondo/pestaña, error inesperado),
+// forzamos el cierre a los 8s en vez de dejar al jugador atrapado en "Abriendo…".
+setInterval(()=>{
+  if(colAbriendo&&$("capaAbrirSobre").classList.contains("ver")&&$("sobreAnimFase").style.display!=="none"){
+    if(!window._sobreAbriendoDesde)window._sobreAbriendoDesde=Date.now();
+    if(Date.now()-window._sobreAbriendoDesde>8000){
+      colAbriendo=false;$("capaAbrirSobre").classList.remove("ver");window._sobreAbriendoDesde=null;
+    }
+  }else window._sobreAbriendoDesde=null;
+},1000);
 
 /* ---- Ciudades "ricas" (mapa 3D + pasaporte + sellos) — Durazno, Montevideo y Piriápolis comparten esta pantalla ---- */
 const CIUDAD_RICA={
