@@ -1493,7 +1493,19 @@ const MUNDO=[
  {id:"tacuarembo",pasos:[[28, 18], [20, 28], [30, 40], [22, 52]],nx:55,ny:58,bg:"assets/worlds/tacuarembo.webp",n:"Tacuarembó",r:"El Gaucho",rondas:4,cats:["Accion","Deporte"],rica:true},
  {id:"polonio",pasos:[[46, 16], [38, 28], [30, 40], [36, 52]],nx:45,ny:62,bg:"assets/worlds/cabo-polonio.webp",n:"Cabo Polonio",r:"El Farolero",rondas:5,cats:["Musica y fiesta","Escuela e infancia"],rica:true},
  {id:"colonia",pasos:[[20, 20], [32, 28], [24, 38], [38, 48]],nx:56,ny:44,bg:"assets/worlds/colonia.webp",n:"Colonia",r:"El Cinéfilo",rondas:5,cats:["Pelicula","Programa de TV"],rica:true},
- {id:"centenario",pasos:[[20, 22], [32, 30], [22, 42], [36, 52]],nx:60,ny:55,bg:"assets/worlds/estadio-centenario.webp",n:"Estadio Centenario",r:"La Campeona",rondas:5,cats:["Personajes","Dicho popular"],rica:true}];
+ {id:"artigas",pasos:[[22, 18], [34, 26], [24, 38], [38, 50]],nx:48,ny:58,bg:"assets/worlds/artigas.webp",n:"Artigas",r:"El Prócer",rondas:6,cats:["Historia de Uruguay","Persona"],rica:true},
+ {id:"canelones",pasos:[[24, 20], [36, 28], [26, 40], [40, 50]],nx:58,ny:48,bg:"assets/worlds/canelones.webp",n:"Canelones",r:"El Quintero",rondas:6,cats:["Ciudades de Uruguay","Comida"],rica:true},
+ {id:"cerro-largo",pasos:[[20, 18], [32, 26], [22, 38], [36, 48]],nx:46,ny:60,bg:"assets/worlds/cerro-largo.webp",n:"Melo",r:"El Domador",rondas:6,cats:["Animales","Deporte"],rica:true},
+ {id:"flores",pasos:[[26, 20], [38, 28], [28, 40], [42, 50]],nx:56,ny:50,bg:"assets/worlds/flores.webp",n:"Trinidad",r:"La Chacarera",rondas:6,cats:["Cosa","Viaje"],rica:true},
+ {id:"florida",pasos:[[22, 16], [34, 24], [24, 36], [38, 48]],nx:50,ny:62,bg:"assets/worlds/florida.webp",n:"Florida",r:"El Patriota",rondas:6,cats:["Historia de Uruguay","Lugar"],rica:true},
+ {id:"lavalleja",pasos:[[28, 18], [20, 28], [32, 40], [24, 52]],nx:60,ny:46,bg:"assets/worlds/lavalleja.webp",n:"Minas",r:"El Serrano",rondas:6,cats:["Cultura uruguaya","Musica y fiesta"],rica:true},
+ {id:"paysandu",pasos:[[24, 18], [36, 26], [26, 38], [40, 50]],nx:44,ny:58,bg:"assets/worlds/paysandu.webp",n:"Paysandú",r:"El Carnavalero",rondas:6,cats:["Ciudades de Uruguay","Accion"],rica:true},
+ {id:"rio-negro",pasos:[[20, 20], [32, 28], [22, 40], [36, 50]],nx:54,ny:50,bg:"assets/worlds/rio-negro.webp",n:"Fray Bentos",r:"El Estibador",rondas:6,cats:["Historia de Uruguay","Comida"],rica:true},
+ {id:"rivera",pasos:[[26, 16], [38, 26], [28, 38], [42, 48]],nx:58,ny:60,bg:"assets/worlds/rivera.webp",n:"Rivera",r:"El Fronterizo",rondas:6,cats:["Ciudades de Uruguay","Viaje"],rica:true},
+ {id:"san-jose",pasos:[[22, 20], [34, 28], [24, 40], [38, 50]],nx:48,ny:46,bg:"assets/worlds/san-jose.webp",n:"San José de Mayo",r:"El Tambero",rondas:6,cats:["Casa y trabajo","Escuela e infancia"],rica:true},
+ {id:"soriano",pasos:[[24, 18], [36, 26], [26, 38], [40, 48]],nx:56,ny:56,bg:"assets/worlds/soriano.webp",n:"Mercedes",r:"El Navegante",rondas:6,cats:["Cosas de la casa","Persona"],rica:true},
+ {id:"treinta-y-tres",pasos:[[20, 16], [32, 24], [22, 36], [36, 48]],nx:46,ny:48,bg:"assets/worlds/treinta-y-tres.webp",n:"Treinta y Tres",r:"El Pescador",rondas:6,cats:["Cultura uruguaya","Pelicula"],rica:true},
+ {id:"centenario",pasos:[[20, 22], [32, 30], [22, 42], [36, 52]],nx:60,ny:55,bg:"assets/worlds/estadio-centenario.webp",n:"Estadio Centenario",r:"La Campeona",rondas:7,cats:["Personajes","Dicho popular"],rica:true}];
 let ganados=(()=>{try{return new Set(JSON.parse(localStorage.getItem("larueda_mundo")||"[]"));}catch(e){return new Set();}})();
 const guardarMundo=()=>{try{localStorage.setItem("larueda_mundo",JSON.stringify([...ganados]));}catch(e){}};
 let destino=null,pasoActual=null,fSiguientePaso=null;
