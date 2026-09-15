@@ -3572,7 +3572,8 @@ function hostResolverBonus(txt){
     setTimeout(tk(()=>finalizarPartidaPendiente(true)),5200);
   }else{
     bip(140,.28,"square",.06);
-    publicar("«"+txt.toUpperCase()+"» no era. Seguí intentando: el reloj continúa.","error");
+    S.bonusFin=Date.now()+BONUS_DURACION;
+    publicar("«"+txt.toUpperCase()+"» no era. Tenés 10 segundos frescos para volver a intentar.","error");
   }
 }
 function finBonusTiempo(){
@@ -4449,7 +4450,7 @@ function abrirResolver(jugador){
   $("modalResolver").querySelector("h2").textContent=esToss?"⚡ Resolver la Prueba":esBonus?"⭐ Resolver Ronda Bonus":"Decí la frase";
   $("modalResolver").querySelector("p").textContent=esToss?
     ((tossRespondedor!==null&&V.jug[tossRespondedor])?V.jug[tossRespondedor].n+", el tablero está congelado. Tenés 7 segundos para escribir la frase completa.":"Tenés 7 segundos para escribir la frase completa."):
-    (esBonus?"Tenés 10 segundos. Podés intentar más de una vez mientras quede tiempo.":"Si acertás te llevás la plata de la ronda. Si errás, pasa el turno. Tenés 25 segundos frescos para escribir.");
+    (esBonus?"Tenés 10 segundos. Si errás podés reintentar con 10 segundos frescos otra vez.":"Si acertás te llevás la plata de la ronda. Si errás, pasa el turno. Tenés 25 segundos frescos para escribir.");
   $("modalResolver").classList.add("ver");$("respuesta").value="";$("respuesta").focus();
 }
 $("bResolver").onclick=()=>{
