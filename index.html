@@ -1400,6 +1400,10 @@ function sincronizarMusica(){
 function detenerMusica(){
   if(audioMusica&&!audioMusica.paused)audioMusica.pause();
 }
+function duckMusica(silenciar){
+  if(!audioMusica)return;
+  audioMusica.volume=silenciar?VOLUMEN_MUSICA*.15:VOLUMEN_MUSICA;
+}
 try{
   if("mediaSession" in navigator){
     navigator.mediaSession.setActionHandler("pause",()=>{
@@ -1481,6 +1485,7 @@ function animarRueda(destino,alFinal){
   $("salioGiro").textContent="Girando…";
   $("capaRueda").classList.add("ver");
   sonarRuletaGiro();
+  duckMusica(true);
   const paso=360/SEG.length,ini=giroActual,dur=4200,t0=performance.now();
   const ag=document.querySelector(".aguja");
   let ult=-1,tAnt=t0,gAnt=ini;
@@ -1503,7 +1508,7 @@ function animarRueda(destino,alFinal){
       const sg=segmentoDe(destino);
       $("salioGiro").textContent=sg.t?ETI[sg.t]:"$"+sg.v;
       setTimeout(()=>{$("capaRueda").classList.remove("ver");
-        animando=false;pintar();if(alFinal)alFinal();},1100);}
+        animando=false;duckMusica(false);pintar();if(alFinal)alFinal();},1100);}
   });
 }
 
