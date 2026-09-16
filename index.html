@@ -1068,6 +1068,11 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <div class="tn-info"><b>Sobre de Minas</b><span>Un sobre para tu colección — 1 por día</span></div>
     <button class="tn-comprar" data-tipo="sobre_lavalleja" data-precio="1200">🪙 1200</button>
   </div>
+  <div class="tn-item">
+    <div class="tn-icono">🎁</div>
+    <div class="tn-info"><b>Sobre de Paysandú</b><span>Un sobre para tu colección — 1 por día</span></div>
+    <button class="tn-comprar" data-tipo="sobre_paysandu" data-precio="1200">🪙 1200</button>
+  </div>
   <h3 class="tn-subtitulo">🖼️ Marcos de avatar</h3>
   <div class="frame-grid" id="frameGrid"></div>
   <button class="no" id="tnCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
@@ -1607,7 +1612,7 @@ const MUNDO=[
  {id:"flores",pasos:[[26, 20], [38, 28], [28, 40], [42, 50]],nx:56,ny:50,bg:"assets/worlds/flores.webp",n:"Trinidad",r:"Venancio Flores",rondas:6,cats:["Cosa","Viaje"],rica:true},
  {id:"florida",pasos:[[22, 16], [34, 24], [24, 36], [38, 48]],nx:50,ny:62,bg:"assets/worlds/florida.webp",n:"Florida",r:"Piedra Alta",rondas:6,cats:["Historia de Uruguay","Lugar"],rica:true},
  {id:"lavalleja",pasos:[[28, 18], [20, 28], [32, 40], [24, 52]],nx:60,ny:46,bg:"assets/worlds/lavalleja.webp",n:"Minas",r:"Juan Antonio Lavalleja",rondas:6,cats:["Cultura uruguaya","Musica y fiesta"],rica:true},
- {id:"paysandu",pasos:[[24, 18], [36, 26], [26, 38], [40, 50]],nx:44,ny:58,bg:"assets/worlds/paysandu.webp",n:"Paysandú",r:"El Carnavalero",rondas:6,cats:["Ciudades de Uruguay","Accion"],rica:false},
+ {id:"paysandu",pasos:[[24, 18], [36, 26], [26, 38], [40, 50]],nx:44,ny:58,bg:"assets/worlds/paysandu.webp",n:"Paysandú",r:"Meseta de Artigas",rondas:6,cats:["Ciudades de Uruguay","Accion"],rica:true},
  {id:"rio-negro",pasos:[[20, 20], [32, 28], [22, 40], [36, 50]],nx:54,ny:50,bg:"assets/worlds/rio-negro.webp",n:"Fray Bentos",r:"El Estibador",rondas:6,cats:["Historia de Uruguay","Comida"],rica:false},
  {id:"rivera",pasos:[[26, 16], [38, 26], [28, 38], [42, 48]],nx:58,ny:60,bg:"assets/worlds/rivera.webp",n:"Rivera",r:"El Fronterizo",rondas:6,cats:["Ciudades de Uruguay","Viaje"],rica:false},
  {id:"san-jose",pasos:[[22, 20], [34, 28], [24, 40], [38, 50]],nx:48,ny:46,bg:"assets/worlds/san-jose.webp",n:"San José de Mayo",r:"El Tambero",rondas:6,cats:["Casa y trabajo","Escuela e infancia"],rica:false},
@@ -2400,6 +2405,20 @@ const COLECCIONES={
       {id:"patricia",nombre:"Cerveza Patricia",img:"assets/collectibles/lavalleja/coleccion-lavalleja-patricia.webp"}
     ]
   },
+  paysandu:{
+    nombre:"Paysandú",
+    sobreCerrado:"assets/collectibles/paysandu/sobre-paysandu.webp",
+    sobreAbierto:"assets/collectibles/paysandu/sobre-paysandu-abierto.webp",
+    frameExclusivo:"frame-paysandu", // preparado a futuro: NO activar hasta subir assets/frames/frame-paysandu.png
+    items:[
+      {id:"cerveza",nombre:"Semana de la Cerveza",img:"assets/collectibles/paysandu/coleccion-paysandu-cerveza.webp"},
+      {id:"termas",nombre:"Termas de Guaviyú",img:"assets/collectibles/paysandu/coleccion-paysandu-termas.webp"},
+      {id:"casablanca",nombre:"Casa Blanca",img:"assets/collectibles/paysandu/coleccion-paysandu-casablanca.webp"},
+      {id:"naranjas",nombre:"Cajón de Naranjas",img:"assets/collectibles/paysandu/coleccion-paysandu-naranjas.webp"},
+      {id:"muelle",nombre:"Muelle del Puerto",img:"assets/collectibles/paysandu/coleccion-paysandu-muelle.webp"},
+      {id:"canon",nombre:"Cañón de la Defensa",img:"assets/collectibles/paysandu/coleccion-paysandu-canon.webp"}
+    ]
+  },
   centenario:{
     nombre:"Estadio Centenario",
     sobreCerrado:"assets/collectibles/centenario/sobre-centenario.webp",
@@ -2873,6 +2892,22 @@ const CIUDAD_RICA={
       {img:"assets/passport/lavalleja-sello-3.webp",nombre:"Cerro Arequita"},
       {img:"assets/passport/lavalleja-sello-4.webp",nombre:"Salto del Penitente"},
       {img:"assets/passport/lavalleja-sello-rival.webp",nombre:"Juan Antonio Lavalleja"}
+    ]
+  },
+  paysandu:{
+    nodos:[
+      {tipo:"paso",x:38,y:20},
+      {tipo:"paso",x:56,y:32},
+      {tipo:"paso",x:42,y:50},
+      {tipo:"paso",x:60,y:68},
+      {tipo:"rival",x:46,y:88}
+    ],
+    sellos:[
+      {img:"assets/passport/paysandu-sello-1.webp",nombre:"Plaza Constitución"},
+      {img:"assets/passport/paysandu-sello-2.webp",nombre:"Basílica"},
+      {img:"assets/passport/paysandu-sello-3.webp",nombre:"Monumento a Perpetuidad"},
+      {img:"assets/passport/paysandu-sello-4.webp",nombre:"Anfiteatro del Río Uruguay"},
+      {img:"assets/passport/paysandu-sello-rival.webp",nombre:"Meseta de Artigas"}
     ]
   },
   centenario:{
