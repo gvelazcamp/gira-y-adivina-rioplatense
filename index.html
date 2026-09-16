@@ -1391,6 +1391,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <div id="fCopa">🏆</div><img id="fSello" class="f-sello" alt=""><h2 id="fTitulo">Se terminó</h2><p id="fTexto"></p>
   <div class="fila"><button class="no" id="fMapa" style="display:none">Volver al mapa</button><button class="no" id="fSalir" style="display:none">Salir</button><button class="ok" id="fBoton">Revancha</button></div>
   <button class="no" id="fCompartir" style="width:100%;border-radius:12px;padding:13px;font-weight:700;margin-top:10px">📤 Compartir resultado</button>
+  <button class="no" id="fCompartirConquista" style="width:100%;border-radius:12px;padding:13px;font-weight:700;margin-top:10px;display:none">📤 Compartir conquista</button>
 </div></div>
 
 <script>
@@ -4579,7 +4580,7 @@ function cambiarTurno(){
   }
   publicar("Le toca a <b>"+S.jug[S.turno].n+"</b>.");}
 function finDelJuego(){
-  if(S.finYa)return;S.finYa=true;
+  if(S.finYa)return;S.finYa=true;mapaUltimaConquista=null;
   const [a,b]=S.jug;
   // El dinero acumulado decide primero. Las rondas ganadas quedan como desempate y estadística.
   const g=calcularGanador();
@@ -4625,7 +4626,8 @@ function finDelJuego(){
       let selloImg;
       if(d&&!ganados.has(d.id)){ganados.add(d.id);guardarMundo();
         sumarMonedas(500);recuperarVida();
-        if(CIUDAD_RICA[d.id])selloImg=CIUDAD_RICA[d.id].sellos[4].img;
+        if(CIUDAD_RICA[d.id]){selloImg=CIUDAD_RICA[d.id].sellos[4].img;
+          mapaUltimaConquista={ciudad:d.n,sello:selloImg};}
         logroDesbloquear(d.id+"100");
         extra=(MUNDO[destino+1]?" Se abrió "+MUNDO[destino+1].n+".":" ¡Terminaste el mapa!")+" +500 🪙";}
       if(bonusJugado>0)extra+=" +"+bonusJugado+" 🪙 por lo jugado.";
@@ -4694,6 +4696,8 @@ function mostrarFin(tit,txt,selloImg){
     $("fCopa").textContent=tit.startsWith("¡Empate")?"🤝":tit.startsWith("¡Victoria")?"🏆":
       (tit.startsWith("Te ganó")||tit.startsWith("No pudiste"))?"😤":tit.startsWith("¡Paso")?"✅":"🏅";}
   $("fTitulo").textContent=tit;$("fTexto").textContent=txt;
+  $("fCompartir").style.display=mapaUltimaConquista?"none":"block";
+  $("fCompartirConquista").style.display=mapaUltimaConquista?"block":"none";
   $("modalFin").classList.add("ver");
   [0,180,360,620].forEach((ms,i)=>setTimeout(()=>bip([784,988,1175,1568][i],.28,"sine",.07),ms));
 }
@@ -5175,6 +5179,7 @@ $("fCompartir").onclick=async()=>{
     "Jugá vos también en Girá y Adiviná Rioplatense: "+location.href,textoFallback);
 };
 let colUltimoPremio=null;
+let mapaUltimaConquista=null;
 async function generarCanvasCompartirColeccionable(){
   const cv=document.createElement("canvas");
   cv.width=941;cv.height=1672;
@@ -5210,6 +5215,42 @@ $("sobrePremioCompartir").onclick=async()=>{
   const texto="🎁 Encontré "+(colUltimoPremio?colUltimoPremio.nombre:"un coleccionable")+
     " en Girá y Adiviná Rioplatense. ¡Jugá vos también!: "+location.href;
   await csCompartirImagen(generarCanvasCompartirColeccionable,"gira-y-adivina-coleccionable.png",texto,texto);
+};
+async function generarCanvasCompartirConquista(){
+  const cv=document.createElement("canvas");
+  cv.width=941;cv.height=1672;
+  const cx=cv.getContext("2d");
+  const bg=await csCargarImg("assets/compartir/plantilla-conquista.webp");
+  cx.drawImage(bg,0,0,941,1672);
+  try{await document.fonts.load("700 22px Outfit");}catch(e){}
+  if(mapaUltimaConquista){
+    cx.fillStyle="#F6EFE2";cx.font="700 22px Outfit,sans-serif";cx.textAlign="center";cx.textBaseline="middle";
+    cx.fillText(mapaUltimaConquista.ciudad.toUpperCase(),470,616);
+    try{
+      const img=await csCargarImg(mapaUltimaConquista.sello);
+      const bx=120,by=730,bw=700,bh=310;
+      const escala=Math.min(bw/img.width,bh/img.height)*.85;
+      const iw=img.width*escala,ih=img.height*escala;
+      cx.drawImage(img,bx+(bw-iw)/2,by+(bh-ih)/2,iw,ih);
+    }catch(e){}
+  }
+  if(perfil.avatar){
+    try{
+      const av=await csCargarImg("assets/avatars/"+perfil.avatar+".webp");
+      const r=68,acx=175,acy=1216;
+      cx.save();cx.beginPath();cx.arc(acx,acy,r,0,Math.PI*2);cx.clip();
+      cx.drawImage(av,acx-r,acy-r,r*2,r*2);cx.restore();
+    }catch(e){}
+  }
+  const stats=[[370,meta.monedas],[505,(meta.mejorRachaVictorias||0)],[645,ganados.size+"/"+MUNDO.length],[780,logrosGanados.size]];
+  cx.fillStyle="#F6EFE2";cx.font="700 19px Outfit,sans-serif";cx.textAlign="center";cx.textBaseline="middle";
+  stats.forEach(([scx,val])=>cx.fillText(String(val),scx,1245));
+  return cv;
+}
+$("fCompartirConquista").onclick=async()=>{
+  const texto="🏆 Conquisté "+(mapaUltimaConquista?mapaUltimaConquista.ciudad:"una ciudad")+
+    " en Girá y Adiviná Rioplatense. ¡Jugá vos también!: "+location.href;
+  await csCompartirImagen(generarCanvasCompartirConquista,"gira-y-adivina-conquista.png",texto,texto);
 };
 async function generarCanvasCompartirJuego(){
   const bg=await csCargarImg("assets/compartir/plantilla-juego.webp");
