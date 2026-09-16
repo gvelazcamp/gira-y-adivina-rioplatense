@@ -44,6 +44,12 @@
 .pios-icon{flex-shrink:0;font-size:1.15rem}
 .pios-txt{font-size:.86rem;line-height:1.35;color:var(--crema)}
 .pios-txt b{color:var(--agua)}
+.tuto-lista{display:flex;flex-direction:column;gap:10px;text-align:left;margin-top:12px}
+.tuto-item{display:flex;align-items:flex-start;gap:12px;background:#00000038;border:1px solid #FFFFFF1A;
+ border-radius:12px;padding:11px 13px}
+.tuto-ico{flex-shrink:0;font-size:1.3rem;line-height:1}
+.tuto-item b{display:block;font-size:.92rem;color:var(--agua);margin-bottom:2px}
+.tuto-item p{font-size:.82rem;line-height:1.4;color:var(--crema);opacity:.9}
 #splashFondo{position:absolute;inset:-40px;background-image:url('assets/splash.webp?v=2');
  background-size:cover;background-position:center;filter:blur(34px) brightness(.45)}
 #splashArte{position:absolute;inset:0;background-image:url('assets/splash.webp?v=2');
@@ -416,7 +422,7 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 .stat-monedas{color:var(--oro)}
 .stat-vidas{color:#FF6E96}
 .stat-racha{color:#FF9640}
-#btnMusica,#bMasOpciones{font-size:.9rem;background:#FFFFFF14;width:26px;height:26px;border-radius:50%;
+#btnMusica,#bTutorial,#bMasOpciones{font-size:.9rem;background:#FFFFFF14;width:26px;height:26px;border-radius:50%;
  display:inline-grid;place-items:center;padding:0;flex:0 0 auto;color:var(--crema)}
 .cta-jugar{display:flex;align-items:center;justify-content:flex-start;gap:14px;text-align:left;
  background:linear-gradient(135deg,#FF3D94,#C21368);padding:18px 20px;box-shadow:0 6px 0 #8E0D4B}
@@ -756,6 +762,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
       <span class="stat-pill stat-monedas" id="setupMonedas" title="Monedas: se ganan jugando y sirven para comprar en la Tienda">🪙 <b>0</b> monedas</span>
       <span class="stat-pill stat-vidas" id="setupVidas">❤️ <b>0</b></span>
       <button id="btnMusica" type="button" title="Silenciar música">🔊</button>
+      <button id="bTutorial" type="button" title="Cómo jugar">❓</button>
       <button id="bMasOpciones" type="button" title="Más opciones">⚙️</button>
     </div>
   </div>
@@ -1055,6 +1062,21 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <button class="btn-grande" id="bInstalar" style="display:none"><span class="btn-ico">📲</span><span class="btn-txt">Instalar app en el celular</span></button>
   </div>
   <button class="no" id="masCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
+</div></div>
+
+<div class="capa" id="capaTutorial"><div class="caja rk-caja">
+  <h2>❓ Cómo jugar</h2>
+  <div class="tuto-lista">
+    <div class="tuto-item"><span class="tuto-ico">🎡</span><div><b>Girá la ruleta</b><p>Girás y te toca dinero, perder todo o pasar el turno. Después elegís una consonante para revelar letras de la frase.</p></div></div>
+    <div class="tuto-item"><span class="tuto-ico">🔤</span><div><b>Adiviná la frase</b><p>Con las letras que van saliendo, tratá de descubrirla. Podés arriesgarte y decirla completa cuando quieras.</p></div></div>
+    <div class="tuto-item"><span class="tuto-ico">▶️</span><div><b>¡Jugar ahora!</b><p>Jugás solo en tu celular, contra la máquina. Elegís 3, 5 o 7 rondas y arrancás al toque.</p></div></div>
+    <div class="tuto-item"><span class="tuto-ico">🌐</span><div><b>Jugar online</b><p>Te empareja al instante con otro jugador conectado, cada uno desde su propio celular.</p></div></div>
+    <div class="tuto-item"><span class="tuto-ico">👥</span><div><b>Jugar con amigos</b><p>Creás una sala y le pasás el código a un amigo para jugar 1 contra 1 a la distancia.</p></div></div>
+    <div class="tuto-item"><span class="tuto-ico">📺</span><div><b>Sala TV / Familia</b><p>Para jugar todos juntos: una pantalla grande hace de tablero y cada uno juega desde su celular.</p></div></div>
+    <div class="tuto-item"><span class="tuto-ico">🏆</span><div><b>Ranking de amigos</b><p>Elegís un apodo y quedás en una tabla junto a todos los que compartan tu mismo grupo.</p></div></div>
+    <div class="tuto-item"><span class="tuto-ico">🗺️</span><div><b>Mapa de Uruguay</b><p>Ganá partidas para avanzar por las ciudades y conseguir sellos, sobres y coleccionables.</p></div></div>
+  </div>
+  <button class="no" id="tutoCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Entendido</button>
 </div></div>
 
 <div class="capa" id="capaSalaTVMenu"><div class="caja">
@@ -2342,8 +2364,10 @@ function mostrarToast(icono,texto){
 }
 const MENUS_CON_X={capaRuleta:"rwCerrar",capaTienda:"tnCerrar",capaLogros:"lgCerrar",
   capaObjetivos:"objCerrar",capaRecords:"recCerrar",capaRanking:"rkCerrar",capaMas:"masCerrar",
-  capaSalaTVMenu:"salaTVMenuCerrar",capaJugarOnlineMenu:"jugarOnlineMenuCerrar"};
+  capaTutorial:"tutoCerrar",capaSalaTVMenu:"salaTVMenuCerrar",capaJugarOnlineMenu:"jugarOnlineMenuCerrar"};
 $("bMasOpciones").onclick=()=>$("capaMas").classList.add("ver");
+$("bTutorial").onclick=()=>$("capaTutorial").classList.add("ver");
+$("tutoCerrar").onclick=()=>$("capaTutorial").classList.remove("ver");
 $("masCerrar").onclick=()=>$("capaMas").classList.remove("ver");
 $("capaMas").addEventListener("click",e=>{
   const b=e.target.closest("button");
