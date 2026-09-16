@@ -276,6 +276,20 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 .tn-comprar-mini{background:transparent;color:var(--agua);font-weight:700;border:1px solid #37D6C066;
  border-radius:8px;padding:5px 10px;font-size:.7rem;white-space:nowrap}
 .tn-comprar:disabled{opacity:1;background:#4A3D5C;color:#C9B8DE;cursor:not-allowed;box-shadow:none}
+.tn-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}
+.tn-item.tn-card{display:flex;flex-direction:column;align-items:stretch;gap:6px;text-align:center;
+ padding:10px;min-width:0}
+.tn-card-img{width:100%;aspect-ratio:1/1;border-radius:12px;background-color:#00000030;
+ background-size:78%;background-repeat:no-repeat;background-position:center;overflow:hidden;
+ display:flex;align-items:center;justify-content:center;font-size:2.4rem;white-space:nowrap}
+.tn-card-contenido{display:flex;justify-content:center;flex-wrap:wrap;gap:4px}
+.tn-card-contenido span{background:#00000040;border-radius:8px;padding:2px 6px;font-size:.66rem;
+ white-space:nowrap}
+.tn-card-info{display:flex;flex-direction:column;gap:1px;min-height:2.4em;justify-content:center}
+.tn-card-info b{font-size:.8rem;line-height:1.15}
+.tn-card-info span{font-size:.66rem;color:#B49FCE}
+.tn-card .tn-comprar,.tn-card .tn-comprar-real{width:100%;margin-top:2px}
+.tn-card .tn-precios{width:100%}
 
 /* Logros */
 .lg-caja{max-width:440px;max-height:82vh;overflow-y:auto}
@@ -936,167 +950,176 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <p class="tn-monedas">🪙 <span id="tnMonedas">500</span></p>
   <h3 class="tn-subtitulo">💳 Paquetes con dinero real</h3>
   <p class="tn-proximamente">Disponibles cuando el juego esté en la Play Store</p>
-  <div class="tn-item tn-real">
-    <div class="tn-icono">🪙</div>
-    <div class="tn-info"><b>500 monedas</b><span>Paquete chico</span></div>
-    <button class="tn-comprar-real" data-real="1">$0.99</button>
+  <div class="tn-grid">
+  <div class="tn-item tn-card tn-real">
+  <div class="tn-card-img">🪙</div>
+  <div class="tn-card-info"><b>500 monedas</b><span>Paquete chico</span></div>
+  <button class="tn-comprar-real" data-real="1">$0.99</button>
   </div>
-  <div class="tn-item tn-real">
-    <div class="tn-icono">🪙</div>
-    <div class="tn-info"><b>1.350 monedas</b><span>1.200 + 150 de regalo</span></div>
-    <button class="tn-comprar-real" data-real="1">$1.99</button>
+  <div class="tn-item tn-card tn-real">
+  <div class="tn-card-img">🪙</div>
+  <div class="tn-card-info"><b>1.350 monedas</b><span>1.200 + 150 de regalo</span></div>
+  <button class="tn-comprar-real" data-real="1">$1.99</button>
   </div>
-  <div class="tn-item tn-real">
-    <div class="tn-icono">🪙</div>
-    <div class="tn-info"><b>3.500 monedas</b><span>3.000 + 500 de regalo</span></div>
-    <button class="tn-comprar-real" data-real="1">$4.99</button>
+  <div class="tn-item tn-card tn-real">
+  <div class="tn-card-img">🪙</div>
+  <div class="tn-card-info"><b>3.500 monedas</b><span>3.000 + 500 de regalo</span></div>
+  <button class="tn-comprar-real" data-real="1">$4.99</button>
   </div>
-  <div class="tn-item tn-real">
-    <div class="tn-icono">🪙</div>
-    <div class="tn-info"><b>8.500 monedas</b><span>7.000 + 1.500 de regalo</span></div>
-    <button class="tn-comprar-real" data-real="1">$9.99</button>
+  <div class="tn-item tn-card tn-real">
+  <div class="tn-card-img">🪙</div>
+  <div class="tn-card-info"><b>8.500 monedas</b><span>7.000 + 1.500 de regalo</span></div>
+  <button class="tn-comprar-real" data-real="1">$9.99</button>
   </div>
-  <div class="tn-item tn-real">
-    <div class="tn-icono">❤️</div>
-    <div class="tn-info"><b>Vidas llenas al instante</b><span>Para cuando no tenés monedas</span></div>
-    <button class="tn-comprar-real" data-real="1">$0.99</button>
+  <div class="tn-item tn-card tn-real">
+  <div class="tn-card-img">❤️</div>
+  <div class="tn-card-info"><b>Vidas llenas al instante</b><span>Para cuando no tenés monedas</span></div>
+  <button class="tn-comprar-real" data-real="1">$0.99</button>
   </div>
-  <div class="tn-item tn-real">
-    <div class="tn-icono">♾️</div>
-    <div class="tn-info"><b>Vidas infinitas 24hs</b><span>Jugá sin límite por un día</span></div>
-    <button class="tn-comprar-real" data-real="1">$1.99</button>
+  <div class="tn-item tn-card tn-real">
+  <div class="tn-card-img">♾️</div>
+  <div class="tn-card-info"><b>Vidas infinitas 24hs</b><span>Jugá sin límite por un día</span></div>
+  <button class="tn-comprar-real" data-real="1">$1.99</button>
+  </div>
   </div>
   <h3 class="tn-subtitulo">🪙 Con tus monedas</h3>
-  <div class="tn-item">
-    <div class="tn-icono">❤️</div>
-    <div class="tn-info"><b>Vida instantánea</b><span>+1 vida al toque</span></div>
-    <button class="tn-comprar" data-tipo="vida" data-precio="150">🪙 150</button>
+  <div class="tn-grid">
+  <div class="tn-item tn-card">
+  <div class="tn-card-img">❤️</div>
+  <div class="tn-card-info"><b>Vida instantánea</b><span>+1 vida al toque</span></div>
+  <button class="tn-comprar" data-tipo="vida" data-precio="150">🪙 150</button>
   </div>
-  <div class="tn-item">
-    <div class="tn-icono">❤️×5</div>
-    <div class="tn-info"><b>Recarga completa</b><span>Llena tus 5 vidas</span></div>
-    <button class="tn-comprar" data-tipo="recarga" data-precio="500">🪙 500</button>
+  <div class="tn-item tn-card">
+  <div class="tn-card-img">❤️</div>
+  <div class="tn-card-contenido"><span>×5</span></div>
+  <div class="tn-card-info"><b>Recarga completa</b><span>Llena tus 5 vidas</span></div>
+  <button class="tn-comprar" data-tipo="recarga" data-precio="500">🪙 500</button>
   </div>
-  <div class="tn-item">
-    <div class="tn-icono">🎡</div>
-    <div class="tn-info"><b>Giro extra</b><span>Otra vuelta de la ruleta ahora</span></div>
-    <button class="tn-comprar" data-tipo="ruleta" data-precio="200">🪙 200</button>
+  <div class="tn-item tn-card">
+  <div class="tn-card-img">🎡</div>
+  <div class="tn-card-info"><b>Giro extra</b><span>Otra vuelta de la ruleta ahora</span></div>
+  <button class="tn-comprar" data-tipo="ruleta" data-precio="200">🪙 200</button>
+  </div>
   </div>
   <h3 class="tn-subtitulo">🎁 Packs</h3>
-  <div class="tn-item">
-    <div class="tn-icono">🎒</div>
-    <div class="tn-info"><b>Pack Explorador</b><span>1 vida + 300 monedas + 1 sobre sorpresa</span></div>
-    <button class="tn-comprar" data-tipo="pack_explorador" data-precio="900">🪙 900</button>
+  <div class="tn-grid">
+  <div class="tn-item tn-card">
+  <div class="tn-card-img">🎒</div>
+  <div class="tn-card-contenido"><span>❤️×1</span><span>🪙×300</span><span>🎁×1</span></div>
+  <div class="tn-card-info"><b>Pack Explorador</b><span>1 vida + 300 monedas + 1 sobre sorpresa</span></div>
+  <button class="tn-comprar" data-tipo="pack_explorador" data-precio="900">🪙 900</button>
   </div>
-  <div class="tn-item">
-    <div class="tn-icono">🔥</div>
-    <div class="tn-info"><b>Pack Racha</b><span>Recarga completa + giro extra + 2 sobres sorpresa</span></div>
-    <button class="tn-comprar" data-tipo="pack_racha" data-precio="1800">🪙 1800</button>
+  <div class="tn-item tn-card">
+  <div class="tn-card-img">🔥</div>
+  <div class="tn-card-contenido"><span>❤️×5</span><span>🎡×1</span><span>🎁×2</span></div>
+  <div class="tn-card-info"><b>Pack Racha</b><span>Recarga completa + giro extra + 2 sobres sorpresa</span></div>
+  <button class="tn-comprar" data-tipo="pack_racha" data-precio="1800">🪙 1800</button>
   </div>
-  <div class="tn-item">
-    <div class="tn-icono">🎁</div>
-    <div class="tn-info"><b>Sobre de Durazno</b><span>Un sobre para tu colección — 1 por día</span></div>
-    <button class="tn-comprar" data-tipo="sobre_durazno" data-precio="1200">🪙 1200</button>
+  <div class="tn-item tn-card">
+  <div class="tn-card-img" style="background-image:url('assets/collectibles/durazno/sobre-durazno.webp')"></div>
+  <div class="tn-card-info"><b>Sobre de Durazno</b><span>Un sobre para tu colección — 1 por día</span></div>
+  <button class="tn-comprar" data-tipo="sobre_durazno" data-precio="1200">🪙 1200</button>
   </div>
-  <div class="tn-item">
-    <div class="tn-icono">🎁</div>
-    <div class="tn-info"><b>Sobre de Montevideo</b><span>Un sobre para tu colección — 1 por día</span></div>
-    <button class="tn-comprar" data-tipo="sobre_montevideo" data-precio="1200">🪙 1200</button>
+  <div class="tn-item tn-card">
+  <div class="tn-card-img" style="background-image:url('assets/collectibles/montevideo/sobre-montevideo.webp')"></div>
+  <div class="tn-card-info"><b>Sobre de Montevideo</b><span>Un sobre para tu colección — 1 por día</span></div>
+  <button class="tn-comprar" data-tipo="sobre_montevideo" data-precio="1200">🪙 1200</button>
   </div>
-  <div class="tn-item">
-    <div class="tn-icono">🎁</div>
-    <div class="tn-info"><b>Sobre de Piriápolis</b><span>Un sobre para tu colección — 1 por día</span></div>
-    <button class="tn-comprar" data-tipo="sobre_piriapolis" data-precio="1200">🪙 1200</button>
+  <div class="tn-item tn-card">
+  <div class="tn-card-img" style="background-image:url('assets/collectibles/piriapolis/sobre-piriapolis.webp')"></div>
+  <div class="tn-card-info"><b>Sobre de Piriápolis</b><span>Un sobre para tu colección — 1 por día</span></div>
+  <button class="tn-comprar" data-tipo="sobre_piriapolis" data-precio="1200">🪙 1200</button>
   </div>
-  <div class="tn-item">
-    <div class="tn-icono">🎁</div>
-    <div class="tn-info"><b>Sobre de Punta del Este</b><span>Un sobre para tu colección — 1 por día</span></div>
-    <button class="tn-comprar" data-tipo="sobre_punta" data-precio="1200">🪙 1200</button>
+  <div class="tn-item tn-card">
+  <div class="tn-card-img" style="background-image:url('assets/collectibles/punta/sobre-punta.webp')"></div>
+  <div class="tn-card-info"><b>Sobre de Punta del Este</b><span>Un sobre para tu colección — 1 por día</span></div>
+  <button class="tn-comprar" data-tipo="sobre_punta" data-precio="1200">🪙 1200</button>
   </div>
-  <div class="tn-item">
-    <div class="tn-icono">🎁</div>
-    <div class="tn-info"><b>Sobre de Salto</b><span>Un sobre para tu colección — 1 por día</span></div>
-    <button class="tn-comprar" data-tipo="sobre_salto" data-precio="1200">🪙 1200</button>
+  <div class="tn-item tn-card">
+  <div class="tn-card-img" style="background-image:url('assets/collectibles/salto/sobre-salto.webp')"></div>
+  <div class="tn-card-info"><b>Sobre de Salto</b><span>Un sobre para tu colección — 1 por día</span></div>
+  <button class="tn-comprar" data-tipo="sobre_salto" data-precio="1200">🪙 1200</button>
   </div>
-  <div class="tn-item">
-    <div class="tn-icono">🎁</div>
-    <div class="tn-info"><b>Sobre de Colonia</b><span>Un sobre para tu colección — 1 por día</span></div>
-    <button class="tn-comprar" data-tipo="sobre_colonia" data-precio="1200">🪙 1200</button>
+  <div class="tn-item tn-card">
+  <div class="tn-card-img" style="background-image:url('assets/collectibles/colonia/sobre-colonia.webp')"></div>
+  <div class="tn-card-info"><b>Sobre de Colonia</b><span>Un sobre para tu colección — 1 por día</span></div>
+  <button class="tn-comprar" data-tipo="sobre_colonia" data-precio="1200">🪙 1200</button>
   </div>
-  <div class="tn-item">
-    <div class="tn-icono">🎁</div>
-    <div class="tn-info"><b>Sobre de Tacuarembó</b><span>Un sobre para tu colección — 1 por día</span></div>
-    <button class="tn-comprar" data-tipo="sobre_tacuarembo" data-precio="1200">🪙 1200</button>
+  <div class="tn-item tn-card">
+  <div class="tn-card-img" style="background-image:url('assets/collectibles/tacuarembo/sobre-tacuarembo.webp')"></div>
+  <div class="tn-card-info"><b>Sobre de Tacuarembó</b><span>Un sobre para tu colección — 1 por día</span></div>
+  <button class="tn-comprar" data-tipo="sobre_tacuarembo" data-precio="1200">🪙 1200</button>
   </div>
-  <div class="tn-item">
-    <div class="tn-icono">🎁</div>
-    <div class="tn-info"><b>Sobre de Cabo Polonio</b><span>Un sobre para tu colección — 1 por día</span></div>
-    <button class="tn-comprar" data-tipo="sobre_polonio" data-precio="1200">🪙 1200</button>
+  <div class="tn-item tn-card">
+  <div class="tn-card-img" style="background-image:url('assets/collectibles/polonio/sobre-polonio.webp')"></div>
+  <div class="tn-card-info"><b>Sobre de Cabo Polonio</b><span>Un sobre para tu colección — 1 por día</span></div>
+  <button class="tn-comprar" data-tipo="sobre_polonio" data-precio="1200">🪙 1200</button>
   </div>
-  <div class="tn-item">
-    <div class="tn-icono">🎁</div>
-    <div class="tn-info"><b>Sobre del Estadio Centenario</b><span>Un sobre para tu colección — 1 por día</span></div>
-    <button class="tn-comprar" data-tipo="sobre_centenario" data-precio="1200">🪙 1200</button>
+  <div class="tn-item tn-card">
+  <div class="tn-card-img" style="background-image:url('assets/collectibles/centenario/sobre-centenario.webp')"></div>
+  <div class="tn-card-info"><b>Sobre del Estadio Centenario</b><span>Un sobre para tu colección — 1 por día</span></div>
+  <button class="tn-comprar" data-tipo="sobre_centenario" data-precio="1200">🪙 1200</button>
   </div>
-  <div class="tn-item">
-    <div class="tn-icono">🎁</div>
-    <div class="tn-info"><b>Sobre de Artigas</b><span>Un sobre para tu colección — 1 por día</span></div>
-    <button class="tn-comprar" data-tipo="sobre_artigas" data-precio="1200">🪙 1200</button>
+  <div class="tn-item tn-card">
+  <div class="tn-card-img" style="background-image:url('assets/collectibles/artigas/sobre-artigas.webp')"></div>
+  <div class="tn-card-info"><b>Sobre de Artigas</b><span>Un sobre para tu colección — 1 por día</span></div>
+  <button class="tn-comprar" data-tipo="sobre_artigas" data-precio="1200">🪙 1200</button>
   </div>
-  <div class="tn-item">
-    <div class="tn-icono">🎁</div>
-    <div class="tn-info"><b>Sobre de Canelones</b><span>Un sobre para tu colección — 1 por día</span></div>
-    <button class="tn-comprar" data-tipo="sobre_canelones" data-precio="1200">🪙 1200</button>
+  <div class="tn-item tn-card">
+  <div class="tn-card-img" style="background-image:url('assets/collectibles/canelones/sobre-canelones.webp')"></div>
+  <div class="tn-card-info"><b>Sobre de Canelones</b><span>Un sobre para tu colección — 1 por día</span></div>
+  <button class="tn-comprar" data-tipo="sobre_canelones" data-precio="1200">🪙 1200</button>
   </div>
-  <div class="tn-item">
-    <div class="tn-icono">🎁</div>
-    <div class="tn-info"><b>Sobre de Cerro Largo</b><span>Un sobre para tu colección — 1 por día</span></div>
-    <button class="tn-comprar" data-tipo="sobre_cerro-largo" data-precio="1200">🪙 1200</button>
+  <div class="tn-item tn-card">
+  <div class="tn-card-img" style="background-image:url('assets/collectibles/cerro-largo/sobre-cerro-largo.webp')"></div>
+  <div class="tn-card-info"><b>Sobre de Cerro Largo</b><span>Un sobre para tu colección — 1 por día</span></div>
+  <button class="tn-comprar" data-tipo="sobre_cerro-largo" data-precio="1200">🪙 1200</button>
   </div>
-  <div class="tn-item">
-    <div class="tn-icono">🎁</div>
-    <div class="tn-info"><b>Sobre de Trinidad</b><span>Un sobre para tu colección — 1 por día</span></div>
-    <button class="tn-comprar" data-tipo="sobre_flores" data-precio="1200">🪙 1200</button>
+  <div class="tn-item tn-card">
+  <div class="tn-card-img" style="background-image:url('assets/collectibles/trinidad/sobre-trinidad.webp')"></div>
+  <div class="tn-card-info"><b>Sobre de Trinidad</b><span>Un sobre para tu colección — 1 por día</span></div>
+  <button class="tn-comprar" data-tipo="sobre_flores" data-precio="1200">🪙 1200</button>
   </div>
-  <div class="tn-item">
-    <div class="tn-icono">🎁</div>
-    <div class="tn-info"><b>Sobre de Florida</b><span>Un sobre para tu colección — 1 por día</span></div>
-    <button class="tn-comprar" data-tipo="sobre_florida" data-precio="1200">🪙 1200</button>
+  <div class="tn-item tn-card">
+  <div class="tn-card-img" style="background-image:url('assets/collectibles/florida/sobre-florida.webp')"></div>
+  <div class="tn-card-info"><b>Sobre de Florida</b><span>Un sobre para tu colección — 1 por día</span></div>
+  <button class="tn-comprar" data-tipo="sobre_florida" data-precio="1200">🪙 1200</button>
   </div>
-  <div class="tn-item">
-    <div class="tn-icono">🎁</div>
-    <div class="tn-info"><b>Sobre de Minas</b><span>Un sobre para tu colección — 1 por día</span></div>
-    <button class="tn-comprar" data-tipo="sobre_lavalleja" data-precio="1200">🪙 1200</button>
+  <div class="tn-item tn-card">
+  <div class="tn-card-img" style="background-image:url('assets/collectibles/lavalleja/sobre-lavalleja.webp')"></div>
+  <div class="tn-card-info"><b>Sobre de Minas</b><span>Un sobre para tu colección — 1 por día</span></div>
+  <button class="tn-comprar" data-tipo="sobre_lavalleja" data-precio="1200">🪙 1200</button>
   </div>
-  <div class="tn-item">
-    <div class="tn-icono">🎁</div>
-    <div class="tn-info"><b>Sobre de Paysandú</b><span>Un sobre para tu colección — 1 por día</span></div>
-    <button class="tn-comprar" data-tipo="sobre_paysandu" data-precio="1200">🪙 1200</button>
+  <div class="tn-item tn-card">
+  <div class="tn-card-img" style="background-image:url('assets/collectibles/paysandu/sobre-paysandu.webp')"></div>
+  <div class="tn-card-info"><b>Sobre de Paysandú</b><span>Un sobre para tu colección — 1 por día</span></div>
+  <button class="tn-comprar" data-tipo="sobre_paysandu" data-precio="1200">🪙 1200</button>
   </div>
-  <div class="tn-item">
-    <div class="tn-icono">🎁</div>
-    <div class="tn-info"><b>Sobre de Fray Bentos</b><span>Un sobre para tu colección — 1 por día</span></div>
-    <button class="tn-comprar" data-tipo="sobre_rio-negro" data-precio="1200">🪙 1200</button>
+  <div class="tn-item tn-card">
+  <div class="tn-card-img" style="background-image:url('assets/collectibles/rio-negro/sobre-rio-negro.webp')"></div>
+  <div class="tn-card-info"><b>Sobre de Fray Bentos</b><span>Un sobre para tu colección — 1 por día</span></div>
+  <button class="tn-comprar" data-tipo="sobre_rio-negro" data-precio="1200">🪙 1200</button>
   </div>
-  <div class="tn-item">
-    <div class="tn-icono">🎁</div>
-    <div class="tn-info"><b>Sobre de Rivera</b><span>Un sobre para tu colección — 1 por día</span></div>
-    <button class="tn-comprar" data-tipo="sobre_rivera" data-precio="1200">🪙 1200</button>
+  <div class="tn-item tn-card">
+  <div class="tn-card-img" style="background-image:url('assets/collectibles/rivera/sobre-rivera.webp')"></div>
+  <div class="tn-card-info"><b>Sobre de Rivera</b><span>Un sobre para tu colección — 1 por día</span></div>
+  <button class="tn-comprar" data-tipo="sobre_rivera" data-precio="1200">🪙 1200</button>
   </div>
-  <div class="tn-item">
-    <div class="tn-icono">🎁</div>
-    <div class="tn-info"><b>Sobre de San José de Mayo</b><span>Un sobre para tu colección — 1 por día</span></div>
-    <button class="tn-comprar" data-tipo="sobre_san-jose" data-precio="1200">🪙 1200</button>
+  <div class="tn-item tn-card">
+  <div class="tn-card-img" style="background-image:url('assets/collectibles/san-jose/sobre-san-jose.webp')"></div>
+  <div class="tn-card-info"><b>Sobre de San José de Mayo</b><span>Un sobre para tu colección — 1 por día</span></div>
+  <button class="tn-comprar" data-tipo="sobre_san-jose" data-precio="1200">🪙 1200</button>
   </div>
-  <div class="tn-item">
-    <div class="tn-icono">🎁</div>
-    <div class="tn-info"><b>Sobre de Mercedes</b><span>Un sobre para tu colección — 1 por día</span></div>
-    <button class="tn-comprar" data-tipo="sobre_soriano" data-precio="1200">🪙 1200</button>
+  <div class="tn-item tn-card">
+  <div class="tn-card-img" style="background-image:url('assets/collectibles/soriano/sobre-soriano.webp')"></div>
+  <div class="tn-card-info"><b>Sobre de Mercedes</b><span>Un sobre para tu colección — 1 por día</span></div>
+  <button class="tn-comprar" data-tipo="sobre_soriano" data-precio="1200">🪙 1200</button>
   </div>
-  <div class="tn-item">
-    <div class="tn-icono">🎁</div>
-    <div class="tn-info"><b>Sobre de Treinta y Tres</b><span>Un sobre para tu colección — 1 por día</span></div>
-    <button class="tn-comprar" data-tipo="sobre_treinta-y-tres" data-precio="1200">🪙 1200</button>
+  <div class="tn-item tn-card">
+  <div class="tn-card-img" style="background-image:url('assets/collectibles/treinta-y-tres/sobre-treinta-y-tres.webp')"></div>
+  <div class="tn-card-info"><b>Sobre de Treinta y Tres</b><span>Un sobre para tu colección — 1 por día</span></div>
+  <button class="tn-comprar" data-tipo="sobre_treinta-y-tres" data-precio="1200">🪙 1200</button>
+  </div>
   </div>
   <h3 class="tn-subtitulo">🖼️ Marcos de avatar</h3>
   <div class="frame-grid" id="frameGrid"></div>
