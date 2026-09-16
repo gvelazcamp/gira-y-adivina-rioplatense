@@ -821,6 +821,17 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <div id="splashBarra"><i></i></div>
 </div>
 
+<div class="capa" id="capaModoOnline"><div class="caja">
+  <h2>🌐 Jugar online</h2>
+  <p class="sub" style="margin:2px 0 14px">Elegí la modalidad de la partida:</p>
+  <div class="setup-menu">
+    <button class="btn-grande" id="bModoNormal"><span class="btn-ico">🎯</span><span class="btn-txt">Normal</span></button>
+    <button class="btn-grande sec" id="bModoVelocidad"><span class="btn-ico">⚡</span><span class="btn-txt">Poné a prueba tu velocidad</span></button>
+  </div>
+  <p class="sub" style="margin:2px 0 0;font-size:.82rem">En "Poné a prueba tu velocidad" las letras van apareciendo solas: resolvé la frase antes que se acabe el tiempo.</p>
+  <button class="no" id="modoOnlineCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cancelar</button>
+</div></div>
+
 <div class="capa" id="capaBuscando"><div class="caja" style="max-width:320px">
   <div class="buscando-spinner"></div>
   <h2 id="buscandoTit" style="margin-top:16px">🌐 Buscando rival…</h2>
@@ -2366,7 +2377,8 @@ function mostrarToast(icono,texto){
 }
 const MENUS_CON_X={capaRuleta:"rwCerrar",capaTienda:"tnCerrar",capaLogros:"lgCerrar",
   capaObjetivos:"objCerrar",capaRecords:"recCerrar",capaRanking:"rkCerrar",capaMas:"masCerrar",
-  capaTutorial:"tutoCerrar",capaSalaTVMenu:"salaTVMenuCerrar",capaJugarOnlineMenu:"jugarOnlineMenuCerrar"};
+  capaTutorial:"tutoCerrar",capaSalaTVMenu:"salaTVMenuCerrar",capaJugarOnlineMenu:"jugarOnlineMenuCerrar",
+  capaModoOnline:"modoOnlineCerrar"};
 $("bMasOpciones").onclick=()=>$("capaMas").classList.add("ver");
 $("bTutorial").onclick=()=>$("capaTutorial").classList.add("ver");
 $("tutoCerrar").onclick=()=>$("capaTutorial").classList.remove("ver");
@@ -3129,8 +3141,10 @@ function rivalOnlineFalso(){
   let a;do{a=pool[Math.floor(Math.random()*pool.length)];}while(a===perfil.avatar&&pool.length>1);
   return{n:cand.n,a};
 }
-function jugarOnlineFalso(){
-  if(!perfilExiste()){abrirPerfil(jugarOnlineFalso);return;}
+let modoVelocidadElegido=false;
+function jugarOnlineFalso(velocidad){
+  if(!perfilExiste()){abrirPerfil(()=>jugarOnlineFalso(velocidad));return;}
+  modoVelocidadElegido=!!velocidad;
   const rival=rivalOnlineFalso();
   $("buscandoTit").textContent="🌐 Buscando rival…";
   $("buscandoTxt").textContent="Conectando con jugadores online";
@@ -3148,7 +3162,13 @@ function jugarOnlineFalso(){
     },900);
   },1500+Math.random()*900);
 }
-$("bOnline").onclick=jugarOnlineFalso;
+$("bOnline").onclick=()=>{
+  if(!perfilExiste()){abrirPerfil(()=>$("capaModoOnline").classList.add("ver"));return;}
+  $("capaModoOnline").classList.add("ver");
+};
+$("bModoNormal").onclick=()=>{$("capaModoOnline").classList.remove("ver");jugarOnlineFalso(false);};
+$("bModoVelocidad").onclick=()=>{$("capaModoOnline").classList.remove("ver");jugarOnlineFalso(true);};
+$("modoOnlineCerrar").onclick=()=>$("capaModoOnline").classList.remove("ver");
 
 function candidatos(){
   const mk=mask();
@@ -3279,7 +3299,8 @@ function iniciarPartidaJugadores(jugadores,cats){
   const js=jugadores.map((j,i)=>({id:j.id||null,n:(j.n||("Jugador "+(i+1))).slice(0,12),av:j.av||null,frame:j.frame||null,tot:0,ronda:0,rg:0,
     escudo:false,hielo:{},lodo:false,comodin:false,poderesRonda:[],poderUsadoTurno:false}));
   arranca=((arranca%js.length)+js.length)%js.length;
-  S={jug:js,turno:arranca,rondas:rondasElegidas,ronda:0,cats:cats||null,mazo:nuevoMazo(cats),finYa:false,valor:0,fase:"girar",abiertas:new Set(),usadas:new Set(),pistaPos:new Set(),frase:"",cat:"",normalesDesdeToss:0,poderRondaId:0,pierdeSeguidas:0};
+  S={jug:js,turno:arranca,rondas:rondasElegidas,ronda:0,cats:cats||null,mazo:nuevoMazo(cats),finYa:false,valor:0,fase:"girar",abiertas:new Set(),usadas:new Set(),pistaPos:new Set(),frase:"",cat:"",normalesDesdeToss:0,poderRondaId:0,pierdeSeguidas:0,modoVelocidad:modoVelocidadElegido};
+  modoVelocidadElegido=false;
   nuevaRonda();
 }
 function armarTecladoTV(){
@@ -3525,7 +3546,8 @@ function nuevaRonda(){
   // 3 rondas => Normal, Normal, Toss-Up, Normal, Bonus.
   // 5 rondas => Normal, Normal, Toss-Up, Normal, Normal, Toss-Up, Normal, Bonus.
   // El Toss-Up NO consume una ronda normal y nunca aparece después de la última.
-  if(S.ronda>0&&S.ronda<S.rondas&&(S.normalesDesdeToss||0)>=TOSS_CADA_RONDAS){
+  // Modo Velocidad (Jugar online): todas las rondas son Toss-Up, sin intercalar.
+  if(!S.modoVelocidad&&S.ronda>0&&S.ronda<S.rondas&&(S.normalesDesdeToss||0)>=TOSS_CADA_RONDAS){
     S.normalesDesdeToss=0;
     if(!S.mazo.length)S.mazo=nuevoMazo(S.cats);
     const fToss=S.mazo.pop();
@@ -3549,6 +3571,11 @@ function nuevaRonda(){
   S.abiertas=new Set();S.usadas=new Set();S.pistaPos=new Set();S.poderRondaId=(S.poderRondaId||0)+1;
   S.jug.forEach(j=>{j.ronda=0;j.comodin=false;j.hielo={};j.lodo=false;j.escudo=false;j.poderesRonda=[];j.poderUsadoTurno=false;});S.valor=0;S.doble=false;
   S.normalesDesdeToss=(S.normalesDesdeToss||0)+1;
+  if(S.modoVelocidad){
+    S.pistaUsada=false;
+    iniciarTossUp(f);
+    return;
+  }
   S.cat=(destino!==null&&modo==="bot"?MUNDO[destino].n+" · ":"")+"Ronda "+S.ronda+" de "+S.rondas+" · "+f.c;
   S.fase="girar";
   publicar("Le toca a <b>"+S.jug[S.turno].n+"</b>. Girá para pedir una consonante.");
@@ -3582,7 +3609,8 @@ function iniciarTossUp(f){
   S.tossPausado=false;S.tossRespondedor=null;S.tossRestante=TOSS_DURACION;S.tossHastaProx=TOSS_PASO;
   S.tossOrden=[...S.frase].map((c,i)=>c===" "?null:i).filter(i=>i!==null).sort(()=>Math.random()-.5);
   S.tossFin=Date.now()+TOSS_DURACION;S.tossProx=Date.now()+TOSS_PASO;S.tossTodoDesde=null;
-  S.cat=(destino!==null&&modo==="bot"?MUNDO[destino].n+" · ":"")+"⚡ Prueba de velocidad · "+f.c;
+  S.cat=S.modoVelocidad?("⚡ Ronda "+S.ronda+" de "+S.rondas+" · "+f.c):
+    ((destino!==null&&modo==="bot"?MUNDO[destino].n+" · ":"")+"⚡ Prueba de velocidad · "+f.c);
   publicar("<b>PRUEBA DE VELOCIDAD</b> — las letras aparecen solas. Resolvé antes de que se terminen los 20 segundos.");
   arrancarIntervaloToss();
 }
