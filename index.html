@@ -5421,7 +5421,7 @@ $("fBoton").onclick=()=>{
   const paso=()=>{hechas++;barra.style.width=Math.round(hechas/urls.length*100)+"%";
     if(hechas>=urls.length)cerrar();};
   const cerrar=()=>{
-    const espera=Math.max(0,1700-(performance.now()-t0));
+    const espera=Math.max(0,3500-(performance.now()-t0));
     setTimeout(()=>{cap.classList.add("ido");setTimeout(()=>cap.remove(),800);mostrarPromptIOS();},espera);
   };
   urls.forEach(u=>{const im=new Image();im.onload=paso;im.onerror=paso;im.src=u;});
