@@ -3806,7 +3806,7 @@ function finalizarPartidaPendiente(bonusGanado){
   if(modo!=="local"&&modo!=="bot")enviar({tipo:"fin",txt:detalle+f.extra+bonusTxt,tit:f.tit});
   fSiguientePaso=null;
   $("fMapa").style.display=(modo==="bot")?"block":"none";
-  $("fSalir").style.display=(modo==="bot"||modo==="tvhost")?"none":"block";
+  $("fSalir").style.display=(modo==="tvhost"||(modo==="bot"&&destino!==null))?"none":"block";
   $("fMapa").textContent=(destino!==null)?"Volver al mapa":"Elegir modalidad";
   mostrarFin(f.tit,detalle+f.extra+bonusTxt,f.selloImg);
 }
@@ -4282,7 +4282,7 @@ function finDelJuego(){
     else{tit="Te ganó "+b.n;extra=" Probá de nuevo cuando quieras.";}
     if(bonusJugado>0)extra+=" +"+bonusJugado+" 🪙 por lo jugado.";
     S.fase="fin";pararReloj();publicar("Partida terminada.");
-    $("fMapa").style.display="block";$("fSalir").style.display="none";
+    $("fMapa").style.display="block";$("fSalir").style.display=(destino!==null)?"none":"block";
     $("fMapa").textContent=(destino!==null)?"Volver al mapa":"Elegir modalidad";
     mostrarFin(tit,detalle+extra);return;
   }
