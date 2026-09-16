@@ -1392,6 +1392,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <div class="fila"><button class="no" id="fMapa" style="display:none">Volver al mapa</button><button class="no" id="fSalir" style="display:none">Salir</button><button class="ok" id="fBoton">Revancha</button></div>
   <button class="no" id="fCompartir" style="width:100%;border-radius:12px;padding:13px;font-weight:700;margin-top:10px">📤 Compartir resultado</button>
   <button class="no" id="fCompartirConquista" style="width:100%;border-radius:12px;padding:13px;font-weight:700;margin-top:10px;display:none">📤 Compartir conquista</button>
+  <button class="no" id="fCompartir100" style="width:100%;border-radius:12px;padding:13px;font-weight:700;margin-top:10px;display:none">📤 Compartir pasaporte 100%</button>
 </div></div>
 
 <script>
@@ -4696,8 +4697,10 @@ function mostrarFin(tit,txt,selloImg){
     $("fCopa").textContent=tit.startsWith("¡Empate")?"🤝":tit.startsWith("¡Victoria")?"🏆":
       (tit.startsWith("Te ganó")||tit.startsWith("No pudiste"))?"😤":tit.startsWith("¡Paso")?"✅":"🏅";}
   $("fTitulo").textContent=tit;$("fTexto").textContent=txt;
+  const juegoCompleto=mapaUltimaConquista&&ganados.size===MUNDO.length;
   $("fCompartir").style.display=mapaUltimaConquista?"none":"block";
-  $("fCompartirConquista").style.display=mapaUltimaConquista?"block":"none";
+  $("fCompartirConquista").style.display=(mapaUltimaConquista&&!juegoCompleto)?"block":"none";
+  $("fCompartir100").style.display=juegoCompleto?"block":"none";
   $("modalFin").classList.add("ver");
   [0,180,360,620].forEach((ms,i)=>setTimeout(()=>bip([784,988,1175,1568][i],.28,"sine",.07),ms));
 }
@@ -5251,6 +5254,43 @@ $("fCompartirConquista").onclick=async()=>{
   const texto="🏆 Conquisté "+(mapaUltimaConquista?mapaUltimaConquista.ciudad:"una ciudad")+
     " en Girá y Adiviná Rioplatense. ¡Jugá vos también!: "+location.href;
   await csCompartirImagen(generarCanvasCompartirConquista,"gira-y-adivina-conquista.png",texto,texto);
+};
+async function generarCanvasCompartir100(){
+  const cv=document.createElement("canvas");
+  cv.width=941;cv.height=1672;
+  const cx=cv.getContext("2d");
+  const bg=await csCargarImg("assets/compartir/plantilla-100.webp");
+  cx.drawImage(bg,0,0,941,1672);
+  try{await document.fonts.load("700 22px Outfit");}catch(e){}
+  cx.fillStyle="#F6EFE2";cx.font="700 20px Outfit,sans-serif";cx.textAlign="center";cx.textBaseline="middle";
+  cx.fillText("21 CIUDADES CONQUISTADAS",470,585);
+  if(mapaUltimaConquista){
+    try{
+      const img=await csCargarImg(mapaUltimaConquista.sello);
+      const mcx=475,mcy=995,mr=75;
+      const escala=Math.min(mr*2/img.width,mr*2/img.height)*.85;
+      const iw=img.width*escala,ih=img.height*escala;
+      cx.drawImage(img,mcx-iw/2,mcy-ih/2,iw,ih);
+    }catch(e){}
+  }
+  if(perfil.avatar){
+    try{
+      const av=await csCargarImg("assets/avatars/"+perfil.avatar+".webp");
+      const r=82,acx=175,acy=1277;
+      cx.save();cx.beginPath();cx.arc(acx,acy,r,0,Math.PI*2);cx.clip();
+      cx.drawImage(av,acx-r,acy-r,r*2,r*2);cx.restore();
+    }catch(e){}
+  }
+  const stats=[[370,meta.monedas],[505,(meta.mejorRachaVictorias||0)],[645,ganados.size+"/"+MUNDO.length],[780,logrosGanados.size]];
+  cx.fillStyle="#F6EFE2";cx.font="700 19px Outfit,sans-serif";cx.textAlign="center";cx.textBaseline="middle";
+  stats.forEach(([scx,val])=>cx.fillText(String(val),scx,1292));
+  cx.fillStyle="#fff";cx.font="700 20px Outfit,sans-serif";cx.textAlign="center";cx.textBaseline="middle";
+  cx.fillText("CONTINUAR EXPANSIÓN",445,1440);
+  return cv;
+}
+$("fCompartir100").onclick=async()=>{
+  const texto="🏆 ¡Completé el pasaporte entero! Conquisté las 21 ciudades en Girá y Adiviná Rioplatense. ¡Jugá vos también!: "+location.href;
+  await csCompartirImagen(generarCanvasCompartir100,"gira-y-adivina-100.png",texto,texto);
 };
 async function generarCanvasCompartirJuego(){
   const bg=await csCargarImg("assets/compartir/plantilla-juego.webp");
