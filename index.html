@@ -1078,6 +1078,11 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <div class="tn-info"><b>Sobre de Fray Bentos</b><span>Un sobre para tu colección — 1 por día</span></div>
     <button class="tn-comprar" data-tipo="sobre_rio-negro" data-precio="1200">🪙 1200</button>
   </div>
+  <div class="tn-item">
+    <div class="tn-icono">🎁</div>
+    <div class="tn-info"><b>Sobre de Rivera</b><span>Un sobre para tu colección — 1 por día</span></div>
+    <button class="tn-comprar" data-tipo="sobre_rivera" data-precio="1200">🪙 1200</button>
+  </div>
   <h3 class="tn-subtitulo">🖼️ Marcos de avatar</h3>
   <div class="frame-grid" id="frameGrid"></div>
   <button class="no" id="tnCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
@@ -1619,7 +1624,7 @@ const MUNDO=[
  {id:"lavalleja",pasos:[[28, 18], [20, 28], [32, 40], [24, 52]],nx:60,ny:46,bg:"assets/worlds/lavalleja.webp",n:"Minas",r:"Juan Antonio Lavalleja",rondas:6,cats:["Cultura uruguaya","Musica y fiesta"],rica:true},
  {id:"paysandu",pasos:[[24, 18], [36, 26], [26, 38], [40, 50]],nx:44,ny:58,bg:"assets/worlds/paysandu.webp",n:"Paysandú",r:"Meseta de Artigas",rondas:6,cats:["Ciudades de Uruguay","Accion"],rica:true},
  {id:"rio-negro",pasos:[[20, 20], [32, 28], [22, 40], [36, 50]],nx:54,ny:50,bg:"assets/worlds/rio-negro.webp",n:"Fray Bentos",r:"Puente San Martín",rondas:6,cats:["Historia de Uruguay","Comida"],rica:true},
- {id:"rivera",pasos:[[26, 16], [38, 26], [28, 38], [42, 48]],nx:58,ny:60,bg:"assets/worlds/rivera.webp",n:"Rivera",r:"El Fronterizo",rondas:6,cats:["Ciudades de Uruguay","Viaje"],rica:false},
+ {id:"rivera",pasos:[[26, 16], [38, 26], [28, 38], [42, 48]],nx:58,ny:60,bg:"assets/worlds/rivera.webp",n:"Rivera",r:"Fructuoso Rivera",rondas:6,cats:["Ciudades de Uruguay","Viaje"],rica:true},
  {id:"san-jose",pasos:[[22, 20], [34, 28], [24, 40], [38, 50]],nx:48,ny:46,bg:"assets/worlds/san-jose.webp",n:"San José de Mayo",r:"El Tambero",rondas:6,cats:["Casa y trabajo","Escuela e infancia"],rica:false},
  {id:"soriano",pasos:[[24, 18], [36, 26], [26, 38], [40, 48]],nx:56,ny:56,bg:"assets/worlds/soriano.webp",n:"Mercedes",r:"El Navegante",rondas:6,cats:["Cosas de la casa","Persona"],rica:false},
  {id:"treinta-y-tres",pasos:[[20, 16], [32, 24], [22, 36], [36, 48]],nx:46,ny:48,bg:"assets/worlds/treinta-y-tres.webp",n:"Treinta y Tres",r:"El Pescador",rondas:6,cats:["Cultura uruguaya","Pelicula"],rica:false},
@@ -2438,6 +2443,20 @@ const COLECCIONES={
       {id:"teatro",nombre:"Teatro Miguel Young",img:"assets/collectibles/rio-negro/coleccion-rio-negro-teatro.webp"}
     ]
   },
+  rivera:{
+    nombre:"Rivera",
+    sobreCerrado:"assets/collectibles/rivera/sobre-rivera.webp",
+    sobreAbierto:"assets/collectibles/rivera/sobre-rivera-abierto.webp",
+    frameExclusivo:"frame-rivera", // preparado a futuro: NO activar hasta subir assets/frames/frame-rivera.png
+    items:[
+      {id:"obelisco",nombre:"Obelisco Plaza Internacional",img:"assets/collectibles/rivera/coleccion-rivera-obelisco.webp"},
+      {id:"oro",nombre:"Vagón de Oro",img:"assets/collectibles/rivera/coleccion-rivera-oro.webp"},
+      {id:"freeshop",nombre:"Free Shop",img:"assets/collectibles/rivera/coleccion-rivera-freeshop.webp"},
+      {id:"lunarejo",nombre:"Valle del Lunarejo",img:"assets/collectibles/rivera/coleccion-rivera-lunarejo.webp"},
+      {id:"estadio",nombre:"Estadio Atilio Paiva Olivera",img:"assets/collectibles/rivera/coleccion-rivera-estadio.webp"},
+      {id:"tren",nombre:"Estación de Tren",img:"assets/collectibles/rivera/coleccion-rivera-tren.webp"}
+    ]
+  },
   centenario:{
     nombre:"Estadio Centenario",
     sobreCerrado:"assets/collectibles/centenario/sobre-centenario.webp",
@@ -2943,6 +2962,22 @@ const CIUDAD_RICA={
       {img:"assets/passport/rio-negro-sello-3.webp",nombre:"Barrio Anglo"},
       {img:"assets/passport/rio-negro-sello-4.webp",nombre:"Las Cañas"},
       {img:"assets/passport/rio-negro-sello-rival.webp",nombre:"Puente San Martín"}
+    ]
+  },
+  rivera:{
+    nodos:[
+      {tipo:"paso",x:42,y:20},
+      {tipo:"paso",x:60,y:32},
+      {tipo:"paso",x:46,y:50},
+      {tipo:"paso",x:64,y:68},
+      {tipo:"rival",x:50,y:88}
+    ],
+    sellos:[
+      {img:"assets/passport/rivera-sello-1.webp",nombre:"Plaza Internacional"},
+      {img:"assets/passport/rivera-sello-2.webp",nombre:"La Inmaculada"},
+      {img:"assets/passport/rivera-sello-3.webp",nombre:"Estadio Atilio Paiva Olivera"},
+      {img:"assets/passport/rivera-sello-4.webp",nombre:"Valle del Lunarejo"},
+      {img:"assets/passport/rivera-sello-rival.webp",nombre:"Fructuoso Rivera"}
     ]
   },
   centenario:{
