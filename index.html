@@ -1063,6 +1063,11 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <div class="tn-info"><b>Sobre de Florida</b><span>Un sobre para tu colección — 1 por día</span></div>
     <button class="tn-comprar" data-tipo="sobre_florida" data-precio="1200">🪙 1200</button>
   </div>
+  <div class="tn-item">
+    <div class="tn-icono">🎁</div>
+    <div class="tn-info"><b>Sobre de Minas</b><span>Un sobre para tu colección — 1 por día</span></div>
+    <button class="tn-comprar" data-tipo="sobre_lavalleja" data-precio="1200">🪙 1200</button>
+  </div>
   <h3 class="tn-subtitulo">🖼️ Marcos de avatar</h3>
   <div class="frame-grid" id="frameGrid"></div>
   <button class="no" id="tnCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
@@ -1601,7 +1606,7 @@ const MUNDO=[
  {id:"cerro-largo",pasos:[[20, 18], [32, 26], [22, 38], [36, 48]],nx:46,ny:60,bg:"assets/worlds/cerro-largo.webp",n:"Melo",r:"El Domador",rondas:6,cats:["Animales","Deporte"],rica:true},
  {id:"flores",pasos:[[26, 20], [38, 28], [28, 40], [42, 50]],nx:56,ny:50,bg:"assets/worlds/flores.webp",n:"Trinidad",r:"Venancio Flores",rondas:6,cats:["Cosa","Viaje"],rica:true},
  {id:"florida",pasos:[[22, 16], [34, 24], [24, 36], [38, 48]],nx:50,ny:62,bg:"assets/worlds/florida.webp",n:"Florida",r:"Piedra Alta",rondas:6,cats:["Historia de Uruguay","Lugar"],rica:true},
- {id:"lavalleja",pasos:[[28, 18], [20, 28], [32, 40], [24, 52]],nx:60,ny:46,bg:"assets/worlds/lavalleja.webp",n:"Minas",r:"El Serrano",rondas:6,cats:["Cultura uruguaya","Musica y fiesta"],rica:false},
+ {id:"lavalleja",pasos:[[28, 18], [20, 28], [32, 40], [24, 52]],nx:60,ny:46,bg:"assets/worlds/lavalleja.webp",n:"Minas",r:"Juan Antonio Lavalleja",rondas:6,cats:["Cultura uruguaya","Musica y fiesta"],rica:true},
  {id:"paysandu",pasos:[[24, 18], [36, 26], [26, 38], [40, 50]],nx:44,ny:58,bg:"assets/worlds/paysandu.webp",n:"Paysandú",r:"El Carnavalero",rondas:6,cats:["Ciudades de Uruguay","Accion"],rica:false},
  {id:"rio-negro",pasos:[[20, 20], [32, 28], [22, 40], [36, 50]],nx:54,ny:50,bg:"assets/worlds/rio-negro.webp",n:"Fray Bentos",r:"El Estibador",rondas:6,cats:["Historia de Uruguay","Comida"],rica:false},
  {id:"rivera",pasos:[[26, 16], [38, 26], [28, 38], [42, 48]],nx:58,ny:60,bg:"assets/worlds/rivera.webp",n:"Rivera",r:"El Fronterizo",rondas:6,cats:["Ciudades de Uruguay","Viaje"],rica:false},
@@ -2381,6 +2386,20 @@ const COLECCIONES={
       {id:"piedraalta",nombre:"Piedra Alta",img:"assets/collectibles/florida/coleccion-florida-piedraalta.webp"}
     ]
   },
+  lavalleja:{
+    nombre:"Minas",
+    sobreCerrado:"assets/collectibles/lavalleja/sobre-lavalleja.webp",
+    sobreAbierto:"assets/collectibles/lavalleja/sobre-lavalleja-abierto.webp",
+    frameExclusivo:"frame-lavalleja", // preparado a futuro: NO activar hasta subir assets/frames/frame-lavalleja.png
+    items:[
+      {id:"cascada",nombre:"Salto del Penitente",img:"assets/collectibles/lavalleja/coleccion-lavalleja-cascada.webp"},
+      {id:"verdun",nombre:"Virgen del Verdún",img:"assets/collectibles/lavalleja/coleccion-lavalleja-verdun.webp"},
+      {id:"alfajores",nombre:"Alfajores de Minas",img:"assets/collectibles/lavalleja/coleccion-lavalleja-alfajores.webp"},
+      {id:"arequita",nombre:"Cerro Arequita",img:"assets/collectibles/lavalleja/coleccion-lavalleja-arequita.webp"},
+      {id:"lavalleja",nombre:"Busto de Lavalleja",img:"assets/collectibles/lavalleja/coleccion-lavalleja-lavalleja.webp"},
+      {id:"patricia",nombre:"Cerveza Patricia",img:"assets/collectibles/lavalleja/coleccion-lavalleja-patricia.webp"}
+    ]
+  },
   centenario:{
     nombre:"Estadio Centenario",
     sobreCerrado:"assets/collectibles/centenario/sobre-centenario.webp",
@@ -2838,6 +2857,22 @@ const CIUDAD_RICA={
       {img:"assets/passport/florida-sello-3.webp",nombre:"Paso Severino"},
       {img:"assets/passport/florida-sello-4.webp",nombre:"San Cono"},
       {img:"assets/passport/florida-sello-rival.webp",nombre:"Piedra Alta"}
+    ]
+  },
+  lavalleja:{
+    nodos:[
+      {tipo:"paso",x:36,y:20},
+      {tipo:"paso",x:54,y:32},
+      {tipo:"paso",x:40,y:50},
+      {tipo:"paso",x:58,y:68},
+      {tipo:"rival",x:44,y:88}
+    ],
+    sellos:[
+      {img:"assets/passport/lavalleja-sello-1.webp",nombre:"Plaza Libertad"},
+      {img:"assets/passport/lavalleja-sello-2.webp",nombre:"Catedral"},
+      {img:"assets/passport/lavalleja-sello-3.webp",nombre:"Cerro Arequita"},
+      {img:"assets/passport/lavalleja-sello-4.webp",nombre:"Salto del Penitente"},
+      {img:"assets/passport/lavalleja-sello-rival.webp",nombre:"Juan Antonio Lavalleja"}
     ]
   },
   centenario:{
