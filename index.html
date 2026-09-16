@@ -1058,6 +1058,11 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <div class="tn-info"><b>Sobre de Trinidad</b><span>Un sobre para tu colección — 1 por día</span></div>
     <button class="tn-comprar" data-tipo="sobre_flores" data-precio="1200">🪙 1200</button>
   </div>
+  <div class="tn-item">
+    <div class="tn-icono">🎁</div>
+    <div class="tn-info"><b>Sobre de Florida</b><span>Un sobre para tu colección — 1 por día</span></div>
+    <button class="tn-comprar" data-tipo="sobre_florida" data-precio="1200">🪙 1200</button>
+  </div>
   <h3 class="tn-subtitulo">🖼️ Marcos de avatar</h3>
   <div class="frame-grid" id="frameGrid"></div>
   <button class="no" id="tnCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
@@ -1595,7 +1600,7 @@ const MUNDO=[
  {id:"canelones",pasos:[[24, 20], [36, 28], [26, 40], [40, 50]],nx:58,ny:48,bg:"assets/worlds/canelones.webp",n:"Canelones",r:"El Quintero",rondas:6,cats:["Ciudades de Uruguay","Comida"],rica:true},
  {id:"cerro-largo",pasos:[[20, 18], [32, 26], [22, 38], [36, 48]],nx:46,ny:60,bg:"assets/worlds/cerro-largo.webp",n:"Melo",r:"El Domador",rondas:6,cats:["Animales","Deporte"],rica:true},
  {id:"flores",pasos:[[26, 20], [38, 28], [28, 40], [42, 50]],nx:56,ny:50,bg:"assets/worlds/flores.webp",n:"Trinidad",r:"Venancio Flores",rondas:6,cats:["Cosa","Viaje"],rica:true},
- {id:"florida",pasos:[[22, 16], [34, 24], [24, 36], [38, 48]],nx:50,ny:62,bg:"assets/worlds/florida.webp",n:"Florida",r:"El Patriota",rondas:6,cats:["Historia de Uruguay","Lugar"],rica:false},
+ {id:"florida",pasos:[[22, 16], [34, 24], [24, 36], [38, 48]],nx:50,ny:62,bg:"assets/worlds/florida.webp",n:"Florida",r:"Piedra Alta",rondas:6,cats:["Historia de Uruguay","Lugar"],rica:true},
  {id:"lavalleja",pasos:[[28, 18], [20, 28], [32, 40], [24, 52]],nx:60,ny:46,bg:"assets/worlds/lavalleja.webp",n:"Minas",r:"El Serrano",rondas:6,cats:["Cultura uruguaya","Musica y fiesta"],rica:false},
  {id:"paysandu",pasos:[[24, 18], [36, 26], [26, 38], [40, 50]],nx:44,ny:58,bg:"assets/worlds/paysandu.webp",n:"Paysandú",r:"El Carnavalero",rondas:6,cats:["Ciudades de Uruguay","Accion"],rica:false},
  {id:"rio-negro",pasos:[[20, 20], [32, 28], [22, 40], [36, 50]],nx:54,ny:50,bg:"assets/worlds/rio-negro.webp",n:"Fray Bentos",r:"El Estibador",rondas:6,cats:["Historia de Uruguay","Comida"],rica:false},
@@ -2362,6 +2367,20 @@ const COLECCIONES={
       {id:"venancio",nombre:"Busto de Venancio Flores",img:"assets/collectibles/trinidad/coleccion-trinidad-venancio.webp"}
     ]
   },
+  florida:{
+    nombre:"Florida",
+    sobreCerrado:"assets/collectibles/florida/sobre-florida.webp",
+    sobreAbierto:"assets/collectibles/florida/sobre-florida-abierto.webp",
+    frameExclusivo:"frame-florida", // preparado a futuro: NO activar hasta subir assets/frames/frame-florida.png
+    items:[
+      {id:"gaucho",nombre:"Jinete Criollo",img:"assets/collectibles/florida/coleccion-florida-gaucho.webp"},
+      {id:"pergamino",nombre:"Acta de la Independencia",img:"assets/collectibles/florida/coleccion-florida-pergamino.webp"},
+      {id:"puerta",nombre:"Puerta de la Catedral",img:"assets/collectibles/florida/coleccion-florida-puerta.webp"},
+      {id:"virgen",nombre:"Virgen de los Treinta y Tres",img:"assets/collectibles/florida/coleccion-florida-virgen.webp"},
+      {id:"tarro",nombre:"Tradición Lechera",img:"assets/collectibles/florida/coleccion-florida-tarro.webp"},
+      {id:"piedraalta",nombre:"Piedra Alta",img:"assets/collectibles/florida/coleccion-florida-piedraalta.webp"}
+    ]
+  },
   centenario:{
     nombre:"Estadio Centenario",
     sobreCerrado:"assets/collectibles/centenario/sobre-centenario.webp",
@@ -2803,6 +2822,22 @@ const CIUDAD_RICA={
       {img:"assets/passport/trinidad-sello-3.webp",nombre:"Puente sobre el Río Yí"},
       {img:"assets/passport/trinidad-sello-4.webp",nombre:"Reserva Tálice"},
       {img:"assets/passport/trinidad-sello-rival.webp",nombre:"Venancio Flores"}
+    ]
+  },
+  florida:{
+    nodos:[
+      {tipo:"paso",x:34,y:20},
+      {tipo:"paso",x:52,y:32},
+      {tipo:"paso",x:38,y:50},
+      {tipo:"paso",x:56,y:68},
+      {tipo:"rival",x:42,y:88}
+    ],
+    sellos:[
+      {img:"assets/passport/florida-sello-1.webp",nombre:"Plaza Asamblea"},
+      {img:"assets/passport/florida-sello-2.webp",nombre:"Catedral Basílica"},
+      {img:"assets/passport/florida-sello-3.webp",nombre:"Paso Severino"},
+      {img:"assets/passport/florida-sello-4.webp",nombre:"San Cono"},
+      {img:"assets/passport/florida-sello-rival.webp",nombre:"Piedra Alta"}
     ]
   },
   centenario:{
