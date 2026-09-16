@@ -1093,6 +1093,11 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <div class="tn-info"><b>Sobre de Mercedes</b><span>Un sobre para tu colección — 1 por día</span></div>
     <button class="tn-comprar" data-tipo="sobre_soriano" data-precio="1200">🪙 1200</button>
   </div>
+  <div class="tn-item">
+    <div class="tn-icono">🎁</div>
+    <div class="tn-info"><b>Sobre de Treinta y Tres</b><span>Un sobre para tu colección — 1 por día</span></div>
+    <button class="tn-comprar" data-tipo="sobre_treinta-y-tres" data-precio="1200">🪙 1200</button>
+  </div>
   <h3 class="tn-subtitulo">🖼️ Marcos de avatar</h3>
   <div class="frame-grid" id="frameGrid"></div>
   <button class="no" id="tnCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
@@ -1637,7 +1642,7 @@ const MUNDO=[
  {id:"rivera",pasos:[[26, 16], [38, 26], [28, 38], [42, 48]],nx:58,ny:60,bg:"assets/worlds/rivera.webp",n:"Rivera",r:"Fructuoso Rivera",rondas:6,cats:["Ciudades de Uruguay","Viaje"],rica:true},
  {id:"san-jose",pasos:[[22, 20], [34, 28], [24, 40], [38, 50]],nx:48,ny:46,bg:"assets/worlds/san-jose.webp",n:"San José de Mayo",r:"El Tambero",rondas:6,cats:["Casa y trabajo","Escuela e infancia"],rica:true},
  {id:"soriano",pasos:[[24, 18], [36, 26], [26, 38], [40, 48]],nx:56,ny:56,bg:"assets/worlds/soriano.webp",n:"Mercedes",r:"El Navegante",rondas:6,cats:["Cosas de la casa","Persona"],rica:true},
- {id:"treinta-y-tres",pasos:[[20, 16], [32, 24], [22, 36], [36, 48]],nx:46,ny:48,bg:"assets/worlds/treinta-y-tres.webp",n:"Treinta y Tres",r:"El Pescador",rondas:6,cats:["Cultura uruguaya","Pelicula"],rica:false},
+ {id:"treinta-y-tres",pasos:[[20, 16], [32, 24], [22, 36], [36, 48]],nx:46,ny:48,bg:"assets/worlds/treinta-y-tres.webp",n:"Treinta y Tres",r:"El Pescador",rondas:6,cats:["Cultura uruguaya","Pelicula"],rica:true},
  {id:"centenario",pasos:[[20, 22], [32, 30], [22, 42], [36, 52]],nx:60,ny:55,bg:"assets/worlds/estadio-centenario.webp",n:"Estadio Centenario",r:"La Campeona",rondas:7,cats:["Personajes","Dicho popular"],rica:true}];
 let ganados=(()=>{try{return new Set(JSON.parse(localStorage.getItem("larueda_mundo")||"[]"));}catch(e){return new Set();}})();
 const guardarMundo=()=>{try{localStorage.setItem("larueda_mundo",JSON.stringify([...ganados]));}catch(e){}};
@@ -2495,6 +2500,20 @@ const COLECCIONES={
       {id:"piragua",nombre:"Piragua de Remo",img:"assets/collectibles/soriano/coleccion-soriano-piragua.webp"}
     ]
   },
+  "treinta-y-tres":{
+    nombre:"Treinta y Tres",
+    sobreCerrado:"assets/collectibles/treinta-y-tres/sobre-treinta-y-tres.webp",
+    sobreAbierto:"assets/collectibles/treinta-y-tres/sobre-treinta-y-tres-abierto.webp",
+    frameExclusivo:"frame-treinta-y-tres", // preparado a futuro: NO activar hasta subir assets/frames/frame-treinta-y-tres.png
+    items:[
+      {id:"arroz",nombre:"Bolsa de Arroz",img:"assets/collectibles/treinta-y-tres/coleccion-treinta-y-tres-arroz.webp"},
+      {id:"guitarra",nombre:"Guitarra Olimañera",img:"assets/collectibles/treinta-y-tres/coleccion-treinta-y-tres-guitarra.webp"},
+      {id:"ninfa",nombre:"Ninfa de Bronce del Obelisco",img:"assets/collectibles/treinta-y-tres/coleccion-treinta-y-tres-ninfa.webp"},
+      {id:"rio-olimar",nombre:"Río Olimar",img:"assets/collectibles/treinta-y-tres/coleccion-treinta-y-tres-rio-olimar.webp"},
+      {id:"fundadores",nombre:"Relieve de los Fundadores",img:"assets/collectibles/treinta-y-tres/coleccion-treinta-y-tres-fundadores.webp"},
+      {id:"quebrada",nombre:"Quebrada de los Cuervos",img:"assets/collectibles/treinta-y-tres/coleccion-treinta-y-tres-quebrada.webp"}
+    ]
+  },
   centenario:{
     nombre:"Estadio Centenario",
     sobreCerrado:"assets/collectibles/centenario/sobre-centenario.webp",
@@ -3048,6 +3067,22 @@ const CIUDAD_RICA={
       {img:"assets/passport/soriano-sello-3.webp",nombre:"Castillo Mauá"},
       {img:"assets/passport/soriano-sello-4.webp",nombre:"Rambla Costanera"},
       {img:"assets/passport/soriano-sello-rival.webp",nombre:"El Navegante"}
+    ]
+  },
+  "treinta-y-tres":{
+    nodos:[
+      {tipo:"paso",x:20,y:16},
+      {tipo:"paso",x:32,y:24},
+      {tipo:"paso",x:22,y:36},
+      {tipo:"paso",x:36,y:48},
+      {tipo:"rival",x:28,y:68}
+    ],
+    sellos:[
+      {img:"assets/passport/treinta-y-tres-sello-1.webp",nombre:"Plaza 19 de Abril"},
+      {img:"assets/passport/treinta-y-tres-sello-2.webp",nombre:"Obelisco"},
+      {img:"assets/passport/treinta-y-tres-sello-3.webp",nombre:"Quebrada de los Cuervos"},
+      {img:"assets/passport/treinta-y-tres-sello-4.webp",nombre:"Parque del Río Olimar"},
+      {img:"assets/passport/treinta-y-tres-sello-rival.webp",nombre:"El Pescador"}
     ]
   },
   centenario:{
