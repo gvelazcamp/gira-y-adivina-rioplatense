@@ -1048,6 +1048,11 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <div class="tn-info"><b>Sobre de Canelones</b><span>Un sobre para tu colección — 1 por día</span></div>
     <button class="tn-comprar" data-tipo="sobre_canelones" data-precio="1200">🪙 1200</button>
   </div>
+  <div class="tn-item">
+    <div class="tn-icono">🎁</div>
+    <div class="tn-info"><b>Sobre de Cerro Largo</b><span>Un sobre para tu colección — 1 por día</span></div>
+    <button class="tn-comprar" data-tipo="sobre_cerro-largo" data-precio="1200">🪙 1200</button>
+  </div>
   <h3 class="tn-subtitulo">🖼️ Marcos de avatar</h3>
   <div class="frame-grid" id="frameGrid"></div>
   <button class="no" id="tnCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
@@ -1583,7 +1588,7 @@ const MUNDO=[
  {id:"colonia",pasos:[[20, 20], [32, 28], [24, 38], [38, 48]],nx:56,ny:44,bg:"assets/worlds/colonia.webp",n:"Colonia",r:"El Cinéfilo",rondas:5,cats:["Pelicula","Programa de TV"],rica:true},
  {id:"artigas",pasos:[[22, 18], [34, 26], [24, 38], [38, 50]],nx:48,ny:58,bg:"assets/worlds/artigas.webp",n:"Artigas",r:"El Prócer",rondas:6,cats:["Historia de Uruguay","Persona"],rica:true},
  {id:"canelones",pasos:[[24, 20], [36, 28], [26, 40], [40, 50]],nx:58,ny:48,bg:"assets/worlds/canelones.webp",n:"Canelones",r:"El Quintero",rondas:6,cats:["Ciudades de Uruguay","Comida"],rica:true},
- {id:"cerro-largo",pasos:[[20, 18], [32, 26], [22, 38], [36, 48]],nx:46,ny:60,bg:"assets/worlds/cerro-largo.webp",n:"Melo",r:"El Domador",rondas:6,cats:["Animales","Deporte"],rica:false},
+ {id:"cerro-largo",pasos:[[20, 18], [32, 26], [22, 38], [36, 48]],nx:46,ny:60,bg:"assets/worlds/cerro-largo.webp",n:"Melo",r:"El Domador",rondas:6,cats:["Animales","Deporte"],rica:true},
  {id:"flores",pasos:[[26, 20], [38, 28], [28, 40], [42, 50]],nx:56,ny:50,bg:"assets/worlds/flores.webp",n:"Trinidad",r:"La Chacarera",rondas:6,cats:["Cosa","Viaje"],rica:false},
  {id:"florida",pasos:[[22, 16], [34, 24], [24, 36], [38, 48]],nx:50,ny:62,bg:"assets/worlds/florida.webp",n:"Florida",r:"El Patriota",rondas:6,cats:["Historia de Uruguay","Lugar"],rica:false},
  {id:"lavalleja",pasos:[[28, 18], [20, 28], [32, 40], [24, 52]],nx:60,ny:46,bg:"assets/worlds/lavalleja.webp",n:"Minas",r:"El Serrano",rondas:6,cats:["Cultura uruguaya","Musica y fiesta"],rica:false},
@@ -2324,6 +2329,20 @@ const COLECCIONES={
       {id:"frutas",nombre:"Cajón de Frutas",img:"assets/collectibles/canelones/coleccion-canelones-frutas.webp"}
     ]
   },
+  "cerro-largo":{
+    nombre:"Cerro Largo",
+    sobreCerrado:"assets/collectibles/cerro-largo/sobre-cerro-largo.webp",
+    sobreAbierto:"assets/collectibles/cerro-largo/sobre-cerro-largo-abierto.webp",
+    frameExclusivo:"frame-cerro-largo", // preparado a futuro: NO activar hasta subir assets/frames/frame-cerro-largo.png
+    items:[
+      {id:"mate",nombre:"Mate Criollo",img:"assets/collectibles/cerro-largo/coleccion-cerro-largo-mate.webp"},
+      {id:"catedral",nombre:"Catedral de Melo",img:"assets/collectibles/cerro-largo/coleccion-cerro-largo-catedral.webp"},
+      {id:"puente",nombre:"Puente Mauá",img:"assets/collectibles/cerro-largo/coleccion-cerro-largo-puente.webp"},
+      {id:"laguna",nombre:"Laguna Merín",img:"assets/collectibles/cerro-largo/coleccion-cerro-largo-laguna.webp"},
+      {id:"domador",nombre:"El Domador",img:"assets/collectibles/cerro-largo/coleccion-cerro-largo-domador.webp"},
+      {id:"saravia",nombre:"Monumento a Saravia",img:"assets/collectibles/cerro-largo/coleccion-cerro-largo-saravia.webp"}
+    ]
+  },
   centenario:{
     nombre:"Estadio Centenario",
     sobreCerrado:"assets/collectibles/centenario/sobre-centenario.webp",
@@ -2733,6 +2752,22 @@ const CIUDAD_RICA={
       {img:"assets/passport/canelones-sello-3.webp",nombre:"Los Viñedos"},
       {img:"assets/passport/canelones-sello-4.webp",nombre:"El Jinete"},
       {img:"assets/passport/canelones-sello-rival.webp",nombre:"El Quintero"}
+    ]
+  },
+  "cerro-largo":{
+    nodos:[
+      {tipo:"paso",x:30,y:20},
+      {tipo:"paso",x:48,y:32},
+      {tipo:"paso",x:34,y:50},
+      {tipo:"paso",x:52,y:68},
+      {tipo:"rival",x:38,y:88}
+    ],
+    sellos:[
+      {img:"assets/passport/cerro-largo-sello-1.webp",nombre:"Plaza Constitución"},
+      {img:"assets/passport/cerro-largo-sello-2.webp",nombre:"Catedral"},
+      {img:"assets/passport/cerro-largo-sello-3.webp",nombre:"Puente Mauá"},
+      {img:"assets/passport/cerro-largo-sello-4.webp",nombre:"Laguna Merín"},
+      {img:"assets/passport/cerro-largo-sello-rival.webp",nombre:"El Domador"}
     ]
   },
   centenario:{
