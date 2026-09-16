@@ -1083,6 +1083,11 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <div class="tn-info"><b>Sobre de Rivera</b><span>Un sobre para tu colección — 1 por día</span></div>
     <button class="tn-comprar" data-tipo="sobre_rivera" data-precio="1200">🪙 1200</button>
   </div>
+  <div class="tn-item">
+    <div class="tn-icono">🎁</div>
+    <div class="tn-info"><b>Sobre de San José de Mayo</b><span>Un sobre para tu colección — 1 por día</span></div>
+    <button class="tn-comprar" data-tipo="sobre_san-jose" data-precio="1200">🪙 1200</button>
+  </div>
   <h3 class="tn-subtitulo">🖼️ Marcos de avatar</h3>
   <div class="frame-grid" id="frameGrid"></div>
   <button class="no" id="tnCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
@@ -1625,7 +1630,7 @@ const MUNDO=[
  {id:"paysandu",pasos:[[24, 18], [36, 26], [26, 38], [40, 50]],nx:44,ny:58,bg:"assets/worlds/paysandu.webp",n:"Paysandú",r:"Meseta de Artigas",rondas:6,cats:["Ciudades de Uruguay","Accion"],rica:true},
  {id:"rio-negro",pasos:[[20, 20], [32, 28], [22, 40], [36, 50]],nx:54,ny:50,bg:"assets/worlds/rio-negro.webp",n:"Fray Bentos",r:"Puente San Martín",rondas:6,cats:["Historia de Uruguay","Comida"],rica:true},
  {id:"rivera",pasos:[[26, 16], [38, 26], [28, 38], [42, 48]],nx:58,ny:60,bg:"assets/worlds/rivera.webp",n:"Rivera",r:"Fructuoso Rivera",rondas:6,cats:["Ciudades de Uruguay","Viaje"],rica:true},
- {id:"san-jose",pasos:[[22, 20], [34, 28], [24, 40], [38, 50]],nx:48,ny:46,bg:"assets/worlds/san-jose.webp",n:"San José de Mayo",r:"El Tambero",rondas:6,cats:["Casa y trabajo","Escuela e infancia"],rica:false},
+ {id:"san-jose",pasos:[[22, 20], [34, 28], [24, 40], [38, 50]],nx:48,ny:46,bg:"assets/worlds/san-jose.webp",n:"San José de Mayo",r:"El Tambero",rondas:6,cats:["Casa y trabajo","Escuela e infancia"],rica:true},
  {id:"soriano",pasos:[[24, 18], [36, 26], [26, 38], [40, 48]],nx:56,ny:56,bg:"assets/worlds/soriano.webp",n:"Mercedes",r:"El Navegante",rondas:6,cats:["Cosas de la casa","Persona"],rica:false},
  {id:"treinta-y-tres",pasos:[[20, 16], [32, 24], [22, 36], [36, 48]],nx:46,ny:48,bg:"assets/worlds/treinta-y-tres.webp",n:"Treinta y Tres",r:"El Pescador",rondas:6,cats:["Cultura uruguaya","Pelicula"],rica:false},
  {id:"centenario",pasos:[[20, 22], [32, 30], [22, 42], [36, 52]],nx:60,ny:55,bg:"assets/worlds/estadio-centenario.webp",n:"Estadio Centenario",r:"La Campeona",rondas:7,cats:["Personajes","Dicho popular"],rica:true}];
@@ -2457,6 +2462,20 @@ const COLECCIONES={
       {id:"tren",nombre:"Estación de Tren",img:"assets/collectibles/rivera/coleccion-rivera-tren.webp"}
     ]
   },
+  "san-jose":{
+    nombre:"San José de Mayo",
+    sobreCerrado:"assets/collectibles/san-jose/sobre-san-jose.webp",
+    sobreAbierto:"assets/collectibles/san-jose/sobre-san-jose-abierto.webp",
+    frameExclusivo:"frame-san-jose", // preparado a futuro: NO activar hasta subir assets/frames/frame-san-jose.png
+    items:[
+      {id:"queso",nombre:"Queso Artesanal",img:"assets/collectibles/san-jose/coleccion-san-jose-queso.webp"},
+      {id:"piramide",nombre:"Pirámide a la Paz de Abril",img:"assets/collectibles/san-jose/coleccion-san-jose-piramide.webp"},
+      {id:"maragata",nombre:"Vestimenta Maragata",img:"assets/collectibles/san-jose/coleccion-san-jose-maragata.webp"},
+      {id:"arana",nombre:"Araña de Cristal",img:"assets/collectibles/san-jose/coleccion-san-jose-arana.webp"},
+      {id:"tambo",nombre:"Tambo con Vaca Lechera",img:"assets/collectibles/san-jose/coleccion-san-jose-tambo.webp"},
+      {id:"garzas",nombre:"Garzas del Río San José",img:"assets/collectibles/san-jose/coleccion-san-jose-garzas.webp"}
+    ]
+  },
   centenario:{
     nombre:"Estadio Centenario",
     sobreCerrado:"assets/collectibles/centenario/sobre-centenario.webp",
@@ -2978,6 +2997,22 @@ const CIUDAD_RICA={
       {img:"assets/passport/rivera-sello-3.webp",nombre:"Estadio Atilio Paiva Olivera"},
       {img:"assets/passport/rivera-sello-4.webp",nombre:"Valle del Lunarejo"},
       {img:"assets/passport/rivera-sello-rival.webp",nombre:"Fructuoso Rivera"}
+    ]
+  },
+  "san-jose":{
+    nodos:[
+      {tipo:"paso",x:22,y:20},
+      {tipo:"paso",x:34,y:28},
+      {tipo:"paso",x:24,y:40},
+      {tipo:"paso",x:38,y:50},
+      {tipo:"rival",x:30,y:70}
+    ],
+    sellos:[
+      {img:"assets/passport/san-jose-sello-1.webp",nombre:"Plaza Treinta y Tres Orientales"},
+      {img:"assets/passport/san-jose-sello-2.webp",nombre:"Basílica Catedral"},
+      {img:"assets/passport/san-jose-sello-3.webp",nombre:"Teatro Macció"},
+      {img:"assets/passport/san-jose-sello-4.webp",nombre:"Río San José"},
+      {img:"assets/passport/san-jose-sello-rival.webp",nombre:"El Tambero"}
     ]
   },
   centenario:{
