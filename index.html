@@ -5415,17 +5415,19 @@ $("fBoton").onclick=()=>{
   else revancha();
 };
 (function splash(){
+  const MIN_ESPERA=3500;
   const barra=$("splashBarra").firstElementChild,cap=$("splash");
   const urls=["assets/splash.webp?v=3"].concat(MUNDO.map(d=>d.bg).filter(Boolean));
   let hechas=0;const t0=performance.now();
-  const paso=()=>{hechas++;barra.style.width=Math.round(hechas/urls.length*100)+"%";
-    if(hechas>=urls.length)cerrar();};
+  const paso=()=>{hechas++;if(hechas>=urls.length)cerrar();};
   const cerrar=()=>{
-    const espera=Math.max(0,3500-(performance.now()-t0));
+    const espera=Math.max(0,MIN_ESPERA-(performance.now()-t0));
     setTimeout(()=>{cap.classList.add("ido");setTimeout(()=>cap.remove(),800);mostrarPromptIOS();},espera);
   };
+  barra.style.transitionDuration=MIN_ESPERA+"ms";
+  requestAnimationFrame(()=>{barra.style.width="100%";});
   urls.forEach(u=>{const im=new Image();im.onload=paso;im.onerror=paso;im.src=u;});
-  setTimeout(()=>{barra.style.width="100%";cerrar();},7000);
+  setTimeout(cerrar,7000);
   cap.onclick=()=>{cap.classList.add("ido");setTimeout(()=>cap.remove(),800);mostrarPromptIOS();};
 })();
 
