@@ -3119,6 +3119,7 @@ chequearRachaDiaria();
 if(perfilExiste())$("miNombre").value=perfil.nombre;
 
 $("bBot").onclick=()=>{
+  vinoDeJugarOnline=false;
   if(!perfilExiste()){abrirPerfil(()=>verMundo());return;}
   verMundo();
 };
@@ -3141,7 +3142,7 @@ function rivalOnlineFalso(){
   let a;do{a=pool[Math.floor(Math.random()*pool.length)];}while(a===perfil.avatar&&pool.length>1);
   return{n:cand.n,a};
 }
-let modoVelocidadElegido=false;
+let modoVelocidadElegido=false,vinoDeJugarOnline=false;
 function jugarOnlineFalso(velocidad){
   if(!perfilExiste()){abrirPerfil(()=>jugarOnlineFalso(velocidad));return;}
   modoVelocidadElegido=!!velocidad;
@@ -3154,7 +3155,7 @@ function jugarOnlineFalso(velocidad){
     $("buscandoTxt").textContent="Arrancando la partida…";
     setTimeout(()=>{
       $("capaBuscando").classList.remove("ver");
-      destino=null;pasoActual=null;modo="bot";miJug=0;
+      destino=null;pasoActual=null;modo="bot";miJug=0;vinoDeJugarOnline=true;
       $("setup").style.display="none";$("juego").style.display="block";
       armarTeclado();
       $("marcoSelector").style.display="flex";marcoTableroIdx=0;aplicarMarcoTablero();
@@ -3804,9 +3805,9 @@ function finalizarPartidaPendiente(bonusGanado){
   publicar("Partida terminada.");
   if(modo!=="local"&&modo!=="bot")enviar({tipo:"fin",txt:detalle+f.extra+bonusTxt,tit:f.tit});
   fSiguientePaso=null;
-  $("fMapa").style.display=(modo==="bot"&&destino!==null)?"block":"none";
+  $("fMapa").style.display=(modo==="bot")?"block":"none";
   $("fSalir").style.display=(modo==="bot"||modo==="tvhost")?"none":"block";
-  $("fMapa").textContent="Volver al mapa";
+  $("fMapa").textContent=(destino!==null)?"Volver al mapa":"Elegir modalidad";
   mostrarFin(f.tit,detalle+f.extra+bonusTxt,f.selloImg);
 }
 const mask=()=>[...S.frase].map((c,i)=>c===" "?" ":(S.fase==="tossup"&&S.tossPos?S.tossPos.has(i)?c:"_":(S.abiertas.has(c)||(S.pistaPos&&S.pistaPos.has(i)))?c:"_")).join("");
@@ -4282,7 +4283,7 @@ function finDelJuego(){
     if(bonusJugado>0)extra+=" +"+bonusJugado+" 🪙 por lo jugado.";
     S.fase="fin";pararReloj();publicar("Partida terminada.");
     $("fMapa").style.display="block";$("fSalir").style.display="none";
-    $("fMapa").textContent="Volver al mapa";
+    $("fMapa").textContent=(destino!==null)?"Volver al mapa":"Elegir modalidad";
     mostrarFin(tit,detalle+extra);return;
   }
 
@@ -4843,7 +4844,11 @@ $("fMapa").onclick=()=>{matchToken++;botPausado=0;$("modalFin").classList.remove
       }
       abrirCiudadRica(destino);return;}
     const dCur=destino!==null?MUNDO[destino]:null;
-    if(dCur&&CIUDAD_RICA[dCur.id]&&!ganados.has(dCur.id))abrirCiudadRica(destino);else verMundo();
+    if(dCur&&CIUDAD_RICA[dCur.id]&&!ganados.has(dCur.id))abrirCiudadRica(destino);
+    else if(vinoDeJugarOnline){vinoDeJugarOnline=false;
+      $("juego").style.display="none";$("setup").style.display="block";
+      $("capaModoOnline").classList.add("ver");}
+    else verMundo();
   };
   if(sobrePendienteCual){const c=sobrePendienteCual;sobrePendienteCual=null;accionTrasSobre=continuar;colMostrarSobreConseguido(c);}
   else continuar();
