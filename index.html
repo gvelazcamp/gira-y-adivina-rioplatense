@@ -3398,7 +3398,7 @@ function empezarDestino(i,paso){
 let botT=null,botTossT=null;
 
 /* ---- Perfil del jugador (nombre + avatar) ---- */
-const AVATARES=Array.from({length:8},(_,i)=>"avatar-"+String(i+1).padStart(2,"0"));
+const AVATARES=Array.from({length:16},(_,i)=>"avatar-"+String(i+1).padStart(2,"0"));
 function cargarPerfil(){
   let nombre="",avatar="";
   try{nombre=localStorage.getItem("gya_nombre")||"";avatar=localStorage.getItem("gya_avatar")||"";}catch(e){}
@@ -3480,8 +3480,8 @@ const NOMBRES_ONLINE=[
   {n:"Bruno.Salto",g:"m"},{n:"Ro_Colonia",g:"f"},{n:"NatyPaysandu",g:"f"},{n:"Gonza_Tacua",g:"m"},
   {n:"Meli_BsAs",g:"f"},{n:"ElTanoUY",g:"m"},{n:"Fabi_Rocha",g:"f"},{n:"Juanma22",g:"m"},
   {n:"LauriUY",g:"f"},{n:"Nacho.Rivera",g:"m"},{n:"Sole_Maldo",g:"f"},{n:"Ceci_Artigas",g:"f"}];
-const AVATARES_M=["avatar-01","avatar-03","avatar-05","avatar-07"];
-const AVATARES_F=["avatar-02","avatar-04","avatar-06","avatar-08"];
+const AVATARES_M=["avatar-01","avatar-03","avatar-05","avatar-07","avatar-09","avatar-11","avatar-13","avatar-15"];
+const AVATARES_F=["avatar-02","avatar-04","avatar-06","avatar-08","avatar-10","avatar-12","avatar-14","avatar-16"];
 function rivalOnlineFalso(){
   const nombreExcl=(perfil.nombre||"").trim().toLowerCase();
   let cand;do{cand=NOMBRES_ONLINE[Math.floor(Math.random()*NOMBRES_ONLINE.length)];}while(cand.n.toLowerCase()===nombreExcl);
