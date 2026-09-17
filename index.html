@@ -3431,8 +3431,7 @@ function guardarPerfil(nombre,avatar){
 }
 let avatarElegido=null,perfilCallback=null;
 function listaAvataresDisponibles(){
-  const n=$("perfilNombre").value.trim().toLowerCase();
-  return n===AVATAR_EXCLUSIVO.nombre?[...AVATARES,AVATAR_EXCLUSIVO.id]:AVATARES;
+  return AVATARES;
 }
 function renderAvatarGrid(){
   const cont=$("avatarGrid");cont.innerHTML="";
