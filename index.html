@@ -2234,7 +2234,7 @@ function equiparMarco(id){
 }
 function tnRenderFrames(){
   const cont=$("frameGrid");if(!cont)return;cont.innerHTML="";
-  const miAvatar=perfil.avatar?"assets/avatars/"+perfil.avatar+".webp":"";
+  const miAvatar="assets/avatars/avatar-01.webp";
   const opciones=[{id:"",nombre:"Sin marco",desc:"Tu avatar tal cual, sin marco.",precio:0}].concat(FRAMES);
   opciones.forEach(f=>{
     const poseido=f.precio===0||framesComprados.has(f.id);
