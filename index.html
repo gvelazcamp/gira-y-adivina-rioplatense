@@ -1423,6 +1423,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="no" id="fCompartirConquista" style="width:100%;border-radius:12px;padding:13px;font-weight:700;margin-top:10px;display:none">📤 Compartir conquista</button>
   <button class="no" id="fCompartirCiudad100" style="width:100%;border-radius:12px;padding:13px;font-weight:700;margin-top:10px;display:none">📤 Compartir ciudad 100%</button>
   <button class="no" id="fCompartir100" style="width:100%;border-radius:12px;padding:13px;font-weight:700;margin-top:10px;display:none">📤 Compartir pasaporte 100%</button>
+  <button class="no" id="fVolverMapaPaso" style="width:100%;border-radius:12px;padding:13px;font-weight:700;margin-top:10px;display:none">🗺️ Volver al mapa</button>
 </div></div>
 
 <script>
@@ -3392,7 +3393,7 @@ function empezarDestino(i,paso){
   modo="bot";miJug=0;rondasElegidas=(pasoActual===null?d.rondas:1);
   $("mundo").style.display="none";$("pantDurazno").style.display="none";$("juego").style.display="block";
   armarTeclado();iniciarPartida($("miNombre").value.trim()||"Vos",
-    pasoActual===null?d.r:"Máquina",d.cats,perfil.avatar||null,null,frameEquipado||null,null);
+    pasoActual===null?d.r:"Máquina",pasoActual===null?d.cats:[d.cats[pasoActual%2]],perfil.avatar||null,null,frameEquipado||null,null);
 }
 
 let botT=null,botTossT=null;
@@ -4626,7 +4627,9 @@ function finDelJuego(){
     $("fMapa").style.display="block";$("fSalir").style.display="none";
     $("fMapa").textContent=fSiguientePaso===null?"Volver al mapa":
       (d.pasos&&fSiguientePaso>=d.pasos.length?"¡Desafiar! →":"Siguiente →");
-    mostrarFin(tit,detalle+extra,selloImg);return;
+    mostrarFin(tit,detalle+extra,selloImg);
+    if(fSiguientePaso!==null)$("fVolverMapaPaso").style.display="block";
+    return;
   }
   if(modo==="bot"){
     const d=destino!==null?MUNDO[destino]:null;
@@ -4716,6 +4719,7 @@ function mostrarFin(tit,txt,selloImg){
   $("fCompartirConquista").style.display=(mapaUltimaConquista&&!juegoCompleto&&!ciudadCompleta)?"block":"none";
   $("fCompartirCiudad100").style.display=ciudadCompleta?"block":"none";
   $("fCompartir100").style.display=juegoCompleto?"block":"none";
+  $("fVolverMapaPaso").style.display="none";
   $("modalFin").classList.add("ver");
   [0,180,360,620].forEach((ms,i)=>setTimeout(()=>bip([784,988,1175,1568][i],.28,"sine",.07),ms));
 }
@@ -5164,7 +5168,9 @@ function csDescargarBlob(blob,nombreArchivo){
   setTimeout(()=>URL.revokeObjectURL(url),4000);
   mostrarToast("📤","Imagen descargada. ¡Compartila donde quieras!");
 }
-async function csCompartirImagen(generarCv,nombreArchivo,textoShare,textoFallback){
+async function csCompartirImagen(generarCv,nombreArchivo,textoShare,textoFallback,btn){
+  const textoOriginal=btn?btn.textContent:null;
+  if(btn){btn.disabled=true;btn.textContent="⏳ Generando…";}
   let blob;
   try{
     const cv=await generarCv();
@@ -5175,6 +5181,7 @@ async function csCompartirImagen(generarCv,nombreArchivo,textoShare,textoFallbac
       try{await navigator.clipboard.writeText(textoFallback);mostrarToast("📤","Copiado. ¡Pegalo donde quieras!");}
       catch(e2){window.open("https://wa.me/?text="+encodeURIComponent(textoFallback),"_blank");}
     }
+    if(btn){btn.disabled=false;btn.textContent=textoOriginal;}
     return;
   }
   try{
@@ -5187,6 +5194,8 @@ async function csCompartirImagen(generarCv,nombreArchivo,textoShare,textoFallbac
   }catch(e){
     if(e&&e.name==="AbortError")return;
     csDescargarBlob(blob,nombreArchivo);
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent=textoOriginal;}
   }
 }
 $("fCompartir").onclick=async()=>{
@@ -5194,7 +5203,7 @@ $("fCompartir").onclick=async()=>{
   const textoFallback=($("fTitulo").textContent+". "+$("fTexto").textContent).replace(/\s+/g," ").trim()+
     " — Jugá vos también en Girá y Adiviná Rioplatense: "+location.href;
   await csCompartirImagen(generarCanvasCompartir,"gira-y-adivina-resultado.png",
-    "Jugá vos también en Girá y Adiviná Rioplatense: "+location.href,textoFallback);
+    "Jugá vos también en Girá y Adiviná Rioplatense: "+location.href,textoFallback,$("fCompartir"));
 };
 let colUltimoPremio=null;
 let mapaUltimaConquista=null;
@@ -5233,7 +5242,7 @@ async function generarCanvasCompartirColeccionable(){
 $("sobrePremioCompartir").onclick=async()=>{
   const texto="🎁 Encontré "+(colUltimoPremio?colUltimoPremio.nombre:"un coleccionable")+
     " en Girá y Adiviná Rioplatense. ¡Jugá vos también!: "+location.href;
-  await csCompartirImagen(generarCanvasCompartirColeccionable,"gira-y-adivina-coleccionable.png",texto,texto);
+  await csCompartirImagen(generarCanvasCompartirColeccionable,"gira-y-adivina-coleccionable.png",texto,texto,$("sobrePremioCompartir"));
 };
 async function generarCanvasCompartirConquista(){
   const cv=document.createElement("canvas");
@@ -5269,7 +5278,7 @@ async function generarCanvasCompartirConquista(){
 $("fCompartirConquista").onclick=async()=>{
   const texto="🏆 Conquisté "+(mapaUltimaConquista?mapaUltimaConquista.ciudad:"una ciudad")+
     " en Girá y Adiviná Rioplatense. ¡Jugá vos también!: "+location.href;
-  await csCompartirImagen(generarCanvasCompartirConquista,"gira-y-adivina-conquista.png",texto,texto);
+  await csCompartirImagen(generarCanvasCompartirConquista,"gira-y-adivina-conquista.png",texto,texto,$("fCompartirConquista"));
 };
 async function generarCanvasCompartirCiudad100(){
   const cv=document.createElement("canvas");
@@ -5325,12 +5334,12 @@ async function generarCanvasCompartirCiudad100(){
 $("fCompartirCiudad100").onclick=async()=>{
   const d=MUNDO.find(c=>c.id===ciudadUltima100);
   const texto="🏅 ¡"+(d?d.n:"Una ciudad")+" al 100%! Pasaporte y colección completos en Girá y Adiviná Rioplatense. ¡Jugá vos también!: "+location.href;
-  await csCompartirImagen(generarCanvasCompartirCiudad100,"gira-y-adivina-ciudad-100.png",texto,texto);
+  await csCompartirImagen(generarCanvasCompartirCiudad100,"gira-y-adivina-ciudad-100.png",texto,texto,$("fCompartirCiudad100"));
 };
 $("sobrePremio100Compartir").onclick=async()=>{
   const d=MUNDO.find(c=>c.id===ciudadUltima100);
   const texto="🏅 ¡"+(d?d.n:"Una ciudad")+" al 100%! Pasaporte y colección completos en Girá y Adiviná Rioplatense. ¡Jugá vos también!: "+location.href;
-  await csCompartirImagen(generarCanvasCompartirCiudad100,"gira-y-adivina-ciudad-100.png",texto,texto);
+  await csCompartirImagen(generarCanvasCompartirCiudad100,"gira-y-adivina-ciudad-100.png",texto,texto,$("sobrePremio100Compartir"));
 };
 async function generarCanvasCompartir100(){
   const cv=document.createElement("canvas");
@@ -5367,7 +5376,7 @@ async function generarCanvasCompartir100(){
 }
 $("fCompartir100").onclick=async()=>{
   const texto="🏆 ¡Completé el pasaporte entero! Conquisté las 21 ciudades en Girá y Adiviná Rioplatense. ¡Jugá vos también!: "+location.href;
-  await csCompartirImagen(generarCanvasCompartir100,"gira-y-adivina-100.png",texto,texto);
+  await csCompartirImagen(generarCanvasCompartir100,"gira-y-adivina-100.png",texto,texto,$("fCompartir100"));
 };
 async function generarCanvasCompartirJuego(){
   const bg=await csCargarImg("assets/compartir/plantilla-juego.webp");
@@ -5379,7 +5388,7 @@ async function generarCanvasCompartirJuego(){
 $("bCompartirJuego").onclick=async()=>{
   const texto="🎡 Girá y Adiviná Rioplatense — girá la ruleta y adiviná la frase. ¡Jugá conmigo!: "+
     location.origin+location.pathname;
-  await csCompartirImagen(generarCanvasCompartirJuego,"gira-y-adivina.png",texto,texto);
+  await csCompartirImagen(generarCanvasCompartirJuego,"gira-y-adivina.png",texto,texto,$("bCompartirJuego"));
 };
 $("fMapa").onclick=()=>{matchToken++;botPausado=0;$("modalFin").classList.remove("ver");
   const continuar=()=>{
@@ -5400,6 +5409,12 @@ $("fMapa").onclick=()=>{matchToken++;botPausado=0;$("modalFin").classList.remove
   };
   if(sobrePendienteCual){const c=sobrePendienteCual;sobrePendienteCual=null;accionTrasSobre=continuar;colMostrarSobreConseguido(c);}
   else continuar();
+};
+$("fVolverMapaPaso").onclick=()=>{
+  matchToken++;botPausado=0;fSiguientePaso=null;$("modalFin").classList.remove("ver");
+  const irAlMapa=()=>verMundo();
+  if(sobrePendienteCual){const c=sobrePendienteCual;sobrePendienteCual=null;accionTrasSobre=irAlMapa;colMostrarSobreConseguido(c);}
+  else irAlMapa();
 };
 function volar(e){
   const d=document.createElement("div");d.className="emo";d.textContent=e;
