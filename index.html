@@ -3847,7 +3847,7 @@ if(salaEnLink){
 
 function recibirHost(d){
   if(d.a==="hola"){
-    if(S){publicar(V.aviso);return;}
+    if(S){publicar(V.aviso,null,true);return;}
     $("lobby").style.display="none";$("juego").style.display="block";armarTeclado();
     iniciarPartida(($("miNombre").value.trim()||"Jugador 1").slice(0,12),d.n,undefined,perfil.avatar||null,d.av||null,frameEquipado||null,d.frame||null);return;}
   if(d.a==="reaccion"){volar(d.e);return;}
