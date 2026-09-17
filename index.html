@@ -2664,7 +2664,7 @@ function colElegirPremio(cual){
   const tenidos=new Set(cm.coleccionables);
   const faltantes=c.items.filter(it=>!tenidos.has(it.id));
   if(!faltantes.length)return c.items[Math.floor(Math.random()*c.items.length)].id;
-  const probNuevo=tenidos.size>=5?.9:.8;
+  const probNuevo=tenidos.size===0?1:(tenidos.size>=5?.9:.8);
   if(Math.random()<probNuevo)return faltantes[Math.floor(Math.random()*faltantes.length)].id;
   const tenidosArr=[...tenidos];
   return tenidosArr[Math.floor(Math.random()*tenidosArr.length)].id;
