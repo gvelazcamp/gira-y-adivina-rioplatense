@@ -3399,6 +3399,7 @@ let botT=null,botTossT=null;
 
 /* ---- Perfil del jugador (nombre + avatar) ---- */
 const AVATARES=Array.from({length:21},(_,i)=>"avatar-"+String(i+1).padStart(2,"0"));
+const AVATAR_EXCLUSIVO={id:"avatar-22",nombre:"gonzalo"};
 function cargarPerfil(){
   let nombre="",avatar="";
   try{nombre=localStorage.getItem("gya_nombre")||"";avatar=localStorage.getItem("gya_avatar")||"";}catch(e){}
@@ -3428,9 +3429,15 @@ function guardarPerfil(nombre,avatar){
   logroDesbloquear("avatar");
 }
 let avatarElegido=null,perfilCallback=null;
+function listaAvataresDisponibles(){
+  const n=$("perfilNombre").value.trim().toLowerCase();
+  return n===AVATAR_EXCLUSIVO.nombre?[...AVATARES,AVATAR_EXCLUSIVO.id]:AVATARES;
+}
 function renderAvatarGrid(){
   const cont=$("avatarGrid");cont.innerHTML="";
-  AVATARES.forEach((id,i)=>{
+  const disponibles=listaAvataresDisponibles();
+  if(!disponibles.includes(avatarElegido))avatarElegido=null;
+  disponibles.forEach((id,i)=>{
     const b=document.createElement("button");
     b.type="button";
     b.className="avatar-opcion"+(avatarElegido===id?" elegido":"");
@@ -3450,10 +3457,11 @@ function abrirPerfil(callback){
   $("setup").style.display="none";$("mundo").style.display="none";$("pantDurazno").style.display="none";
   $("pantPerfil").style.display="block";
 }
-$("perfilNombre").addEventListener("input",actualizarBotonPerfil);
+$("perfilNombre").addEventListener("input",()=>{renderAvatarGrid();actualizarBotonPerfil();});
 $("perfilContinuar").onclick=()=>{
   const n=$("perfilNombre").value.trim().slice(0,12);
   if(!n||!avatarElegido)return;
+  if(avatarElegido===AVATAR_EXCLUSIVO.id&&n.toLowerCase()!==AVATAR_EXCLUSIVO.nombre)return;
   guardarPerfil(n,avatarElegido);
   $("pantPerfil").style.display="none";
   if(perfilCallback){const cb=perfilCallback;perfilCallback=null;cb();}
