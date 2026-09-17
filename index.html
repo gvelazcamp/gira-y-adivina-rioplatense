@@ -3769,7 +3769,15 @@ $("bJugarOnline").onclick=()=>$("capaJugarOnlineMenu").classList.add("ver");
 $("jugarOnlineMenuCerrar").onclick=()=>$("capaJugarOnlineMenu").classList.remove("ver");
 $("bMenuCrearSala").onclick=()=>{$("capaJugarOnlineMenu").classList.remove("ver");$("bCrear").click();};
 $("bMenuEntrarCodigo").onclick=()=>{$("capaJugarOnlineMenu").classList.remove("ver");$("bUnirse").click();};
-$("bLobbySalir").onclick=()=>location.href=location.origin+location.pathname;
+$("bLobbySalir").onclick=()=>{
+  if(holaTimer){clearInterval(holaTimer);holaTimer=null;}
+  if(mq){try{mq.end(true);}catch(e){}mq=null;}
+  modo="local";sala="";
+  $("zonaCodigo").style.display="block";$("zonaEntrar").style.display="none";
+  $("codigoInput").value="";
+  $("lobby").style.display="none";$("setup").style.display="block";
+  $("capaJugarOnlineMenu").classList.add("ver");
+};
 
 $("bCrear").onclick=()=>{
   modo="host";miJug=0;
