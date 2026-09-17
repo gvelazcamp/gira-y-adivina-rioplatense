@@ -3348,7 +3348,7 @@ $("salirMundo").onclick=()=>{$("mundo").style.display="none";$("setup").style.di
 function uruguayCompleto(){return MUNDO.every(d=>ganados.has(d.id));}
 function actualizarBotonExpansion(){
   const b=$("bExpansion");if(!b)return;
-  const listo=uruguayCompleto();
+  const listo=uruguayCompleto()||location.search.indexOf("expansion=1")!==-1;
   b.textContent=listo?"⛵ Continuar expansión":"🔒 Continuar expansión";
   b.classList.toggle("bloqueado-exp",!listo);
 }
@@ -3369,7 +3369,7 @@ function jugarAnimacionExpansion(){
   setTimeout(paso,950);
 }
 $("bExpansion").onclick=()=>{
-  if(!uruguayCompleto()){mostrarToast("🔒","Ganá las 21 ciudades de Uruguay para desbloquear la expansión.");return;}
+  if(!uruguayCompleto()&&location.search.indexOf("expansion=1")===-1){mostrarToast("🔒","Ganá las 21 ciudades de Uruguay para desbloquear la expansión.");return;}
   jugarAnimacionExpansion();
 };
 $("bVolverDeArgentina").onclick=()=>{
