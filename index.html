@@ -2704,19 +2704,21 @@ function colAbrirSobre(cual){
     setTimeout(()=>{try{
       if(cm.completada){
         const premio=colPremioExtra();
+        const item=COLECCIONES[cual].items[Math.floor(Math.random()*COLECCIONES[cual].items.length)];
+        sumarMonedas(100);
         $("sobreAnimFase").style.display="none";
         $("sobrePremioFase").style.display="block";
-        $("sobrePremioImg").src=COLECCIONES[cual].sobreAbierto;
-        colUltimoPremio=null;$("sobrePremioCompartir").style.display="none";
+        $("sobrePremioImg").src=item.img;
+        colUltimoPremio=item;$("sobrePremioCompartir").style.display="block";
         ciudadUltima100=null;$("sobrePremio100Compartir").style.display="none";
         if(premio.tipo==="vida"){
           recuperarVida();
-          $("sobrePremioTit").textContent="❤️ ¡VIDA EXTRA!";
-          $("sobrePremioTxt").textContent="Colección completa — sobre extra: +1 vida de regalo.";
+          $("sobrePremioTit").textContent="♻️ "+item.nombre.toUpperCase();
+          $("sobrePremioTxt").textContent="Colección completa — +100 🪙 y de regalo +1 ❤️.";
         }else{
           sumarMonedas(premio.valor);
-          $("sobrePremioTit").textContent="🪙 ¡MONEDAS EXTRA!";
-          $("sobrePremioTxt").textContent="Colección completa — sobre extra: +"+premio.valor+" 🪙 de regalo.";
+          $("sobrePremioTit").textContent="♻️ "+item.nombre.toUpperCase();
+          $("sobrePremioTxt").textContent="Colección completa — +100 🪙 y de regalo +"+premio.valor+" 🪙 más.";
         }
         mundoActualizarHud();
         if($("pantDurazno").style.display==="block")dzActualizarHud();
