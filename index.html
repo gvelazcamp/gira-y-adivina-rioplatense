@@ -3344,7 +3344,7 @@ $("salirMundo").onclick=()=>{$("mundo").style.display="none";$("setup").style.di
   $("fondoMundo").classList.remove("ver");};
 
 /* ---- Expansión a Argentina: todavía no es jugable, por ahora es un
-   teaser animado que se desbloquea al ganar las 9 ciudades de Uruguay. ---- */
+   teaser animado que se desbloquea al ganar las 21 ciudades de Uruguay. ---- */
 function uruguayCompleto(){return MUNDO.every(d=>ganados.has(d.id));}
 function actualizarBotonExpansion(){
   const b=$("bExpansion");if(!b)return;
@@ -3369,7 +3369,7 @@ function jugarAnimacionExpansion(){
   setTimeout(paso,950);
 }
 $("bExpansion").onclick=()=>{
-  if(!uruguayCompleto()){mostrarToast("🔒","Ganá las 9 ciudades de Uruguay para desbloquear la expansión.");return;}
+  if(!uruguayCompleto()){mostrarToast("🔒","Ganá las 21 ciudades de Uruguay para desbloquear la expansión.");return;}
   jugarAnimacionExpansion();
 };
 $("bVolverDeArgentina").onclick=()=>{
