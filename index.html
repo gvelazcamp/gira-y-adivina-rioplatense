@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
+<meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content, viewport-fit=cover">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#160B24">
 <meta name="mobile-web-app-capable" content="yes">
@@ -66,9 +66,11 @@
 #fondoMundo{position:fixed;inset:0;z-index:-1;background-size:cover;background-position:center;
  opacity:0;transition:opacity .6s}
 #fondoMundo.ver{opacity:.15}
+html{background:var(--noche)}
 body{font-family:'Outfit',system-ui,sans-serif;
  background:radial-gradient(900px 500px at 50% -10%,#3B1B5C 0%,transparent 60%),var(--noche);
- color:var(--crema);min-height:100vh;padding:18px 14px 40px}
+ color:var(--crema);min-height:100vh;min-height:100dvh;
+ padding:max(18px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) max(40px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left))}
 h1,h2,.disp{font-family:'Archivo Black',sans-serif;letter-spacing:-.01em}
 button{font-family:inherit;cursor:pointer;border:none}
 button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
