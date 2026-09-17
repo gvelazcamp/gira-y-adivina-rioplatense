@@ -330,7 +330,7 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 #xGlobalCerrar{display:none;position:fixed;top:14px;right:14px;z-index:60;width:38px;height:38px;
  border-radius:50%;background:#2A1A3CEE;color:var(--crema);border:1px solid #FFFFFF33;
  font-size:1.05rem;font-weight:800;box-shadow:0 4px 12px #0008;cursor:pointer}
-.logro-toast{position:fixed;top:-120px;left:50%;transform:translateX(-50%);z-index:200;
+.logro-toast{position:fixed;top:-120px;left:50%;transform:translateX(-50%);z-index:8;
  display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#F5B301,#FFE39B);
  color:var(--tinta);border-radius:16px;padding:12px 20px;box-shadow:0 10px 30px #000000AA;
  transition:top .45s cubic-bezier(.34,1.56,.64,1);max-width:92vw}
@@ -487,7 +487,8 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 .setup-ola .ola-blanca{margin-top:-28px}
 #codigoInput{text-transform:uppercase;letter-spacing:.2em;text-align:center}
 
-#juego{display:none;max-width:1060px;margin:0 auto}
+#juego{display:none;max-width:1060px;margin:0 auto;padding-top:70px}
+body.tvhost #juego{padding-top:0}
 .serie{text-align:center;text-shadow:0 2px 6px #000;color:#B49FCE;font-size:.9rem;margin-bottom:10px;min-height:20px}
 #jgHud{position:fixed;top:10px;right:10px;z-index:40;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
 #jgHud>div{background:#160B24E6;border:1px solid #F5B30166;color:var(--oro);font-weight:800;font-size:.82rem;
@@ -495,14 +496,14 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 #jgSobre{border-color:#37D6C066!important;color:var(--agua)!important}
 .serie b{color:var(--oro);font-family:'Archivo Black'}
 .marcador{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
-.jug{background:#0C0616D9;border:2px solid transparent;border-radius:16px;padding:12px 14px}
+.jug{background:#0C0616D9;border:2px solid transparent;border-radius:16px;padding:12px 14px;min-width:0}
 .jug.activo{border-color:var(--oro);background:#F5B3011A;box-shadow:0 0 26px #F5B30126}
 .jug.yo .n::after{content:" (vos)";color:var(--agua);font-size:.78rem;font-weight:500}
 .jug .nom{font-weight:700;font-size:1.05rem;display:flex;justify-content:space-between;align-items:center}
 .jug .quien{display:flex;align-items:center;gap:7px;min-width:0}
 .jug .av{width:24px;height:24px;border-radius:50%;object-fit:cover;flex-shrink:0;display:none;border:1px solid #FFFFFF33}
 .jug .av.ver{display:block}
-.jug .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jug .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1}
 .jug .turno{font-size:.7rem;background:var(--oro);color:var(--tinta);padding:2px 8px;border-radius:99px;font-weight:700}
 .jug .cifras{display:flex;gap:16px;margin-top:6px;font-size:.85rem;color:#B49FCE}
 .jug .cifras b svg{width:20px;height:13px;margin-right:6px;vertical-align:1px;opacity:.85;
@@ -3664,7 +3665,7 @@ function recibirTVGuest(d){
 }
 function iniciarPartidaJugadores(jugadores,cats){
   matchToken++;botPausado=0;
-  const js=jugadores.map((j,i)=>({id:j.id||null,n:(j.n||("Jugador "+(i+1))).slice(0,12),av:j.av||null,frame:j.frame||null,tot:0,ronda:0,rg:0,
+  const js=jugadores.map((j,i)=>({id:j.id||null,n:(j.n||("Jugador "+(i+1))).slice(0,30),av:j.av||null,frame:j.frame||null,tot:0,ronda:0,rg:0,
     escudo:false,hielo:{},lodo:false,comodin:false,poderesRonda:[],poderUsadoTurno:false}));
   arranca=((arranca%js.length)+js.length)%js.length;
   S={jug:js,turno:arranca,rondas:rondasElegidas,ronda:0,cats:cats||null,mazo:nuevoMazo(cats),finYa:false,valor:0,fase:"girar",abiertas:new Set(),usadas:new Set(),pistaPos:new Set(),frase:"",cat:"",normalesDesdeToss:0,poderRondaId:0,pierdeSeguidas:0,modoVelocidad:modoVelocidadElegido};
