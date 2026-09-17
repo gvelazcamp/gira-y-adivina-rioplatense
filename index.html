@@ -3628,7 +3628,7 @@ function recibirTVHost(d){
     let j=familiaJugadores.find(x=>x.id===d.pid);
     if(!j&&!tvPartidaIniciada&&familiaJugadores.length<6){j={id:d.pid,n:(d.n||"Jugador").slice(0,12),av:d.av||null,frame:d.frame||null};familiaJugadores.push(j);}
     else if(j&&!tvPartidaIniciada){j.n=(d.n||j.n).slice(0,12);j.av=d.av||j.av||null;j.frame=d.frame||j.frame||null;}
-    renderTVLobby();emitirTVLobby();if(S)publicar(V.aviso);return;
+    renderTVLobby();emitirTVLobby();if(S)publicar(V.aviso,null,true);return;
   }
   if(d.a==="reaccion"){volar(d.e);if(S)enviar({tipo:"reaccion",e:d.e});return;}
   if(!S)return;
