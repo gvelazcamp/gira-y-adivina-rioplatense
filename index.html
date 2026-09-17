@@ -832,6 +832,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <p class="sub" style="margin:18px 0 10px">Elegí tu avatar</p>
   <div class="avatar-grid" id="avatarGrid"></div>
   <button class="btn-grande" id="perfilContinuar" disabled>CONTINUAR</button>
+  <button class="btn-grande sec" id="perfilCerrar" style="margin-top:10px">Cerrar</button>
 </section>
 
 <div id="splash">
@@ -3468,6 +3469,11 @@ $("perfilContinuar").onclick=()=>{
   else $("setup").style.display="block";
 };
 $("cambiarPerfil").onclick=()=>abrirPerfil(null);
+$("perfilCerrar").onclick=()=>{
+  perfilCallback=null;
+  $("pantPerfil").style.display="none";
+  $("setup").style.display="block";
+};
 actualizarChipPerfil();
 mundoActualizarHud();
 chequearRachaDiaria();
