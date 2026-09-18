@@ -95,16 +95,6 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 .mv-gente img{position:absolute;transform-origin:50% 92%;filter:drop-shadow(0 6px 6px #00000070);
  animation:mvBaile 1.05s ease-in-out infinite}
 @keyframes mvBaile{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-3%) rotate(3deg)}}
-.dz-ciclistas{position:absolute;inset:0;pointer-events:none;z-index:2}
-.dz-ciclista-ruta{position:absolute;left:0;top:0;animation-timing-function:ease-in-out;
- animation-iteration-count:infinite;animation-direction:alternate}
-.dz-ciclista-ruta img{width:100%;display:block;filter:drop-shadow(0 5px 6px #00000070);
- animation:dzPedalear .7s ease-in-out infinite}
-@keyframes dzPedalear{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-2%) rotate(1.5deg)}}
-@keyframes dzRuta1{0%{left:11%;top:6%}33%{left:22%;top:12%}66%{left:33%;top:18%}100%{left:41%;top:23%}}
-@keyframes dzRuta2{0%{left:46%;top:22%}33%{left:37%;top:29%}66%{left:27%;top:37%}100%{left:19%;top:46%}}
-@keyframes dzRuta3{0%{left:22%;top:52%}33%{left:27%;top:59%}66%{left:35%;top:66%}100%{left:43%;top:73%}}
-@keyframes dzRuta4{0%{left:43%;top:75%}33%{left:49%;top:82%}66%{left:54%;top:89%}100%{left:59%;top:96%}}
 .senda{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .senda path{fill:none;stroke-linecap:round;vector-effect:non-scaling-stroke}
 .s-base{stroke:#FFFFFF33;stroke-width:5;stroke-dasharray:.012 .02}
@@ -3318,20 +3308,6 @@ function verMundo(){
         gente.appendChild(im);
       });
       r.appendChild(gente);
-    }
-    if(d.id==="durazno"){
-      const ciclistas=document.createElement("div");ciclistas.className="dz-ciclistas";
-      [["assets/worlds/sprites/durazno-ciclista-1.webp","dzRuta1",9,0,9],
-       ["assets/worlds/sprites/durazno-ciclista-2.webp","dzRuta2",8,.3,8.5],
-       ["assets/worlds/sprites/durazno-ciclista-3.webp","dzRuta3",9,.6,9.5],
-       ["assets/worlds/sprites/durazno-ciclista-4.webp","dzRuta4",8,.9,8],].forEach(([src,ruta,w,delay,dur])=>{
-        const wrap=document.createElement("div");wrap.className="dz-ciclista-ruta";wrap.style.width=w+"%";
-        wrap.style.animationName=ruta;wrap.style.animationDelay=delay+"s";wrap.style.animationDuration=dur+"s";
-        const im=document.createElement("img");im.src=src;im.alt="";im.style.animationDelay=delay+"s";
-        wrap.appendChild(im);
-        ciclistas.appendChild(wrap);
-      });
-      r.appendChild(ciclistas);
     }
     tira.appendChild(r);
   });
