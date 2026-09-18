@@ -739,6 +739,8 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 
 /* Sala TV / Familia */
 #tvLobby,#tvControl{display:none;max-width:760px;margin:5vh auto;text-align:center}
+body.tv-lobby-bg{background-image:linear-gradient(#0C0616CC,#0C0616F2),url('assets/splash-tv.webp');
+ background-size:cover;background-position:center;background-attachment:fixed}
 .tv-codigo{font-family:'Archivo Black',sans-serif;font-size:clamp(3rem,12vw,5rem);letter-spacing:.16em;
  color:var(--oro);background:#0C0616;border:1px solid #F5B30166;border-radius:20px;padding:14px 18px;margin:8px 0 14px;
  text-shadow:0 4px 0 #7A2E00,0 0 30px #F5B30155}
@@ -3888,7 +3890,7 @@ function emitirTVLobby(){if(modo==="tvhost")enviar({tipo:"tv_lobby",jugadores:fa
 function crearSalaTV(){
   modo="tvhost";miJug=-1;familiaJugadores=[];tvPartidaIniciada=false;S=null;
   sala=Array.from({length:4},()=>"ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[Math.floor(Math.random()*32)]).join("");
-  $("setup").style.display="none";$("tvLobby").style.display="block";renderTVLobby();
+  $("setup").style.display="none";$("tvLobby").style.display="block";document.body.classList.add("tv-lobby-bg");renderTVLobby();
   conectar(()=>{
     mq.subscribe(tema("tvaccion"));
     mq.on("message",(t,pl)=>{if(t===tema("tvaccion")){try{recibirTVHost(JSON.parse(pl.toString()));}catch(e){}}});
@@ -4034,7 +4036,7 @@ $("bEntrarTV").onclick=()=>{
 $("bTVComenzar").onclick=()=>{
   if(familiaJugadores.length<2||tvPartidaIniciada)return;tvPartidaIniciada=true;renderTVLobby();emitirTVLobby();
   serie=new Array(familiaJugadores.length).fill(0);ultGanador=-1;racha=0;arranca=0;
-  $("tvLobby").style.display="none";$("juego").style.display="block";document.body.classList.add("tvhost");armarTeclado();
+  $("tvLobby").style.display="none";$("juego").style.display="block";document.body.classList.remove("tv-lobby-bg");document.body.classList.add("tvhost");armarTeclado();
   iniciarPartidaJugadores(familiaJugadores,null);
 };
 $("bTVCopiar").onclick=async()=>{const t=location.origin+location.pathname+"?tv="+sala;try{await navigator.clipboard.writeText(t);$("bTVCopiar").textContent="Enlace copiado";}catch(e){}setTimeout(()=>$("bTVCopiar").textContent="Copiar enlace para celulares",1600);};
