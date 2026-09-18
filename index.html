@@ -1453,6 +1453,11 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <span id="marcoNombre">Sin marco</span>
     <button id="marcoNext" type="button" title="Marco siguiente">›</button>
   </div>
+  <div class="marco-selector" id="fichaSelector" style="display:none">
+    <button id="fichaPrev" type="button" title="Diseño anterior">‹</button>
+    <span id="fichaNombre">Clásica</span>
+    <button id="fichaNext" type="button" title="Diseño siguiente">›</button>
+  </div>
   <div class="tablero" id="tablero"><div class="categoria" id="cat"></div><div class="frase" id="frase"></div></div>
   <div class="zona">
     <div class="panel">
@@ -3843,6 +3848,7 @@ function jugarOnlineFalso(velocidad){
       $("setup").style.display="none";$("juego").style.display="block";
       armarTeclado();
       iniciarPartida(perfil.nombre||"Vos",rival.n,undefined,perfil.avatar||null,rival.a,frameEquipado||null,null);
+      $("fichaSelector").style.display="flex";aplicarFichaSelector();
     },900);
   },1500+Math.random()*900);
 }
@@ -5055,6 +5061,7 @@ function armarTeclado(){
     if(VOCALES.includes(l))b.classList.add("vocal");
     b.onclick=()=>accionLetra(l);$("teclado").appendChild(b);});
   $("marcoSelector").style.display="none";
+  $("fichaSelector").style.display="none";
   $("tablero").classList.remove("con-marco");
   $("tablero").style.backgroundImage="";
 }
@@ -5133,6 +5140,30 @@ function equiparFichaSkin(id){
   tnRenderCuadrosTablero("cuadroTableroGrid",true);
   if(seccionTiendaEsFichas)tnRenderCuadrosTablero("seccionTiendaContenido",false);
 }
+/* Selector de Marcos de tablero (fichas) en "Jugar online": deja ir
+   probando en vivo, sobre las fichas reales de la partida, entre los
+   diseños que ya se poseen (igual que el selector viejo de tableros). */
+const fichasDisponibles=()=>FICHAS_SKIN.filter(fichaSkinPoseida);
+let fichaSelectorIdx=0;
+function aplicarFichaSelector(){
+  const disp=fichasDisponibles();
+  let idx=disp.findIndex(m=>(m.id||"")===(fichaSkinEquipada||""));
+  if(idx<0)idx=0;
+  fichaSelectorIdx=idx;
+  $("fichaNombre").textContent=disp[idx].nombre;
+}
+$("fichaPrev").onclick=()=>{
+  const disp=fichasDisponibles();
+  fichaSelectorIdx=(fichaSelectorIdx-1+disp.length)%disp.length;
+  equiparFichaSkin(disp[fichaSelectorIdx].id);
+  $("fichaNombre").textContent=disp[fichaSelectorIdx].nombre;
+};
+$("fichaNext").onclick=()=>{
+  const disp=fichasDisponibles();
+  fichaSelectorIdx=(fichaSelectorIdx+1)%disp.length;
+  equiparFichaSkin(disp[fichaSelectorIdx].id);
+  $("fichaNombre").textContent=disp[fichaSelectorIdx].nombre;
+};
 function cargarTablerosComprados(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_tableros_owned")||"[]"));}catch(e){return new Set();}
 }
