@@ -122,11 +122,10 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 .dz-jugador{display:flex;align-items:center;gap:6px;min-width:0;flex-shrink:1}
 .dz-jugador img{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid #F5B30188;flex-shrink:0}
 .dz-jugador span{font-weight:700;font-size:.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70px}
-.dz-vidasmonedas{display:flex;align-items:center;gap:8px;flex-shrink:0}
-.dz-vidas{display:flex;flex-direction:column;align-items:flex-start;gap:1px}
+.dz-vidas{display:flex;flex-direction:column;align-items:center;gap:1px;flex-shrink:0}
 .dz-vidas span{font-weight:700;font-size:1rem;white-space:nowrap}
 .dz-vidas small{color:#B49FCE;font-size:.62rem;white-space:nowrap}
-.dz-monedas{font-weight:700;font-size:1rem;color:var(--oro);white-space:nowrap;position:relative}
+.dz-monedas{font-weight:700;font-size:1rem;color:var(--oro);white-space:nowrap;position:relative;flex-shrink:0}
 .dz-tip{position:absolute;bottom:calc(100% + 7px);left:50%;transform:translateX(-50%) scale(.85);background:#1C1030;border:1px solid #FFFFFF33;color:#fff;font-weight:700;font-size:.68rem;padding:4px 9px;border-radius:8px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s,transform .15s;box-shadow:0 4px 10px #0007;z-index:5}
 .dz-tip::after{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#1C1030}
 .dz-tip.ver{opacity:1;transform:translateX(-50%) scale(1)}
@@ -890,10 +889,8 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <h1 class="titulo" style="font-size:2.4rem" id="dzCiudadTitulo">DURAZNO</h1>
   <div class="dz-hud">
     <div class="dz-jugador" id="dzJugador"><span class="avatar-wrap"><img id="dzJugadorAvatar" src="" alt=""><img class="avatar-frame" id="dzJugadorFrameImg" alt=""></span><span id="dzJugadorNombre"></span></div>
-    <div class="dz-vidasmonedas">
-      <div class="dz-vidas"><span id="dzVidas">❤️ 5</span><small id="dzProxima"></small></div>
-      <div class="dz-monedas" id="dzMonedas" title="Monedas: se ganan jugando y sirven para comprar en la Tienda"><span id="dzMonedasNum">🪙 500</span><span class="dz-tip" id="dzMonedasTip">Monedas</span></div>
-    </div>
+    <div class="dz-vidas"><span id="dzVidas">❤️ 5</span><small id="dzProxima"></small></div>
+    <div class="dz-monedas" id="dzMonedas" title="Monedas: se ganan jugando y sirven para comprar en la Tienda"><span id="dzMonedasNum">🪙 500</span><span class="dz-tip" id="dzMonedasTip">Monedas</span></div>
   </div>
   <div class="dz-viewport-wrap">
     <div id="duraznoViewport" class="dz-viewport">
