@@ -1169,6 +1169,8 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <div class="frame-grid" id="avatarPremiumGrid"></div>
   <h3 class="tn-subtitulo" data-fijo="1" id="tituloTableros">🎲 Tableros</h3>
   <div class="frame-grid" id="tableroGrid"></div>
+  <h3 class="tn-subtitulo" data-fijo="1" id="tituloCuadrosTablero">🖼️ Marcos de tablero</h3>
+  <div class="frame-grid" id="cuadroTableroGrid"></div>
   <h3 class="tn-subtitulo" data-fijo="1" id="tituloMarcos">🖼️ Marcos de avatar</h3>
   <div class="frame-grid" id="frameGrid"></div>
   <h3 class="tn-subtitulo" data-fijo="1" id="tituloDineroReal">💳 Paquetes con dinero real</h3>
@@ -2118,7 +2120,7 @@ function armarSeccionesColapsablesTienda(){
   });
 }
 armarSeccionesColapsablesTienda();
-$("bTienda").onclick=()=>{actualizarOfertasDiarias();tnActualizar();tnRenderFrames("frameGrid",true);tnRenderAvataresPremium();tnRenderTableros("tableroGrid",true);$("capaTienda").classList.add("ver");};
+$("bTienda").onclick=()=>{actualizarOfertasDiarias();tnActualizar();tnRenderFrames("frameGrid",true);tnRenderAvataresPremium();tnRenderTableros("tableroGrid",true);tnRenderCuadrosTablero("cuadroTableroGrid");$("capaTienda").classList.add("ver");};
 $("tituloMarcos").onclick=()=>{
   seccionTiendaEsFrames=true;
   $("seccionTiendaTitulo").textContent=$("tituloMarcos").textContent;
@@ -5068,6 +5070,16 @@ const MARCOS_TABLERO=[
   {id:"fondo-synthwave",nombre:"Synthwave 80s",precio:3000,nuevo:true},
   {id:"fondo-tiki",nombre:"Templo Tiki",precio:3000,nuevo:true}
 ];
+/* Marcos de tablero: catálogo aparte de Tableros, se venden como ítem
+   propio pero usan el mismo lugar en pantalla (tableroEquipado/
+   tablerosComprados), así que comprar uno acá también sirve como
+   "tablero" normal y viceversa. */
+const CUADROS_TABLERO=[
+  {id:"cuadro-lab-toxico-1",nombre:"Contención Tóxica",precio:900},
+  {id:"cuadro-lab-toxico-2",nombre:"Núcleo Mutante",precio:900},
+  {id:"cuadro-lab-toxico-3",nombre:"Reactor Neón",precio:1000},
+  {id:"cuadro-lab-toxico-4",nombre:"Bioalerta Digital",precio:1000}
+];
 function cargarTablerosComprados(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_tableros_owned")||"[]"));}catch(e){return new Set();}
 }
@@ -5110,12 +5122,20 @@ let seccionTiendaEsTableros=false,seccionTiendaTipo=null;
 function equiparTablero(id){
   tableroEquipado=id||"";guardarTableroEquipado();
   tnRenderTableros("tableroGrid",true);
+  tnRenderCuadrosTablero("cuadroTableroGrid");
   if(seccionTiendaEsTableros)tnRenderTableros("seccionTiendaContenido",false);
 }
 function tnRenderTableros(contId,soloBasicos){
   const cont=$(contId||"tableroGrid");if(!cont)return;cont.innerHTML="";
   const lista=soloBasicos?MARCOS_TABLERO.filter(m=>m.basico):
     MARCOS_TABLERO.filter(m=>m.precio>0).concat(MARCOS_TABLERO.filter(m=>!m.precio));
+  tnPintarCuadrosTablero(cont,lista);
+}
+function tnRenderCuadrosTablero(contId){
+  const cont=$(contId||"cuadroTableroGrid");if(!cont)return;cont.innerHTML="";
+  tnPintarCuadrosTablero(cont,CUADROS_TABLERO);
+}
+function tnPintarCuadrosTablero(cont,lista){
   lista.forEach(m=>{
     const poseido=marcoTableroPoseido(m);
     const equipado=(tableroEquipado||null)===m.id;
