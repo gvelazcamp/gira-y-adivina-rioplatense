@@ -323,6 +323,7 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
  border-radius:8px;padding:5px 10px;font-size:.7rem;white-space:nowrap}
 .tn-comprar:disabled{opacity:1;background:#4A3D5C;color:#C9B8DE;cursor:not-allowed;box-shadow:none}
 .tn-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}
+#sobresGrid .tn-item:not(.sobre-basico){display:none}
 .tn-item.tn-card{display:flex;flex-direction:column;align-items:stretch;gap:6px;text-align:center;
  padding:10px;min-width:0;border-width:2px;border-radius:18px;box-shadow:0 4px 0 #00000060,inset 0 1px 0 #FFFFFF1A}
 .tn-card-img{width:100%;aspect-ratio:1/1;border-radius:12px;background-color:#00000030;
@@ -1041,34 +1042,34 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="tn-comprar-real" data-real="1">$0.99</button>
   </div>
   </div>
-  <h3 class="tn-subtitulo" data-fijo="1">✉️ Sobres de colección</h3>
-  <div class="tn-grid">
-  <div class="tn-item tn-card">
+  <h3 class="tn-subtitulo" data-fijo="1" id="tituloSobres">✉️ Sobres de colección</h3>
+  <div class="tn-grid" id="sobresGrid">
+  <div class="tn-item tn-card sobre-basico">
   <div class="tn-card-img" style="background-image:url('assets/collectibles/durazno/sobre-durazno.webp')"></div>
   <div class="tn-card-info"><b>Sobre de Durazno</b><span>Un sobre para tu colección — 1 por día</span></div>
   <button class="tn-comprar" data-tipo="sobre_durazno" data-precio="1200">🪙 1200</button>
   </div>
-  <div class="tn-item tn-card">
+  <div class="tn-item tn-card sobre-basico">
   <div class="tn-card-img" style="background-image:url('assets/collectibles/montevideo/sobre-montevideo.webp')"></div>
   <div class="tn-card-info"><b>Sobre de Montevideo</b><span>Un sobre para tu colección — 1 por día</span></div>
   <button class="tn-comprar" data-tipo="sobre_montevideo" data-precio="1200">🪙 1200</button>
   </div>
-  <div class="tn-item tn-card">
+  <div class="tn-item tn-card sobre-basico">
   <div class="tn-card-img" style="background-image:url('assets/collectibles/piriapolis/sobre-piriapolis.webp')"></div>
   <div class="tn-card-info"><b>Sobre de Piriápolis</b><span>Un sobre para tu colección — 1 por día</span></div>
   <button class="tn-comprar" data-tipo="sobre_piriapolis" data-precio="1200">🪙 1200</button>
   </div>
-  <div class="tn-item tn-card">
+  <div class="tn-item tn-card sobre-basico">
   <div class="tn-card-img" style="background-image:url('assets/collectibles/punta/sobre-punta.webp')"></div>
   <div class="tn-card-info"><b>Sobre de Punta del Este</b><span>Un sobre para tu colección — 1 por día</span></div>
   <button class="tn-comprar" data-tipo="sobre_punta" data-precio="1200">🪙 1200</button>
   </div>
-  <div class="tn-item tn-card">
+  <div class="tn-item tn-card sobre-basico">
   <div class="tn-card-img" style="background-image:url('assets/collectibles/salto/sobre-salto.webp')"></div>
   <div class="tn-card-info"><b>Sobre de Salto</b><span>Un sobre para tu colección — 1 por día</span></div>
   <button class="tn-comprar" data-tipo="sobre_salto" data-precio="1200">🪙 1200</button>
   </div>
-  <div class="tn-item tn-card">
+  <div class="tn-item tn-card sobre-basico">
   <div class="tn-card-img" style="background-image:url('assets/collectibles/colonia/sobre-colonia.webp')"></div>
   <div class="tn-card-info"><b>Sobre de Colonia</b><span>Un sobre para tu colección — 1 por día</span></div>
   <button class="tn-comprar" data-tipo="sobre_colonia" data-precio="1200">🪙 1200</button>
@@ -2104,7 +2105,16 @@ $("tituloTableros").onclick=()=>{
   tnRenderTableros("seccionTiendaContenido",false);
   $("capaSeccionTienda").classList.add("ver");
 };
-$("seccionTiendaCerrar").addEventListener("click",()=>{seccionTiendaEsTableros=false;});
+/* "Sobres de colección" muestra ahí abajo solo 6 (marcados con la clase
+   sobre-basico en el HTML); tocar el título los mueve a todos (21) a la
+   pantalla aparte, y al cerrarla vuelven a su lugar de siempre. */
+$("tituloSobres").onclick=()=>{
+  seccionTiendaTipo="sobres";
+  $("seccionTiendaTitulo").textContent=$("tituloSobres").textContent;
+  const cont=$("seccionTiendaContenido");cont.innerHTML="";
+  [...$("sobresGrid").children].forEach(el=>{el.style.display="";cont.appendChild(el);});
+  $("capaSeccionTienda").classList.add("ver");
+};
 document.querySelectorAll(".tn-comprar-real").forEach(b=>{
   b.onclick=()=>mostrarToast("🚧","Disponible cuando el juego esté en la Play Store");
 });
@@ -2132,7 +2142,15 @@ function tnAgregarPreciosReales(){
 }
 tnAgregarPreciosReales();
 $("tnCerrar").onclick=()=>$("capaTienda").classList.remove("ver");
-$("seccionTiendaCerrar").onclick=()=>$("capaSeccionTienda").classList.remove("ver");
+$("seccionTiendaCerrar").onclick=()=>{
+  if(seccionTiendaTipo==="sobres"){
+    const grid=$("sobresGrid"),cont=$("seccionTiendaContenido");
+    [...cont.children].forEach(el=>grid.appendChild(el));
+  }
+  seccionTiendaTipo=null;
+  seccionTiendaEsTableros=false;
+  $("capaSeccionTienda").classList.remove("ver");
+};
 function tnNombreItem(b){
   if(b.dataset.nombre)return b.dataset.nombre;
   const item=b.closest(".tn-item");
@@ -5012,7 +5030,7 @@ function cargarTableroEquipado(){
 }
 let tableroEquipado=cargarTableroEquipado();
 const guardarTableroEquipado=()=>{try{localStorage.setItem("gya_tablero_equipado",tableroEquipado||"");}catch(e){}};
-let seccionTiendaEsTableros=false;
+let seccionTiendaEsTableros=false,seccionTiendaTipo=null;
 function equiparTablero(id){
   tableroEquipado=id||"";guardarTableroEquipado();
   tnRenderTableros("tableroGrid",true);
