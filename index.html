@@ -1591,7 +1591,7 @@ let giroActual=0, animando=false;
 
 // Prueba de Velocidad (Toss-Up): aparece después de cada 2 rondas normales.
 // No reemplaza ninguna ronda: se intercala entre ellas y luego continúa la partida normal.
-const TOSS_CADA_RONDAS=2, TOSS_DURACION=20000, TOSS_PASO=800, TOSS_RESPUESTA_DURACION=10000;
+const TOSS_CADA_RONDAS=2, TOSS_DURACION=20000, TOSS_PASO=800, TOSS_RESPUESTA_DURACION=9000;
 let tossTimer=null,tossRespuestaTimer=null,tossRespondedor=null;
 
 // Ronda Bonus: R S T L N E + 3 consonantes + 1 vocal y 10 segundos para resolver.
@@ -4236,7 +4236,7 @@ function renderTVControl(){
   const esToss=V.fase==="tossup",bonusElegir=V.fase==="bonus_elegir",bonusResolver=V.fase==="bonus_resolver",esFin=V.fase==="fin"||V.fase==="bonus_fin",esLodo=V.fase==="lodo";
   let estado="";
   if(esToss){
-    if(V.tossPausado&&V.tossRespondedor===tvMiIndex)estado="⚡ ¡Vos apretaste primero! Tenés 10 segundos para responder.";
+    if(V.tossPausado&&V.tossRespondedor===tvMiIndex)estado="⚡ ¡Vos apretaste primero! Tenés 9 segundos para responder.";
     else if(V.tossPausado)estado="⚡ "+(V.jug[V.tossRespondedor]?V.jug[V.tossRespondedor].n:"Otro jugador")+" está respondiendo…";
     else if(V.tossBloq&&V.tossBloq[tvMiIndex])estado="⚡ Ya quedaste fuera de esta prueba. Mirá la TV.";
     else estado="⚡ Mirá la TV. Tocá RESOLVER apenas sepas la frase.";
@@ -4258,7 +4258,7 @@ function renderTVControl(){
   $("tvcVocal").disabled=!turno||V.fase!=="girar"||!V.hayVoc||yo.ronda<250;
   $("tvcResolver").disabled=esToss?(!!V.tossPausado||!!(V.tossBloq&&V.tossBloq[tvMiIndex])):
     ((bonusResolver||bonusElegir)?V.bonusGanador!==tvMiIndex:(esFin?true:!turno));
-  if(esToss&&V.tossPausado&&V.tossRespondedor===tvMiIndex){$("tvcRespuestaWrap").classList.add("ver");$("tvcMiniTiempo").textContent="⏱️ 10 segundos para responder";}
+  if(esToss&&V.tossPausado&&V.tossRespondedor===tvMiIndex){$("tvcRespuestaWrap").classList.add("ver");$("tvcMiniTiempo").textContent="⏱️ 9 segundos para responder";}
   else if(!bonusResolver&&V.fase!=="girar"&&V.fase!=="consonante"&&V.fase!=="vocal"){$("tvcRespuestaWrap").classList.remove("ver");}
   const puedeVerPoderes=!esToss&&!bonusElegir&&!bonusResolver&&!esFin&&!esLodo;
   $("tvcPoderes").style.display=puedeVerPoderes?"grid":"none";
@@ -4553,7 +4553,7 @@ function pausarToss(jugador){
   if(tossTimer){clearInterval(tossTimer);tossTimer=null;}
   if(tossRespuestaTimer)clearTimeout(tossRespuestaTimer);
   tossRespuestaTimer=setTimeout(()=>finRespuestaToss(jugador),TOSS_RESPUESTA_DURACION);
-  publicar("<b>"+S.jug[jugador].n+" apretó RESOLVER</b> — tablero y reloj congelados. Tiene 10 segundos para responder.");
+  publicar("<b>"+S.jug[jugador].n+" apretó RESOLVER</b> — tablero y reloj congelados. Tiene 9 segundos para responder.");
   return true;
 }
 function reanudarToss(mensaje){
@@ -4578,7 +4578,7 @@ function finRespuestaToss(jugador){
   tossRespuestaTimer=null;
   if(tossRespondedor===jugador){$("modalResolver").classList.remove("ver");tossRespondedor=null;}
   if(modo==="bot"){
-    reanudarToss("Se terminaron los <b>10 segundos para responder</b>. La prueba continúa.");
+    reanudarToss("Se terminaron los <b>9 segundos para responder</b>. La prueba continúa.");
     return;
   }
   S.tossBloq[jugador]=true;
@@ -4587,7 +4587,7 @@ function finRespuestaToss(jugador){
     publicar((S.jug.length>2?"Todos quedaron fuera de la Prueba de Velocidad. La respuesta queda revelada.":"Los dos quedaron fuera de la Prueba de Velocidad. La respuesta queda revelada."),"error");
     setTimeout(tk(nuevaRonda),3600);return;
   }
-  reanudarToss("<b>"+S.jug[jugador].n+" no respondió en 10 segundos</b> y queda fuera. El otro jugador todavía puede resolver.");
+  reanudarToss("<b>"+S.jug[jugador].n+" no respondió en 9 segundos</b> y queda fuera. El otro jugador todavía puede resolver.");
 }
 function premioToss(){
   const ms=S.tossPausado?Math.max(0,S.tossRestante||0):Math.max(0,S.tossFin-Date.now());
@@ -5760,8 +5760,8 @@ function pintarTodo(){
   if(esToss){
     const ts=$("tossInfo").querySelector("span");
     ts.textContent=(V.tossPausado&&V.tossRespondedor!==null&&V.jug[V.tossRespondedor])?
-      V.jug[V.tossRespondedor].n+" está respondiendo · tablero y reloj congelados por 10 segundos.":
-      "Las letras aparecen solas. El primero que toque Resolver congela el tablero y tiene 10 segundos para responder.";
+      V.jug[V.tossRespondedor].n+" está respondiendo · tablero y reloj congelados por 9 segundos.":
+      "Las letras aparecen solas. El primero que toque Resolver congela el tablero y tiene 9 segundos para responder.";
   }
   $("tossBuzz").classList.toggle("ver",esToss&&modo==="local");
   $("bonusInfo").classList.toggle("ver",esBonus);
@@ -5957,7 +5957,7 @@ function abrirResolver(jugador){
   }
   $("modalResolver").querySelector("h2").textContent=esToss?"⚡ Resolver la Prueba":esBonus?"⭐ Resolver Ronda Bonus":"Decí la frase";
   $("modalResolver").querySelector("p").textContent=esToss?
-    ((tossRespondedor!==null&&V.jug[tossRespondedor])?V.jug[tossRespondedor].n+", el tablero está congelado. Tenés 10 segundos para escribir la frase completa.":"Tenés 10 segundos para escribir la frase completa."):
+    ((tossRespondedor!==null&&V.jug[tossRespondedor])?V.jug[tossRespondedor].n+", el tablero está congelado. Tenés 9 segundos para escribir la frase completa.":"Tenés 9 segundos para escribir la frase completa."):
     (bonusSinLetras?"Si ya la sabés, escribila. Si errás no pasa nada, podés seguir eligiendo letras y probar de nuevo cuando quieras.":
     esBonus?"Tenés 10 segundos. Si errás podés reintentar con 10 segundos frescos otra vez.":"Si acertás te llevás la plata de la ronda. Si errás, pasa el turno. Tenés 25 segundos frescos para escribir.");
   $("modalResolver").classList.add("ver");$("respuesta").value="";$("respuesta").focus();
