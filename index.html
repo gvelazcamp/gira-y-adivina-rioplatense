@@ -2425,7 +2425,21 @@ function logroDesbloquear(id){
   logroToast(l);
   empujarRanking();
 }
+/* Algunos logros (paso1/paso4 de Durazno, conquistar una ciudad) sólo
+   se desbloqueaban en el momento exacto en que pasaba, con lo cual si
+   ese paso ya lo habías hecho antes (por ejemplo lo volviste a jugar
+   de repaso, o el progreso ya venía de antes) quedaba nunca marcado
+   aunque en los hechos ya lo tenías superado. Acá se revisa el
+   progreso real y se desbloquea lo que corresponda, para que no
+   quede ningún logro "trabado" con algo que ya cumpliste. */
+function logrosSincronizar(){
+  if(hechos("durazno")>=1)logroDesbloquear("paso1");
+  if(hechos("durazno")>=4)logroDesbloquear("paso4");
+  MUNDO.forEach(d=>{if(ganados.has(d.id))logroDesbloquear(d.id+"100");});
+  if(meta.monedas>=1000)logroDesbloquear("monedas1000");
+}
 function lgAbrir(){
+  logrosSincronizar();
   const cont=$("lgLista");cont.innerHTML="";
   LOGROS.forEach(l=>{
     const ganado=logrosGanados.has(l.id);
