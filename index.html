@@ -1700,25 +1700,45 @@ function cargarRuedaSkinEquipada(){
 let ruedaSkinEquipada=cargarRuedaSkinEquipada();
 function dibujarRuedaJuego(){
   const CENTRO=300,paso=Math.PI*2/SEG.length,conSkin=!!ruedaSkinEquipada;
-  /* Con un marco de ruleta comprado, los gajos con los números se
-     dibujan más chicos (no ocupan los 300px de radio completos), para
-     dejar un anillo libre en el borde donde se ve el diseño comprado
-     (fondo del canvas) sin pisarse nunca con los números, que siempre
-     quedan sólidos y arriba de todo. Sin marco, ocupan todo el radio
-     como siempre. */
-  const R=conSkin?244:CENTRO;
   cx.clearRect(0,0,600,600);
-  SEG.forEach((s,i)=>{const a0=i*paso;
-   cx.beginPath();cx.moveTo(CENTRO,CENTRO);cx.arc(CENTRO,CENTRO,R,a0,a0+paso);cx.closePath();
-   cx.fillStyle=s.t?FONDO[s.t]:["#F5B301","#E5197C","#37D6C0","#7B3FE4","#F97316","#2DA8FF"][i%6];
-   cx.fill();cx.strokeStyle="#160B24";cx.lineWidth=3;cx.stroke();
-   const mid=a0+paso/2;
-   cx.save();cx.translate(CENTRO,CENTRO);cx.rotate(mid);
-   cx.fillStyle=s.t?TINTA[s.t]:"#160B24";
-   cx.font=s.t?"700 25px Outfit, sans-serif":"900 34px 'Archivo Black', sans-serif";
+  if(!conSkin){
+    SEG.forEach((s,i)=>{const a0=i*paso;
+     cx.beginPath();cx.moveTo(CENTRO,CENTRO);cx.arc(CENTRO,CENTRO,CENTRO,a0,a0+paso);cx.closePath();
+     cx.fillStyle=s.t?FONDO[s.t]:["#F5B301","#E5197C","#37D6C0","#7B3FE4","#F97316","#2DA8FF"][i%6];
+     cx.fill();cx.strokeStyle="#160B24";cx.lineWidth=3;cx.stroke();
+     const mid=a0+paso/2;
+     cx.save();cx.translate(CENTRO,CENTRO);cx.rotate(mid);
+     cx.fillStyle=s.t?TINTA[s.t]:"#160B24";
+     cx.font=s.t?"700 25px Outfit, sans-serif":"900 34px 'Archivo Black', sans-serif";
+     const et=s.t?ETI[s.t]:"$"+s.v;
+     if(mid>Math.PI/2&&mid<Math.PI*1.5){cx.rotate(Math.PI);cx.textAlign="left";cx.fillText(et,-(CENTRO-24),10);}
+     else{cx.textAlign="right";cx.fillText(et,CENTRO-24,10);}
+     cx.restore();});
+    return;
+  }
+  /* Con un marco de ruleta comprado, la rueda YA ES el diseño comprado
+     (los gajos, colores y bordes son el fondo del canvas) — acá no se
+     dibuja ningún gajo propio del juego. Sólo se pone el número/etiqueta
+     de cada gajo en una chip chica arriba del diseño, para que se lea
+     sin importar los colores de abajo, y respetando exactamente los
+     mismos 24 gajos que la imagen comprada ya trae dibujados. */
+  const R=268;
+  SEG.forEach((s,i)=>{const a0=i*paso,mid=a0+paso/2;
    const et=s.t?ETI[s.t]:"$"+s.v;
-   if(mid>Math.PI/2&&mid<Math.PI*1.5){cx.rotate(Math.PI);cx.textAlign="left";cx.fillText(et,-(R-24),10);}
-   else{cx.textAlign="right";cx.fillText(et,R-24,10);}
+   const flip=mid>Math.PI/2&&mid<Math.PI*1.5;
+   cx.save();cx.translate(CENTRO,CENTRO);cx.rotate(mid);
+   if(flip)cx.rotate(Math.PI);
+   cx.translate(flip?-R:R,0);
+   cx.font=s.t?"700 19px Outfit, sans-serif":"800 23px 'Archivo Black', sans-serif";
+   cx.textAlign="center";cx.textBaseline="middle";
+   const w=cx.measureText(et).width,chipW=w+18,chipH=27;
+   cx.beginPath();
+   if(cx.roundRect)cx.roundRect(-chipW/2,-chipH/2,chipW,chipH,chipH/2);
+   else cx.rect(-chipW/2,-chipH/2,chipW,chipH);
+   cx.globalAlpha=.85;cx.fillStyle=s.t?FONDO[s.t]:"#0C0616";cx.fill();cx.globalAlpha=1;
+   cx.lineWidth=1.4;cx.strokeStyle="rgba(255,255,255,.32)";cx.stroke();
+   cx.fillStyle=s.t?TINTA[s.t]:"#F6EFE2";
+   cx.fillText(et,0,1);
    cx.restore();});
 }
 cv.style.backgroundImage=ruedaSkinEquipada?"url('assets/ruedas/"+ruedaSkinEquipada+".webp')":"none";
