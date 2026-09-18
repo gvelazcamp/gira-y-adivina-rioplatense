@@ -1151,7 +1151,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   </div>
   <h3 class="tn-subtitulo" data-fijo="1">🧑‍🎤 Avatares premium</h3>
   <div class="frame-grid" id="avatarPremiumGrid"></div>
-  <h3 class="tn-subtitulo" data-fijo="1">🎲 Tableros</h3>
+  <h3 class="tn-subtitulo" data-fijo="1" id="tituloTableros">🎲 Tableros</h3>
   <div class="frame-grid" id="tableroGrid"></div>
   <h3 class="tn-subtitulo" data-fijo="1">🖼️ Marcos de avatar</h3>
   <div class="frame-grid" id="frameGrid"></div>
@@ -2094,7 +2094,17 @@ function armarSeccionesColapsablesTienda(){
   });
 }
 armarSeccionesColapsablesTienda();
-$("bTienda").onclick=()=>{tnActualizar();tnRenderFrames();tnRenderAvataresPremium();tnRenderTableros();$("capaTienda").classList.add("ver");};
+$("bTienda").onclick=()=>{tnActualizar();tnRenderFrames();tnRenderAvataresPremium();tnRenderTableros("tableroGrid",true);$("capaTienda").classList.add("ver");};
+/* "Tableros" muestra ahí abajo solo los básicos (Sin marco + los de
+   Uruguay); tocar el título abre una pantalla aparte con todos, incluidos
+   los que se van comprando/agregando. */
+$("tituloTableros").onclick=()=>{
+  seccionTiendaEsTableros=true;
+  $("seccionTiendaTitulo").textContent=$("tituloTableros").textContent;
+  tnRenderTableros("seccionTiendaContenido",false);
+  $("capaSeccionTienda").classList.add("ver");
+};
+$("seccionTiendaCerrar").addEventListener("click",()=>{seccionTiendaEsTableros=false;});
 document.querySelectorAll(".tn-comprar-real").forEach(b=>{
   b.onclick=()=>mostrarToast("🚧","Disponible cuando el juego esté en la Play Store");
 });
@@ -5002,13 +5012,15 @@ function cargarTableroEquipado(){
 }
 let tableroEquipado=cargarTableroEquipado();
 const guardarTableroEquipado=()=>{try{localStorage.setItem("gya_tablero_equipado",tableroEquipado||"");}catch(e){}};
+let seccionTiendaEsTableros=false;
 function equiparTablero(id){
   tableroEquipado=id||"";guardarTableroEquipado();
-  tnRenderTableros();
+  tnRenderTableros("tableroGrid",true);
+  if(seccionTiendaEsTableros)tnRenderTableros("seccionTiendaContenido",false);
 }
-function tnRenderTableros(){
-  const cont=$("tableroGrid");if(!cont)return;cont.innerHTML="";
-  MARCOS_TABLERO.forEach(m=>{
+function tnRenderTableros(contId,soloBasicos){
+  const cont=$(contId||"tableroGrid");if(!cont)return;cont.innerHTML="";
+  (soloBasicos?MARCOS_TABLERO.filter(m=>!m.precio):MARCOS_TABLERO).forEach(m=>{
     const poseido=marcoTableroPoseido(m);
     const equipado=(tableroEquipado||null)===m.id;
     const card=document.createElement("div");card.className="frame-card";
