@@ -5095,6 +5095,18 @@ function cargarTableroEquipado(){
 }
 let tableroEquipado=cargarTableroEquipado();
 const guardarTableroEquipado=()=>{try{localStorage.setItem("gya_tablero_equipado",tableroEquipado||"");}catch(e){}};
+/* Regalo único para Gonzalo: le deja el tablero Laboratorio Mutante
+   comprado y equipado de arranque, una sola vez (no le pisa el tablero
+   si después elige otro). Nadie más lo recibe. */
+(function regaloTableroGonzalo(){
+  if((perfil.nombre||"").trim().toLowerCase()!=="gonzalo")return;
+  try{
+    if(localStorage.getItem("gya_regalo_lab_toxico"))return;
+    tablerosComprados.add("fondo-lab-toxico");guardarTablerosComprados();
+    tableroEquipado="fondo-lab-toxico";guardarTableroEquipado();
+    localStorage.setItem("gya_regalo_lab_toxico","1");
+  }catch(e){}
+})();
 let seccionTiendaEsTableros=false,seccionTiendaTipo=null;
 function equiparTablero(id){
   tableroEquipado=id||"";guardarTableroEquipado();
