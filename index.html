@@ -5128,6 +5128,14 @@ function cargarFichaSkinEquipada(){
 }
 let fichaSkinEquipada=cargarFichaSkinEquipada();
 const guardarFichaSkinEquipada=()=>{try{localStorage.setItem("gya_ficha_skin_equipada",fichaSkinEquipada||"");}catch(e){}};
+/* Arreglo: mientras "Contención Tóxica" fue gratis, se podía equipar sin
+   quedar guardada como comprada (el precio 0 la daba por poseída sin
+   sumarla a fichasComprados). Al volver a tener precio, quien ya la
+   tenía equipada se quedaba sin poder verla más. Se la regala a quien
+   la esté usando, para no sacarle algo que ya tenía. */
+if(fichaSkinEquipada==="ficha-lab-toxico-1"&&!fichasComprados.has("ficha-lab-toxico-1")){
+  fichasComprados.add("ficha-lab-toxico-1");guardarFichasComprados();
+}
 function aplicarFichaSkin(){
   const m=FICHAS_SKIN.find(x=>x.id===fichaSkinEquipada);
   document.documentElement.style.setProperty("--ficha-skin-img",m&&m.id?"url('assets/fichas/"+m.id+".webp')":"none");
