@@ -88,6 +88,7 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 #mapa::-webkit-scrollbar{width:0}
 .tira{position:relative;width:100%;overflow:hidden}
 .region{width:100%;aspect-ratio:3/4;background-size:cover;background-position:center;display:block;margin-bottom:-1px;position:relative}
+.region video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
 .region::before,.region::after{content:"";position:absolute;left:0;right:0;height:10%;pointer-events:none}
 .region::before{top:0;background:linear-gradient(180deg,#0C0616,transparent)}
 .region::after{bottom:0;background:linear-gradient(0deg,#0C0616,transparent)}
@@ -960,7 +961,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <div id="duraznoViewport" class="dz-viewport">
       <div id="duraznoCanvas" class="dz-canvas">
         <img src="assets/worlds/durazno.webp" id="duraznoImg" draggable="false" alt="Durazno">
-        <video id="duraznoVideo" src="assets/worlds/durazno-loop.mp4" muted loop autoplay playsinline draggable="false" style="display:none"></video>
+        <video id="duraznoVideo" src="assets/worlds/durazno-loop.mp4" muted loop autoplay playsinline preload="auto" draggable="false" style="display:none"></video>
         <div id="dzNodos"></div>
       </div>
     </div>
@@ -3645,8 +3646,7 @@ function abrirCiudadRica(idx){
   if(dzCiudad().id==="durazno"){
     img.style.display="none";
     vid.style.display="block";
-    vid.currentTime=0;
-    vid.play().catch(()=>{});
+    if(vid.paused)vid.play().catch(()=>{});
     irAFoco();
   }else{
     vid.pause();vid.style.display="none";
@@ -3697,6 +3697,12 @@ function verMundo(){
     const abierto=i===0||ganados.has(MUNDO[i-1].id);
     if(!abierto&&!ganados.has(d.id))r.classList.add("gris");
     if(d.bg)r.style.backgroundImage="url('"+d.bg+"')";
+    if(d.id==="durazno"){
+      const v=document.createElement("video");
+      v.src="assets/worlds/durazno-loop.mp4";
+      v.muted=true;v.loop=true;v.autoplay=true;v.playsInline=true;v.preload="auto";
+      r.appendChild(v);
+    }
     if(d.id==="montevideo"){
       const agua=document.createElement("div");agua.className="mv-agua";
       [[10,68,0],[22,82,1.1],[6,88,2.2],[16,95,.6]].forEach(([x,y,delay])=>{
