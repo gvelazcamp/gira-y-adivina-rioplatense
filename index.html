@@ -117,9 +117,9 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 
 /* Durazno 3D */
 #pantDurazno{display:none;max-width:620px;margin:3vh auto;text-align:center}
-.dz-hud{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;
+.dz-hud{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;row-gap:8px;margin-bottom:12px;
  background:#00000033;border:1px solid #FFFFFF1F;border-radius:14px;padding:10px 14px}
-.dz-jugador{display:flex;align-items:center;gap:8px;min-width:0}
+.dz-jugador{display:flex;align-items:center;gap:8px;min-width:0;flex-shrink:0}
 .dz-jugador img{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #F5B30188;flex-shrink:0}
 .dz-jugador span{font-weight:700;font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:90px}
 .dz-vidasmonedas{display:flex;align-items:center;gap:14px;flex-shrink:0}
@@ -390,7 +390,7 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 .campo span{font-size:.85rem;color:#B49FCE;min-width:74px;text-align:left}
 .campo input{flex:1;background:transparent;border:none;color:var(--crema);font-size:1.05rem;font-weight:700}
 .campo input:focus{outline:none}
-.avatar-wrap{position:relative;display:inline-block;line-height:0}
+.avatar-wrap{position:relative;display:inline-block;line-height:0;flex-shrink:0}
 .avatar-frame{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;
  pointer-events:none;transform:scale(1.7);display:none}
 .avatar-frame.ver{display:block}
