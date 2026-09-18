@@ -5397,12 +5397,16 @@ function cargarRuedasComprados(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_ruedas_owned")||"[]"));}catch(e){return new Set();}
 }
 let ruedasComprados=cargarRuedasComprados();
-/* PRUEBA TEMPORAL: da todos los Marcos de ruleta para probar en Jugar
-   online sin tener que comprarlos. Borrar este bloque cuando Gonzalo
-   avise que ya terminó de probar. */
-RUEDAS_SKIN.forEach(m=>{if(m.id)ruedasComprados.add(m.id);});
 const guardarRuedasComprados=()=>{try{localStorage.setItem("gya_ruedas_owned",JSON.stringify([...ruedasComprados]));}catch(e){}};
-guardarRuedasComprados();
+/* Termina la prueba temporal que regalaba todos los Marcos de ruleta:
+   se saca lo que se había regalado (una sola vez por dispositivo, no
+   vuelve a tocar compras hechas después de esto). */
+if(!localStorage.getItem("gya_ruedas_prueba_limpiada")){
+  ["rueda-fuego","rueda-hielo","rueda-oro","rueda-neon","rueda-candy",
+   "rueda-espacio","rueda-selva","rueda-circo"].forEach(id=>ruedasComprados.delete(id));
+  guardarRuedasComprados();
+  try{localStorage.setItem("gya_ruedas_prueba_limpiada","1");}catch(e){}
+}
 const ruedaSkinPoseida=m=>!m.precio||ruedasComprados.has(m.id);
 const guardarRuedaSkinEquipada=()=>{try{localStorage.setItem("gya_rueda_skin_equipada",ruedaSkinEquipada||"");}catch(e){}};
 function aplicarRuedaSkin(){
