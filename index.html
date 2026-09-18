@@ -289,6 +289,15 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 .tn-pack-items{display:flex;gap:10px;margin-top:3px}
 .tn-pack-items span{display:flex;align-items:center;gap:3px;font-size:.78rem;font-weight:700;color:var(--crema)}
 .tn-pack-items img{width:22px;height:22px;object-fit:contain}
+.tn-item.tn-pack{position:relative;border-width:2px;border-color:#FFD65C99;padding-top:16px;
+ box-shadow:0 4px 0 #00000060,inset 0 1px 0 #FFFFFF22}
+.tn-pack-1{background:linear-gradient(135deg,#FF8C42,#E5197C)}
+.tn-pack-2{background:linear-gradient(135deg,#E5197C,#7B3FE4)}
+.tn-pack .tn-icono{font-size:2.3rem;width:52px;filter:drop-shadow(0 3px 3px #00000055)}
+.tn-pack .tn-info b{font-size:1rem;color:#fff;-webkit-text-stroke:.4px #00000055;text-shadow:0 2px 0 #00000040}
+.tn-pack .tn-pack-items span{color:#FFF4DA;text-shadow:0 1px 0 #00000050}
+.tn-pack-tag{position:absolute;top:-2px;left:14px;background:var(--oro);color:var(--tinta);
+ font-size:.62rem;font-weight:800;padding:3px 10px;border-radius:0 0 8px 8px;box-shadow:0 2px 0 #B3860099}
 .tn-comprar{background:var(--oro);color:var(--tinta);font-weight:800;border-radius:10px;padding:10px 14px;
  flex-shrink:0;font-size:.85rem;white-space:nowrap;box-shadow:0 3px 0 #B3860099;border:1px solid #FFE49A66}
 .tn-item.tn-real{border-color:#37D6C077;background:linear-gradient(135deg,#37D6C01A,#7B3FE41A);border-width:2px}
@@ -1023,7 +1032,8 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   </div>
   </div>
   <h3 class="tn-subtitulo">🎁 Packs</h3>
-  <div class="tn-item">
+  <div class="tn-item tn-pack tn-pack-1">
+  <span class="tn-pack-tag">✨ Nuevo</span>
   <div class="tn-icono">🎒</div>
   <div class="tn-info"><b>Pack Explorador</b>
   <div class="tn-pack-items">
@@ -1034,9 +1044,16 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   </div>
   <button class="tn-comprar" data-tipo="pack_explorador" data-precio="900">🪙 900</button>
   </div>
-  <div class="tn-item">
+  <div class="tn-item tn-pack tn-pack-2">
+  <span class="tn-pack-tag">🔥 Popular</span>
   <div class="tn-icono">🔥</div>
-  <div class="tn-info"><b>Pack Racha</b><span>Recarga completa + giro extra + 2 sobres sorpresa</span></div>
+  <div class="tn-info"><b>Pack Racha</b>
+  <div class="tn-pack-items">
+  <span><img src="assets/shop/vida-5.webp" alt="">×1</span>
+  <span>🎡×1</span>
+  <span>🎁×2</span>
+  </div>
+  </div>
   <button class="tn-comprar" data-tipo="pack_racha" data-precio="1800">🪙 1800</button>
   </div>
   <h3 class="tn-subtitulo">✉️ Sobres de colección</h3>
