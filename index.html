@@ -58,6 +58,11 @@
  background-size:contain;background-repeat:no-repeat;background-position:center;
  animation:respira 9s ease-in-out infinite}
 @keyframes respira{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+/* En pantallas anchas (PC/tele) el splash usa la versión horizontal en vez
+   de la vertical del celular, para que se vea completa y no en tira. */
+@media(min-width:900px){
+  #splashFondo,#splashArte{background-image:url('assets/splash-tv.webp?v=1')}
+}
 #splashBarra{position:absolute;left:50%;transform:translateX(-50%);width:min(62vw,300px);bottom:5%;height:8px;border-radius:99px;
  background:#160B2499;border:1px solid #F5B30155;overflow:hidden}
 #splashBarra i{display:block;height:100%;width:0%;border-radius:99px;
