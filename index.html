@@ -1042,9 +1042,9 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="tn-comprar" data-tipo="oferta_gratis" data-precio="0" data-nombre="las monedas">🎁 Gratis</button>
   </div>
   <div class="tn-item tn-card">
-  <div class="tn-card-img"><span class="avatar-wrap" style="width:72%"><img src="assets/avatars/avatar-01.webp" style="width:100%;border-radius:50%;display:block"><img class="avatar-frame ver" src="assets/frames/frame-dorado.png"></span></div>
-  <div class="tn-card-info"><b>Marco Dorado</b><span>Destacá tu perfil — oferta de hoy</span></div>
-  <button class="tn-comprar" data-tipo="marco_dorado" data-precio="500" data-nombre="el Marco Dorado">🪙 500</button>
+  <div class="tn-card-img"><span class="avatar-wrap" style="width:72%"><img src="assets/avatars/avatar-01.webp" style="width:100%;border-radius:50%;display:block"><img class="avatar-frame ver" id="ofertaMarcoFrameImg" src="assets/frames/frame-dorado.png"></span></div>
+  <div class="tn-card-info"><b id="ofertaMarcoNombre">Marco Dorado</b><span>Destacá tu perfil — oferta de hoy</span></div>
+  <button class="tn-comprar" id="ofertaMarcoBtn" data-tipo="marco_dorado" data-precio="500" data-nombre="el Marco Dorado">🪙 500</button>
   </div>
   <div class="tn-item tn-card">
   <div class="tn-card-img" style="background-image:url('assets/shop/vida-1.webp')"></div>
@@ -1052,9 +1052,9 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="tn-comprar" data-tipo="vida" data-precio="150">🪙 150</button>
   </div>
   <div class="tn-item tn-card">
-  <div class="tn-card-img" style="background-image:url('assets/collectibles/durazno/sobre-durazno.webp')"></div>
-  <div class="tn-card-info"><b>Sobre de Durazno</b><span>Oferta relámpago — precio especial</span></div>
-  <button class="tn-comprar" data-tipo="sobre_durazno" data-precio="400">🪙 400</button>
+  <div class="tn-card-img" id="ofertaSobreImg" style="background-image:url('assets/collectibles/durazno/sobre-durazno.webp')"></div>
+  <div class="tn-card-info"><b id="ofertaSobreNombre">Sobre de Durazno</b><span>Oferta relámpago — precio especial</span></div>
+  <button class="tn-comprar" id="ofertaSobreBtn" data-tipo="sobre_durazno" data-precio="400">🪙 400</button>
   </div>
   </div>
   <h3 class="tn-subtitulo" data-fijo="1" id="tituloSobres">✉️ Sobres de colección</h3>
@@ -2049,7 +2049,7 @@ function tnPuedeComprar(tipo){
   if(tipo==="ruleta")return!rwPuedeGirar();
   if(tipo.indexOf("sobre_")===0)return sobrePuedeComprar(tipo.slice(6));
   if(tipo==="oferta_gratis")return gratisDiariaPuedeReclamar();
-  if(tipo==="marco_dorado")return!framesComprados.has("dorado");
+  if(tipo.indexOf("marco_")===0)return!framesComprados.has(tipo.slice(6));
   return true;
 }
 function tnRazonBloqueo(tipo){
@@ -2057,7 +2057,7 @@ function tnRazonBloqueo(tipo){
   if(tipo==="ruleta")return"✅ Ya disponible";
   if(tipo.indexOf("sobre_")===0)return sobreTextoEspera(tipo.slice(6));
   if(tipo==="oferta_gratis")return gratisDiariaTextoEspera();
-  if(tipo==="marco_dorado")return"✅ Ya lo tenés";
+  if(tipo.indexOf("marco_")===0)return"✅ Ya lo tenés";
   return"";
 }
 function otorgarSobreSorpresa(){
@@ -2118,7 +2118,7 @@ function armarSeccionesColapsablesTienda(){
   });
 }
 armarSeccionesColapsablesTienda();
-$("bTienda").onclick=()=>{tnActualizar();tnRenderFrames("frameGrid",true);tnRenderAvataresPremium();tnRenderTableros("tableroGrid",true);$("capaTienda").classList.add("ver");};
+$("bTienda").onclick=()=>{actualizarOfertasDiarias();tnActualizar();tnRenderFrames("frameGrid",true);tnRenderAvataresPremium();tnRenderTableros("tableroGrid",true);$("capaTienda").classList.add("ver");};
 $("tituloMarcos").onclick=()=>{
   seccionTiendaEsFrames=true;
   $("seccionTiendaTitulo").textContent=$("tituloMarcos").textContent;
@@ -2210,9 +2210,10 @@ function tnEjecutarCompra(tipo,precio){
     colMostrarSobreConseguido(cual,true);
   }else if(tipo==="oferta_gratis"){
     meta.ultimaGratisDiaria=Date.now();sumarMonedas(80);
-  }else if(tipo==="marco_dorado"){
-    framesComprados.add("dorado");guardarFramesComprados();
-    equiparMarco("dorado");
+  }else if(tipo.indexOf("marco_")===0){
+    const idMarco=tipo.slice(6);
+    framesComprados.add(idMarco);guardarFramesComprados();
+    equiparMarco(idMarco);
   }
   guardarMeta();
   tnActualizar();mundoActualizarHud();rwActualizarBadge();
@@ -2781,6 +2782,29 @@ const COLECCIONES={
     ]
   }
 };
+/* Ofertas diarias: "Marco del día" y "Sobre relámpago" rotan solos cada
+   día (según la fecha, sin guardar nada), recorriendo todos los marcos
+   y todas las ciudades por turno. */
+function ofertaDiaIdx(){return Math.floor(Date.now()/86400000);}
+function actualizarOfertasDiarias(){
+  const idx=ofertaDiaIdx();
+  const marco=FRAMES[idx%FRAMES.length];
+  const precioMarco=Math.max(100,Math.round(marco.precio*0.6/10)*10);
+  $("ofertaMarcoNombre").textContent="Marco "+marco.nombre;
+  $("ofertaMarcoFrameImg").src="assets/frames/frame-"+marco.id+".png";
+  const btnM=$("ofertaMarcoBtn");
+  btnM.dataset.tipo="marco_"+marco.id;
+  btnM.dataset.precio=precioMarco;
+  btnM.dataset.nombre="el Marco "+marco.nombre;
+
+  const ciudades=Object.keys(COLECCIONES),cid=ciudades[idx%ciudades.length],c=COLECCIONES[cid];
+  $("ofertaSobreNombre").textContent="Sobre de "+c.nombre;
+  $("ofertaSobreImg").style.backgroundImage="url('"+c.sobreCerrado+"')";
+  const btnS=$("ofertaSobreBtn");
+  btnS.dataset.tipo="sobre_"+cid;
+  btnS.dataset.precio=400;
+}
+actualizarOfertasDiarias();
 function cargarColeccionMeta(){
   let m;try{m=JSON.parse(localStorage.getItem("gya_coleccion_meta"));}catch(e){}
   if(!m||typeof m!=="object")m={};
