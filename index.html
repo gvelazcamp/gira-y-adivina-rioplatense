@@ -5305,17 +5305,6 @@ if(tableroEquipado&&!MARCOS_TABLERO.some(m=>m.id===tableroEquipado)){
     localStorage.setItem("gya_regalo_lab_toxico","1");
   }catch(e){}
 })();
-/* Devuelve las monedas de la compra accidental de "Rueda de Hielo"
-   (1500) que hizo Gonzalo antes de que existiera la confirmación de
-   compra. Una sola vez. */
-(function devolverMonedasRuedaHielo(){
-  if((perfil.nombre||"").trim().toLowerCase()!=="gonzalo")return;
-  try{
-    if(localStorage.getItem("gya_devolucion_rueda_hielo"))return;
-    meta.monedas=(meta.monedas||0)+1500;guardarMeta();
-    localStorage.setItem("gya_devolucion_rueda_hielo","1");
-  }catch(e){}
-})();
 let seccionTiendaEsTableros=false,seccionTiendaTipo=null;
 function equiparTablero(id){
   tableroEquipado=id||"";guardarTableroEquipado();
