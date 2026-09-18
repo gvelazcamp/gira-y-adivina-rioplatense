@@ -1985,13 +1985,13 @@ function sobreTextoEspera(cual){
   return"⏳ "+hh+"h "+mm+"m";
 }
 function tnPuedeComprar(tipo){
-  if(tipo==="vida"||tipo==="recarga"||tipo==="pack_explorador"||tipo==="pack_racha")return meta.vidas<VIDAS_MAX;
+  if(tipo==="vida"||tipo==="recarga")return meta.vidas<VIDAS_MAX;
   if(tipo==="ruleta")return!rwPuedeGirar();
   if(tipo.indexOf("sobre_")===0)return sobrePuedeComprar(tipo.slice(6));
   return true;
 }
 function tnRazonBloqueo(tipo){
-  if(tipo==="vida"||tipo==="recarga"||tipo==="pack_explorador"||tipo==="pack_racha")return"❤️ Vidas llenas";
+  if(tipo==="vida"||tipo==="recarga")return"❤️ Vidas llenas";
   if(tipo==="ruleta")return"✅ Ya disponible";
   if(tipo.indexOf("sobre_")===0)return sobreTextoEspera(tipo.slice(6));
   return"";
