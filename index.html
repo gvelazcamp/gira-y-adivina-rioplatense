@@ -4977,14 +4977,14 @@ const MARCOS_TABLERO=[
   {id:"fondo-circo",nombre:"Circo Siniestro",precio:2200},
   {id:"fondo-alien",nombre:"Invasión Alien",precio:2500},
   {id:"fondo-steampunk",nombre:"Laboratorio Steampunk",precio:2500},
-  {id:"fondo-rock",nombre:"Estrella de Rock",precio:2200},
-  {id:"fondo-motoquero",nombre:"Motoquero Rebelde",precio:2200},
-  {id:"fondo-circo-punk",nombre:"Circo Punk",precio:2500},
-  {id:"fondo-cementerio",nombre:"Cementerio Gótico",precio:2500},
-  {id:"fondo-lab-toxico",nombre:"Laboratorio Mutante",precio:2800},
-  {id:"fondo-tatuaje",nombre:"Tatuaje Old School",precio:2800},
-  {id:"fondo-synthwave",nombre:"Synthwave 80s",precio:3000},
-  {id:"fondo-tiki",nombre:"Templo Tiki",precio:3000}
+  {id:"fondo-rock",nombre:"Estrella de Rock",precio:2200,nuevo:true},
+  {id:"fondo-motoquero",nombre:"Motoquero Rebelde",precio:2200,nuevo:true},
+  {id:"fondo-circo-punk",nombre:"Circo Punk",precio:2500,nuevo:true},
+  {id:"fondo-cementerio",nombre:"Cementerio Gótico",precio:2500,nuevo:true},
+  {id:"fondo-lab-toxico",nombre:"Laboratorio Mutante",precio:2800,nuevo:true},
+  {id:"fondo-tatuaje",nombre:"Tatuaje Old School",precio:2800,nuevo:true},
+  {id:"fondo-synthwave",nombre:"Synthwave 80s",precio:3000,nuevo:true},
+  {id:"fondo-tiki",nombre:"Templo Tiki",precio:3000,nuevo:true}
 ];
 function cargarTablerosComprados(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_tableros_owned")||"[]"));}catch(e){return new Set();}
@@ -5020,7 +5020,7 @@ function equiparTablero(id){
 }
 function tnRenderTableros(contId,soloBasicos){
   const cont=$(contId||"tableroGrid");if(!cont)return;cont.innerHTML="";
-  (soloBasicos?MARCOS_TABLERO.filter(m=>!m.precio):MARCOS_TABLERO).forEach(m=>{
+  (soloBasicos?MARCOS_TABLERO.filter(m=>!m.nuevo):MARCOS_TABLERO).forEach(m=>{
     const poseido=marcoTableroPoseido(m);
     const equipado=(tableroEquipado||null)===m.id;
     const card=document.createElement("div");card.className="frame-card";
