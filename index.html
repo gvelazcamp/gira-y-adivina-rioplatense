@@ -1003,9 +1003,9 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <span>🎒 Colección <b id="dzResumenColeccion">0/6</b></span>
   </div>
   <div class="dz-sobre-bloque" id="dzSobreBloque">
-    <span id="dzSobreLabel">🎁 Sobre por partida</span>
+    <span id="dzSobreLabel">🎁 Sobre por ronda</span>
     <div class="dz-barra dz-barra-sobre"><i id="dzSobreBarra"></i></div>
-    <span id="dzSobreTxt">Ganás 1 en cada partida que ganás</span>
+    <span id="dzSobreTxt">Ganás 1 cada vez que acertás una frase</span>
   </div>
   <button class="btn-grande" id="dzBoton">JUGAR ❤️ 1</button>
   <button class="btn-grande sec" id="dzSalir">Volver al mapa</button>
@@ -1360,7 +1360,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
 <div class="capa" id="modalSobreConseguido"><div class="caja">
   <img class="sobre-conseguido-img" id="sobreConseguidoImg" src="assets/collectibles/durazno/sobre-durazno.webp" alt="">
   <h2 id="sobreConseguidoTit">🎁 ¡SOBRE DE DURAZNO CONSEGUIDO!</h2>
-  <p id="sobreConseguidoTxt">Ganaste 3 rondas.</p>
+  <p id="sobreConseguidoTxt">¡Acertaste una frase!</p>
   <div class="fila">
     <button class="no" id="sobreGuardar">GUARDAR PARA DESPUÉS</button>
     <button class="ok" id="sobreAbrirAhora">ABRIR AHORA</button>
@@ -3068,8 +3068,8 @@ $("xGlobalCerrar").onclick=()=>{
 function colActualizarBloqueDurazno(){
   const cm=coleccionMeta[dzCiudad().id];if(!cm)return;
   const el=$("dzSobreTxt");if(!el)return;
-  $("dzSobreLabel").textContent=cm.completada?"🎁 Sobre extra":"🎁 Sobre por partida";
-  el.textContent=cm.completada?"premio sorpresa":"Ganás 1 en cada partida que ganás";
+  $("dzSobreLabel").textContent=cm.completada?"🎁 Sobre extra":"🎁 Sobre por ronda";
+  el.textContent=cm.completada?"premio sorpresa":"Ganás 1 cada vez que acertás una frase";
   $("dzSobreBarra").style.width="100%";
   jgActualizarSobre();
 }
@@ -3079,7 +3079,7 @@ function jgActualizarSobre(){
   const cm=cual?coleccionMeta[cual]:null;
   if(!cm||!COLECCIONES[cual]){el.style.display="none";return;}
   el.style.display="";
-  el.textContent=cm.completada?"🎁 premio sorpresa":"🎁 sobre por partida";
+  el.textContent=cm.completada?"🎁 premio sorpresa":"🎁 sobre si acertás";
 }
 function sumarRondaColeccion(cual){
   // Solo cuenta en Mundo Uruguay -> ciudad con colección -> jugador solo (evita ventajas/duplicados en multijugador).
@@ -3102,7 +3102,7 @@ function colMostrarSobreConseguido(cual,comprado){
   colSobreCualActual=cual;
   $("sobreConseguidoImg").src=COLECCIONES[cual].sobreCerrado;
   $("sobreConseguidoTit").textContent="🎁 ¡SOBRE DE "+COLECCIONES[cual].nombre.toUpperCase()+" CONSEGUIDO!";
-  $("sobreConseguidoTxt").textContent=comprado?"Lo compraste en la tienda.":"Ganaste 3 rondas.";
+  $("sobreConseguidoTxt").textContent=comprado?"Lo compraste en la tienda.":"¡Acertaste una frase!";
   $("modalSobreConseguido").classList.add("ver");
 }
 function colElegirPremio(cual){
