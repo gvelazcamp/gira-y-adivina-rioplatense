@@ -1191,6 +1191,11 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   </div>
   <button class="no" id="tnCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
 </div></div>
+<div class="capa" id="capaSeccionTienda"><div class="caja tn-caja">
+  <h2 id="seccionTiendaTitulo"></h2>
+  <div id="seccionTiendaContenido"></div>
+  <button class="no" id="seccionTiendaCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
+</div></div>
 <div class="confirm-poder" id="confirmCompra" style="display:none">
   <p id="confirmCompraTxt"></p>
   <div class="confirm-poder-btns"><button class="no" id="confirmCompraNo">Cancelar</button><button class="ok" id="confirmCompraSi">Comprar</button></div>
@@ -2063,6 +2068,7 @@ function tnActualizar(){
    despliega al tocar su título — no hace falta tocar esta función de
    nuevo, agarra automáticamente los títulos "tn-subtitulo" que no estén
    marcados como fijos. */
+let seccionTiendaActual=null;
 function armarSeccionesColapsablesTienda(){
   const cont=document.querySelector("#capaTienda .tn-caja");
   [...cont.querySelectorAll(":scope > .tn-subtitulo")].forEach(h=>{
@@ -2078,9 +2084,12 @@ function armarSeccionesColapsablesTienda(){
     }
     h.after(wrap);
     h.onclick=()=>{
-      const abrir=wrap.style.display==="none";
-      wrap.style.display=abrir?"block":"none";
-      h.classList.toggle("abierta",abrir);
+      if(seccionTiendaActual)seccionTiendaActual.style.display="none";
+      seccionTiendaActual=wrap;
+      $("seccionTiendaTitulo").textContent=h.textContent;
+      $("seccionTiendaContenido").appendChild(wrap);
+      wrap.style.display="block";
+      $("capaSeccionTienda").classList.add("ver");
     };
   });
 }
@@ -2113,6 +2122,7 @@ function tnAgregarPreciosReales(){
 }
 tnAgregarPreciosReales();
 $("tnCerrar").onclick=()=>$("capaTienda").classList.remove("ver");
+$("seccionTiendaCerrar").onclick=()=>$("capaSeccionTienda").classList.remove("ver");
 function tnNombreItem(b){
   if(b.dataset.nombre)return b.dataset.nombre;
   const item=b.closest(".tn-item");
@@ -2741,7 +2751,7 @@ function mostrarToast(icono,texto){
 const MENUS_CON_X={capaRuleta:"rwCerrar",capaTienda:"tnCerrar",capaLogros:"lgCerrar",
   capaObjetivos:"objCerrar",capaRecords:"recCerrar",capaRanking:"rkCerrar",capaMas:"masCerrar",
   capaTutorial:"tutoCerrar",capaSalaTVMenu:"salaTVMenuCerrar",capaJugarOnlineMenu:"jugarOnlineMenuCerrar",
-  capaModoOnline:"modoOnlineCerrar"};
+  capaModoOnline:"modoOnlineCerrar",capaSeccionTienda:"seccionTiendaCerrar"};
 $("bMasOpciones").onclick=()=>$("capaMas").classList.add("ver");
 $("bTutorial").onclick=()=>$("capaTutorial").classList.add("ver");
 $("tutoCerrar").onclick=()=>$("capaTutorial").classList.remove("ver");
@@ -2751,7 +2761,10 @@ $("capaMas").addEventListener("click",e=>{
   if(b&&b.id!=="masCerrar")$("capaMas").classList.remove("ver");
 });
 function xGlobalActualizar(){
-  const idAbierta=Object.keys(MENUS_CON_X).find(id=>{const el=$(id);return el&&el.classList.contains("ver");});
+  /* Si hay más de un menú "ver" a la vez (ej: la Tienda abierta atrás de una
+     de sus pantallas de sección), se queda con el último — el más anidado —
+     para que la X cierre la de arriba primero y no salte a la de atrás. */
+  const idAbierta=Object.keys(MENUS_CON_X).filter(id=>{const el=$(id);return el&&el.classList.contains("ver");}).pop();
   const boton=$("xGlobalCerrar");
   if(idAbierta){boton.style.display="grid";boton.style.placeItems="center";boton.dataset.target=idAbierta;}
   else boton.style.display="none";
