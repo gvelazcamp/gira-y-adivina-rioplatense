@@ -3826,7 +3826,6 @@ function jugarOnlineFalso(velocidad){
       destino=null;pasoActual=null;modo="bot";miJug=0;vinoDeJugarOnline=true;
       $("setup").style.display="none";$("juego").style.display="block";
       armarTeclado();
-      $("marcoSelector").style.display="flex";marcoTableroIdx=0;aplicarMarcoTablero();
       iniciarPartida(perfil.nombre||"Vos",rival.n,undefined,perfil.avatar||null,rival.a,frameEquipado||null,null);
     },900);
   },1500+Math.random()*900);
@@ -5349,10 +5348,18 @@ let lodoFaseAnteriorJuego=false,lodoFaseAnteriorTV=false;
    (como la mesa de pool que cambia según quién tira). Si ese jugador no
    tiene ninguno equipado, se ve sin fondo. */
 function aplicarTableroSegunTurno(){
-  if(modo!=="host"&&modo!=="guest")return;
-  const j=V&&V.jug&&V.jug[V.turno],tablero=$("tablero");
-  if(j&&j.tab){
-    tablero.style.backgroundImage="url('assets/tableros/"+j.tab+".webp')";
+  const tablero=$("tablero");
+  let tab=null;
+  if(modo==="host"||modo==="guest"){
+    const j=V&&V.jug&&V.jug[V.turno];
+    tab=j&&j.tab;
+  }else if(modo==="bot"||modo==="local"){
+    /* Contra la máquina o en el mismo dispositivo se usa siempre el
+       tablero que cada uno tiene equipado, en todas las partidas. */
+    tab=tableroEquipado||null;
+  }else return;
+  if(tab){
+    tablero.style.backgroundImage="url('assets/tableros/"+tab+".webp')";
     tablero.classList.add("con-marco");
   }else{
     tablero.style.backgroundImage="";
