@@ -270,7 +270,9 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
  display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
 .frame-preview{width:64px;height:64px;margin:14px auto 16px}
 .tablero-preview{display:block;width:100%;aspect-ratio:1400/788;border-radius:10px;background-size:cover;
- background-position:center;margin-bottom:10px}
+ background-position:center;background-color:#00000055;margin-bottom:10px}
+.tablero-preview-vacio{display:flex;align-items:center;justify-content:center;font-size:.72rem;
+ color:#B49FCE;border:1px dashed #FFFFFF33}
 .frame-preview .avatar-img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
 .frame-preview .avatar-frame{transform:scale(1.45)}
 .frame-card b{font-size:.86rem}
@@ -3844,7 +3846,7 @@ function recibirTVGuest(d){
 }
 function iniciarPartidaJugadores(jugadores,cats){
   matchToken++;botPausado=0;
-  const js=jugadores.map((j,i)=>({id:j.id||null,n:(j.n||("Jugador "+(i+1))).slice(0,30),av:j.av||null,frame:j.frame||null,tot:0,ronda:0,rg:0,
+  const js=jugadores.map((j,i)=>({id:j.id||null,n:(j.n||("Jugador "+(i+1))).slice(0,30),av:j.av||null,frame:j.frame||null,tab:j.tab||null,tot:0,ronda:0,rg:0,
     escudo:false,hielo:{},lodo:false,comodin:false,poderesRonda:[],poderUsadoTurno:false}));
   arranca=((arranca%js.length)+js.length)%js.length;
   S={jug:js,turno:arranca,rondas:rondasElegidas,ronda:0,cats:cats||null,mazo:nuevoMazo(cats),finYa:false,valor:0,fase:"girar",abiertas:new Set(),usadas:new Set(),pistaPos:new Set(),frase:"",cat:"",normalesDesdeToss:0,poderRondaId:0,pierdeSeguidas:0,modoVelocidad:modoVelocidadElegido};
@@ -3999,7 +4001,7 @@ function unirse(cod){
   conectar(()=>{
     mq.subscribe(tema("estado"));
     mq.on("message",(t,pl)=>{if(t===tema("estado")){try{recibirGuest(JSON.parse(pl.toString()));}catch(e){}}});
-    const hola=()=>enviar({a:"hola",n:($("miNombre").value.trim()||"Jugador 2").slice(0,12),av:perfil.avatar||null,frame:frameEquipado||null});
+    const hola=()=>enviar({a:"hola",n:($("miNombre").value.trim()||"Jugador 2").slice(0,12),av:perfil.avatar||null,frame:frameEquipado||null,tab:tableroEquipado||null});
     hola();holaTimer=setInterval(hola,2000);
     $("estado").textContent="Buscando la sala "+sala+"…";
   },()=>{$("estado").textContent="No se pudo conectar. Probá con otra red (datos del celular).";});
@@ -4037,7 +4039,7 @@ function recibirHost(d){
   if(d.a==="hola"){
     if(S){publicar(V.aviso,null,true);return;}
     $("lobby").style.display="none";$("juego").style.display="block";armarTeclado();
-    iniciarPartida(($("miNombre").value.trim()||"Jugador 1").slice(0,12),d.n,undefined,perfil.avatar||null,d.av||null,frameEquipado||null,d.frame||null);return;}
+    iniciarPartida(($("miNombre").value.trim()||"Jugador 1").slice(0,12),d.n,undefined,perfil.avatar||null,d.av||null,frameEquipado||null,d.frame||null,tableroEquipado||null,d.tab||null);return;}
   if(d.a==="reaccion"){volar(d.e);return;}
   if(!S)return;
   if(d.a==="revancha"){if(S.fase==="fin")revancha();return;}
@@ -4091,8 +4093,8 @@ function nuevoMazo(cats){
   }
   return mezclado.reverse();
 }
-function iniciarPartida(n1,n2,cats,av1,av2,frame1,frame2){
-  iniciarPartidaJugadores([{n:n1,av:av1,frame:frame1},{n:n2,av:av2,frame:frame2}],cats);
+function iniciarPartida(n1,n2,cats,av1,av2,frame1,frame2,tab1,tab2){
+  iniciarPartidaJugadores([{n:n1,av:av1,frame:frame1,tab:tab1},{n:n2,av:av2,frame:frame2,tab:tab2}],cats);
 }
 function nuevaRonda(){
   if($("modalSobreConseguido").classList.contains("ver")){accionTrasSobre=nuevaRonda;return;}
@@ -4360,7 +4362,7 @@ function arrancarReloj(){
 }
 function publicar(txt,fx,mantenerReloj){
   V={mask:mask(),cat:S.cat,usadas:[...S.usadas],
-     jug:S.jug.map(j=>({id:j.id||null,n:j.n,av:j.av||null,frame:j.frame||null,tot:j.tot,ronda:j.ronda,rg:j.rg||0})),turno:S.turno,fase:S.fase,
+     jug:S.jug.map(j=>({id:j.id||null,n:j.n,av:j.av||null,frame:j.frame||null,tab:j.tab||null,tot:j.tot,ronda:j.ronda,rg:j.rg||0})),turno:S.turno,fase:S.fase,
      hayVoc:[...VOCALES].some(v=>!S.usadas.has(v)&&S.frase.includes(v)),
      cons:consRestantes(),serie:serie.slice(),doble:!!S.doble,
      tossBloq:S.tossBloq?S.tossBloq.slice():Array(S.jug.length).fill(false),tossPausado:!!S.tossPausado,tossRespondedor:S.tossRespondedor,
@@ -4905,30 +4907,25 @@ function armarTeclado(){
    "Jugar online", solo entre los que ya se poseen. ---- */
 const MARCOS_TABLERO=[
   {id:null,nombre:"Sin marco",precio:0},
-  {id:"fondo-galaxia",nombre:"Casino Galáctico",precio:2200},
-  {id:"fondo-circo",nombre:"Circo Siniestro",precio:2200},
-  {id:"fondo-alien",nombre:"Invasión Alien",precio:2500},
-  {id:"fondo-steampunk",nombre:"Laboratorio Steampunk",precio:2500},
   {id:"fondo-uruguay-1",nombre:"Rambla nocturna",precio:0},
   {id:"fondo-uruguay-2",nombre:"Costa al atardecer",precio:0},
   {id:"fondo-uruguay-3",nombre:"Plaza histórica",precio:0},
   {id:"fondo-uruguay-4",nombre:"Plaza junto al río",precio:0},
   {id:"fondo-uruguay-5",nombre:"Noche de estadio",precio:0},
   {id:"fondo-uruguay-6",nombre:"Campeón del Siglo",precio:0},
-  {id:"fondo-uruguay-7",nombre:"Parque Central",precio:0}
+  {id:"fondo-uruguay-7",nombre:"Parque Central",precio:0},
+  {id:"fondo-galaxia",nombre:"Casino Galáctico",precio:2200},
+  {id:"fondo-circo",nombre:"Circo Siniestro",precio:2200},
+  {id:"fondo-alien",nombre:"Invasión Alien",precio:2500},
+  {id:"fondo-steampunk",nombre:"Laboratorio Steampunk",precio:2500}
 ];
-/* PRUEBA TEMPORAL: por pedido de Gonzalo, mientras se prueban en vivo los
-   4 tableros nuevos, el selector de "Jugar online" los muestra a todos sin
-   pedir que estén comprados. Revertir a marcoTableroPoseido cuando avise
-   que ya los vio y los sacamos de acá arriba. */
-const MARCO_TABLERO_PRUEBA_LIBRE=true;
 function cargarTablerosComprados(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_tableros_owned")||"[]"));}catch(e){return new Set();}
 }
 let tablerosComprados=cargarTablerosComprados();
 const guardarTablerosComprados=()=>{try{localStorage.setItem("gya_tableros_owned",JSON.stringify([...tablerosComprados]));}catch(e){}};
 const marcoTableroPoseido=m=>!m.precio||tablerosComprados.has(m.id);
-const marcosTableroDisponibles=()=>MARCO_TABLERO_PRUEBA_LIBRE?MARCOS_TABLERO:MARCOS_TABLERO.filter(marcoTableroPoseido);
+const marcosTableroDisponibles=()=>MARCOS_TABLERO.filter(marcoTableroPoseido);
 let marcoTableroIdx=0;
 function aplicarMarcoTablero(){
   const disp=marcosTableroDisponibles(),m=disp[marcoTableroIdx]||disp[0],tablero=$("tablero");
@@ -4943,16 +4940,29 @@ function aplicarMarcoTablero(){
 }
 $("marcoPrev").onclick=()=>{const n=marcosTableroDisponibles().length;marcoTableroIdx=(marcoTableroIdx-1+n)%n;aplicarMarcoTablero();};
 $("marcoNext").onclick=()=>{const n=marcosTableroDisponibles().length;marcoTableroIdx=(marcoTableroIdx+1)%marcosTableroDisponibles().length;aplicarMarcoTablero();};
+function cargarTableroEquipado(){
+  try{return localStorage.getItem("gya_tablero_equipado")||"";}catch(e){return"";}
+}
+let tableroEquipado=cargarTableroEquipado();
+const guardarTableroEquipado=()=>{try{localStorage.setItem("gya_tablero_equipado",tableroEquipado||"");}catch(e){}};
+function equiparTablero(id){
+  tableroEquipado=id||"";guardarTableroEquipado();
+  tnRenderTableros();
+}
 function tnRenderTableros(){
   const cont=$("tableroGrid");if(!cont)return;cont.innerHTML="";
-  MARCOS_TABLERO.filter(m=>m.id&&m.precio>0).forEach(m=>{
-    const poseido=tablerosComprados.has(m.id);
+  MARCOS_TABLERO.forEach(m=>{
+    const poseido=marcoTableroPoseido(m);
+    const equipado=(tableroEquipado||null)===m.id;
     const card=document.createElement("div");card.className="frame-card";
-    card.innerHTML='<span class="tablero-preview" style="background-image:url(\'assets/tableros/'+m.id+'.webp\')"></span>'+
+    card.innerHTML=(m.id?'<span class="tablero-preview" style="background-image:url(\'assets/tableros/'+m.id+'.webp\')"></span>':
+        '<span class="tablero-preview tablero-preview-vacio">Sin fondo</span>')+
       '<b>'+m.nombre+'</b><span class="frame-desc">Fondo para el tablero de letras.</span>'+
-      '<button class="frame-btn'+(poseido?' propio':'')+'">'+(poseido?"POSEÍDO ✓":"COMPRAR 🪙 "+m.precio)+'</button>';
+      '<button class="frame-btn'+(equipado?' equipado':poseido?' propio':'')+'">'+
+      (equipado?"EQUIPADO ✓":poseido?"EQUIPAR":"COMPRAR 🪙 "+m.precio)+'</button>';
     const btn=card.querySelector(".frame-btn");
-    if(poseido)btn.disabled=true;
+    if(equipado)btn.disabled=true;
+    else if(poseido)btn.onclick=()=>equiparTablero(m.id);
     else{
       btn.disabled=meta.monedas<m.precio;
       btn.onclick=()=>{
@@ -4960,7 +4970,7 @@ function tnRenderTableros(){
         meta.monedas-=m.precio;guardarMeta();
         tablerosComprados.add(m.id);guardarTablerosComprados();
         mundoActualizarHud();
-        tnRenderTableros();
+        equiparTablero(m.id);
         bip(190,.16,"triangle",.07);
         logroDesbloquear("tienda");
       };
@@ -5168,8 +5178,24 @@ function dibujarReloj(){
 }
 const esMiTurno=()=>modo==="local"||V.turno===(modo==="tvguest"?tvMiIndex:miJug);
 let lodoFaseAnteriorJuego=false,lodoFaseAnteriorTV=false;
+/* En partidas reales con un amigo (host/guest), el fondo del tablero
+   cambia según de quién es el turno, mostrando el que cada uno eligió
+   (como la mesa de pool que cambia según quién tira). Si ese jugador no
+   tiene ninguno equipado, se ve sin fondo. */
+function aplicarTableroSegunTurno(){
+  if(modo!=="host"&&modo!=="guest")return;
+  const j=V&&V.jug&&V.jug[V.turno],tablero=$("tablero");
+  if(j&&j.tab){
+    tablero.style.backgroundImage="url('assets/tableros/"+j.tab+".webp')";
+    tablero.classList.add("con-marco");
+  }else{
+    tablero.style.backgroundImage="";
+    tablero.classList.remove("con-marco");
+  }
+}
 function pintar(){
   asegurarMarcador();
+  aplicarTableroSegunTurno();
   V.jug.forEach((j,i)=>{const e=$("j"+i);if(!e)return;
     e.classList.toggle("activo",i===V.turno);
     e.classList.toggle("yo",modo!=="local"&&modo!=="tvhost"&&i===miJug);
