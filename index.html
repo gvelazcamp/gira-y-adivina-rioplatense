@@ -625,6 +625,9 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
  text-shadow:0 6px 0 #7A2E00,0 0 50px #F5B30188;animation:entra .5s cubic-bezier(.2,1.5,.4,1)}
 #txtResuelto{color:#C9B8DE;font-size:1.02rem;text-align:center;max-width:520px}
 #txtResuelto b{color:var(--oro)}
+#btnReportarFrase{background:#00000055;color:#C9B8DE;border:1px solid #FFFFFF2A;border-radius:99px;
+ padding:6px 14px;font-size:.72rem;font-weight:700}
+#btnReportarFrase:disabled{opacity:.5}
 .papel{position:absolute;top:-24px;width:11px;height:18px;border-radius:2px;animation:caer linear forwards}
 @keyframes caer{0%{transform:translateY(0) rotate(0);opacity:1}
  100%{transform:translateY(110vh) rotate(720deg);opacity:.9}}
@@ -1502,6 +1505,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <div id="ttResuelto">¡RESUELTO!</div>
     <div class="frase" id="frResuelto"></div>
     <div id="txtResuelto"></div>
+    <button id="btnReportarFrase" type="button">🚩 Reportar frase repetida</button>
   </div>
   <div id="capaRueda">
     <div class="ruedabox"><div class="aguja"></div><div class="aro"><canvas id="rueda" width="600" height="600"></canvas></div><div class="centro"></div></div>
@@ -2373,6 +2377,26 @@ function obtenerSupa(){
   if(!supaCliente&&window.supabase&&window.supabase.createClient)supaCliente=window.supabase.createClient(SUPA_URL,SUPA_KEY);
   return supaCliente;
 }
+/* Reportar frase repetida: manda a Supabase qué frase se repitió
+   mucho, para poder limpiar el banco de frases más adelante. */
+async function reportarFraseActual(){
+  const supa=obtenerSupa();
+  if(!supa){mostrarToast("🚩","No se pudo enviar, revisá tu conexión.");return;}
+  const btn=$("btnReportarFrase");btn.disabled=true;
+  try{
+    await supa.from("gya_reportes_frases").insert({
+      frase:V.mask||"",
+      categoria:V.cat||"",
+      apodo:(perfil.nombre||"").slice(0,40),
+      creado_en:new Date().toISOString()
+    });
+    mostrarToast("🚩","¡Gracias! La marcamos como repetida.");
+  }catch(e){
+    mostrarToast("🚩","No se pudo enviar, probá de nuevo.");
+    btn.disabled=false;
+  }
+}
+$("btnReportarFrase").onclick=reportarFraseActual;
 const RK_GRUPO="global";
 function cargarRkPerfil(){
   try{return JSON.parse(localStorage.getItem("gya_ranking_perfil"));}catch(e){return null;}
@@ -5417,6 +5441,7 @@ function efecto(f){
           d.className="ficha abierta";d.textContent=ch;w.appendChild(d);});
         c.appendChild(w);});
       $("txtResuelto").innerHTML=V.aviso||"";
+      $("btnReportarFrase").disabled=false;
       $("capaResuelto").classList.add("ver");
       papelitos();
       [0,140,280,430,620].forEach((m,k)=>setTimeout(()=>bip([659,784,988,1175,1568][k],.3,"sine",.075),m));
