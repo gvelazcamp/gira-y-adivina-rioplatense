@@ -3957,7 +3957,6 @@ function jugarOnlineFalso(velocidad){
       $("setup").style.display="none";$("juego").style.display="block";
       armarTeclado();
       iniciarPartida(perfil.nombre||"Vos",rival.n,undefined,perfil.avatar||null,rival.a,frameEquipado||null,null);
-      $("fichaSelector").style.display="flex";aplicarFichaSelector();
       $("ruedaSelector").style.display="flex";aplicarRuedaSelector();
     },900);
   },1500+Math.random()*900);
