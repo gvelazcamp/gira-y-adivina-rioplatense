@@ -1714,6 +1714,17 @@ actualizarBotonMusica();
 document.addEventListener("visibilitychange",()=>{
   if(document.visibilityState==="visible")sincronizarMusica();else detenerMusica();
 });
+/* Los videos de fondo (Durazno, Montevideo, etc.) traen loop nativo,
+   pero el navegador reinicia recién cuando llega justo al último
+   frame, y ese reinicio se nota como un traboncito — más notorio
+   cuanto más corto es el video (se repite más seguido). Reiniciando
+   un toque antes de llegar al final evita ese salto. */
+function activarLoopSuave(v){
+  v.addEventListener("timeupdate",()=>{
+    if(v.duration&&v.duration-v.currentTime<0.2)v.currentTime=0;
+  });
+}
+activarLoopSuave($("duraznoVideo"));
 const cv=$("rueda"),cx=cv.getContext("2d");
 /* Marco de ruleta equipado: se carga acá (temprano) porque el primer
    dibujado de la ruleta real ya lo necesita. El resto del sistema de
@@ -3772,6 +3783,7 @@ function verMundo(){
       const v=document.createElement("video");
       v.dataset.src=d.video;
       v.muted=true;v.loop=true;v.playsInline=true;v.preload="none";
+      activarLoopSuave(v);
       r.appendChild(v);
     }
     if(d.id==="montevideo"){
