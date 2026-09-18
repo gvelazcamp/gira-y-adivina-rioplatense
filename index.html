@@ -1039,10 +1039,10 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   </div>
   <h3 class="tn-subtitulo">🎁 Packs</h3>
   <div class="tn-item tn-pack-img" style="background-image:url('assets/shop/pack-explorador.webp')">
-  <button class="tn-comprar" data-tipo="pack_explorador" data-precio="900" data-real-agregado="1">❤️ Vidas llenas</button>
+  <button class="tn-comprar" data-tipo="pack_explorador" data-precio="900" data-real-agregado="1" data-nombre="el Pack Explorador">❤️ Vidas llenas</button>
   </div>
   <div class="tn-item tn-pack-img" style="background-image:url('assets/shop/pack-racha.webp')">
-  <button class="tn-comprar" data-tipo="pack_racha" data-precio="1800" data-real-agregado="1">🪙 1800</button>
+  <button class="tn-comprar" data-tipo="pack_racha" data-precio="1800" data-real-agregado="1" data-nombre="el Pack Racha">🪙 1800</button>
   </div>
   <h3 class="tn-subtitulo">✉️ Sobres de colección</h3>
   <div class="tn-grid">
@@ -1156,6 +1156,10 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <div class="frame-grid" id="frameGrid"></div>
   <button class="no" id="tnCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
 </div></div>
+<div class="confirm-poder" id="confirmCompra" style="display:none">
+  <p id="confirmCompraTxt"></p>
+  <div class="confirm-poder-btns"><button class="no" id="confirmCompraNo">Cancelar</button><button class="ok" id="confirmCompraSi">Comprar</button></div>
+</div>
 
 <div class="capa" id="capaLogros"><div class="caja lg-caja">
   <h2>🏅 Logros</h2>
@@ -2032,36 +2036,48 @@ function tnAgregarPreciosReales(){
 }
 tnAgregarPreciosReales();
 $("tnCerrar").onclick=()=>$("capaTienda").classList.remove("ver");
+function tnNombreItem(b){
+  if(b.dataset.nombre)return b.dataset.nombre;
+  const item=b.closest(".tn-item");
+  const bEl=item&&item.querySelector("b");
+  return bEl?bEl.textContent:"esto";
+}
+function tnEjecutarCompra(tipo,precio){
+  meta.monedas-=precio;
+  if(tipo==="vida")recuperarVida();
+  else if(tipo==="recarga"){meta.vidas=VIDAS_MAX;meta.proxima=0;}
+  else if(tipo==="ruleta")meta.ultimaRuleta=0;
+  else if(tipo.indexOf("sobre_")===0){
+    const ciudadId=tipo.slice(6);
+    if(coleccionMeta[ciudadId]){
+      coleccionMeta[ciudadId].sobres++;
+      coleccionMeta[ciudadId].ultimaCompraSobre=Date.now();
+      guardarColeccionMeta();
+      colMostrarSobreConseguido(ciudadId,true);
+    }
+  }else if(tipo==="pack_explorador"){
+    recuperarVida();sumarMonedas(300);
+    const cual=otorgarSobreSorpresa();
+    colMostrarSobreConseguido(cual,true);
+  }else if(tipo==="pack_racha"){
+    meta.vidas=VIDAS_MAX;meta.proxima=0;meta.ultimaRuleta=0;
+    const cual=otorgarSobreSorpresa();otorgarSobreSorpresa();
+    colMostrarSobreConseguido(cual,true);
+  }
+  guardarMeta();
+  tnActualizar();mundoActualizarHud();rwActualizarBadge();
+  if($("pantDurazno").style.display==="block"){dzActualizarHud();dzActualizarBoton();dzRenderNodos();}
+  bip(190,.16,"triangle",.07);
+  logroDesbloquear("tienda");
+}
 document.querySelectorAll(".tn-comprar").forEach(b=>{
   b.onclick=()=>{
     const tipo=b.dataset.tipo,precio=+b.dataset.precio;
     if(meta.monedas<precio||!tnPuedeComprar(tipo))return;
-    meta.monedas-=precio;
-    if(tipo==="vida")recuperarVida();
-    else if(tipo==="recarga"){meta.vidas=VIDAS_MAX;meta.proxima=0;}
-    else if(tipo==="ruleta")meta.ultimaRuleta=0;
-    else if(tipo.indexOf("sobre_")===0){
-      const ciudadId=tipo.slice(6);
-      if(coleccionMeta[ciudadId]){
-        coleccionMeta[ciudadId].sobres++;
-        coleccionMeta[ciudadId].ultimaCompraSobre=Date.now();
-        guardarColeccionMeta();
-        colMostrarSobreConseguido(ciudadId,true);
-      }
-    }else if(tipo==="pack_explorador"){
-      recuperarVida();sumarMonedas(300);
-      const cual=otorgarSobreSorpresa();
-      colMostrarSobreConseguido(cual,true);
-    }else if(tipo==="pack_racha"){
-      meta.vidas=VIDAS_MAX;meta.proxima=0;meta.ultimaRuleta=0;
-      const cual=otorgarSobreSorpresa();otorgarSobreSorpresa();
-      colMostrarSobreConseguido(cual,true);
-    }
-    guardarMeta();
-    tnActualizar();mundoActualizarHud();rwActualizarBadge();
-    if($("pantDurazno").style.display==="block"){dzActualizarHud();dzActualizarBoton();dzRenderNodos();}
-    bip(190,.16,"triangle",.07);
-    logroDesbloquear("tienda");
+    $("confirmCompraTxt").textContent="¿Comprar "+tnNombreItem(b)+" por 🪙 "+precio+"?";
+    $("confirmCompra").style.display="flex";
+    $("confirmCompraSi").onclick=()=>{$("confirmCompra").style.display="none";tnEjecutarCompra(tipo,precio);};
+    $("confirmCompraNo").onclick=()=>{$("confirmCompra").style.display="none";};
   };
 });
 
