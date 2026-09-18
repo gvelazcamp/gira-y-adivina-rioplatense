@@ -82,7 +82,10 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 #mapa.arrastrando{cursor:grabbing}
 #mapa::-webkit-scrollbar{width:0}
 .tira{position:relative;width:100%;overflow:hidden}
-.region{width:100%;aspect-ratio:3/4;background-size:cover;background-position:center;display:block;margin-bottom:-1px}
+.region{width:100%;aspect-ratio:3/4;background-size:cover;background-position:center;display:block;margin-bottom:-1px;position:relative}
+.region::before,.region::after{content:"";position:absolute;left:0;right:0;height:10%;pointer-events:none}
+.region::before{top:0;background:linear-gradient(180deg,#0C0616,transparent)}
+.region::after{bottom:0;background:linear-gradient(0deg,#0C0616,transparent)}
 .region.gris{filter:grayscale(.92) brightness(.4)}
 .senda{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .senda path{fill:none;stroke-linecap:round;vector-effect:non-scaling-stroke}
