@@ -5441,7 +5441,14 @@ const RUEDAS_SKIN=[
   {id:"rueda-candy",nombre:"Rueda Candy",precio:1500,basico:true},
   {id:"rueda-espacio",nombre:"Rueda Galáctica",precio:1700,nuevo:true},
   {id:"rueda-selva",nombre:"Rueda Tiki",precio:1600,nuevo:true},
-  {id:"rueda-circo",nombre:"Rueda de Circo",precio:1700,nuevo:true}
+  {id:"rueda-circo",nombre:"Rueda de Circo",precio:1700,nuevo:true},
+  {id:"rueda-sheriff",nombre:"Rueda Sheriff",precio:1700,nuevo:true},
+  {id:"rueda-desierto",nombre:"Rueda del Desierto",precio:1700,nuevo:true},
+  {id:"rueda-forajido",nombre:"Rueda Forajido",precio:1700,nuevo:true},
+  {id:"rueda-pepitas",nombre:"Rueda de Oro Salvaje",precio:1800,nuevo:true},
+  {id:"rueda-locomotora",nombre:"Rueda Locomotora",precio:1700,nuevo:true},
+  {id:"rueda-rodeo",nombre:"Rueda Rodeo",precio:1700,nuevo:true},
+  {id:"rueda-casino",nombre:"Rueda Casino",precio:1800,nuevo:true}
 ];
 function cargarRuedasComprados(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_ruedas_owned")||"[]"));}catch(e){return new Set();}
