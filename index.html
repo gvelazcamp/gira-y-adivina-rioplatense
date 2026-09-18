@@ -4306,7 +4306,7 @@ $("tvcGirar").onclick=()=>enviar({a:"girar"});
 $("tvcVocal").onclick=()=>enviar({a:"vocal"});
 $("tvcResolver").onclick=()=>{
   if(V.fase==="tossup"){enviar({a:"toss_pausa"});return;}
-  if(V.fase==="bonus_elegir")$("tvcMiniTiempo").textContent="⏱️ Si ya la sabés, escribila. Si errás podés seguir eligiendo letras.";
+  if(V.fase==="bonus_elegir")$("tvcMiniTiempo").textContent="⏱️ Si ya la sabés, escribila — pero si errás, perdés la Ronda Bonus.";
   else if(V.fase!=="bonus_resolver"){enviar({a:"abrir_resolver"});$("tvcMiniTiempo").textContent="⏱️ Tenés 25 segundos frescos para escribir.";}
   tvAbrirRespuesta();
 };
@@ -4673,16 +4673,14 @@ function hostResolverBonus(txt){
     S.fase="bonus_fin";
     publicar("¡BONUS RESUELTO! <b>"+j.n+"</b> gana $"+BONUS_PREMIO+" extra.","resuelto");
     setTimeout(tk(()=>finalizarPartidaPendiente(true)),5200);
-  }else if(S.fase==="bonus_resolver"){
-    bip(140,.28,"square",.06);
-    S.bonusFin=Date.now()+BONUS_DURACION;
-    publicar("«"+txt.toUpperCase()+"» no era. Tenés 10 segundos frescos para volver a intentar.","error");
   }else{
-    /* Intentó resolver antes de terminar de elegir las 4 letras: no
-       hay tiempo corriendo todavía en esta fase, así que no pierde
-       nada — sigue eligiendo letras o prueba de nuevo cuando quiera. */
-    bip(140,.28,"square",.06);
-    publicar("«"+txt.toUpperCase()+"» no era. Seguí eligiendo letras o probá de nuevo.","error");
+    /* Elegir Resolver es jugado: si te equivocás, sea que ya habías
+       elegido las 4 letras o que probaste de arranque, se acabó la
+       Ronda Bonus ahí mismo (mismo trato que quedarte sin tiempo). */
+    bip(140,.35,"square",.07);
+    limpiarBonus();abrirTodoBonus();S.fase="bonus_fin";
+    publicar("«"+txt.toUpperCase()+"» no era. Perdiste la Ronda Bonus — la frase era <b>"+S.frase+"</b>.","error");
+    setTimeout(tk(()=>finalizarPartidaPendiente(false)),3600);
   }
 }
 function finBonusTiempo(){
@@ -5938,7 +5936,7 @@ function accionLetra(l){
   if(modo==="guest")enviar({a:"letra",l});else hostLetra(l);
 }
 function abrirResolver(jugador){
-  const esToss=V.fase==="tossup",esBonus=V.fase==="bonus_resolver"||V.fase==="bonus_elegir",bonusSinLetras=V.fase==="bonus_elegir";
+  const esToss=V.fase==="tossup",esBonus=V.fase==="bonus_resolver"||V.fase==="bonus_elegir";
   tossRespondedor=(jugador===0||jugador===1)?jugador:null;
   if(esToss){
     const j=tossRespondedor!==null?tossRespondedor:(modo==="guest"?1:0);
@@ -5958,8 +5956,7 @@ function abrirResolver(jugador){
   $("modalResolver").querySelector("h2").textContent=esToss?"⚡ Resolver la Prueba":esBonus?"⭐ Resolver Ronda Bonus":"Decí la frase";
   $("modalResolver").querySelector("p").textContent=esToss?
     ((tossRespondedor!==null&&V.jug[tossRespondedor])?V.jug[tossRespondedor].n+", el tablero está congelado. Tenés 9 segundos para escribir la frase completa.":"Tenés 9 segundos para escribir la frase completa."):
-    (bonusSinLetras?"Si ya la sabés, escribila. Si errás no pasa nada, podés seguir eligiendo letras y probar de nuevo cuando quieras.":
-    esBonus?"Tenés 10 segundos. Si errás podés reintentar con 10 segundos frescos otra vez.":"Si acertás te llevás la plata de la ronda. Si errás, pasa el turno. Tenés 25 segundos frescos para escribir.");
+    (esBonus?"Si acertás ganás $"+BONUS_PREMIO+" extra. Si errás, perdés la Ronda Bonus — no hay segundo intento.":"Si acertás te llevás la plata de la ronda. Si errás, pasa el turno. Tenés 25 segundos frescos para escribir.");
   $("modalResolver").classList.add("ver");$("respuesta").value="";$("respuesta").focus();
 }
 $("bResolver").onclick=()=>{
