@@ -339,6 +339,11 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 .tn-comprar-mini,.tn-item.tn-real,
 #tituloDineroReal,#tituloDineroReal+.tn-proximamente,#tituloDineroReal+.tn-proximamente+.tn-grid{
   display:none!important}
+/* PAUSA DE MARCOS DE RULETA: a pedido de Gonzalo, mientras decide qué
+   hacer con el desfasaje de las imágenes (ver RUEDAS_PAUSADAS en el
+   JS). Nada se borra, sólo se esconde. Para reactivar, borrar este
+   bloque Y poner RUEDAS_PAUSADAS=false más arriba. */
+#tituloRuedas,#ruedaGrid,#ruedaSelector{display:none!important}
 #sobresGrid .tn-item:not(.sobre-basico){display:none}
 .tn-item.tn-card{display:flex;flex-direction:column;align-items:stretch;gap:6px;text-align:center;
  padding:10px;min-width:0;border-width:2px;border-radius:18px;box-shadow:0 4px 0 #00000060,inset 0 1px 0 #FFFFFF1A;
@@ -1700,6 +1705,14 @@ function cargarRuedaSkinEquipada(){
   try{return localStorage.getItem("gya_rueda_skin_equipada")||"";}catch(e){return"";}
 }
 let ruedaSkinEquipada=cargarRuedaSkinEquipada();
+/* PAUSA DE MARCOS DE RULETA: a pedido de Gonzalo, mientras decide qué
+   hacer con el desfasaje de las imágenes. No se borra nada (compras,
+   equipado, tienda siguen intactos en los datos) — sólo se oculta la
+   parte visual: la rueda real siempre se ve Clásica, no aparece la
+   sección en la Tienda ni el selector en Jugar online. Para reactivar,
+   poner esto en false (y sacar el bloque CSS de más abajo con el
+   mismo comentario).*/
+const RUEDAS_PAUSADAS=true;
 /* Cada imagen de ruleta comprada viene con sus 24 gajos ya dibujados,
    pero no todas empiezan el primer gajo en el mismo lugar que nuestra
    grilla de 24 partes iguales (arranca en el 3 en punto). En algunas
@@ -1713,7 +1726,7 @@ const RUEDA_OFFSET={
   "rueda-desierto":-7.5
 };
 function dibujarRuedaJuego(){
-  const CENTRO=300,paso=Math.PI*2/SEG.length,conSkin=!!ruedaSkinEquipada;
+  const CENTRO=300,paso=Math.PI*2/SEG.length,conSkin=!RUEDAS_PAUSADAS&&!!ruedaSkinEquipada;
   cx.clearRect(0,0,600,600);
   if(!conSkin){
     SEG.forEach((s,i)=>{const a0=i*paso;
@@ -1755,7 +1768,7 @@ function dibujarRuedaJuego(){
    cx.fillText(et,0,1);
    cx.restore();});
 }
-cv.style.backgroundImage=ruedaSkinEquipada?"url('assets/ruedas/"+ruedaSkinEquipada+".webp')":"none";
+cv.style.backgroundImage=(!RUEDAS_PAUSADAS&&ruedaSkinEquipada)?"url('assets/ruedas/"+ruedaSkinEquipada+".webp')":"none";
 dibujarRuedaJuego();
 
 function segmentoDe(g){
@@ -3976,7 +3989,7 @@ function jugarOnlineFalso(velocidad){
       $("setup").style.display="none";$("juego").style.display="block";
       armarTeclado();
       iniciarPartida(perfil.nombre||"Vos",rival.n,undefined,perfil.avatar||null,rival.a,frameEquipado||null,null);
-      $("ruedaSelector").style.display="flex";aplicarRuedaSelector();
+      if(!RUEDAS_PAUSADAS){$("ruedaSelector").style.display="flex";aplicarRuedaSelector();}
     },900);
   },1500+Math.random()*900);
 }
@@ -5480,7 +5493,7 @@ if(!localStorage.getItem("gya_ruedas_prueba_limpiada")){
 const ruedaSkinPoseida=m=>!m.precio||ruedasComprados.has(m.id);
 const guardarRuedaSkinEquipada=()=>{try{localStorage.setItem("gya_rueda_skin_equipada",ruedaSkinEquipada||"");}catch(e){}};
 function aplicarRuedaSkin(){
-  cv.style.backgroundImage=ruedaSkinEquipada?"url('assets/ruedas/"+ruedaSkinEquipada+".webp')":"none";
+  cv.style.backgroundImage=(!RUEDAS_PAUSADAS&&ruedaSkinEquipada)?"url('assets/ruedas/"+ruedaSkinEquipada+".webp')":"none";
   dibujarRuedaJuego();
 }
 function equiparRuedaSkin(id){
