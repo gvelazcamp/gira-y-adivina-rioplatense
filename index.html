@@ -1694,18 +1694,21 @@ function cargarRuedaSkinEquipada(){
 }
 let ruedaSkinEquipada=cargarRuedaSkinEquipada();
 function dibujarRuedaJuego(){
-  const R=300,paso=Math.PI*2/SEG.length,conSkin=!!ruedaSkinEquipada;
+  const CENTRO=300,paso=Math.PI*2/SEG.length,conSkin=!!ruedaSkinEquipada;
+  /* Con un marco de ruleta comprado, los gajos con los números se
+     dibujan más chicos (no ocupan los 300px de radio completos), para
+     dejar un anillo libre en el borde donde se ve el diseño comprado
+     (fondo del canvas) sin pisarse nunca con los números, que siempre
+     quedan sólidos y arriba de todo. Sin marco, ocupan todo el radio
+     como siempre. */
+  const R=conSkin?244:CENTRO;
   cx.clearRect(0,0,600,600);
   SEG.forEach((s,i)=>{const a0=i*paso;
-   cx.beginPath();cx.moveTo(R,R);cx.arc(R,R,R,a0,a0+paso);cx.closePath();
+   cx.beginPath();cx.moveTo(CENTRO,CENTRO);cx.arc(CENTRO,CENTRO,R,a0,a0+paso);cx.closePath();
    cx.fillStyle=s.t?FONDO[s.t]:["#F5B301","#E5197C","#37D6C0","#7B3FE4","#F97316","#2DA8FF"][i%6];
-   /* Con un marco de ruleta comprado, el color de cada gajo se pinta
-      semitransparente para que se note el diseño de fondo (que gira
-      junto con el canvas) sin perder la legibilidad de los números. */
-   cx.globalAlpha=conSkin?.45:1;
-   cx.fill();cx.globalAlpha=1;cx.strokeStyle="#160B24";cx.lineWidth=3;cx.stroke();
+   cx.fill();cx.strokeStyle="#160B24";cx.lineWidth=3;cx.stroke();
    const mid=a0+paso/2;
-   cx.save();cx.translate(R,R);cx.rotate(mid);
+   cx.save();cx.translate(CENTRO,CENTRO);cx.rotate(mid);
    cx.fillStyle=s.t?TINTA[s.t]:"#160B24";
    cx.font=s.t?"700 25px Outfit, sans-serif":"900 34px 'Archivo Black', sans-serif";
    const et=s.t?ETI[s.t]:"$"+s.v;
