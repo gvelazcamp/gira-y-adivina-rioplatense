@@ -1820,8 +1820,8 @@ $("rondas").addEventListener("click",e=>{const b=e.target.closest("button");if(!
  [...$("rondas").children].forEach(x=>x.setAttribute("aria-pressed",x===b));rondasElegidas=+b.dataset.r;});
 
 const MUNDO=[
- {id:"durazno",pasos:[[24, 16], [36, 23], [20, 36], [33, 50]],nx:50,ny:60,bg:"assets/worlds/durazno.webp",n:"Durazno",r:"El Tío del Asado",rondas:3,cats:["Dicho popular","Persona"],rica:true},
- {id:"montevideo",pasos:[[20, 22], [34, 31], [46, 41], [30, 55]],nx:58,ny:60,bg:"assets/worlds/montevideo.webp",n:"Montevideo",r:"La Vecina Curiosa",rondas:3,cats:["Lugar","Casa y trabajo"],rica:true},
+ {id:"durazno",pasos:[[24, 16], [36, 23], [20, 36], [33, 50]],nx:50,ny:60,bg:"assets/worlds/durazno.webp",video:"assets/worlds/durazno-loop.mp4",n:"Durazno",r:"El Tío del Asado",rondas:3,cats:["Dicho popular","Persona"],rica:true},
+ {id:"montevideo",pasos:[[20, 22], [34, 31], [46, 41], [30, 55]],nx:58,ny:60,bg:"assets/worlds/montevideo.webp",video:"assets/worlds/montevideo-loop.mp4",n:"Montevideo",r:"La Vecina Curiosa",rondas:3,cats:["Lugar","Casa y trabajo"],rica:true},
  {id:"piriapolis",pasos:[[22, 20], [35, 28], [26, 40], [40, 52]],nx:56,ny:58,bg:"assets/worlds/piriapolis.webp",n:"Piriápolis",r:"El Guardavidas",rondas:3,cats:["Clima y verano","Viaje"],rica:true},
  {id:"punta",pasos:[[20, 22], [32, 30], [24, 42], [38, 52]],nx:50,ny:62,bg:"assets/worlds/punta-del-este.webp",n:"Punta del Este",r:"La Turista",rondas:4,cats:["Cosa","Cosas de la casa"],rica:true},
  {id:"salto",pasos:[[22, 20], [34, 28], [24, 40], [38, 50]],nx:52,ny:46,bg:"assets/worlds/salto.webp",n:"Salto",r:"El Parrillero",rondas:4,cats:["Comida","Animales"],rica:true},
@@ -3652,12 +3652,13 @@ function abrirCiudadRica(idx){
   const img=$("duraznoImg"),vid=$("duraznoVideo");
   img.alt=dzCiudad().n;
   const irAFoco=()=>requestAnimationFrame(dzScrollAFoco);
-  /* Prueba: en Durazno, en vez del fondo fijo, se usa un video en loop
-     infinito (assets/worlds/durazno-loop.mp4). El resto de las ciudades
-     ricas sigue usando la imagen de siempre. */
-  if(dzCiudad().id==="durazno"){
+  /* En las ciudades que tienen video (d.video), se usa ese video en loop
+     infinito en vez del fondo fijo. El resto sigue usando la imagen de
+     siempre. */
+  if(dzCiudad().video){
     img.style.display="none";
     vid.style.display="block";
+    if(!vid.src.endsWith(dzCiudad().video))vid.src=dzCiudad().video;
     if(vid.paused)vid.play().catch(()=>{});
     irAFoco();
   }else{
@@ -3709,9 +3710,9 @@ function verMundo(){
     const abierto=i===0||ganados.has(MUNDO[i-1].id);
     if(!abierto&&!ganados.has(d.id))r.classList.add("gris");
     if(d.bg)r.style.backgroundImage="url('"+d.bg+"')";
-    if(d.id==="durazno"){
+    if(d.video){
       const v=document.createElement("video");
-      v.src="assets/worlds/durazno-loop.mp4";
+      v.src=d.video;
       v.muted=true;v.loop=true;v.autoplay=true;v.playsInline=true;v.preload="auto";
       r.appendChild(v);
     }
