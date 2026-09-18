@@ -5122,11 +5122,6 @@ function cargarFichasComprados(){
 }
 let fichasComprados=cargarFichasComprados();
 const guardarFichasComprados=()=>{try{localStorage.setItem("gya_fichas_owned",JSON.stringify([...fichasComprados]));}catch(e){}};
-/* PRUEBA TEMPORAL: da todos los Marcos de tablero (fichas) para probar
-   en Jugar online sin tener que comprarlos. Borrar este bloque cuando
-   Gonzalo avise que ya terminó de probar. */
-FICHAS_SKIN.forEach(m=>{if(m.id)fichasComprados.add(m.id);});
-guardarFichasComprados();
 const fichaSkinPoseida=m=>!m.precio||fichasComprados.has(m.id);
 function cargarFichaSkinEquipada(){
   try{return localStorage.getItem("gya_ficha_skin_equipada")||"";}catch(e){return"";}
