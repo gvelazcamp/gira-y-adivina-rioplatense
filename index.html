@@ -2395,7 +2395,7 @@ const FRAMES=[
   {id:"dorado",nombre:"Dorado",desc:"Elegancia que destaca tu perfil.",precio:500,basico:true},
   {id:"corazon",nombre:"Corazón",desc:"Mostrale cariño a tu perfil.",precio:600},
   {id:"fuego",nombre:"Fuego",desc:"Encendé tu avatar.",precio:700,basico:true},
-  {id:"neon",nombre:"Neón",desc:"Brillo urbano nocturno.",precio:800},
+  {id:"neon",nombre:"Neón",desc:"Brillo urbano nocturno.",precio:800,basico:true},
   {id:"esmeralda",nombre:"Esmeralda",desc:"Verde precioso y elegante.",precio:900,basico:true},
   {id:"rubi",nombre:"Rubí",desc:"Rojo intenso de joya.",precio:1000,basico:true},
   {id:"electrico",nombre:"Eléctrico",desc:"Energía pura a tu alrededor.",precio:1100},
@@ -2429,7 +2429,7 @@ function tnRenderFrames(contId,soloBasicos){
   const cont=$(contId||"frameGrid");if(!cont)return;cont.innerHTML="";
   const miAvatar="assets/avatars/avatar-01.webp";
   const sinMarco={id:"",nombre:"Sin marco",desc:"Tu avatar tal cual, sin marco.",precio:0};
-  const opciones=[sinMarco].concat(soloBasicos?FRAMES.filter(f=>f.basico):FRAMES);
+  const opciones=soloBasicos?FRAMES.filter(f=>f.basico):[sinMarco].concat(FRAMES);
   opciones.forEach(f=>{
     const poseido=f.precio===0||framesComprados.has(f.id);
     const equipado=frameEquipado===f.id;
