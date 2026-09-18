@@ -925,9 +925,9 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <span>🎒 Colección <b id="dzResumenColeccion">0/6</b></span>
   </div>
   <div class="dz-sobre-bloque" id="dzSobreBloque">
-    <span id="dzSobreLabel">🎁 Próximo sobre</span>
+    <span id="dzSobreLabel">🎁 Sobre por partida</span>
     <div class="dz-barra dz-barra-sobre"><i id="dzSobreBarra"></i></div>
-    <span id="dzSobreTxt">0 / 3 rondas</span>
+    <span id="dzSobreTxt">Ganás 1 en cada partida que ganás</span>
   </div>
   <button class="btn-grande" id="dzBoton">JUGAR ❤️ 1</button>
   <button class="btn-grande sec" id="dzSalir">Volver al mapa</button>
@@ -2593,9 +2593,9 @@ $("xGlobalCerrar").onclick=()=>{
 function colActualizarBloqueDurazno(){
   const cm=coleccionMeta[dzCiudad().id];if(!cm)return;
   const el=$("dzSobreTxt");if(!el)return;
-  $("dzSobreLabel").textContent=cm.completada?"🎁 Sobre extra":"🎁 Próximo sobre";
-  el.textContent=cm.completada?"premio sorpresa":cm.rondasProgreso+" / 3 rondas";
-  $("dzSobreBarra").style.width=Math.round(cm.rondasProgreso/3*100)+"%";
+  $("dzSobreLabel").textContent=cm.completada?"🎁 Sobre extra":"🎁 Sobre por partida";
+  el.textContent=cm.completada?"premio sorpresa":"Ganás 1 en cada partida que ganás";
+  $("dzSobreBarra").style.width="100%";
   jgActualizarSobre();
 }
 function jgActualizarSobre(){
@@ -2604,21 +2604,18 @@ function jgActualizarSobre(){
   const cm=cual?coleccionMeta[cual]:null;
   if(!cm||!COLECCIONES[cual]){el.style.display="none";return;}
   el.style.display="";
-  el.textContent=cm.completada?"🎁 premio sorpresa":"🎁 "+cm.rondasProgreso+"/3";
+  el.textContent=cm.completada?"🎁 premio sorpresa":"🎁 sobre por partida";
 }
 function sumarRondaColeccion(cual){
   // Solo cuenta en Mundo Uruguay -> ciudad con colección -> jugador solo (evita ventajas/duplicados en multijugador).
   if(modo!=="bot"||destino===null||!MUNDO[destino]||MUNDO[destino].id!==cual)return;
   const cm=coleccionMeta[cual];if(!cm)return;
-  cm.rondasProgreso++;
-  if(cm.rondasProgreso>=3){
-    cm.rondasProgreso=0;cm.sobres++;
-    guardarColeccionMeta();colActualizarBloqueDurazno();
-    setTimeout(()=>{
-      if($("modalFin").classList.contains("ver"))sobrePendienteCual=cual;
-      else colMostrarSobreConseguido(cual);
-    },650);
-  }else{guardarColeccionMeta();colActualizarBloqueDurazno();}
+  cm.sobres++;
+  guardarColeccionMeta();colActualizarBloqueDurazno();
+  setTimeout(()=>{
+    if($("modalFin").classList.contains("ver"))sobrePendienteCual=cual;
+    else colMostrarSobreConseguido(cual);
+  },650);
 }
 let colSobreCualActual=null,colVolverAModal=false;
 let sobrePendienteCual=null,accionTrasSobre=null;
