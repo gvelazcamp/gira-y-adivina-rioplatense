@@ -5132,6 +5132,14 @@ function cargarTableroEquipado(){
 }
 let tableroEquipado=cargarTableroEquipado();
 const guardarTableroEquipado=()=>{try{localStorage.setItem("gya_tablero_equipado",tableroEquipado||"");}catch(e){}};
+/* Arreglo: "cuadro-lab-toxico-*" fueron ids viejos de una versión anterior
+   de "Marcos de tablero" (cuando todavía reemplazaba mal el fondo entero)
+   y ya no existen. Si alguien se quedó con uno equipado, se limpia para
+   que no le quede el tablero roto; a Gonzalo le vuelve a poner su regalo. */
+if(tableroEquipado&&!MARCOS_TABLERO.some(m=>m.id===tableroEquipado)){
+  tableroEquipado=(perfil.nombre||"").trim().toLowerCase()==="gonzalo"?"fondo-lab-toxico":"";
+  guardarTableroEquipado();
+}
 /* Regalo único para Gonzalo: le deja el tablero Laboratorio Mutante
    comprado y equipado de arranque, una sola vez (no le pisa el tablero
    si después elige otro). Nadie más lo recibe. */
