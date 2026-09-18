@@ -1700,6 +1700,18 @@ function cargarRuedaSkinEquipada(){
   try{return localStorage.getItem("gya_rueda_skin_equipada")||"";}catch(e){return"";}
 }
 let ruedaSkinEquipada=cargarRuedaSkinEquipada();
+/* Cada imagen de ruleta comprada viene con sus 24 gajos ya dibujados,
+   pero no todas empiezan el primer gajo en el mismo lugar que nuestra
+   grilla de 24 partes iguales (arranca en el 3 en punto). En algunas
+   el centro de un gajo queda justo donde debería estar un borde, así
+   que el numerito cae pisando dos colores. Se midió a ojo/con
+   análisis de píxeles cuánto hay que correr cada una para que caiga
+   centrado en el gajo real de la imagen (medio gajo = 7.5°). */
+const RUEDA_OFFSET={
+  "rueda-oro":-7.5,"rueda-hielo":-7.5,"rueda-casino":-7.5,
+  "rueda-locomotora":-7.5,"rueda-pepitas":-7.5,"rueda-rodeo":-7.5,
+  "rueda-desierto":-7.5
+};
 function dibujarRuedaJuego(){
   const CENTRO=300,paso=Math.PI*2/SEG.length,conSkin=!!ruedaSkinEquipada;
   cx.clearRect(0,0,600,600);
@@ -1724,8 +1736,8 @@ function dibujarRuedaJuego(){
      de cada gajo en una chip chica arriba del diseño, para que se lea
      sin importar los colores de abajo, y respetando exactamente los
      mismos 24 gajos que la imagen comprada ya trae dibujados. */
-  const R=225;
-  SEG.forEach((s,i)=>{const a0=i*paso,mid=a0+paso/2;
+  const R=225,corrGrados=RUEDA_OFFSET[ruedaSkinEquipada]||0;
+  SEG.forEach((s,i)=>{const a0=i*paso,mid=a0+paso/2+corrGrados*Math.PI/180;
    const et=s.t?ETI[s.t]:"$"+s.v;
    const flip=mid>Math.PI/2&&mid<Math.PI*1.5;
    cx.save();cx.translate(CENTRO,CENTRO);cx.rotate(mid);
