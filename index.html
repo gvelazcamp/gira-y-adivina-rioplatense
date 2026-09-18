@@ -4905,25 +4905,30 @@ function armarTeclado(){
    "Jugar online", solo entre los que ya se poseen. ---- */
 const MARCOS_TABLERO=[
   {id:null,nombre:"Sin marco",precio:0},
+  {id:"fondo-galaxia",nombre:"Casino Galáctico",precio:2200},
+  {id:"fondo-circo",nombre:"Circo Siniestro",precio:2200},
+  {id:"fondo-alien",nombre:"Invasión Alien",precio:2500},
+  {id:"fondo-steampunk",nombre:"Laboratorio Steampunk",precio:2500},
   {id:"fondo-uruguay-1",nombre:"Rambla nocturna",precio:0},
   {id:"fondo-uruguay-2",nombre:"Costa al atardecer",precio:0},
   {id:"fondo-uruguay-3",nombre:"Plaza histórica",precio:0},
   {id:"fondo-uruguay-4",nombre:"Plaza junto al río",precio:0},
   {id:"fondo-uruguay-5",nombre:"Noche de estadio",precio:0},
   {id:"fondo-uruguay-6",nombre:"Campeón del Siglo",precio:0},
-  {id:"fondo-uruguay-7",nombre:"Parque Central",precio:0},
-  {id:"fondo-galaxia",nombre:"Casino Galáctico",precio:2200},
-  {id:"fondo-circo",nombre:"Circo Siniestro",precio:2200},
-  {id:"fondo-alien",nombre:"Invasión Alien",precio:2500},
-  {id:"fondo-steampunk",nombre:"Laboratorio Steampunk",precio:2500}
+  {id:"fondo-uruguay-7",nombre:"Parque Central",precio:0}
 ];
+/* PRUEBA TEMPORAL: por pedido de Gonzalo, mientras se prueban en vivo los
+   4 tableros nuevos, el selector de "Jugar online" los muestra a todos sin
+   pedir que estén comprados. Revertir a marcoTableroPoseido cuando avise
+   que ya los vio y los sacamos de acá arriba. */
+const MARCO_TABLERO_PRUEBA_LIBRE=true;
 function cargarTablerosComprados(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_tableros_owned")||"[]"));}catch(e){return new Set();}
 }
 let tablerosComprados=cargarTablerosComprados();
 const guardarTablerosComprados=()=>{try{localStorage.setItem("gya_tableros_owned",JSON.stringify([...tablerosComprados]));}catch(e){}};
 const marcoTableroPoseido=m=>!m.precio||tablerosComprados.has(m.id);
-const marcosTableroDisponibles=()=>MARCOS_TABLERO.filter(marcoTableroPoseido);
+const marcosTableroDisponibles=()=>MARCO_TABLERO_PRUEBA_LIBRE?MARCOS_TABLERO:MARCOS_TABLERO.filter(marcoTableroPoseido);
 let marcoTableroIdx=0;
 function aplicarMarcoTablero(){
   const disp=marcosTableroDisponibles(),m=disp[marcoTableroIdx]||disp[0],tablero=$("tablero");
