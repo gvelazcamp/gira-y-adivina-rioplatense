@@ -1,4 +1,4 @@
-const CACHE_NAME = "gya-cache-v3";
+const CACHE_NAME = "gya-cache-v4";
 const APP_SHELL = ["./", "./index.html", "./manifest.json", "./icono-192.png", "./icono-512.png", "./assets/logo.webp"];
 
 self.addEventListener("install", (e) => {
@@ -21,11 +21,12 @@ self.addEventListener("activate", (e) => {
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;
 
-  // Las imágenes de assets/ no cambian una vez subidas (un cambio sube un
-  // archivo con otro nombre), así que se sirven de la caché primero: la
-  // tienda no tiene que esperar a la red para mostrar lo que ya se vio
-  // antes. Esto es lo que hacía lenta la primera apertura de la tienda en
-  // cada sesión (pedía por red cada ícono, cada vez).
+  // Las imágenes de assets/ se sirven de la caché primero: la tienda no
+  // tiene que esperar a la red para mostrar lo que ya se vio antes (antes
+  // pedía por red cada ícono cada vez que se abría la tienda). IMPORTANTE:
+  // si se reemplaza el CONTENIDO de un archivo ya existente en assets/
+  // (mismo nombre, distinta imagen), hay que subir el CACHE_NAME de acá
+  // arriba, si no los celulares que ya lo cachearon nunca ven el cambio.
   if (new URL(e.request.url).pathname.includes("/assets/")) {
     e.respondWith(
       caches.match(e.request).then((cached) => {
