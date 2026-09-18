@@ -282,6 +282,10 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
  background-position:center;background-color:#00000055;margin-bottom:10px}
 .tablero-preview-vacio{display:flex;align-items:center;justify-content:center;font-size:.72rem;
  color:#B49FCE;border:1px dashed #FFFFFF33}
+.ficha-skin-preview{display:block;width:100%;max-width:120px;aspect-ratio:1/1;border-radius:10px;background-size:cover;
+ background-position:center;background-color:#00000055;margin:0 auto 10px}
+.ficha-skin-preview-vacio{display:flex;align-items:center;justify-content:center;font-size:.72rem;
+ color:#B49FCE;border:1px dashed #FFFFFF33}
 .frame-preview .avatar-img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
 .frame-preview .avatar-frame{transform:scale(1.45)}
 .frame-card b{font-size:.86rem;min-height:2.3em;display:flex;align-items:center;justify-content:center}
@@ -596,7 +600,8 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 @media(max-width:704px){.tablero.con-marco{padding:34px 9% 18px}}
 .frase{display:flex;flex-wrap:wrap;justify-content:center;gap:14px}
 .palabra{display:flex;gap:5px}
-.ficha{width:var(--ficha-w,clamp(24px,6.6vw,42px));height:var(--ficha-h,clamp(34px,8.8vw,56px));border-radius:6px;background:#2A1A3C;
+.ficha{width:var(--ficha-w,clamp(24px,6.6vw,42px));height:var(--ficha-h,clamp(34px,8.8vw,56px));border-radius:6px;
+ background-color:#2A1A3C;background-image:var(--ficha-skin-img,none);background-size:cover;background-position:center;
  border:1px solid #FFFFFF14;display:grid;place-items:center;font-family:'Archivo Black';
  font-size:var(--ficha-fs,clamp(.95rem,3.8vw,1.5rem));color:transparent;transition:background .18s,color .18s}
 .tablero.con-marco .frase{gap:10px}
@@ -5070,16 +5075,37 @@ const MARCOS_TABLERO=[
   {id:"fondo-synthwave",nombre:"Synthwave 80s",precio:3000,nuevo:true},
   {id:"fondo-tiki",nombre:"Templo Tiki",precio:3000,nuevo:true}
 ];
-/* Marcos de tablero: catálogo aparte de Tableros, se venden como ítem
-   propio pero usan el mismo lugar en pantalla (tableroEquipado/
-   tablerosComprados), así que comprar uno acá también sirve como
-   "tablero" normal y viceversa. */
-const CUADROS_TABLERO=[
-  {id:"cuadro-lab-toxico-1",nombre:"Contención Tóxica",precio:0},
-  {id:"cuadro-lab-toxico-2",nombre:"Núcleo Mutante",precio:900},
-  {id:"cuadro-lab-toxico-3",nombre:"Reactor Neón",precio:1000},
-  {id:"cuadro-lab-toxico-4",nombre:"Bioalerta Digital",precio:1000}
+/* Marcos de tablero: NO son fondos de tablero — son un skin para cada
+   ficha/cuadradito de letra (los cuadraditos chicos donde van las
+   letras), aplicado con una variable CSS global (--ficha-skin-img). */
+const FICHAS_SKIN=[
+  {id:null,nombre:"Clásica",precio:0},
+  {id:"ficha-lab-toxico-1",nombre:"Contención Tóxica",precio:0},
+  {id:"ficha-lab-toxico-2",nombre:"Núcleo Mutante",precio:600},
+  {id:"ficha-lab-toxico-3",nombre:"Reactor Neón",precio:700},
+  {id:"ficha-lab-toxico-4",nombre:"Bioalerta Digital",precio:700}
 ];
+function cargarFichasComprados(){
+  try{return new Set(JSON.parse(localStorage.getItem("gya_fichas_owned")||"[]"));}catch(e){return new Set();}
+}
+let fichasComprados=cargarFichasComprados();
+const guardarFichasComprados=()=>{try{localStorage.setItem("gya_fichas_owned",JSON.stringify([...fichasComprados]));}catch(e){}};
+const fichaSkinPoseida=m=>!m.precio||fichasComprados.has(m.id);
+function cargarFichaSkinEquipada(){
+  try{return localStorage.getItem("gya_ficha_skin_equipada")||"";}catch(e){return"";}
+}
+let fichaSkinEquipada=cargarFichaSkinEquipada();
+const guardarFichaSkinEquipada=()=>{try{localStorage.setItem("gya_ficha_skin_equipada",fichaSkinEquipada||"");}catch(e){}};
+function aplicarFichaSkin(){
+  const m=FICHAS_SKIN.find(x=>x.id===fichaSkinEquipada);
+  document.documentElement.style.setProperty("--ficha-skin-img",m&&m.id?"url('assets/fichas/"+m.id+".webp')":"none");
+}
+aplicarFichaSkin();
+function equiparFichaSkin(id){
+  fichaSkinEquipada=id||"";guardarFichaSkinEquipada();
+  aplicarFichaSkin();
+  tnRenderCuadrosTablero("cuadroTableroGrid");
+}
 function cargarTablerosComprados(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_tableros_owned")||"[]"));}catch(e){return new Set();}
 }
@@ -5122,20 +5148,12 @@ let seccionTiendaEsTableros=false,seccionTiendaTipo=null;
 function equiparTablero(id){
   tableroEquipado=id||"";guardarTableroEquipado();
   tnRenderTableros("tableroGrid",true);
-  tnRenderCuadrosTablero("cuadroTableroGrid");
   if(seccionTiendaEsTableros)tnRenderTableros("seccionTiendaContenido",false);
 }
 function tnRenderTableros(contId,soloBasicos){
   const cont=$(contId||"tableroGrid");if(!cont)return;cont.innerHTML="";
   const lista=soloBasicos?MARCOS_TABLERO.filter(m=>m.basico):
     MARCOS_TABLERO.filter(m=>m.precio>0).concat(MARCOS_TABLERO.filter(m=>!m.precio));
-  tnPintarCuadrosTablero(cont,lista);
-}
-function tnRenderCuadrosTablero(contId){
-  const cont=$(contId||"cuadroTableroGrid");if(!cont)return;cont.innerHTML="";
-  tnPintarCuadrosTablero(cont,CUADROS_TABLERO);
-}
-function tnPintarCuadrosTablero(cont,lista){
   lista.forEach(m=>{
     const poseido=marcoTableroPoseido(m);
     const equipado=(tableroEquipado||null)===m.id;
@@ -5156,6 +5174,36 @@ function tnPintarCuadrosTablero(cont,lista){
         tablerosComprados.add(m.id);guardarTablerosComprados();
         mundoActualizarHud();
         equiparTablero(m.id);
+        bip(190,.16,"triangle",.07);
+        logroDesbloquear("tienda");
+      };
+      tnAgregarBotonReal(btn,m.precio);
+    }
+    cont.appendChild(card);
+  });
+}
+function tnRenderCuadrosTablero(contId){
+  const cont=$(contId||"cuadroTableroGrid");if(!cont)return;cont.innerHTML="";
+  FICHAS_SKIN.forEach(m=>{
+    const poseido=fichaSkinPoseida(m);
+    const equipado=(fichaSkinEquipada||null)===m.id;
+    const card=document.createElement("div");card.className="frame-card";
+    card.innerHTML=(m.id?'<span class="ficha-skin-preview" style="background-image:url(\'assets/fichas/'+m.id+'.webp\')"></span>':
+        '<span class="ficha-skin-preview ficha-skin-preview-vacio">Clásica</span>')+
+      '<b>'+m.nombre+'</b><span class="frame-desc">Diseño para las fichas de letras.</span>'+
+      '<button class="frame-btn'+(equipado?' equipado':poseido?' propio':'')+'">'+
+      (equipado?"EQUIPADO ✓":poseido?"EQUIPAR":"COMPRAR 🪙 "+m.precio)+'</button>';
+    const btn=card.querySelector(".frame-btn");
+    if(equipado)btn.disabled=true;
+    else if(poseido)btn.onclick=()=>equiparFichaSkin(m.id);
+    else{
+      btn.disabled=meta.monedas<m.precio;
+      btn.onclick=()=>{
+        if(meta.monedas<m.precio){alert("No tenés suficientes monedas.");return;}
+        meta.monedas-=m.precio;guardarMeta();
+        fichasComprados.add(m.id);guardarFichasComprados();
+        mundoActualizarHud();
+        equiparFichaSkin(m.id);
         bip(190,.16,"triangle",.07);
         logroDesbloquear("tienda");
       };
