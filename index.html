@@ -95,6 +95,10 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 .mv-gente img{position:absolute;transform-origin:50% 92%;filter:drop-shadow(0 6px 6px #00000070);
  animation:mvBaile 1.05s ease-in-out infinite}
 @keyframes mvBaile{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-3%) rotate(3deg)}}
+.dz-ciclistas{position:absolute;inset:0;pointer-events:none;z-index:2}
+.dz-ciclistas img{position:absolute;transform-origin:50% 85%;filter:drop-shadow(0 5px 6px #00000070);
+ animation:dzPedalear .7s ease-in-out infinite}
+@keyframes dzPedalear{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-2%) rotate(1.5deg)}}
 .senda{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .senda path{fill:none;stroke-linecap:round;vector-effect:non-scaling-stroke}
 .s-base{stroke:#FFFFFF33;stroke-width:5;stroke-dasharray:.012 .02}
@@ -3308,6 +3312,18 @@ function verMundo(){
         gente.appendChild(im);
       });
       r.appendChild(gente);
+    }
+    if(d.id==="durazno"){
+      const ciclistas=document.createElement("div");ciclistas.className="dz-ciclistas";
+      [["assets/worlds/sprites/durazno-ciclista-1.webp",26,11,11,0],
+       ["assets/worlds/sprites/durazno-ciclista-2.webp",60,19,10,.3],
+       ["assets/worlds/sprites/durazno-ciclista-3.webp",32,67,10,.6],
+       ["assets/worlds/sprites/durazno-ciclista-4.webp",60,82,11,.9]].forEach(([src,x,y,w,delay])=>{
+        const im=document.createElement("img");im.src=src;im.alt="";
+        im.style.left=x+"%";im.style.top=y+"%";im.style.width=w+"%";im.style.animationDelay=delay+"s";
+        ciclistas.appendChild(im);
+      });
+      r.appendChild(ciclistas);
     }
     tira.appendChild(r);
   });
