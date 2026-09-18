@@ -641,7 +641,8 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 .aro{width:100%;line-height:0;border-radius:50%;
  box-shadow:0 0 0 8px #2A1A3C,0 0 0 11px var(--oro),0 18px 40px #00000080}
 #rueda{width:100%;max-width:none;height:auto;border-radius:50%;will-change:transform;
- backface-visibility:hidden;transform:translateZ(0)}
+ backface-visibility:hidden;transform:translateZ(0);background-color:#0C0616;
+ background-size:cover;background-position:center;background-repeat:no-repeat}
 .centro{position:absolute;width:16%;aspect-ratio:1;border-radius:50%;background:var(--oro);border:4px solid #2A1A3C;z-index:2}
 
 .panel{display:flex;flex-direction:column;gap:12px}
@@ -1176,6 +1177,8 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <div class="frame-grid" id="tableroGrid"></div>
   <h3 class="tn-subtitulo" data-fijo="1" id="tituloCuadrosTablero">🖼️ Marcos de tablero</h3>
   <div class="frame-grid" id="cuadroTableroGrid"></div>
+  <h3 class="tn-subtitulo" data-fijo="1" id="tituloRuedas">🎡 Marcos de ruleta</h3>
+  <div class="frame-grid" id="ruedaGrid"></div>
   <h3 class="tn-subtitulo" data-fijo="1" id="tituloMarcos">🖼️ Marcos de avatar</h3>
   <div class="frame-grid" id="frameGrid"></div>
   <h3 class="tn-subtitulo" data-fijo="1" id="tituloDineroReal">💳 Paquetes con dinero real</h3>
@@ -1679,19 +1682,35 @@ document.addEventListener("visibilitychange",()=>{
   if(document.visibilityState==="visible")sincronizarMusica();else detenerMusica();
 });
 const cv=$("rueda"),cx=cv.getContext("2d");
-(function dibujar(){const R=300,paso=Math.PI*2/SEG.length;
- SEG.forEach((s,i)=>{const a0=i*paso;
-  cx.beginPath();cx.moveTo(R,R);cx.arc(R,R,R,a0,a0+paso);cx.closePath();
-  cx.fillStyle=s.t?FONDO[s.t]:["#F5B301","#E5197C","#37D6C0","#7B3FE4","#F97316","#2DA8FF"][i%6];
-  cx.fill();cx.strokeStyle="#160B24";cx.lineWidth=3;cx.stroke();
-  const mid=a0+paso/2;
-  cx.save();cx.translate(R,R);cx.rotate(mid);
-  cx.fillStyle=s.t?TINTA[s.t]:"#160B24";
-  cx.font=s.t?"700 25px Outfit, sans-serif":"900 34px 'Archivo Black', sans-serif";
-  const et=s.t?ETI[s.t]:"$"+s.v;
-  if(mid>Math.PI/2&&mid<Math.PI*1.5){cx.rotate(Math.PI);cx.textAlign="left";cx.fillText(et,-(R-24),10);}
-  else{cx.textAlign="right";cx.fillText(et,R-24,10);}
-  cx.restore();});})();
+/* Marco de ruleta equipado: se carga acá (temprano) porque el primer
+   dibujado de la ruleta real ya lo necesita. El resto del sistema de
+   compra/equipar (RUEDAS_SKIN, tienda, etc.) está más abajo. */
+function cargarRuedaSkinEquipada(){
+  try{return localStorage.getItem("gya_rueda_skin_equipada")||"";}catch(e){return"";}
+}
+let ruedaSkinEquipada=cargarRuedaSkinEquipada();
+function dibujarRuedaJuego(){
+  const R=300,paso=Math.PI*2/SEG.length,conSkin=!!ruedaSkinEquipada;
+  cx.clearRect(0,0,600,600);
+  SEG.forEach((s,i)=>{const a0=i*paso;
+   cx.beginPath();cx.moveTo(R,R);cx.arc(R,R,R,a0,a0+paso);cx.closePath();
+   cx.fillStyle=s.t?FONDO[s.t]:["#F5B301","#E5197C","#37D6C0","#7B3FE4","#F97316","#2DA8FF"][i%6];
+   /* Con un marco de ruleta comprado, el color de cada gajo se pinta
+      semitransparente para que se note el diseño de fondo (que gira
+      junto con el canvas) sin perder la legibilidad de los números. */
+   cx.globalAlpha=conSkin?.45:1;
+   cx.fill();cx.globalAlpha=1;cx.strokeStyle="#160B24";cx.lineWidth=3;cx.stroke();
+   const mid=a0+paso/2;
+   cx.save();cx.translate(R,R);cx.rotate(mid);
+   cx.fillStyle=s.t?TINTA[s.t]:"#160B24";
+   cx.font=s.t?"700 25px Outfit, sans-serif":"900 34px 'Archivo Black', sans-serif";
+   const et=s.t?ETI[s.t]:"$"+s.v;
+   if(mid>Math.PI/2&&mid<Math.PI*1.5){cx.rotate(Math.PI);cx.textAlign="left";cx.fillText(et,-(R-24),10);}
+   else{cx.textAlign="right";cx.fillText(et,R-24,10);}
+   cx.restore();});
+}
+cv.style.backgroundImage=ruedaSkinEquipada?"url('assets/ruedas/"+ruedaSkinEquipada+".webp')":"none";
+dibujarRuedaJuego();
 
 function segmentoDe(g){
   const paso=360/SEG.length,local=((270-(g%360))%360+360)%360;
@@ -2130,7 +2149,7 @@ function armarSeccionesColapsablesTienda(){
   });
 }
 armarSeccionesColapsablesTienda();
-$("bTienda").onclick=()=>{actualizarOfertasDiarias();tnActualizar();tnRenderFrames("frameGrid",true);tnRenderAvataresPremium();tnRenderTableros("tableroGrid",true);tnRenderCuadrosTablero("cuadroTableroGrid",true);$("capaTienda").classList.add("ver");};
+$("bTienda").onclick=()=>{actualizarOfertasDiarias();tnActualizar();tnRenderFrames("frameGrid",true);tnRenderAvataresPremium();tnRenderTableros("tableroGrid",true);tnRenderCuadrosTablero("cuadroTableroGrid",true);tnRenderRuedas("ruedaGrid",true);$("capaTienda").classList.add("ver");};
 $("tituloMarcos").onclick=()=>{
   seccionTiendaEsFrames=true;
   $("seccionTiendaTitulo").textContent=$("tituloMarcos").textContent;
@@ -2152,6 +2171,14 @@ $("tituloCuadrosTablero").onclick=()=>{
   seccionTiendaEsFichas=true;
   $("seccionTiendaTitulo").textContent=$("tituloCuadrosTablero").textContent;
   tnRenderCuadrosTablero("seccionTiendaContenido",false);
+  $("capaSeccionTienda").classList.add("ver");
+};
+/* "Marcos de ruleta" muestra ahí abajo solo los básicos; tocar el
+   título abre una pantalla aparte con todos. */
+$("tituloRuedas").onclick=()=>{
+  seccionTiendaEsRuedas=true;
+  $("seccionTiendaTitulo").textContent=$("tituloRuedas").textContent;
+  tnRenderRuedas("seccionTiendaContenido",false);
   $("capaSeccionTienda").classList.add("ver");
 };
 /* "Sobres de colección" muestra ahí abajo solo 6 (marcados con la clase
@@ -2200,6 +2227,7 @@ $("seccionTiendaCerrar").onclick=()=>{
   seccionTiendaEsTableros=false;
   seccionTiendaEsFrames=false;
   seccionTiendaEsFichas=false;
+  seccionTiendaEsRuedas=false;
   $("capaSeccionTienda").classList.remove("ver");
 };
 function tnNombreItem(b){
@@ -5122,11 +5150,6 @@ function cargarFichasComprados(){
 }
 let fichasComprados=cargarFichasComprados();
 const guardarFichasComprados=()=>{try{localStorage.setItem("gya_fichas_owned",JSON.stringify([...fichasComprados]));}catch(e){}};
-/* PRUEBA TEMPORAL: da todos los Marcos de tablero (fichas) para probar
-   en Jugar online sin tener que comprarlos. Borrar este bloque cuando
-   Gonzalo avise que ya terminó de probar. */
-FICHAS_SKIN.forEach(m=>{if(m.id)fichasComprados.add(m.id);});
-guardarFichasComprados();
 const fichaSkinPoseida=m=>!m.precio||fichasComprados.has(m.id);
 function cargarFichaSkinEquipada(){
   try{return localStorage.getItem("gya_ficha_skin_equipada")||"";}catch(e){return"";}
@@ -5285,6 +5308,70 @@ function tnRenderCuadrosTablero(contId,soloBasicos){
         fichasComprados.add(m.id);guardarFichasComprados();
         mundoActualizarHud();
         equiparFichaSkin(m.id);
+        bip(190,.16,"triangle",.07);
+        logroDesbloquear("tienda");
+      };
+      tnAgregarBotonReal(btn,m.precio);
+    }
+    cont.appendChild(card);
+  });
+}
+/* Marcos de ruleta: skin para la ruleta real del juego (la de cada
+   turno). Se aplica como fondo del canvas #rueda, que ya gira solo
+   (el juego le pone rotate() encima), así que la imagen gira con él. */
+const RUEDAS_SKIN=[
+  {id:null,nombre:"Clásica",precio:0,basico:true},
+  {id:"rueda-fuego",nombre:"Rueda de Fuego",precio:1500,basico:true},
+  {id:"rueda-hielo",nombre:"Rueda de Hielo",precio:1500,basico:true},
+  {id:"rueda-oro",nombre:"Rueda Real",precio:1800,basico:true},
+  {id:"rueda-neon",nombre:"Rueda Neón",precio:1600,basico:true},
+  {id:"rueda-espacio",nombre:"Rueda Galáctica",precio:1700,nuevo:true},
+  {id:"rueda-selva",nombre:"Rueda Tiki",precio:1600,nuevo:true},
+  {id:"rueda-candy",nombre:"Rueda Candy",precio:1500,nuevo:true},
+  {id:"rueda-circo",nombre:"Rueda de Circo",precio:1700,nuevo:true}
+];
+function cargarRuedasComprados(){
+  try{return new Set(JSON.parse(localStorage.getItem("gya_ruedas_owned")||"[]"));}catch(e){return new Set();}
+}
+let ruedasComprados=cargarRuedasComprados();
+const guardarRuedasComprados=()=>{try{localStorage.setItem("gya_ruedas_owned",JSON.stringify([...ruedasComprados]));}catch(e){}};
+const ruedaSkinPoseida=m=>!m.precio||ruedasComprados.has(m.id);
+const guardarRuedaSkinEquipada=()=>{try{localStorage.setItem("gya_rueda_skin_equipada",ruedaSkinEquipada||"");}catch(e){}};
+function aplicarRuedaSkin(){
+  cv.style.backgroundImage=ruedaSkinEquipada?"url('assets/ruedas/"+ruedaSkinEquipada+".webp')":"none";
+  dibujarRuedaJuego();
+}
+function equiparRuedaSkin(id){
+  ruedaSkinEquipada=id||"";guardarRuedaSkinEquipada();
+  aplicarRuedaSkin();
+  tnRenderRuedas("ruedaGrid",true);
+  if(seccionTiendaEsRuedas)tnRenderRuedas("seccionTiendaContenido",false);
+}
+let seccionTiendaEsRuedas=false;
+function tnRenderRuedas(contId,soloBasicos){
+  const cont=$(contId||"ruedaGrid");if(!cont)return;cont.innerHTML="";
+  const lista=soloBasicos?RUEDAS_SKIN.filter(m=>m.basico):
+    RUEDAS_SKIN.filter(m=>m.precio>0).concat(RUEDAS_SKIN.filter(m=>!m.precio));
+  lista.forEach(m=>{
+    const poseido=ruedaSkinPoseida(m);
+    const equipado=(ruedaSkinEquipada||null)===m.id;
+    const card=document.createElement("div");card.className="frame-card";
+    card.innerHTML=(m.id?'<span class="ficha-skin-preview" style="background-image:url(\'assets/ruedas/'+m.id+'.webp\')"></span>':
+        '<span class="ficha-skin-preview ficha-skin-preview-vacio">Clásica</span>')+
+      '<b>'+m.nombre+'</b><span class="frame-desc">Diseño para la ruleta de cada turno.</span>'+
+      '<button class="frame-btn'+(equipado?' equipado':poseido?' propio':'')+'">'+
+      (equipado?"EQUIPADO ✓":poseido?"EQUIPAR":"COMPRAR 🪙 "+m.precio)+'</button>';
+    const btn=card.querySelector(".frame-btn");
+    if(equipado)btn.disabled=true;
+    else if(poseido)btn.onclick=()=>equiparRuedaSkin(m.id);
+    else{
+      btn.disabled=meta.monedas<m.precio;
+      btn.onclick=()=>{
+        if(meta.monedas<m.precio){alert("No tenés suficientes monedas.");return;}
+        meta.monedas-=m.precio;guardarMeta();
+        ruedasComprados.add(m.id);guardarRuedasComprados();
+        mundoActualizarHud();
+        equiparRuedaSkin(m.id);
         bip(190,.16,"triangle",.07);
         logroDesbloquear("tienda");
       };
