@@ -263,12 +263,7 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 .tn-subtitulo{font-family:'Archivo Black',sans-serif;color:#fff;font-size:1rem;margin:20px 0 14px;
  text-align:center;padding:11px 20px;background:linear-gradient(135deg,var(--magenta),#7B3FE4);
  border:2px solid var(--oro);border-radius:999px;box-shadow:0 3px 0 #00000055,0 0 14px #E5197C55;
- -webkit-text-stroke:.6px #2A0E1F;text-shadow:0 2px 0 #00000060;cursor:pointer;user-select:none;
- display:flex;align-items:center;justify-content:center;gap:8px}
-.tn-subtitulo::after{content:"▸";font-size:.8rem;-webkit-text-stroke:0}
-.tn-subtitulo.abierta::after{content:"▾"}
-.tn-seccion-contenido{animation:tnDesplegar .18s ease}
-@keyframes tnDesplegar{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+ -webkit-text-stroke:.6px #2A0E1F;text-shadow:0 2px 0 #00000060}
 .frame-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 @media(max-width:380px){.frame-card{padding:8px}.frame-preview{width:52px;height:52px;margin:10px auto 12px}
  .frame-card b{font-size:.76rem}.frame-desc{font-size:.62rem}.frame-btn{font-size:.68rem;padding:7px 4px}}
@@ -2059,31 +2054,6 @@ function tnActualizar(){
     else{b.textContent="🪙 "+precio;b.title=alcanza?"":"Te faltan "+(precio-meta.monedas)+" monedas";}
   });
 }
-/* Cada sección de la Tienda (título "tn-subtitulo" + lo que venga después,
-   hasta el próximo título o el botón Cerrar) arranca plegada y se despliega
-   al tocar el título. Corre una sola vez y agarra automáticamente cualquier
-   sección nueva que se agregue más adelante, sin tener que tocar esto. */
-function armarSeccionesColapsablesTienda(){
-  const cont=document.querySelector("#capaTienda .tn-caja");
-  [...cont.querySelectorAll(":scope > .tn-subtitulo")].forEach(h=>{
-    const wrap=document.createElement("div");
-    wrap.className="tn-seccion-contenido";
-    wrap.style.display="none";
-    let sig=h.nextElementSibling;
-    while(sig&&!sig.classList.contains("tn-subtitulo")&&sig.id!=="tnCerrar"){
-      const luego=sig.nextElementSibling;
-      wrap.appendChild(sig);
-      sig=luego;
-    }
-    h.after(wrap);
-    h.onclick=()=>{
-      const abrir=wrap.style.display==="none";
-      wrap.style.display=abrir?"block":"none";
-      h.classList.toggle("abierta",abrir);
-    };
-  });
-}
-armarSeccionesColapsablesTienda();
 $("bTienda").onclick=()=>{tnActualizar();tnRenderFrames();tnRenderAvataresPremium();tnRenderTableros();$("capaTienda").classList.add("ver");};
 document.querySelectorAll(".tn-comprar-real").forEach(b=>{
   b.onclick=()=>mostrarToast("🚧","Disponible cuando el juego esté en la Play Store");
