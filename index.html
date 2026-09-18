@@ -1154,7 +1154,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <div class="frame-grid" id="avatarPremiumGrid"></div>
   <h3 class="tn-subtitulo" data-fijo="1" id="tituloTableros">🎲 Tableros</h3>
   <div class="frame-grid" id="tableroGrid"></div>
-  <h3 class="tn-subtitulo" data-fijo="1">🖼️ Marcos de avatar</h3>
+  <h3 class="tn-subtitulo" data-fijo="1" id="tituloMarcos">🖼️ Marcos de avatar</h3>
   <div class="frame-grid" id="frameGrid"></div>
   <h3 class="tn-subtitulo" data-fijo="1">💳 Paquetes con dinero real</h3>
   <p class="tn-proximamente">Disponibles cuando el juego esté en la Play Store</p>
@@ -2057,6 +2057,14 @@ function tnActualizar(){
   $("tnMonedas").textContent=meta.monedas;
   document.querySelectorAll(".tn-comprar").forEach(b=>{
     const tipo=b.dataset.tipo,precio=+b.dataset.precio,puede=tnPuedeComprar(tipo),alcanza=meta.monedas>=precio;
+    if(tipo==="ruleta"){
+      /* Este botón ya no compra desde acá: siempre está habilitado y lleva
+         a la Ruleta (con confirmación), sea que el giro gratis ya esté
+         disponible o haya que comprarlo ahí adentro. */
+      b.disabled=false;b.title="";
+      b.textContent="🎡 Ir a girar";
+      return;
+    }
     b.disabled=!alcanza||!puede;
     if(!puede){b.textContent=tnRazonBloqueo(tipo);b.title="";}
     else if(tipo==="oferta_gratis"){b.textContent="🎁 Gratis";b.title="";}
@@ -2095,7 +2103,13 @@ function armarSeccionesColapsablesTienda(){
   });
 }
 armarSeccionesColapsablesTienda();
-$("bTienda").onclick=()=>{tnActualizar();tnRenderFrames();tnRenderAvataresPremium();tnRenderTableros("tableroGrid",true);$("capaTienda").classList.add("ver");};
+$("bTienda").onclick=()=>{tnActualizar();tnRenderFrames("frameGrid",true);tnRenderAvataresPremium();tnRenderTableros("tableroGrid",true);$("capaTienda").classList.add("ver");};
+$("tituloMarcos").onclick=()=>{
+  seccionTiendaEsFrames=true;
+  $("seccionTiendaTitulo").textContent=$("tituloMarcos").textContent;
+  tnRenderFrames("seccionTiendaContenido",false);
+  $("capaSeccionTienda").classList.add("ver");
+};
 /* "Tableros" muestra ahí abajo solo los básicos (Sin marco + los de
    Uruguay); tocar el título abre una pantalla aparte con todos, incluidos
    los que se van comprando/agregando. */
@@ -2149,6 +2163,7 @@ $("seccionTiendaCerrar").onclick=()=>{
   }
   seccionTiendaTipo=null;
   seccionTiendaEsTableros=false;
+  seccionTiendaEsFrames=false;
   $("capaSeccionTienda").classList.remove("ver");
 };
 function tnNombreItem(b){
@@ -2193,6 +2208,14 @@ function tnEjecutarCompra(tipo,precio){
 document.querySelectorAll(".tn-comprar").forEach(b=>{
   b.onclick=()=>{
     const tipo=b.dataset.tipo,precio=+b.dataset.precio;
+    if(tipo==="ruleta"){
+      $("confirmCompraTxt").textContent="¿Querés ir a tu giro diario?";
+      $("confirmCompraSi").textContent="Sí";
+      $("confirmCompra").style.display="flex";
+      $("confirmCompraSi").onclick=()=>{$("confirmCompra").style.display="none";$("confirmCompraSi").textContent="Comprar";$("capaTienda").classList.remove("ver");abrirRuleta();};
+      $("confirmCompraNo").onclick=()=>{$("confirmCompra").style.display="none";$("confirmCompraSi").textContent="Comprar";};
+      return;
+    }
     if(meta.monedas<precio||!tnPuedeComprar(tipo))return;
     $("confirmCompraTxt").textContent=precio>0?"¿Comprar "+tnNombreItem(b)+" por 🪙 "+precio+"?":"¿Reclamar "+tnNombreItem(b)+" gratis?";
     $("confirmCompra").style.display="flex";
@@ -2368,16 +2391,16 @@ $("rkCompartir").onclick=async()=>{
 
 /* ---- Marcos de avatar ---- */
 const FRAMES=[
-  {id:"dorado",nombre:"Dorado",desc:"Elegancia que destaca tu perfil.",precio:500},
+  {id:"dorado",nombre:"Dorado",desc:"Elegancia que destaca tu perfil.",precio:500,basico:true},
   {id:"corazon",nombre:"Corazón",desc:"Mostrale cariño a tu perfil.",precio:600},
-  {id:"fuego",nombre:"Fuego",desc:"Encendé tu avatar.",precio:700},
+  {id:"fuego",nombre:"Fuego",desc:"Encendé tu avatar.",precio:700,basico:true},
   {id:"neon",nombre:"Neón",desc:"Brillo urbano nocturno.",precio:800},
-  {id:"esmeralda",nombre:"Esmeralda",desc:"Verde precioso y elegante.",precio:900},
-  {id:"rubi",nombre:"Rubí",desc:"Rojo intenso de joya.",precio:1000},
+  {id:"esmeralda",nombre:"Esmeralda",desc:"Verde precioso y elegante.",precio:900,basico:true},
+  {id:"rubi",nombre:"Rubí",desc:"Rojo intenso de joya.",precio:1000,basico:true},
   {id:"electrico",nombre:"Eléctrico",desc:"Energía pura a tu alrededor.",precio:1100},
   {id:"diamante",nombre:"Diamante",desc:"El brillo más exclusivo.",precio:1200},
   {id:"real",nombre:"Real",desc:"Un marco digno de la corona.",precio:1500},
-  {id:"celestial",nombre:"Celestial",desc:"Estrellas que te acompañan.",precio:2000}
+  {id:"celestial",nombre:"Celestial",desc:"Estrellas que te acompañan.",precio:2000,basico:true}
 ];
 function cargarFramesComprados(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_frames_owned")||"[]"));}catch(e){return new Set();}
@@ -2394,15 +2417,18 @@ function pintarMiMarco(id){
   if(frameEquipado){el.src="assets/frames/frame-"+frameEquipado+".png";el.classList.add("ver");}
   else el.classList.remove("ver");
 }
+let seccionTiendaEsFrames=false;
 function equiparMarco(id){
   frameEquipado=id;guardarFrameEquipado();
   pintarMiMarco("perfilFrameImg");pintarMiMarco("dzJugadorFrameImg");
-  tnRenderFrames();
+  tnRenderFrames("frameGrid",true);
+  if(seccionTiendaEsFrames)tnRenderFrames("seccionTiendaContenido",false);
 }
-function tnRenderFrames(){
-  const cont=$("frameGrid");if(!cont)return;cont.innerHTML="";
+function tnRenderFrames(contId,soloBasicos){
+  const cont=$(contId||"frameGrid");if(!cont)return;cont.innerHTML="";
   const miAvatar="assets/avatars/avatar-01.webp";
-  const opciones=[{id:"",nombre:"Sin marco",desc:"Tu avatar tal cual, sin marco.",precio:0}].concat(FRAMES);
+  const sinMarco={id:"",nombre:"Sin marco",desc:"Tu avatar tal cual, sin marco.",precio:0};
+  const opciones=[sinMarco].concat(soloBasicos?FRAMES.filter(f=>f.basico):FRAMES);
   opciones.forEach(f=>{
     const poseido=f.precio===0||framesComprados.has(f.id);
     const equipado=frameEquipado===f.id;
