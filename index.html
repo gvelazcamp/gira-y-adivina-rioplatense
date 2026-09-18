@@ -269,6 +269,8 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 .frame-card{background:#00000033;border:1px solid #FFFFFF1F;border-radius:14px;padding:12px;
  display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
 .frame-preview{width:64px;height:64px;margin:14px auto 16px}
+.tablero-preview{display:block;width:100%;aspect-ratio:1400/788;border-radius:10px;background-size:cover;
+ background-position:center;margin-bottom:10px}
 .frame-preview .avatar-img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
 .frame-preview .avatar-frame{transform:scale(1.45)}
 .frame-card b{font-size:.86rem}
@@ -1143,6 +1145,8 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   </div>
   <h3 class="tn-subtitulo">🧑‍🎤 Avatares premium</h3>
   <div class="frame-grid" id="avatarPremiumGrid"></div>
+  <h3 class="tn-subtitulo">🎲 Tableros</h3>
+  <div class="frame-grid" id="tableroGrid"></div>
   <h3 class="tn-subtitulo">🖼️ Marcos de avatar</h3>
   <div class="frame-grid" id="frameGrid"></div>
   <h3 class="tn-subtitulo">💳 Paquetes con dinero real</h3>
@@ -2047,7 +2051,7 @@ function tnActualizar(){
     else{b.textContent="🪙 "+precio;b.title=alcanza?"":"Te faltan "+(precio-meta.monedas)+" monedas";}
   });
 }
-$("bTienda").onclick=()=>{tnActualizar();tnRenderFrames();tnRenderAvataresPremium();$("capaTienda").classList.add("ver");};
+$("bTienda").onclick=()=>{tnActualizar();tnRenderFrames();tnRenderAvataresPremium();tnRenderTableros();$("capaTienda").classList.add("ver");};
 document.querySelectorAll(".tn-comprar-real").forEach(b=>{
   b.onclick=()=>mostrarToast("🚧","Disponible cuando el juego esté en la Play Store");
 });
@@ -4896,21 +4900,33 @@ function armarTeclado(){
   $("tablero").style.backgroundImage="";
 }
 
-/* ---- Marcos de tablero (en prueba): todavía no están en la Tienda,
-   por ahora se pueden probar gratis solo en "Jugar online". ---- */
+/* ---- Marcos de tablero: los básicos son gratis, los nuevos se compran
+   en la Tienda con monedas. Se eligen con las flechas al arrancar
+   "Jugar online", solo entre los que ya se poseen. ---- */
 const MARCOS_TABLERO=[
-  {id:null,nombre:"Sin marco"},
-  {id:"fondo-uruguay-1",nombre:"Rambla nocturna"},
-  {id:"fondo-uruguay-2",nombre:"Costa al atardecer"},
-  {id:"fondo-uruguay-3",nombre:"Plaza histórica"},
-  {id:"fondo-uruguay-4",nombre:"Plaza junto al río"},
-  {id:"fondo-uruguay-5",nombre:"Noche de estadio"},
-  {id:"fondo-uruguay-6",nombre:"Campeón del Siglo"},
-  {id:"fondo-uruguay-7",nombre:"Parque Central"}
+  {id:null,nombre:"Sin marco",precio:0},
+  {id:"fondo-uruguay-1",nombre:"Rambla nocturna",precio:0},
+  {id:"fondo-uruguay-2",nombre:"Costa al atardecer",precio:0},
+  {id:"fondo-uruguay-3",nombre:"Plaza histórica",precio:0},
+  {id:"fondo-uruguay-4",nombre:"Plaza junto al río",precio:0},
+  {id:"fondo-uruguay-5",nombre:"Noche de estadio",precio:0},
+  {id:"fondo-uruguay-6",nombre:"Campeón del Siglo",precio:0},
+  {id:"fondo-uruguay-7",nombre:"Parque Central",precio:0},
+  {id:"fondo-galaxia",nombre:"Casino Galáctico",precio:2200},
+  {id:"fondo-circo",nombre:"Circo Siniestro",precio:2200},
+  {id:"fondo-alien",nombre:"Invasión Alien",precio:2500},
+  {id:"fondo-steampunk",nombre:"Laboratorio Steampunk",precio:2500}
 ];
+function cargarTablerosComprados(){
+  try{return new Set(JSON.parse(localStorage.getItem("gya_tableros_owned")||"[]"));}catch(e){return new Set();}
+}
+let tablerosComprados=cargarTablerosComprados();
+const guardarTablerosComprados=()=>{try{localStorage.setItem("gya_tableros_owned",JSON.stringify([...tablerosComprados]));}catch(e){}};
+const marcoTableroPoseido=m=>!m.precio||tablerosComprados.has(m.id);
+const marcosTableroDisponibles=()=>MARCOS_TABLERO.filter(marcoTableroPoseido);
 let marcoTableroIdx=0;
 function aplicarMarcoTablero(){
-  const m=MARCOS_TABLERO[marcoTableroIdx],tablero=$("tablero");
+  const disp=marcosTableroDisponibles(),m=disp[marcoTableroIdx]||disp[0],tablero=$("tablero");
   if(m.id){
     tablero.style.backgroundImage="url('assets/tableros/"+m.id+".webp')";
     tablero.classList.add("con-marco");
@@ -4920,8 +4936,34 @@ function aplicarMarcoTablero(){
   }
   $("marcoNombre").textContent=m.nombre;
 }
-$("marcoPrev").onclick=()=>{marcoTableroIdx=(marcoTableroIdx-1+MARCOS_TABLERO.length)%MARCOS_TABLERO.length;aplicarMarcoTablero();};
-$("marcoNext").onclick=()=>{marcoTableroIdx=(marcoTableroIdx+1)%MARCOS_TABLERO.length;aplicarMarcoTablero();};
+$("marcoPrev").onclick=()=>{const n=marcosTableroDisponibles().length;marcoTableroIdx=(marcoTableroIdx-1+n)%n;aplicarMarcoTablero();};
+$("marcoNext").onclick=()=>{const n=marcosTableroDisponibles().length;marcoTableroIdx=(marcoTableroIdx+1)%marcosTableroDisponibles().length;aplicarMarcoTablero();};
+function tnRenderTableros(){
+  const cont=$("tableroGrid");if(!cont)return;cont.innerHTML="";
+  MARCOS_TABLERO.filter(m=>m.id&&m.precio>0).forEach(m=>{
+    const poseido=tablerosComprados.has(m.id);
+    const card=document.createElement("div");card.className="frame-card";
+    card.innerHTML='<span class="tablero-preview" style="background-image:url(\'assets/tableros/'+m.id+'.webp\')"></span>'+
+      '<b>'+m.nombre+'</b><span class="frame-desc">Fondo para el tablero de letras.</span>'+
+      '<button class="frame-btn'+(poseido?' propio':'')+'">'+(poseido?"POSEÍDO ✓":"COMPRAR 🪙 "+m.precio)+'</button>';
+    const btn=card.querySelector(".frame-btn");
+    if(poseido)btn.disabled=true;
+    else{
+      btn.disabled=meta.monedas<m.precio;
+      btn.onclick=()=>{
+        if(meta.monedas<m.precio){alert("No tenés suficientes monedas.");return;}
+        meta.monedas-=m.precio;guardarMeta();
+        tablerosComprados.add(m.id);guardarTablerosComprados();
+        mundoActualizarHud();
+        tnRenderTableros();
+        bip(190,.16,"triangle",.07);
+        logroDesbloquear("tienda");
+      };
+      tnAgregarBotonReal(btn,m.precio);
+    }
+    cont.appendChild(card);
+  });
+}
 let maskPrevia="",fxVisto=0,catPrevia="";
 function papelitos(){
   const cols=["#F5B301","#E5197C","#37D6C0","#7B3FE4","#F97316","#2DA8FF"],cap=$("capaResuelto");
