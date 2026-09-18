@@ -2125,7 +2125,7 @@ function armarSeccionesColapsablesTienda(){
   });
 }
 armarSeccionesColapsablesTienda();
-$("bTienda").onclick=()=>{actualizarOfertasDiarias();tnActualizar();tnRenderFrames("frameGrid",true);tnRenderAvataresPremium();tnRenderTableros("tableroGrid",true);tnRenderCuadrosTablero("cuadroTableroGrid");$("capaTienda").classList.add("ver");};
+$("bTienda").onclick=()=>{actualizarOfertasDiarias();tnActualizar();tnRenderFrames("frameGrid",true);tnRenderAvataresPremium();tnRenderTableros("tableroGrid",true);tnRenderCuadrosTablero("cuadroTableroGrid",true);$("capaTienda").classList.add("ver");};
 $("tituloMarcos").onclick=()=>{
   seccionTiendaEsFrames=true;
   $("seccionTiendaTitulo").textContent=$("tituloMarcos").textContent;
@@ -2139,6 +2139,14 @@ $("tituloTableros").onclick=()=>{
   seccionTiendaEsTableros=true;
   $("seccionTiendaTitulo").textContent=$("tituloTableros").textContent;
   tnRenderTableros("seccionTiendaContenido",false);
+  $("capaSeccionTienda").classList.add("ver");
+};
+/* "Marcos de tablero" muestra ahí abajo solo los básicos (Clásica +
+   Candy Pop); tocar el título abre una pantalla aparte con todos. */
+$("tituloCuadrosTablero").onclick=()=>{
+  seccionTiendaEsFichas=true;
+  $("seccionTiendaTitulo").textContent=$("tituloCuadrosTablero").textContent;
+  tnRenderCuadrosTablero("seccionTiendaContenido",false);
   $("capaSeccionTienda").classList.add("ver");
 };
 /* "Sobres de colección" muestra ahí abajo solo 6 (marcados con la clase
@@ -2186,6 +2194,7 @@ $("seccionTiendaCerrar").onclick=()=>{
   seccionTiendaTipo=null;
   seccionTiendaEsTableros=false;
   seccionTiendaEsFrames=false;
+  seccionTiendaEsFichas=false;
   $("capaSeccionTienda").classList.remove("ver");
 };
 function tnNombreItem(b){
@@ -5079,11 +5088,19 @@ const MARCOS_TABLERO=[
    ficha/cuadradito de letra (los cuadraditos chicos donde van las
    letras), aplicado con una variable CSS global (--ficha-skin-img). */
 const FICHAS_SKIN=[
-  {id:null,nombre:"Clásica",precio:0},
+  {id:null,nombre:"Clásica",precio:0,basico:true},
+  {id:"ficha-candy",nombre:"Candy Pop",precio:500,basico:true},
   {id:"ficha-lab-toxico-1",nombre:"Contención Tóxica",precio:0},
   {id:"ficha-lab-toxico-2",nombre:"Núcleo Mutante",precio:600},
   {id:"ficha-lab-toxico-3",nombre:"Reactor Neón",precio:700},
-  {id:"ficha-lab-toxico-4",nombre:"Bioalerta Digital",precio:700}
+  {id:"ficha-lab-toxico-4",nombre:"Bioalerta Digital",precio:700},
+  {id:"ficha-futbol",nombre:"Gol Total",precio:500,nuevo:true},
+  {id:"ficha-lava",nombre:"Lava Ardiente",precio:650,nuevo:true},
+  {id:"ficha-hielo",nombre:"Hielo Eterno",precio:650,nuevo:true},
+  {id:"ficha-monstruo",nombre:"Ojo Mutante",precio:700,nuevo:true},
+  {id:"ficha-oro",nombre:"Joya Real",precio:900,nuevo:true},
+  {id:"ficha-alien",nombre:"Nave Alien",precio:750,nuevo:true},
+  {id:"ficha-rayo",nombre:"Tormenta Eléctrica",precio:700,nuevo:true}
 ];
 function cargarFichasComprados(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_fichas_owned")||"[]"));}catch(e){return new Set();}
@@ -5101,10 +5118,12 @@ function aplicarFichaSkin(){
   document.documentElement.style.setProperty("--ficha-skin-img",m&&m.id?"url('assets/fichas/"+m.id+".webp')":"none");
 }
 aplicarFichaSkin();
+let seccionTiendaEsFichas=false;
 function equiparFichaSkin(id){
   fichaSkinEquipada=id||"";guardarFichaSkinEquipada();
   aplicarFichaSkin();
-  tnRenderCuadrosTablero("cuadroTableroGrid");
+  tnRenderCuadrosTablero("cuadroTableroGrid",true);
+  if(seccionTiendaEsFichas)tnRenderCuadrosTablero("seccionTiendaContenido",false);
 }
 function cargarTablerosComprados(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_tableros_owned")||"[]"));}catch(e){return new Set();}
@@ -5190,9 +5209,11 @@ function tnRenderTableros(contId,soloBasicos){
     cont.appendChild(card);
   });
 }
-function tnRenderCuadrosTablero(contId){
+function tnRenderCuadrosTablero(contId,soloBasicos){
   const cont=$(contId||"cuadroTableroGrid");if(!cont)return;cont.innerHTML="";
-  FICHAS_SKIN.forEach(m=>{
+  const lista=soloBasicos?FICHAS_SKIN.filter(m=>m.basico):
+    FICHAS_SKIN.filter(m=>m.precio>0).concat(FICHAS_SKIN.filter(m=>!m.precio));
+  lista.forEach(m=>{
     const poseido=fichaSkinPoseida(m);
     const equipado=(fichaSkinEquipada||null)===m.id;
     const card=document.createElement("div");card.className="frame-card";
