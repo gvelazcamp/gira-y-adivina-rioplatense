@@ -1052,9 +1052,9 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="tn-comprar" data-tipo="oferta_gratis" data-precio="0" data-nombre="las monedas">🎁 Gratis</button>
   </div>
   <div class="tn-item tn-card">
-  <div class="tn-card-img" style="background-image:url('assets/shop/ruleta.webp')"></div>
-  <div class="tn-card-info"><b>Giro extra</b><span>Otra vuelta de la ruleta ahora</span></div>
-  <button class="tn-comprar" data-tipo="ruleta" data-precio="200">🪙 200</button>
+  <div class="tn-card-img"><span class="avatar-wrap" style="width:72%"><img src="assets/avatars/avatar-01.webp" style="width:100%;border-radius:50%;display:block"><img class="avatar-frame ver" src="assets/frames/frame-dorado.png"></span></div>
+  <div class="tn-card-info"><b>Marco Dorado</b><span>Destacá tu perfil — oferta de hoy</span></div>
+  <button class="tn-comprar" data-tipo="marco_dorado" data-precio="500" data-nombre="el Marco Dorado">🪙 500</button>
   </div>
   <div class="tn-item tn-card">
   <div class="tn-card-img" style="background-image:url('assets/shop/vida-1.webp')"></div>
@@ -2016,6 +2016,7 @@ function tnPuedeComprar(tipo){
   if(tipo==="ruleta")return!rwPuedeGirar();
   if(tipo.indexOf("sobre_")===0)return sobrePuedeComprar(tipo.slice(6));
   if(tipo==="oferta_gratis")return gratisDiariaPuedeReclamar();
+  if(tipo==="marco_dorado")return!framesComprados.has("dorado");
   return true;
 }
 function tnRazonBloqueo(tipo){
@@ -2023,6 +2024,7 @@ function tnRazonBloqueo(tipo){
   if(tipo==="ruleta")return"✅ Ya disponible";
   if(tipo.indexOf("sobre_")===0)return sobreTextoEspera(tipo.slice(6));
   if(tipo==="oferta_gratis")return gratisDiariaTextoEspera();
+  if(tipo==="marco_dorado")return"✅ Ya lo tenés";
   return"";
 }
 function otorgarSobreSorpresa(){
@@ -2100,6 +2102,9 @@ function tnEjecutarCompra(tipo,precio){
     colMostrarSobreConseguido(cual,true);
   }else if(tipo==="oferta_gratis"){
     meta.ultimaGratisDiaria=Date.now();sumarMonedas(80);
+  }else if(tipo==="marco_dorado"){
+    framesComprados.add("dorado");guardarFramesComprados();
+    equiparMarco("dorado");
   }
   guardarMeta();
   tnActualizar();mundoActualizarHud();rwActualizarBadge();
