@@ -1193,7 +1193,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
 </div></div>
 <div class="capa" id="capaSeccionTienda"><div class="caja tn-caja">
   <h2 id="seccionTiendaTitulo"></h2>
-  <div id="seccionTiendaContenido"></div>
+  <div class="frame-grid" id="seccionTiendaContenido"></div>
   <button class="no" id="seccionTiendaCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
 </div></div>
 <div class="confirm-poder" id="confirmCompra" style="display:none">
@@ -4966,17 +4966,17 @@ function armarTeclado(){
    "Jugar online", solo entre los que ya se poseen. ---- */
 const MARCOS_TABLERO=[
   {id:null,nombre:"Sin marco",precio:0},
-  {id:"fondo-uruguay-1",nombre:"Rambla nocturna",precio:0},
+  {id:"fondo-uruguay-1",nombre:"Rambla nocturna",precio:0,basico:true},
   {id:"fondo-uruguay-2",nombre:"Costa al atardecer",precio:0},
   {id:"fondo-uruguay-3",nombre:"Plaza histórica",precio:0},
   {id:"fondo-uruguay-4",nombre:"Plaza junto al río",precio:0},
-  {id:"fondo-uruguay-5",nombre:"Noche de estadio",precio:0},
-  {id:"fondo-uruguay-6",nombre:"Campeón del Siglo",precio:0},
-  {id:"fondo-uruguay-7",nombre:"Parque Central",precio:0},
-  {id:"fondo-galaxia",nombre:"Casino Galáctico",precio:2200},
-  {id:"fondo-circo",nombre:"Circo Siniestro",precio:2200},
-  {id:"fondo-alien",nombre:"Invasión Alien",precio:2500},
-  {id:"fondo-steampunk",nombre:"Laboratorio Steampunk",precio:2500},
+  {id:"fondo-uruguay-5",nombre:"Noche de estadio",precio:0,basico:true},
+  {id:"fondo-uruguay-6",nombre:"Campeón del Siglo",precio:0,basico:true},
+  {id:"fondo-uruguay-7",nombre:"Parque Central",precio:0,basico:true},
+  {id:"fondo-galaxia",nombre:"Casino Galáctico",precio:2200,basico:true},
+  {id:"fondo-circo",nombre:"Circo Siniestro",precio:2200,basico:true},
+  {id:"fondo-alien",nombre:"Invasión Alien",precio:2500,basico:true},
+  {id:"fondo-steampunk",nombre:"Laboratorio Steampunk",precio:2500,basico:true},
   {id:"fondo-rock",nombre:"Estrella de Rock",precio:2200,nuevo:true},
   {id:"fondo-motoquero",nombre:"Motoquero Rebelde",precio:2200,nuevo:true},
   {id:"fondo-circo-punk",nombre:"Circo Punk",precio:2500,nuevo:true},
@@ -5020,7 +5020,9 @@ function equiparTablero(id){
 }
 function tnRenderTableros(contId,soloBasicos){
   const cont=$(contId||"tableroGrid");if(!cont)return;cont.innerHTML="";
-  (soloBasicos?MARCOS_TABLERO.filter(m=>!m.nuevo):MARCOS_TABLERO).forEach(m=>{
+  const lista=soloBasicos?MARCOS_TABLERO.filter(m=>m.basico):
+    MARCOS_TABLERO.filter(m=>m.precio>0).concat(MARCOS_TABLERO.filter(m=>!m.precio));
+  lista.forEach(m=>{
     const poseido=marcoTableroPoseido(m);
     const equipado=(tableroEquipado||null)===m.id;
     const card=document.createElement("div");card.className="frame-card";
