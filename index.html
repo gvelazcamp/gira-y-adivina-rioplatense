@@ -3707,6 +3707,7 @@ function activarArrastre(vp,claseArrastrando){
 activarArrastre($("duraznoViewport"),"dz-arrastrando");
 activarArrastre($("mapa"),"arrastrando");
 
+let mapaVideoObs=null;
 function verMundo(){
   $("fondoMundo").classList.remove("ver");
   $("setup").style.display="none";$("juego").style.display="none";$("pantDurazno").style.display="none";
@@ -3725,8 +3726,8 @@ function verMundo(){
     if(d.bg)r.style.backgroundImage="url('"+d.bg+"')";
     if(d.video){
       const v=document.createElement("video");
-      v.src=d.video;
-      v.muted=true;v.loop=true;v.autoplay=true;v.playsInline=true;v.preload="auto";
+      v.dataset.src=d.video;
+      v.muted=true;v.loop=true;v.playsInline=true;v.preload="none";
       r.appendChild(v);
     }
     if(d.id==="montevideo"){
@@ -3813,6 +3814,23 @@ function verMundo(){
     const nodo=m.querySelectorAll(".nodo")[act];
     if(nodo)m.scrollTop=nodo.offsetTop-m.clientHeight/2;
   },80);
+  /* Los videos de fondo de cada región sólo se cargan/reproducen cuando
+     esa región está cerca de la pantalla (si no, con 5+ ciudades con
+     video todas competían por ancho de banda y decodificación a la vez
+     apenas se abría el mapa, y se sentía trabado). Con IntersectionObserver
+     se le pone el src recién cuando se acerca, y se pausa (sin sacarle
+     el src, así no hay que volver a bajarlo) cuando se aleja. */
+  if(mapaVideoObs)mapaVideoObs.disconnect();
+  mapaVideoObs=new IntersectionObserver((entries)=>{
+    entries.forEach(en=>{
+      const v=en.target;
+      if(en.isIntersecting){
+        if(!v.src)v.src=v.dataset.src;
+        v.play().catch(()=>{});
+      }else v.pause();
+    });
+  },{root:m,rootMargin:"60% 0px"});
+  m.querySelectorAll(".region video").forEach(v=>mapaVideoObs.observe(v));
 }
 $("salirMundo").onclick=()=>{$("mundo").style.display="none";$("setup").style.display="block";
   $("fondoMundo").classList.remove("ver");};
