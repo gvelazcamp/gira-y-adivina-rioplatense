@@ -180,6 +180,14 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 .dz-coleccion-fab:active{transform:scale(.94)}
 @media(hover:hover){.dz-coleccion-fab:hover{box-shadow:0 6px 18px #000000AA,0 0 24px #F5B301AA}}
 @media(max-width:600px){.dz-coleccion-fab{width:52px;height:52px;left:10px;bottom:10px;font-size:1.3rem}}
+#mundo{position:relative}
+.mundo-volver{position:absolute;top:6px;left:6px;z-index:5;width:46px;height:46px;
+ border-radius:50%;padding:0;font-size:1.4rem;color:var(--crema);
+ background:radial-gradient(circle at 35% 30%,#2A1A3C,#120A1D);
+ border:2px solid #F5B301AA;box-shadow:0 6px 18px #000000AA,0 0 16px #F5B30155;
+ display:grid;place-items:center;transition:transform .12s ease}
+.mundo-volver:active{transform:scale(.94)}
+@media(hover:hover){.mundo-volver:hover{box-shadow:0 6px 18px #000000AA,0 0 24px #F5B301AA}}
 .dz-resumen{display:flex;justify-content:space-between;gap:10px;font-size:.78rem;color:#C9B8DE;
  background:#00000033;border:1px solid #FFFFFF1F;border-radius:12px;padding:8px 12px;margin-bottom:10px}
 .dz-resumen b{color:var(--crema)}
@@ -932,6 +940,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
 <div id="fondoMundo"></div>
 
 <section id="mundo">
+  <button class="mundo-volver" id="mundoVolverArriba" type="button" aria-label="Volver al inicio" title="Volver al inicio">←</button>
   <h1 class="titulo" style="font-size:2.4rem">URUGUAY</h1>
   <div class="mundo-hud"><span id="mhVidas">❤️ 5</span><span class="mh-monedas" id="mhMonedas" title="Monedas: se ganan jugando y sirven para comprar en la Tienda">🪙 500 monedas</span></div>
   <p class="sub" id="subMundo">Ganale a cada rival y andá abriendo el país.</p>
@@ -3834,6 +3843,7 @@ function verMundo(){
 }
 $("salirMundo").onclick=()=>{$("mundo").style.display="none";$("setup").style.display="block";
   $("fondoMundo").classList.remove("ver");};
+$("mundoVolverArriba").onclick=()=>$("salirMundo").onclick();
 
 /* ---- Expansión a Argentina: todavía no es jugable, por ahora es un
    teaser animado que se desbloquea al ganar las 21 ciudades de Uruguay. ---- */
