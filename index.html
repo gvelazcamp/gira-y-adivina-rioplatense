@@ -91,6 +91,10 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 .mv-agua i{position:absolute;width:22px;height:22px;margin:-11px 0 0 -11px;border:2px solid #EAF6FFB0;
  border-radius:50%;animation:mvRipple 3.4s ease-out infinite}
 @keyframes mvRipple{0%{transform:scale(.25);opacity:.85}100%{transform:scale(2.8);opacity:0}}
+.mv-gente{position:absolute;inset:0;pointer-events:none;z-index:2}
+.mv-gente img{position:absolute;transform-origin:50% 92%;filter:drop-shadow(0 6px 6px #00000070);
+ animation:mvBaile 1.05s ease-in-out infinite}
+@keyframes mvBaile{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-3%) rotate(3deg)}}
 .senda{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .senda path{fill:none;stroke-linecap:round;vector-effect:non-scaling-stroke}
 .s-base{stroke:#FFFFFF33;stroke-width:5;stroke-dasharray:.012 .02}
@@ -3296,6 +3300,14 @@ function verMundo(){
         agua.appendChild(o);
       });
       r.appendChild(agua);
+      const gente=document.createElement("div");gente.className="mv-gente";
+      [["assets/worlds/sprites/montevideo-candombe-1.webp",70,17,21,0],
+       ["assets/worlds/sprites/montevideo-candombe-2.webp",80,43,19,.4]].forEach(([src,x,y,w,delay])=>{
+        const im=document.createElement("img");im.src=src;im.alt="";
+        im.style.left=x+"%";im.style.top=y+"%";im.style.width=w+"%";im.style.animationDelay=delay+"s";
+        gente.appendChild(im);
+      });
+      r.appendChild(gente);
     }
     tira.appendChild(r);
   });
