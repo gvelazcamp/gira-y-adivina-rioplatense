@@ -5066,11 +5066,7 @@ const MARCOS_TABLERO=[
   {id:"fondo-lab-toxico",nombre:"Laboratorio Mutante",precio:2800,nuevo:true},
   {id:"fondo-tatuaje",nombre:"Tatuaje Old School",precio:2800,nuevo:true},
   {id:"fondo-synthwave",nombre:"Synthwave 80s",precio:3000,nuevo:true},
-  {id:"fondo-tiki",nombre:"Templo Tiki",precio:3000,nuevo:true},
-  {id:"fondo-lab-toxico-2",nombre:"Contención Tóxica",precio:2600,nuevo:true},
-  {id:"fondo-lab-toxico-3",nombre:"Reactor Mutante",precio:2600,nuevo:true},
-  {id:"fondo-lab-toxico-4",nombre:"Núcleo Radiactivo",precio:2700,nuevo:true},
-  {id:"fondo-lab-toxico-5",nombre:"Bioalerta Digital",precio:2700,nuevo:true}
+  {id:"fondo-tiki",nombre:"Templo Tiki",precio:3000,nuevo:true}
 ];
 function cargarTablerosComprados(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_tableros_owned")||"[]"));}catch(e){return new Set();}
