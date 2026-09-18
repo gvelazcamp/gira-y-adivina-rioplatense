@@ -546,6 +546,8 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
  font-size:1.1rem;background:#FFFFFF14}
 .mini-card .mn-tit{font-size:.64rem;font-weight:700;text-align:center;line-height:1.2}
 .mini-card .rw-badge{position:absolute;top:6px;right:6px;margin:0;padding:2px 6px;font-size:.6rem}
+.mini-card .obj-badge{background:var(--magenta);color:#fff;min-width:18px;height:18px;line-height:18px;
+ padding:0 4px;border-radius:99px;font-size:.66rem;box-shadow:0 2px 6px #00000066}
 .setup-menu{display:flex;flex-direction:column;margin-top:6px}
 .setup-menu .btn-grande{display:flex;align-items:center;gap:12px;text-align:left}
 .setup-menu .btn-txt{flex:1}
@@ -893,7 +895,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <div class="mini-grid">
     <button class="mini-card rw-boton" id="bRuleta"><span class="mn-ico">🎡</span><span class="mn-tit">Ruleta de premios</span><span id="rwBotonEstado" class="rw-badge"></span></button>
     <button class="mini-card" id="bRanking"><span class="mn-ico">🏆</span><span class="mn-tit">Ranking de amigos</span></button>
-    <button class="mini-card" id="bObjetivos"><span class="mn-ico">🎯</span><span class="mn-tit">Objetivos diarios</span></button>
+    <button class="mini-card" id="bObjetivos"><span class="mn-ico">🎯</span><span class="mn-tit">Objetivos diarios</span><span id="objBotonEstado" class="rw-badge obj-badge"></span></button>
     <button class="mini-card" id="bLogros"><span class="mn-ico">🏅</span><span class="mn-tit">Logros</span></button>
   </div>
   <button class="btn-grande" id="bEntrarTV" style="display:none;margin-top:10px"><span class="btn-ico">📱</span><span class="btn-txt">Entrar a Sala TV</span></button>
@@ -1935,20 +1937,32 @@ function objObtenerHoy(){
 function objSumar(id,n){
   const o=objObtenerHoy();o[id]=(o[id]||0)+n;guardarObjetivos();
   if($("capaObjetivos")&&$("capaObjetivos").classList.contains("ver"))objRender();
+  objActualizarBadge();
 }
 function objReclamar(id){
   const o=objObtenerHoy(),def=OBJETIVOS.find(x=>x.id===id);
   if(!def||o[id]<def.meta||o.reclamados.includes(id))return;
   o.reclamados.push(id);guardarObjetivos();
   sumarMonedas(def.premio);mundoActualizarHud();
-  objRender();
+  objRender();objActualizarBadge();
 }
 function objReclamarTodos(){
   const o=objObtenerHoy();
   if(o.reclamados.includes("todos")||!OBJETIVOS.every(d=>o.reclamados.includes(d.id)))return;
   o.reclamados.push("todos");guardarObjetivos();
   sumarMonedas(OBJ_PREMIO_TODOS);mundoActualizarHud();
-  objRender();
+  objRender();objActualizarBadge();
+}
+/* Punto rojo en el botón del menú: cuenta cuántos premios (misiones +
+   el bonus de completar las 4) están listos para reclamar pero
+   todavía no se tocaron, para que se note de un vistazo sin tener
+   que entrar a mirar. */
+function objActualizarBadge(){
+  const b=$("objBotonEstado");if(!b)return;
+  const o=objObtenerHoy();
+  let pendientes=OBJETIVOS.filter(d=>(o[d.id]||0)>=d.meta&&!o.reclamados.includes(d.id)).length;
+  if(OBJETIVOS.every(d=>o.reclamados.includes(d.id))&&!o.reclamados.includes("todos"))pendientes++;
+  b.textContent=pendientes>0?pendientes:"";
 }
 function objRender(){
   const o=objObtenerHoy();
@@ -1981,7 +1995,8 @@ function objRender(){
 }
 function objAbrir(){objRender();$("capaObjetivos").classList.add("ver");}
 $("bObjetivos").onclick=objAbrir;
-$("objCerrar").onclick=()=>$("capaObjetivos").classList.remove("ver");
+$("objCerrar").onclick=()=>{$("capaObjetivos").classList.remove("ver");objActualizarBadge();};
+objActualizarBadge();
 $("objLista").addEventListener("click",e=>{
   const b=e.target.closest(".obj-reclamar");if(!b||b.disabled)return;
   const id=b.dataset.id;if(id==="todos")objReclamarTodos();else objReclamar(id);
@@ -2013,7 +2028,7 @@ setInterval(()=>{
   regenerarVidas();
   if($("pantDurazno").style.display==="block"){dzActualizarHud();dzActualizarBoton();}
   if($("mundo").style.display==="block")mundoActualizarHud();
-  if($("setup").style.display!=="none"){rwActualizarBadge();mundoActualizarHud();}
+  if($("setup").style.display!=="none"){rwActualizarBadge();objActualizarBadge();mundoActualizarHud();}
   if($("capaTienda").classList.contains("ver"))tnActualizar();
   if(musicaOn)sincronizarMusica();else detenerMusica();
 },1000);
