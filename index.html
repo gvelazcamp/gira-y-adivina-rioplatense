@@ -1044,6 +1044,29 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <div class="tn-item tn-pack-img" style="background-image:url('assets/shop/pack-racha.webp')">
   <button class="tn-comprar" data-tipo="pack_racha" data-precio="1800" data-real-agregado="1" data-nombre="el Pack Racha">🪙 1800</button>
   </div>
+  <h3 class="tn-subtitulo">⏳ Ofertas diarias</h3>
+  <div class="tn-grid">
+  <div class="tn-item tn-card">
+  <div class="tn-card-img">🎁</div>
+  <div class="tn-card-info"><b>Monedas gratis</b><span>+80 monedas — 1 por día</span></div>
+  <button class="tn-comprar" data-tipo="oferta_gratis" data-precio="0" data-nombre="las monedas">🎁 Gratis</button>
+  </div>
+  <div class="tn-item tn-card">
+  <div class="tn-card-img">🎡</div>
+  <div class="tn-card-info"><b>Giro extra</b><span>Otra vuelta de la ruleta ahora</span></div>
+  <button class="tn-comprar" data-tipo="ruleta" data-precio="200">🪙 200</button>
+  </div>
+  <div class="tn-item tn-card">
+  <div class="tn-card-img" style="background-image:url('assets/shop/vida-1.webp')"></div>
+  <div class="tn-card-info"><b>Vida instantánea</b><span>+1 vida al toque</span></div>
+  <button class="tn-comprar" data-tipo="vida" data-precio="150">🪙 150</button>
+  </div>
+  <div class="tn-item tn-card tn-real">
+  <div class="tn-card-img" style="background-image:url('assets/shop/monedas-2.webp')"></div>
+  <div class="tn-card-info"><b>1.350 monedas</b><span>Oferta relámpago de hoy</span></div>
+  <button class="tn-comprar-real" data-real="1">$1.99</button>
+  </div>
+  </div>
   <h3 class="tn-subtitulo">✉️ Sobres de colección</h3>
   <div class="tn-grid">
   <div class="tn-item tn-card">
@@ -1724,6 +1747,7 @@ function cargarMeta(){
   if(typeof m.monedas!=="number")m.monedas=500;
   if(typeof m.proxima!=="number")m.proxima=0;
   if(typeof m.ultimaRuleta!=="number")m.ultimaRuleta=0;
+  if(typeof m.ultimaGratisDiaria!=="number")m.ultimaGratisDiaria=0;
   if(typeof m.monedasGanadasTotal!=="number")m.monedasGanadasTotal=m.monedas;
   if(typeof m.diaRacha!=="number")m.diaRacha=0;
   if(typeof m.ultimoDiaJugado!=="string")m.ultimoDiaJugado="";
@@ -1979,16 +2003,26 @@ function sobreTextoEspera(cual){
   const hh=Math.floor(rest/3600000),mm=Math.floor(rest%3600000/60000);
   return"⏳ "+hh+"h "+mm+"m";
 }
+const GRATIS_MS=24*60*60*1000;
+const gratisDiariaPuedeReclamar=()=>Date.now()-meta.ultimaGratisDiaria>=GRATIS_MS;
+function gratisDiariaTextoEspera(){
+  const rest=GRATIS_MS-(Date.now()-meta.ultimaGratisDiaria);
+  if(rest<=0)return"";
+  const hh=Math.floor(rest/3600000),mm=Math.floor(rest%3600000/60000);
+  return"⏳ "+hh+"h "+mm+"m";
+}
 function tnPuedeComprar(tipo){
   if(tipo==="vida"||tipo==="recarga")return meta.vidas<VIDAS_MAX;
   if(tipo==="ruleta")return!rwPuedeGirar();
   if(tipo.indexOf("sobre_")===0)return sobrePuedeComprar(tipo.slice(6));
+  if(tipo==="oferta_gratis")return gratisDiariaPuedeReclamar();
   return true;
 }
 function tnRazonBloqueo(tipo){
   if(tipo==="vida"||tipo==="recarga")return"❤️ Vidas llenas";
   if(tipo==="ruleta")return"✅ Ya disponible";
   if(tipo.indexOf("sobre_")===0)return sobreTextoEspera(tipo.slice(6));
+  if(tipo==="oferta_gratis")return gratisDiariaTextoEspera();
   return"";
 }
 function otorgarSobreSorpresa(){
@@ -2005,6 +2039,7 @@ function tnActualizar(){
     const tipo=b.dataset.tipo,precio=+b.dataset.precio,puede=tnPuedeComprar(tipo),alcanza=meta.monedas>=precio;
     b.disabled=!alcanza||!puede;
     if(!puede){b.textContent=tnRazonBloqueo(tipo);b.title="";}
+    else if(tipo==="oferta_gratis"){b.textContent="🎁 Gratis";b.title="";}
     else{b.textContent="🪙 "+precio;b.title=alcanza?"":"Te faltan "+(precio-meta.monedas)+" monedas";}
   });
 }
@@ -2063,6 +2098,8 @@ function tnEjecutarCompra(tipo,precio){
     meta.vidas=VIDAS_MAX;meta.proxima=0;meta.ultimaRuleta=0;
     const cual=otorgarSobreSorpresa();otorgarSobreSorpresa();
     colMostrarSobreConseguido(cual,true);
+  }else if(tipo==="oferta_gratis"){
+    meta.ultimaGratisDiaria=Date.now();sumarMonedas(80);
   }
   guardarMeta();
   tnActualizar();mundoActualizarHud();rwActualizarBadge();
@@ -2074,7 +2111,7 @@ document.querySelectorAll(".tn-comprar").forEach(b=>{
   b.onclick=()=>{
     const tipo=b.dataset.tipo,precio=+b.dataset.precio;
     if(meta.monedas<precio||!tnPuedeComprar(tipo))return;
-    $("confirmCompraTxt").textContent="¿Comprar "+tnNombreItem(b)+" por 🪙 "+precio+"?";
+    $("confirmCompraTxt").textContent=precio>0?"¿Comprar "+tnNombreItem(b)+" por 🪙 "+precio+"?":"¿Reclamar "+tnNombreItem(b)+" gratis?";
     $("confirmCompra").style.display="flex";
     $("confirmCompraSi").onclick=()=>{$("confirmCompra").style.display="none";tnEjecutarCompra(tipo,precio);};
     $("confirmCompraNo").onclick=()=>{$("confirmCompra").style.display="none";};
