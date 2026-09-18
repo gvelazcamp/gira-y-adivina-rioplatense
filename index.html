@@ -4966,7 +4966,15 @@ const MARCOS_TABLERO=[
   {id:"fondo-galaxia",nombre:"Casino Galáctico",precio:2200},
   {id:"fondo-circo",nombre:"Circo Siniestro",precio:2200},
   {id:"fondo-alien",nombre:"Invasión Alien",precio:2500},
-  {id:"fondo-steampunk",nombre:"Laboratorio Steampunk",precio:2500}
+  {id:"fondo-steampunk",nombre:"Laboratorio Steampunk",precio:2500},
+  {id:"fondo-rock",nombre:"Estrella de Rock",precio:2200},
+  {id:"fondo-motoquero",nombre:"Motoquero Rebelde",precio:2200},
+  {id:"fondo-circo-punk",nombre:"Circo Punk",precio:2500},
+  {id:"fondo-cementerio",nombre:"Cementerio Gótico",precio:2500},
+  {id:"fondo-lab-toxico",nombre:"Laboratorio Mutante",precio:2800},
+  {id:"fondo-tatuaje",nombre:"Tatuaje Old School",precio:2800},
+  {id:"fondo-synthwave",nombre:"Synthwave 80s",precio:3000},
+  {id:"fondo-tiki",nombre:"Templo Tiki",precio:3000}
 ];
 function cargarTablerosComprados(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_tableros_owned")||"[]"));}catch(e){return new Set();}
