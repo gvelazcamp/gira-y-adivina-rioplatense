@@ -117,16 +117,16 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 
 /* Durazno 3D */
 #pantDurazno{display:none;max-width:620px;margin:3vh auto;text-align:center}
-.dz-hud{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;row-gap:8px;margin-bottom:12px;
- background:#00000033;border:1px solid #FFFFFF1F;border-radius:14px;padding:10px 14px}
-.dz-jugador{display:flex;align-items:center;gap:8px;min-width:0;flex-shrink:0}
-.dz-jugador img{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #F5B30188;flex-shrink:0}
-.dz-jugador span{font-weight:700;font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:90px}
-.dz-vidasmonedas{display:flex;align-items:center;gap:14px;flex-shrink:0}
-.dz-vidas{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
-.dz-vidas span{font-weight:700;font-size:1.15rem}
-.dz-vidas small{color:#B49FCE;font-size:.72rem}
-.dz-monedas{font-weight:700;font-size:1.15rem;color:var(--oro)}
+.dz-hud{display:flex;flex-wrap:nowrap;justify-content:space-between;align-items:center;gap:6px;margin-bottom:12px;
+ background:#00000033;border:1px solid #FFFFFF1F;border-radius:14px;padding:10px 12px}
+.dz-jugador{display:flex;align-items:center;gap:6px;min-width:0;flex-shrink:1}
+.dz-jugador img{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid #F5B30188;flex-shrink:0}
+.dz-jugador span{font-weight:700;font-size:.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70px}
+.dz-vidasmonedas{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.dz-vidas{display:flex;flex-direction:column;align-items:flex-start;gap:1px}
+.dz-vidas span{font-weight:700;font-size:1rem;white-space:nowrap}
+.dz-vidas small{color:#B49FCE;font-size:.62rem;white-space:nowrap}
+.dz-monedas{font-weight:700;font-size:1rem;color:var(--oro);white-space:nowrap}
 .dz-viewport{position:relative;width:100%;height:min(62vh,700px);overflow-y:auto;overflow-x:hidden;
  border-radius:22px;border:1px solid #FFFFFF1F;background:#0C0616;cursor:grab;
  -webkit-overflow-scrolling:touch;touch-action:pan-y}
@@ -889,7 +889,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <div class="dz-jugador" id="dzJugador"><span class="avatar-wrap"><img id="dzJugadorAvatar" src="" alt=""><img class="avatar-frame" id="dzJugadorFrameImg" alt=""></span><span id="dzJugadorNombre"></span></div>
     <div class="dz-vidasmonedas">
       <div class="dz-vidas"><span id="dzVidas">❤️ 5</span><small id="dzProxima"></small></div>
-      <div class="dz-monedas" id="dzMonedas" title="Monedas: se ganan jugando y sirven para comprar en la Tienda">🪙 500 monedas</div>
+      <div class="dz-monedas" id="dzMonedas" title="Monedas: se ganan jugando y sirven para comprar en la Tienda">🪙 500</div>
     </div>
   </div>
   <div class="dz-viewport-wrap">
@@ -3137,7 +3137,7 @@ function dzProgresoTxt(){
 function dzActualizarHud(){
   regenerarVidas();
   $("dzVidas").textContent="❤️ "+meta.vidas;
-  $("dzMonedas").textContent="🪙 "+meta.monedas+" monedas";
+  $("dzMonedas").textContent="🪙 "+meta.monedas;
   $("dzProxima").textContent=textoProxima();
   const jug=$("dzJugador");
   if(perfilExiste()){
