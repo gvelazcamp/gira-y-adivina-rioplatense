@@ -1141,6 +1141,8 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="tn-comprar" data-tipo="sobre_treinta-y-tres" data-precio="1200">🪙 1200</button>
   </div>
   </div>
+  <h3 class="tn-subtitulo">🧑‍🎤 Avatares premium</h3>
+  <div class="frame-grid" id="avatarPremiumGrid"></div>
   <h3 class="tn-subtitulo">🖼️ Marcos de avatar</h3>
   <div class="frame-grid" id="frameGrid"></div>
   <h3 class="tn-subtitulo">💳 Paquetes con dinero real</h3>
@@ -2045,7 +2047,7 @@ function tnActualizar(){
     else{b.textContent="🪙 "+precio;b.title=alcanza?"":"Te faltan "+(precio-meta.monedas)+" monedas";}
   });
 }
-$("bTienda").onclick=()=>{tnActualizar();tnRenderFrames();$("capaTienda").classList.add("ver");};
+$("bTienda").onclick=()=>{tnActualizar();tnRenderFrames();tnRenderAvataresPremium();$("capaTienda").classList.add("ver");};
 document.querySelectorAll(".tn-comprar-real").forEach(b=>{
   b.onclick=()=>mostrarToast("🚧","Disponible cuando el juego esté en la Play Store");
 });
@@ -2345,6 +2347,59 @@ function tnRenderFrames(){
         bip(190,.16,"triangle",.07);
       };
       tnAgregarBotonReal(btn,f.precio);
+    }
+    cont.appendChild(card);
+  });
+}
+
+/* ---- Avatares premium ---- */
+const AVATARES_PREMIUM=[
+  {id:"avatar-23",nombre:"Fantasma Verde",precio:2500},
+  {id:"avatar-24",nombre:"Diablita Neón",precio:2500},
+  {id:"avatar-25",nombre:"Hielo Ártico",precio:2800},
+  {id:"avatar-26",nombre:"Gatita Lunar",precio:2800},
+  {id:"avatar-27",nombre:"Tóxico",precio:3000},
+  {id:"avatar-28",nombre:"Arácnida",precio:3000},
+  {id:"avatar-29",nombre:"Calabaza",precio:3200},
+  {id:"avatar-30",nombre:"Slime Rosa",precio:3200}
+];
+function cargarAvataresComprados(){
+  try{return new Set(JSON.parse(localStorage.getItem("gya_avatars_owned")||"[]"));}catch(e){return new Set();}
+}
+let avataresComprados=cargarAvataresComprados();
+const guardarAvataresComprados=()=>{try{localStorage.setItem("gya_avatars_owned",JSON.stringify([...avataresComprados]));}catch(e){}};
+function equiparAvatarPremium(id){
+  perfil.avatar=id;
+  try{localStorage.setItem("gya_avatar",id);}catch(e){}
+  actualizarChipPerfil();
+  tnRenderAvataresPremium();
+}
+function tnRenderAvataresPremium(){
+  const cont=$("avatarPremiumGrid");if(!cont)return;cont.innerHTML="";
+  AVATARES_PREMIUM.forEach(a=>{
+    const poseido=avataresComprados.has(a.id);
+    const equipado=perfil.avatar===a.id;
+    const card=document.createElement("div");card.className="frame-card";
+    card.innerHTML='<span class="avatar-wrap frame-preview">'+
+      '<img class="avatar-img" src="assets/avatars/'+a.id+'.webp" alt="">'+
+      '</span><b>'+a.nombre+'</b><span class="frame-desc">Avatar exclusivo de la tienda.</span>'+
+      '<button class="frame-btn'+(equipado?' equipado':poseido?' propio':'')+'">'+
+      (equipado?"EQUIPADO ✓":poseido?"EQUIPAR":"COMPRAR 🪙 "+a.precio)+'</button>';
+    const btn=card.querySelector(".frame-btn");
+    if(equipado)btn.disabled=true;
+    else if(poseido)btn.onclick=()=>equiparAvatarPremium(a.id);
+    else{
+      btn.disabled=meta.monedas<a.precio;
+      btn.onclick=()=>{
+        if(meta.monedas<a.precio){alert("No tenés suficientes monedas.");return;}
+        meta.monedas-=a.precio;guardarMeta();
+        avataresComprados.add(a.id);guardarAvataresComprados();
+        mundoActualizarHud();
+        equiparAvatarPremium(a.id);
+        bip(190,.16,"triangle",.07);
+        logroDesbloquear("tienda");
+      };
+      tnAgregarBotonReal(btn,a.precio);
     }
     cont.appendChild(card);
   });
