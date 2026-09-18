@@ -1464,6 +1464,11 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <span id="fichaNombre">Clásica</span>
     <button id="fichaNext" type="button" title="Diseño siguiente">›</button>
   </div>
+  <div class="marco-selector" id="ruedaSelector" style="display:none">
+    <button id="ruedaPrev" type="button" title="Ruleta anterior">‹</button>
+    <span id="ruedaNombreSel">Clásica</span>
+    <button id="ruedaNext" type="button" title="Ruleta siguiente">›</button>
+  </div>
   <div class="tablero" id="tablero"><div class="categoria" id="cat"></div><div class="frase" id="frase"></div></div>
   <div class="zona">
     <div class="panel">
@@ -3919,6 +3924,7 @@ function jugarOnlineFalso(velocidad){
       armarTeclado();
       iniciarPartida(perfil.nombre||"Vos",rival.n,undefined,perfil.avatar||null,rival.a,frameEquipado||null,null);
       $("fichaSelector").style.display="flex";aplicarFichaSelector();
+      $("ruedaSelector").style.display="flex";aplicarRuedaSelector();
     },900);
   },1500+Math.random()*900);
 }
@@ -5132,6 +5138,7 @@ function armarTeclado(){
     b.onclick=()=>accionLetra(l);$("teclado").appendChild(b);});
   $("marcoSelector").style.display="none";
   $("fichaSelector").style.display="none";
+  $("ruedaSelector").style.display="none";
   $("tablero").classList.remove("con-marco");
   $("tablero").style.backgroundImage="";
 }
@@ -5390,7 +5397,12 @@ function cargarRuedasComprados(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_ruedas_owned")||"[]"));}catch(e){return new Set();}
 }
 let ruedasComprados=cargarRuedasComprados();
+/* PRUEBA TEMPORAL: da todos los Marcos de ruleta para probar en Jugar
+   online sin tener que comprarlos. Borrar este bloque cuando Gonzalo
+   avise que ya terminó de probar. */
+RUEDAS_SKIN.forEach(m=>{if(m.id)ruedasComprados.add(m.id);});
 const guardarRuedasComprados=()=>{try{localStorage.setItem("gya_ruedas_owned",JSON.stringify([...ruedasComprados]));}catch(e){}};
+guardarRuedasComprados();
 const ruedaSkinPoseida=m=>!m.precio||ruedasComprados.has(m.id);
 const guardarRuedaSkinEquipada=()=>{try{localStorage.setItem("gya_rueda_skin_equipada",ruedaSkinEquipada||"");}catch(e){}};
 function aplicarRuedaSkin(){
@@ -5404,6 +5416,30 @@ function equiparRuedaSkin(id){
   if(seccionTiendaEsRuedas)tnRenderRuedas("seccionTiendaContenido",false);
 }
 let seccionTiendaEsRuedas=false;
+/* Selector de Marcos de ruleta en "Jugar online": deja ir probando en
+   vivo, sobre la ruleta real, entre los diseños que ya se poseen
+   (igual que el selector de Marcos de tablero). */
+const ruedasDisponibles=()=>RUEDAS_SKIN.filter(ruedaSkinPoseida);
+let ruedaSelectorIdx=0;
+function aplicarRuedaSelector(){
+  const disp=ruedasDisponibles();
+  let idx=disp.findIndex(m=>(m.id||"")===(ruedaSkinEquipada||""));
+  if(idx<0)idx=0;
+  ruedaSelectorIdx=idx;
+  $("ruedaNombreSel").textContent=disp[idx].nombre;
+}
+$("ruedaPrev").onclick=()=>{
+  const disp=ruedasDisponibles();
+  ruedaSelectorIdx=(ruedaSelectorIdx-1+disp.length)%disp.length;
+  equiparRuedaSkin(disp[ruedaSelectorIdx].id);
+  $("ruedaNombreSel").textContent=disp[ruedaSelectorIdx].nombre;
+};
+$("ruedaNext").onclick=()=>{
+  const disp=ruedasDisponibles();
+  ruedaSelectorIdx=(ruedaSelectorIdx+1)%disp.length;
+  equiparRuedaSkin(disp[ruedaSelectorIdx].id);
+  $("ruedaNombreSel").textContent=disp[ruedaSelectorIdx].nombre;
+};
 function tnRenderRuedas(contId,soloBasicos){
   const cont=$(contId||"ruedaGrid");if(!cont)return;cont.innerHTML="";
   const lista=soloBasicos?RUEDAS_SKIN.filter(m=>m.basico):
