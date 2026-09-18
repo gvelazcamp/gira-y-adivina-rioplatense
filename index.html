@@ -264,6 +264,12 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
  text-align:center;padding:11px 20px;background:linear-gradient(135deg,var(--magenta),#7B3FE4);
  border:2px solid var(--oro);border-radius:999px;box-shadow:0 3px 0 #00000055,0 0 14px #E5197C55;
  -webkit-text-stroke:.6px #2A0E1F;text-shadow:0 2px 0 #00000060}
+.tn-subtitulo:not([data-fijo]){cursor:pointer;user-select:none;display:flex;align-items:center;
+ justify-content:center;gap:8px}
+.tn-subtitulo:not([data-fijo])::after{content:"▸";font-size:.8rem;-webkit-text-stroke:0}
+.tn-subtitulo.abierta::after{content:"▾"}
+.tn-seccion-contenido{animation:tnDesplegar .18s ease}
+@keyframes tnDesplegar{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 .frame-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 @media(max-width:380px){.frame-card{padding:8px}.frame-preview{width:52px;height:52px;margin:10px auto 12px}
  .frame-card b{font-size:.76rem}.frame-desc{font-size:.62rem}.frame-btn{font-size:.68rem;padding:7px 4px}}
@@ -989,7 +995,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
 <div class="capa" id="capaTienda"><div class="caja tn-caja">
   <h2>🛍️ Tienda</h2>
   <p class="tn-monedas">🪙 <span id="tnMonedas">500</span></p>
-  <h3 class="tn-subtitulo">🪙 Con tus monedas</h3>
+  <h3 class="tn-subtitulo" data-fijo="1">🪙 Con tus monedas</h3>
   <div class="tn-grid">
   <div class="tn-item tn-card">
   <div class="tn-card-img" style="background-image:url('assets/shop/vida-1.webp')"></div>
@@ -1008,14 +1014,14 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="tn-comprar" data-tipo="ruleta" data-precio="200">🪙 200</button>
   </div>
   </div>
-  <h3 class="tn-subtitulo">🎁 Packs</h3>
+  <h3 class="tn-subtitulo" data-fijo="1">🎁 Packs</h3>
   <div class="tn-item tn-pack-img" style="background-image:url('assets/shop/pack-explorador.webp')">
   <button class="tn-comprar" data-tipo="pack_explorador" data-precio="900" data-real-agregado="1" data-nombre="el Pack Explorador">❤️ Vidas llenas</button>
   </div>
   <div class="tn-item tn-pack-img" style="background-image:url('assets/shop/pack-racha.webp')">
   <button class="tn-comprar" data-tipo="pack_racha" data-precio="1800" data-real-agregado="1" data-nombre="el Pack Racha">🪙 1800</button>
   </div>
-  <h3 class="tn-subtitulo">⏳ Ofertas diarias</h3>
+  <h3 class="tn-subtitulo" data-fijo="1">⏳ Ofertas diarias</h3>
   <div class="tn-grid">
   <div class="tn-item tn-card">
   <div class="tn-card-img" style="background-image:url('assets/shop/regalo.webp')"></div>
@@ -1038,7 +1044,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="tn-comprar-real" data-real="1">$0.99</button>
   </div>
   </div>
-  <h3 class="tn-subtitulo">✉️ Sobres de colección</h3>
+  <h3 class="tn-subtitulo" data-fijo="1">✉️ Sobres de colección</h3>
   <div class="tn-grid">
   <div class="tn-item tn-card">
   <div class="tn-card-img" style="background-image:url('assets/collectibles/durazno/sobre-durazno.webp')"></div>
@@ -1146,13 +1152,13 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="tn-comprar" data-tipo="sobre_treinta-y-tres" data-precio="1200">🪙 1200</button>
   </div>
   </div>
-  <h3 class="tn-subtitulo">🧑‍🎤 Avatares premium</h3>
+  <h3 class="tn-subtitulo" data-fijo="1">🧑‍🎤 Avatares premium</h3>
   <div class="frame-grid" id="avatarPremiumGrid"></div>
-  <h3 class="tn-subtitulo">🎲 Tableros</h3>
+  <h3 class="tn-subtitulo" data-fijo="1">🎲 Tableros</h3>
   <div class="frame-grid" id="tableroGrid"></div>
-  <h3 class="tn-subtitulo">🖼️ Marcos de avatar</h3>
+  <h3 class="tn-subtitulo" data-fijo="1">🖼️ Marcos de avatar</h3>
   <div class="frame-grid" id="frameGrid"></div>
-  <h3 class="tn-subtitulo">💳 Paquetes con dinero real</h3>
+  <h3 class="tn-subtitulo" data-fijo="1">💳 Paquetes con dinero real</h3>
   <p class="tn-proximamente">Disponibles cuando el juego esté en la Play Store</p>
   <div class="tn-grid">
   <div class="tn-item tn-card tn-real">
@@ -2054,6 +2060,34 @@ function tnActualizar(){
     else{b.textContent="🪙 "+precio;b.title=alcanza?"":"Te faltan "+(precio-meta.monedas)+" monedas";}
   });
 }
+/* Las secciones de la Tienda que ya existían quedan siempre visibles
+   (marcadas con data-fijo="1" en su <h3>). Cualquier sección NUEVA que se
+   agregue de acá en adelante (sin ese data-fijo) arranca plegada y se
+   despliega al tocar su título — no hace falta tocar esta función de
+   nuevo, agarra automáticamente los títulos "tn-subtitulo" que no estén
+   marcados como fijos. */
+function armarSeccionesColapsablesTienda(){
+  const cont=document.querySelector("#capaTienda .tn-caja");
+  [...cont.querySelectorAll(":scope > .tn-subtitulo")].forEach(h=>{
+    if(h.dataset.fijo)return;
+    const wrap=document.createElement("div");
+    wrap.className="tn-seccion-contenido";
+    wrap.style.display="none";
+    let sig=h.nextElementSibling;
+    while(sig&&!sig.classList.contains("tn-subtitulo")&&sig.id!=="tnCerrar"){
+      const luego=sig.nextElementSibling;
+      wrap.appendChild(sig);
+      sig=luego;
+    }
+    h.after(wrap);
+    h.onclick=()=>{
+      const abrir=wrap.style.display==="none";
+      wrap.style.display=abrir?"block":"none";
+      h.classList.toggle("abierta",abrir);
+    };
+  });
+}
+armarSeccionesColapsablesTienda();
 $("bTienda").onclick=()=>{tnActualizar();tnRenderFrames();tnRenderAvataresPremium();tnRenderTableros();$("capaTienda").classList.add("ver");};
 document.querySelectorAll(".tn-comprar-real").forEach(b=>{
   b.onclick=()=>mostrarToast("🚧","Disponible cuando el juego esté en la Play Store");
