@@ -5465,9 +5465,9 @@ function equiparRuedaSkin(id){
 }
 let seccionTiendaEsRuedas=false;
 /* Selector de Marcos de ruleta en "Jugar online": deja ir probando en
-   vivo, sobre la ruleta real, entre los diseños que ya se poseen
-   (igual que el selector de Marcos de tablero). */
-const ruedasDisponibles=()=>RUEDAS_SKIN.filter(ruedaSkinPoseida);
+   vivo, sobre la ruleta real, TODOS los diseños (comprados o no) —
+   es para diseño/preview, no cambia lo que está comprado de verdad. */
+const ruedasDisponibles=()=>RUEDAS_SKIN;
 let ruedaSelectorIdx=0;
 function aplicarRuedaSelector(){
   const disp=ruedasDisponibles();
