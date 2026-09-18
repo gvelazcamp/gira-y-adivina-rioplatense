@@ -22,7 +22,11 @@ then open `index.html` in a browser. Verify UI changes manually (or with Playwri
 
 ## Service worker (`sw.js`)
 
-Deliberately **network-first, not cache-first**: it always tries the network for a fresh `index.html` and only falls back to the cache when offline. This was a conscious fix for a real bug — a cache-first strategy left phones (especially the TWA) stuck on stale versions after deploys. Bump `CACHE_NAME` if the app-shell file list changes.
+Split strategy, not uniformly network-first anymore:
+- `index.html`/JS/manifest: **network-first**, falling back to cache only when offline. This was a conscious fix for a real bug — a cache-first strategy left phones (especially the TWA) stuck on stale versions after deploys.
+- Anything under `assets/`: **cache-first** (added later to stop the shop re-fetching every icon over the network on each open).
+
+Because images are cache-first, **replacing the content of an existing file under `assets/` (same filename, different picture) will not reach phones that already cached it** unless `CACHE_NAME` is bumped — bump it whenever you overwrite an existing asset's bytes, not just when the app-shell file list changes.
 
 ## Architecture inside `index.html`
 
