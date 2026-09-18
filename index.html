@@ -286,6 +286,9 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 .tn-info{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
 .tn-info b{font-size:.92rem}
 .tn-info span{font-size:.76rem;color:#B49FCE}
+.tn-pack-items{display:flex;gap:10px;margin-top:3px}
+.tn-pack-items span{display:flex;align-items:center;gap:3px;font-size:.78rem;font-weight:700;color:var(--crema)}
+.tn-pack-items img{width:22px;height:22px;object-fit:contain}
 .tn-comprar{background:var(--oro);color:var(--tinta);font-weight:800;border-radius:10px;padding:10px 14px;
  flex-shrink:0;font-size:.85rem;white-space:nowrap;box-shadow:0 3px 0 #B3860099;border:1px solid #FFE49A66}
 .tn-item.tn-real{border-color:#37D6C077;background:linear-gradient(135deg,#37D6C01A,#7B3FE41A);border-width:2px}
@@ -1022,7 +1025,13 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <h3 class="tn-subtitulo">🎁 Packs</h3>
   <div class="tn-item">
   <div class="tn-icono">🎒</div>
-  <div class="tn-info"><b>Pack Explorador</b><span>1 vida + 300 monedas + 1 sobre sorpresa</span></div>
+  <div class="tn-info"><b>Pack Explorador</b>
+  <div class="tn-pack-items">
+  <span><img src="assets/shop/vida-1.webp" alt="">×1</span>
+  <span><img src="assets/shop/monedas-1.webp" alt="">×300</span>
+  <span>🎁×1</span>
+  </div>
+  </div>
   <button class="tn-comprar" data-tipo="pack_explorador" data-precio="900">🪙 900</button>
   </div>
   <div class="tn-item">
