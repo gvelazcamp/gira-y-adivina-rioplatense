@@ -25,8 +25,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Outfit:wght@400;500;700&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" defer></script>
 <style>
 :root{--noche:#160B24;--noche2:#241239;--oro:#F5B301;--magenta:#E5197C;--agua:#37D6C0;--crema:#F6EFE2;--tinta:#1A1024}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -2210,7 +2210,11 @@ $("recCerrar").onclick=()=>$("capaRecords").classList.remove("ver");
 /* ---- Ranking de amigos (Supabase) ---- */
 const SUPA_URL="https://qfeubudlnoogwzozywph.supabase.co";
 const SUPA_KEY="sb_publishable_NHKQdADMpHSaSDW9WAlRGA_QLLJkeR7";
-const supa=(window.supabase&&window.supabase.createClient)?window.supabase.createClient(SUPA_URL,SUPA_KEY):null;
+let supaCliente=null;
+function obtenerSupa(){
+  if(!supaCliente&&window.supabase&&window.supabase.createClient)supaCliente=window.supabase.createClient(SUPA_URL,SUPA_KEY);
+  return supaCliente;
+}
 const RK_GRUPO="global";
 function cargarRkPerfil(){
   try{return JSON.parse(localStorage.getItem("gya_ranking_perfil"));}catch(e){return null;}
@@ -2218,7 +2222,7 @@ function cargarRkPerfil(){
 function guardarRkPerfil(p){try{localStorage.setItem("gya_ranking_perfil",JSON.stringify(p));}catch(e){}}
 function rkEsc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 async function empujarRanking(){
-  const rkPerfil=cargarRkPerfil();
+  const rkPerfil=cargarRkPerfil(),supa=obtenerSupa();
   if(!rkPerfil||!supa)return;
   try{
     await supa.from("gya_ranking").upsert({
@@ -2232,7 +2236,7 @@ async function empujarRanking(){
   }catch(e){}
 }
 async function rkCargarTabla(){
-  const rkPerfil=cargarRkPerfil();
+  const rkPerfil=cargarRkPerfil(),supa=obtenerSupa();
   if(!rkPerfil||!supa)return;
   $("rkEstado").textContent="Cargando…";
   const cont=$("rkLista");cont.innerHTML="";
@@ -2267,7 +2271,7 @@ function rkMostrarSetup(){
   $("rkApodo").value=(rkPerfil&&rkPerfil.apodo)||perfil.nombre||"";
 }
 function rkAbrir(){
-  if(!supa){alert("El ranking no está disponible ahora mismo.");return;}
+  if(!obtenerSupa()){alert("El ranking no está disponible ahora mismo.");return;}
   const rkPerfil=cargarRkPerfil();
   $("capaRanking").classList.add("ver");
   if(rkPerfil&&rkPerfil.apodo)rkMostrarTabla();else rkMostrarSetup();
@@ -2277,7 +2281,7 @@ $("rkCerrar").onclick=()=>$("capaRanking").classList.remove("ver");
 $("rkCrear").onclick=async()=>{
   const apodo=$("rkApodo").value.trim().slice(0,14);
   if(!apodo){$("rkApodo").focus();return;}
-  const anterior=cargarRkPerfil();
+  const anterior=cargarRkPerfil(),supa=obtenerSupa();
   if(supa&&anterior&&anterior.apodo&&anterior.apodo!==apodo){
     try{await supa.from("gya_ranking").update({apodo}).eq("grupo",RK_GRUPO).eq("apodo",anterior.apodo);}catch(e){}
   }
