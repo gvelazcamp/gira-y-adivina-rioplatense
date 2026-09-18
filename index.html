@@ -2203,6 +2203,17 @@ const PRECIOS_REALES={150:"$0.49",200:"$0.59",500:"$0.99",600:"$1.29",700:"$1.49
 function precioRealDeMonedas(m){
   return PRECIOS_REALES[m]||("$"+Math.max(.49,Math.ceil(m/500*.99*100)/100).toFixed(2));
 }
+/* Confirmación antes de comprar en las tarjetas de "frame-card"
+   (Tableros, Marcos de tablero, Marcos de ruleta, Marcos de avatar,
+   Avatares premium) — antes compraban directo al tocar y era fácil
+   apretar sin querer. */
+function tnConfirmarCompraFrame(nombre,precio,onSi){
+  $("confirmCompraTxt").textContent="¿Comprar "+nombre+" por 🪙 "+precio+"?";
+  $("confirmCompraSi").textContent="Comprar";
+  $("confirmCompra").style.display="flex";
+  $("confirmCompraSi").onclick=()=>{$("confirmCompra").style.display="none";onSi();};
+  $("confirmCompraNo").onclick=()=>{$("confirmCompra").style.display="none";};
+}
 function tnAgregarBotonReal(btn,monedas){
   if(!btn||btn.dataset.realAgregado)return;
   btn.dataset.realAgregado="1";
@@ -2535,11 +2546,13 @@ function tnRenderFrames(contId,soloBasicos){
       btn.disabled=meta.monedas<f.precio;
       btn.onclick=()=>{
         if(meta.monedas<f.precio){alert("No tenés suficientes monedas.");return;}
-        meta.monedas-=f.precio;guardarMeta();
-        framesComprados.add(f.id);guardarFramesComprados();
-        mundoActualizarHud();
-        equiparMarco(f.id);
-        bip(190,.16,"triangle",.07);
+        tnConfirmarCompraFrame(f.nombre,f.precio,()=>{
+          meta.monedas-=f.precio;guardarMeta();
+          framesComprados.add(f.id);guardarFramesComprados();
+          mundoActualizarHud();
+          equiparMarco(f.id);
+          bip(190,.16,"triangle",.07);
+        });
       };
       tnAgregarBotonReal(btn,f.precio);
     }
@@ -2587,12 +2600,14 @@ function tnRenderAvataresPremium(){
       btn.disabled=meta.monedas<a.precio;
       btn.onclick=()=>{
         if(meta.monedas<a.precio){alert("No tenés suficientes monedas.");return;}
-        meta.monedas-=a.precio;guardarMeta();
-        avataresComprados.add(a.id);guardarAvataresComprados();
-        mundoActualizarHud();
-        equiparAvatarPremium(a.id);
-        bip(190,.16,"triangle",.07);
-        logroDesbloquear("tienda");
+        tnConfirmarCompraFrame(a.nombre,a.precio,()=>{
+          meta.monedas-=a.precio;guardarMeta();
+          avataresComprados.add(a.id);guardarAvataresComprados();
+          mundoActualizarHud();
+          equiparAvatarPremium(a.id);
+          bip(190,.16,"triangle",.07);
+          logroDesbloquear("tienda");
+        });
       };
       tnAgregarBotonReal(btn,a.precio);
     }
@@ -5174,6 +5189,16 @@ function cargarFichasComprados(){
 }
 let fichasComprados=cargarFichasComprados();
 const guardarFichasComprados=()=>{try{localStorage.setItem("gya_fichas_owned",JSON.stringify([...fichasComprados]));}catch(e){}};
+/* Termina la prueba temporal que regalaba todos los Marcos de tablero:
+   se saca lo que se había regalado (una sola vez por dispositivo, no
+   vuelve a tocar compras hechas después de esto). */
+if(!localStorage.getItem("gya_fichas_prueba_limpiada")){
+  ["ficha-lab-toxico-2","ficha-lab-toxico-3","ficha-lab-toxico-4","ficha-candy",
+   "ficha-futbol","ficha-lava","ficha-hielo","ficha-monstruo","ficha-oro","ficha-alien","ficha-rayo"]
+    .forEach(id=>fichasComprados.delete(id));
+  guardarFichasComprados();
+  try{localStorage.setItem("gya_fichas_prueba_limpiada","1");}catch(e){}
+}
 const fichaSkinPoseida=m=>!m.precio||fichasComprados.has(m.id);
 function cargarFichaSkinEquipada(){
   try{return localStorage.getItem("gya_ficha_skin_equipada")||"";}catch(e){return"";}
@@ -5296,12 +5321,14 @@ function tnRenderTableros(contId,soloBasicos){
       btn.disabled=meta.monedas<m.precio;
       btn.onclick=()=>{
         if(meta.monedas<m.precio){alert("No tenés suficientes monedas.");return;}
-        meta.monedas-=m.precio;guardarMeta();
-        tablerosComprados.add(m.id);guardarTablerosComprados();
-        mundoActualizarHud();
-        equiparTablero(m.id);
-        bip(190,.16,"triangle",.07);
-        logroDesbloquear("tienda");
+        tnConfirmarCompraFrame(m.nombre,m.precio,()=>{
+          meta.monedas-=m.precio;guardarMeta();
+          tablerosComprados.add(m.id);guardarTablerosComprados();
+          mundoActualizarHud();
+          equiparTablero(m.id);
+          bip(190,.16,"triangle",.07);
+          logroDesbloquear("tienda");
+        });
       };
       tnAgregarBotonReal(btn,m.precio);
     }
@@ -5328,12 +5355,14 @@ function tnRenderCuadrosTablero(contId,soloBasicos){
       btn.disabled=meta.monedas<m.precio;
       btn.onclick=()=>{
         if(meta.monedas<m.precio){alert("No tenés suficientes monedas.");return;}
-        meta.monedas-=m.precio;guardarMeta();
-        fichasComprados.add(m.id);guardarFichasComprados();
-        mundoActualizarHud();
-        equiparFichaSkin(m.id);
-        bip(190,.16,"triangle",.07);
-        logroDesbloquear("tienda");
+        tnConfirmarCompraFrame(m.nombre,m.precio,()=>{
+          meta.monedas-=m.precio;guardarMeta();
+          fichasComprados.add(m.id);guardarFichasComprados();
+          mundoActualizarHud();
+          equiparFichaSkin(m.id);
+          bip(190,.16,"triangle",.07);
+          logroDesbloquear("tienda");
+        });
       };
       tnAgregarBotonReal(btn,m.precio);
     }
@@ -5349,9 +5378,9 @@ const RUEDAS_SKIN=[
   {id:"rueda-hielo",nombre:"Rueda de Hielo",precio:1500,basico:true},
   {id:"rueda-oro",nombre:"Rueda Real",precio:1800,basico:true},
   {id:"rueda-neon",nombre:"Rueda Neón",precio:1600,basico:true},
+  {id:"rueda-candy",nombre:"Rueda Candy",precio:1500,basico:true},
   {id:"rueda-espacio",nombre:"Rueda Galáctica",precio:1700,nuevo:true},
   {id:"rueda-selva",nombre:"Rueda Tiki",precio:1600,nuevo:true},
-  {id:"rueda-candy",nombre:"Rueda Candy",precio:1500,nuevo:true},
   {id:"rueda-circo",nombre:"Rueda de Circo",precio:1700,nuevo:true}
 ];
 function cargarRuedasComprados(){
@@ -5392,12 +5421,14 @@ function tnRenderRuedas(contId,soloBasicos){
       btn.disabled=meta.monedas<m.precio;
       btn.onclick=()=>{
         if(meta.monedas<m.precio){alert("No tenés suficientes monedas.");return;}
-        meta.monedas-=m.precio;guardarMeta();
-        ruedasComprados.add(m.id);guardarRuedasComprados();
-        mundoActualizarHud();
-        equiparRuedaSkin(m.id);
-        bip(190,.16,"triangle",.07);
-        logroDesbloquear("tienda");
+        tnConfirmarCompraFrame(m.nombre,m.precio,()=>{
+          meta.monedas-=m.precio;guardarMeta();
+          ruedasComprados.add(m.id);guardarRuedasComprados();
+          mundoActualizarHud();
+          equiparRuedaSkin(m.id);
+          bip(190,.16,"triangle",.07);
+          logroDesbloquear("tienda");
+        });
       };
       tnAgregarBotonReal(btn,m.precio);
     }
