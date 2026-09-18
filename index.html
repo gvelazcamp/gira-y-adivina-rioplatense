@@ -126,7 +126,10 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 .dz-vidas{display:flex;flex-direction:column;align-items:flex-start;gap:1px}
 .dz-vidas span{font-weight:700;font-size:1rem;white-space:nowrap}
 .dz-vidas small{color:#B49FCE;font-size:.62rem;white-space:nowrap}
-.dz-monedas{font-weight:700;font-size:1rem;color:var(--oro);white-space:nowrap}
+.dz-monedas{font-weight:700;font-size:1rem;color:var(--oro);white-space:nowrap;position:relative}
+.dz-tip{position:absolute;bottom:calc(100% + 7px);left:50%;transform:translateX(-50%) scale(.85);background:#1C1030;border:1px solid #FFFFFF33;color:#fff;font-weight:700;font-size:.68rem;padding:4px 9px;border-radius:8px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s,transform .15s;box-shadow:0 4px 10px #0007;z-index:5}
+.dz-tip::after{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#1C1030}
+.dz-tip.ver{opacity:1;transform:translateX(-50%) scale(1)}
 .dz-viewport{position:relative;width:100%;height:min(62vh,700px);overflow-y:auto;overflow-x:hidden;
  border-radius:22px;border:1px solid #FFFFFF1F;background:#0C0616;cursor:grab;
  -webkit-overflow-scrolling:touch;touch-action:pan-y}
@@ -889,7 +892,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <div class="dz-jugador" id="dzJugador"><span class="avatar-wrap"><img id="dzJugadorAvatar" src="" alt=""><img class="avatar-frame" id="dzJugadorFrameImg" alt=""></span><span id="dzJugadorNombre"></span></div>
     <div class="dz-vidasmonedas">
       <div class="dz-vidas"><span id="dzVidas">❤️ 5</span><small id="dzProxima"></small></div>
-      <div class="dz-monedas" id="dzMonedas" title="Monedas: se ganan jugando y sirven para comprar en la Tienda">🪙 500</div>
+      <div class="dz-monedas" id="dzMonedas" title="Monedas: se ganan jugando y sirven para comprar en la Tienda"><span id="dzMonedasNum">🪙 500</span><span class="dz-tip" id="dzMonedasTip">Monedas</span></div>
     </div>
   </div>
   <div class="dz-viewport-wrap">
@@ -2738,6 +2741,14 @@ function colRenderModal(cual){
   });
 }
 $("dzColeccionBtn").onclick=()=>{colRenderModal(dzCiudad().id);$("capaColeccion").classList.add("ver");};
+let dzMonedasTipT=null;
+$("dzMonedas").onclick=(e)=>{
+  e.stopPropagation();
+  $("dzMonedasTip").classList.add("ver");
+  clearTimeout(dzMonedasTipT);
+  dzMonedasTipT=setTimeout(()=>$("dzMonedasTip").classList.remove("ver"),1600);
+};
+document.addEventListener("click",()=>$("dzMonedasTip").classList.remove("ver"));
 $("colCerrar").onclick=()=>$("capaColeccion").classList.remove("ver");
 $("sobreGuardar").onclick=()=>{$("modalSobreConseguido").classList.remove("ver");continuarTrasSobre();};
 $("sobreAbrirAhora").onclick=()=>{
@@ -3137,7 +3148,7 @@ function dzProgresoTxt(){
 function dzActualizarHud(){
   regenerarVidas();
   $("dzVidas").textContent="❤️ "+meta.vidas;
-  $("dzMonedas").textContent="🪙 "+meta.monedas;
+  $("dzMonedasNum").textContent="🪙 "+meta.monedas;
   $("dzProxima").textContent=textoProxima();
   const jug=$("dzJugador");
   if(perfilExiste()){
