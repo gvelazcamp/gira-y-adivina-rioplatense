@@ -331,6 +331,11 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
  background:transparent;color:transparent;box-shadow:none;border:none;font-size:1rem;font-weight:800;
  display:flex;align-items:center;justify-content:center;padding:0}
 .tn-pack-img .tn-comprar:disabled{background:#000000B0;color:#fff}
+.tn-pack-precio-fijo{position:absolute;left:12px;bottom:12px;background:var(--oro);color:var(--tinta);
+ padding:6px 14px;border-radius:10px;font-size:.85rem;font-weight:800;box-shadow:0 3px 0 #B3860099;
+ border:1px solid #FFE49A66;pointer-events:none}
+.tn-pack-img .tn-comprar:has(+.tn-pack-precio-fijo):disabled{background:transparent;color:transparent;
+ position:absolute;inset:0;width:100%;height:100%}
 .tn-comprar{background:var(--oro);color:var(--tinta);font-weight:800;border-radius:10px;padding:10px 14px;
  flex-shrink:0;font-size:.85rem;white-space:nowrap;box-shadow:0 3px 0 #B3860099;border:1px solid #FFE49A66}
 .tn-item.tn-real{border-color:#37D6C077;background:linear-gradient(135deg,#37D6C01A,#7B3FE41A);border-width:2px}
@@ -1091,6 +1096,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   </div>
   <div class="tn-item tn-pack-img" style="background-image:url('assets/shop/pack-mutante.webp')">
   <button class="tn-comprar" data-tipo="pack_mutante" data-precio="13000" data-real-agregado="1" data-nombre="el Pack Mutante">🪙 13000</button>
+  <span class="tn-pack-precio-fijo" id="tnPrecioFijoMutante">🪙 13000</span>
   </div>
   <h3 class="tn-subtitulo" data-fijo="1">⏳ Ofertas diarias</h3>
   <div class="tn-grid">
@@ -2431,6 +2437,8 @@ function tnActualizar(){
     if(!puede){b.textContent=tnRazonBloqueo(tipo);b.title="";}
     else if(tipo==="oferta_gratis"){b.textContent="🎁 Gratis";b.title="";}
     else{b.textContent="🪙 "+precio;b.title=alcanza?"":"Te faltan "+(precio-meta.monedas)+" monedas";}
+    const fijo=b.parentElement.querySelector(".tn-pack-precio-fijo");
+    if(fijo)fijo.textContent=b.textContent;
   });
 }
 /* Las secciones de la Tienda que ya existían quedan siempre visibles
