@@ -6531,13 +6531,13 @@ $("fBoton").onclick=()=>{
   const paso=()=>{hechas++;if(hechas>=urls.length)cerrar();};
   const cerrar=()=>{
     const espera=Math.max(0,MIN_ESPERA-(performance.now()-t0));
-    setTimeout(()=>{cap.classList.add("ido");setTimeout(()=>cap.remove(),800);mostrarPromptIOS();pdChequearAutoPopup();},espera);
+    setTimeout(()=>{cap.classList.add("ido");setTimeout(()=>cap.remove(),800);mostrarPromptIOS();pdChequearAutoPopup();empujarRanking();},espera);
   };
   barra.style.transitionDuration=MIN_ESPERA+"ms";
   requestAnimationFrame(()=>{barra.style.width="100%";});
   urls.forEach(u=>{const im=new Image();im.onload=paso;im.onerror=paso;im.src=u;});
   setTimeout(cerrar,7000);
-  cap.onclick=()=>{cap.classList.add("ido");setTimeout(()=>cap.remove(),800);mostrarPromptIOS();pdChequearAutoPopup();};
+  cap.onclick=()=>{cap.classList.add("ido");setTimeout(()=>cap.remove(),800);mostrarPromptIOS();pdChequearAutoPopup();empujarRanking();};
 })();
 function pdActualizarTimer(){
   const medianoche=new Date();medianoche.setHours(24,0,0,0);
