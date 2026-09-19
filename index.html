@@ -462,9 +462,8 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 .pd-timer{display:inline-block;background:#00000055;border:1px solid #FFFFFF22;border-radius:99px;
   padding:6px 14px;font-size:.78rem;font-weight:700;color:#C9B8DE;margin-bottom:12px}
 .pd-timer b{color:var(--agua)}
-.pt-video-wrap{width:200px;height:200px;margin:0 auto 16px;border-radius:20px;overflow:hidden;
- background:#fff;display:grid;place-items:center;box-shadow:0 8px 24px #0007}
-.pt-video-wrap video{width:100%;height:100%;object-fit:cover}
+.pt-video-wrap{width:200px;height:200px;margin:0 auto 16px;display:grid;place-items:center}
+.pt-video-wrap canvas{width:100%;height:100%;filter:drop-shadow(0 8px 16px #000A)}
 .campo{display:flex;align-items:center;gap:10px;background:#00000033;border:1px solid #FFFFFF1F;
  border-radius:14px;padding:10px 14px;margin-bottom:12px}
 .campo span{font-size:.85rem;color:#B49FCE;min-width:74px;text-align:left}
@@ -1297,7 +1296,10 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
 
 <div class="capa" id="capaPromoTienda"><div class="caja" style="max-width:380px">
   <h2>¡Mirá lo que tenemos!</h2>
-  <div class="pt-video-wrap"><video src="assets/social/avatar-toxico-promo.mp4" autoplay muted loop playsinline></video></div>
+  <div class="pt-video-wrap">
+    <video id="ptVideo" src="assets/social/avatar-toxico-promo.mp4" muted loop playsinline style="display:none"></video>
+    <canvas id="ptCanvas" width="320" height="320"></canvas>
+  </div>
   <p>Avatares, marcos, tableros y sobres de colección te esperan en la Tienda.</p>
   <button class="btn-grande cta-jugar" id="ptIrTienda" style="margin-bottom:10px">
     <span class="cta-play">🛍️</span>
@@ -2075,8 +2077,8 @@ $("objLista").addEventListener("click",e=>{
 });
 $("pdVamos").onclick=()=>{$("capaPartidaDiaria").classList.remove("ver");iniciarPartidaDiaria();};
 $("pdMasTarde").onclick=()=>{$("capaPartidaDiaria").classList.remove("ver");pdGuardarEstado("pospuesto");objActualizarBadge();ptChequearAutoPopup();};
-$("ptIrTienda").onclick=()=>{$("capaPromoTienda").classList.remove("ver");$("bTienda").click();};
-$("ptMasTarde").onclick=()=>{$("capaPromoTienda").classList.remove("ver");ptGuardarEstado("vista");};
+$("ptIrTienda").onclick=()=>{$("capaPromoTienda").classList.remove("ver");ptDetenerChromaKey();$("bTienda").click();};
+$("ptMasTarde").onclick=()=>{$("capaPromoTienda").classList.remove("ver");ptDetenerChromaKey();ptGuardarEstado("vista");};
 function mundoActualizarHud(){
   regenerarVidas();
   if($("mhVidas"))$("mhVidas").textContent="❤️ "+meta.vidas;
@@ -6548,7 +6550,37 @@ function pdChequearAutoPopup(){
   else ptChequearAutoPopup();
 }
 function ptChequearAutoPopup(){
-  if(ptEstadoHoy()==="pendiente")setTimeout(()=>{$("capaPromoTienda").classList.add("ver");},2800);
+  if(ptEstadoHoy()==="pendiente")setTimeout(()=>{$("capaPromoTienda").classList.add("ver");ptIniciarChromaKey();},2800);
+}
+let ptRafId=null;
+function ptDibujarFrameChroma(){
+  const video=$("ptVideo"),canvas=$("ptCanvas");
+  if(video&&canvas&&video.readyState>=2){
+    const ctx=canvas.getContext("2d");
+    ctx.drawImage(video,0,0,canvas.width,canvas.height);
+    const frame=ctx.getImageData(0,0,canvas.width,canvas.height);
+    const d=frame.data;
+    for(let i=0;i<d.length;i+=4){
+      const minc=Math.min(d[i],d[i+1],d[i+2]);
+      if(minc>245)d[i+3]=0;
+      else if(minc>190)d[i+3]=Math.min(d[i+3],Math.round(255*(245-minc)/55));
+    }
+    ctx.putImageData(frame,0,0);
+  }
+  ptRafId=requestAnimationFrame(ptDibujarFrameChroma);
+}
+function ptIniciarChromaKey(){
+  const video=$("ptVideo");
+  if(!video)return;
+  video.currentTime=0;
+  video.play().catch(()=>{});
+  if(!ptRafId)ptDibujarFrameChroma();
+}
+function ptDetenerChromaKey(){
+  if(ptRafId)cancelAnimationFrame(ptRafId);
+  ptRafId=null;
+  const video=$("ptVideo");
+  if(video)video.pause();
 }
 
 /* ---- Mostrar el cartel de instalación a los de iPhone la primera vez, sin que
