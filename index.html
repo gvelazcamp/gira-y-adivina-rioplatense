@@ -6146,7 +6146,8 @@ async function generarCanvasCompartir(){
       cx.drawImage(av,acx-r,acy-r,r*2,r*2);cx.restore();
     }catch(e){}
   }
-  const stats=[[370,meta.monedas],[505,(meta.mejorRachaVictorias||0)],[645,ganados.size+"/"+MUNDO.length],[780,logrosGanados.size]];
+  const dineroPartida=(S&&S.jug&&S.jug[miJug])?S.jug[miJug].tot:meta.monedas;
+  const stats=[[370,dineroPartida],[505,(meta.mejorRachaVictorias||0)],[645,ganados.size+"/"+MUNDO.length],[780,logrosGanados.size]];
   cx.fillStyle="#F6EFE2";cx.font="700 19px Outfit,sans-serif";cx.textAlign="center";cx.textBaseline="middle";
   stats.forEach(([scx,val])=>cx.fillText(String(val),scx,1245));
   return cv;
