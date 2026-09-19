@@ -459,6 +459,9 @@ h1.titulo{font-size:clamp(2.6rem,10vw,4.2rem);line-height:.92;color:var(--oro);
 .deco-pequenos-desafios{height:34px;width:auto;opacity:.9}
 .deco-tagline{display:block;margin:6px auto 0;width:min(78vw,340px);height:auto}
 p.sub{margin:14px 0 24px;color:#C9B8DE}
+.pd-timer{display:inline-block;background:#00000055;border:1px solid #FFFFFF22;border-radius:99px;
+  padding:6px 14px;font-size:.78rem;font-weight:700;color:#C9B8DE;margin-bottom:12px}
+.pd-timer b{color:var(--agua)}
 .campo{display:flex;align-items:center;gap:10px;background:#00000033;border:1px solid #FFFFFF1F;
  border-radius:14px;padding:10px 14px;margin-bottom:12px}
 .campo span{font-size:.85rem;color:#B49FCE;min-width:74px;text-align:left}
@@ -1279,6 +1282,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
 
 <div class="capa" id="capaPartidaDiaria"><div class="caja" style="max-width:380px">
   <h2>Partida Diaria</h2>
+  <div class="pd-timer">⏳ Termina en <b id="pdTimerTxt">24h 0min</b></div>
   <p>Jugá 3 rondas contra la máquina. Si ganás la partida, te llevás un sobre sorpresa. Un solo intento por día.</p>
   <img src="assets/collectibles/canelones/sobre-canelones.webp" alt="" style="width:150px;display:block;margin:0 auto 18px">
   <button class="btn-grande cta-jugar" id="pdVamos" style="margin-bottom:10px">
@@ -6506,8 +6510,14 @@ $("fBoton").onclick=()=>{
   setTimeout(cerrar,7000);
   cap.onclick=()=>{cap.classList.add("ido");setTimeout(()=>cap.remove(),800);mostrarPromptIOS();pdChequearAutoPopup();};
 })();
+function pdActualizarTimer(){
+  const medianoche=new Date();medianoche.setHours(24,0,0,0);
+  const rest=Math.max(0,medianoche-Date.now());
+  const hh=Math.floor(rest/3600000),mm=Math.floor(rest%3600000/60000);
+  $("pdTimerTxt").textContent=hh+"h "+mm+"min";
+}
 function pdChequearAutoPopup(){
-  if(pdEstadoHoy()==="pendiente")setTimeout(()=>$("capaPartidaDiaria").classList.add("ver"),900);
+  if(pdEstadoHoy()==="pendiente")setTimeout(()=>{pdActualizarTimer();$("capaPartidaDiaria").classList.add("ver");},900);
 }
 
 /* ---- Mostrar el cartel de instalación a los de iPhone la primera vez, sin que
