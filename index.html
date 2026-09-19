@@ -566,14 +566,9 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 #codigoInput{text-transform:uppercase;letter-spacing:.2em;text-align:center}
 
 #juego{display:none;max-width:1060px;margin:0 auto}
-.juego-abandonar{position:fixed;top:10px;left:10px;z-index:55;width:44px;height:44px;
-  border-radius:50%;padding:0;color:var(--oro);
-  background:radial-gradient(circle at 35% 30%,#2A1A3C,#120A1D);
-  border:2px solid #F5B301AA;box-shadow:0 6px 18px #000000AA,0 0 14px #F5B30155;
-  display:grid;place-items:center;transition:transform .12s ease}
-.juego-abandonar svg{width:58%;height:58%}
-.juego-abandonar:active{transform:scale(.9)}
-@media(hover:hover){.juego-abandonar:hover{box-shadow:0 6px 18px #000000AA,0 0 20px #F5B301AA}}
+.juego-abandonar{display:block;margin:10px auto 0;background:transparent;color:#B49FCE;
+  border:1px solid #FFFFFF2A;border-radius:99px;padding:7px 16px;font-size:.75rem;font-weight:700}
+.juego-abandonar:active{opacity:.7}
 .serie{text-align:center;text-shadow:0 2px 6px #000;color:#B49FCE;font-size:.9rem;margin-bottom:10px;min-height:20px}
 #jgHud{display:none}
 #jgHud>div{background:#160B24E6;border:1px solid #F5B30166;color:var(--oro);font-weight:800;font-size:.82rem;
@@ -1479,12 +1474,6 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
 </section>
 
 <section id="juego">
-  <button class="juego-abandonar" id="bAbandonarPartida" type="button" aria-label="Abandonar partida" title="Abandonar partida">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M9.5 15.5 4 10l5.5-5.5"/>
-      <path d="M4 10h11a5.5 5.5 0 0 1 0 11h-3.5"/>
-    </svg>
-  </button>
   <div class="confirm-poder" id="confirmAbandonar" style="display:none">
     <p>¿Seguro que querés abandonar la partida? Se cuenta como partida perdida.</p>
     <div class="confirm-poder-btns"><button class="no" id="confirmAbandonarNo">Cancelar</button><button class="ok" id="confirmAbandonarSi">Abandonar</button></div>
@@ -1550,6 +1539,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
         <button data-e="👏">👏</button><button data-e="😱">😱</button>
         <button data-e="🤣">🤣</button><button data-e="🔥">🔥</button>
       </div>
+      <button class="juego-abandonar" id="bAbandonarPartida" type="button">Abandonar partida</button>
     </div>
   </div>
   <div id="capaResuelto">
