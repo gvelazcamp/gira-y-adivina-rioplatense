@@ -1283,7 +1283,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
 <div class="capa" id="capaPartidaDiaria"><div class="caja" style="max-width:380px">
   <h2>Partida Diaria</h2>
   <div class="pd-timer">⏳ Termina en <b id="pdTimerTxt">24h 0min</b></div>
-  <p>Jugá 3 rondas contra la máquina. Si ganás la partida, te llevás un sobre sorpresa. Un solo intento por día.</p>
+  <p>Jugá 3 rondas contra la máquina. Si ganás la partida, te llevás una recompensa sorpresa: vida, monedas o un sobre de colección. Un solo intento por día.</p>
   <img src="assets/collectibles/canelones/sobre-canelones.webp" alt="" style="width:150px;display:block;margin:0 auto 18px">
   <button class="btn-grande cta-jugar" id="pdVamos" style="margin-bottom:10px">
     <span class="cta-play">▶</span>
@@ -2023,7 +2023,7 @@ function objRender(){
     const dPD=document.createElement("div");
     dPD.className="lg-item destacado";
     dPD.innerHTML='<div class="lg-icono">🎁</div><div class="lg-info"><b>Partida Diaria</b>'+
-      '<span>Ganá 3 rondas y llevate un sobre sorpresa</span></div>'+
+      '<span>Ganá 3 rondas y llevate una recompensa sorpresa</span></div>'+
       '<button class="obj-reclamar listo" data-id="partida_diaria">Vamos</button>';
     cont.appendChild(dPD);
   }
@@ -4807,8 +4807,10 @@ function finalizarPartidaPendiente(bonusGanado){
   const bonusTxt=bonusGanado===true?" · Ronda Bonus: +$"+BONUS_PREMIO+".":bonusGanado===false?" · Ronda Bonus sin premio.":"";
   let pdTxt="";
   if(esPartidaDiaria){esPartidaDiaria=false;pdGuardarEstado("jugada");objActualizarBadge();
-    otorgarSobreSorpresa();
-    pdTxt=" · ¡Ganaste la Partida Diaria! Te llevaste un sobre sorpresa.";}
+    const suerte=Math.floor(Math.random()*3);
+    if(suerte===0){recuperarVida();pdTxt=" · ¡Ganaste la Partida Diaria! +1 vida.";}
+    else if(suerte===1){recuperarVida();sumarMonedas(100);mundoActualizarHud();pdTxt=" · ¡Ganaste la Partida Diaria! +1 vida y +100 🪙.";}
+    else{otorgarSobreSorpresa();pdTxt=" · ¡Ganaste la Partida Diaria! Te llevaste un sobre de colección.";}}
   S.finalPendiente=null;S.fase="fin";pararReloj();limpiarBonus();
   $("modalResolver").classList.remove("ver");
   publicar("Partida terminada.");
