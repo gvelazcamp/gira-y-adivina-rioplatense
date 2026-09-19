@@ -6217,6 +6217,7 @@ function abrirResolver(jugador){
     ((tossRespondedor!==null&&V.jug[tossRespondedor])?V.jug[tossRespondedor].n+", el tablero está congelado. Tenés 9 segundos para escribir la frase completa.":"Tenés 9 segundos para escribir la frase completa."):
     (esBonus?(V.fase==="bonus_resolver"?"Tenés 10 segundos frescos para escribir. ":"")+"Si acertás ganás $"+BONUS_PREMIO+" extra. Si errás, perdés la Ronda Bonus — no hay segundo intento.":"Si acertás te llevás la plata de la ronda. Si errás, pasa el turno. Tenés 25 segundos frescos para escribir.");
   $("modalResolver").classList.add("ver");$("respuesta").value="";$("respuesta").focus();
+  if(enTutorial)tutOcultarSpotlight();
 }
 $("bResolver").onclick=()=>{
   if(V.fase==="tossup")abrirResolver(modo==="guest"?1:0);
@@ -6229,6 +6230,7 @@ $("cancelar").onclick=()=>{
   $("modalResolver").classList.remove("ver");
   if(eraToss&&j!==null){if(modo==="guest")enviar({a:"toss_cancelar"});else cancelarPausaToss(j);}
   tossRespondedor=null;
+  if(enTutorial)tutorialTick();
 };
 $("respuesta").addEventListener("keydown",e=>{if(e.key==="Enter")$("confirmar").click();});
 $("confirmar").onclick=()=>{
