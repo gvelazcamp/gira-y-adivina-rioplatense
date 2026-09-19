@@ -894,6 +894,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <button class="menu-card mc-rosa" id="bTV"><span class="mc-ico">📺</span><span class="mc-tit">Sala TV / Familia</span><span class="mc-sub">Jugá todos juntos</span></button>
     <button class="menu-card mc-azul" id="bJugarOnline"><span class="mc-ico">👥</span><span class="mc-tit">Jugar con amigos</span><span class="mc-sub">Crear sala o entrar con código</span></button>
     <button class="menu-card mc-verde" id="bTienda" style="grid-column:1/-1"><span class="mc-ico">🛍️</span><span class="mc-tit">Tienda</span><span class="mc-sub">Monedas, marcos y más</span></button>
+    <button class="menu-card mc-naranja" id="bSocial" style="grid-column:1/-1"><span class="mc-ico">📱</span><span class="mc-tit">Social</span><span class="mc-sub">Seguinos en redes</span></button>
   </div>
   <div class="mini-tit-fila">
     <img src="assets/decor/mas-disfrutar.png" alt="Más para disfrutar" class="deco-mas-disfrutar">
@@ -914,6 +915,13 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <svg viewBox="0 0 1440 120" preserveAspectRatio="none" class="ola-blanca"><path d="M0,70 C260,20 520,110 780,60 C1040,10 1300,80 1440,40 L1440,120 L0,120 Z" fill="#F6EFE2"></path></svg>
   </div>
 </section>
+
+<div class="capa" id="capaSocial">
+  <div class="caja" style="max-width:420px;padding:16px">
+    <img src="assets/social/promo-redes.webp" alt="Girá y Adiviná Rioplatense en redes" style="width:100%;border-radius:14px;display:block;margin-bottom:14px">
+    <button class="no" id="socialCerrar" style="width:100%;border-radius:12px;padding:13px;font-weight:700">Cerrar</button>
+  </div>
+</div>
 
 <section id="pantPerfil">
   <h1 class="titulo" style="font-size:2.1rem">ELEGÍ TU JUGADOR</h1>
@@ -2614,6 +2622,8 @@ function rkAbrir(){
   if(rkPerfil&&rkPerfil.apodo)rkMostrarTabla();else rkMostrarSetup();
 }
 $("bRanking").onclick=rkAbrir;
+$("bSocial").onclick=()=>$("capaSocial").classList.add("ver");
+$("socialCerrar").onclick=()=>$("capaSocial").classList.remove("ver");
 $("rkCerrar").onclick=()=>$("capaRanking").classList.remove("ver");
 $("rkCrear").onclick=async()=>{
   const apodo=$("rkApodo").value.trim().slice(0,14);
