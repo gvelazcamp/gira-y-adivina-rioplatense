@@ -6065,7 +6065,13 @@ $("confirmar").onclick=()=>{
   if(modo==="guest")enviar({a:"resolver",txt:t});else hostResolver(t,tossRespondedor);
   tossRespondedor=null;
 };
-$("fSalir").onclick=()=>location.reload();
+$("fSalir").onclick=()=>{
+  $("modalFin").classList.remove("ver");
+  if(mq){try{mq.end(true);}catch(e){}mq=null;}
+  modo="local";sala="";S=null;
+  $("juego").style.display="none";
+  $("setup").style.display="block";
+};
 $("bAbandonarPartida").onclick=()=>{
   if(!S||S.fase==="fin")return;
   $("confirmAbandonar").style.display="flex";
