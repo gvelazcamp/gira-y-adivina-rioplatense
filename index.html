@@ -464,6 +464,10 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 .pd-timer b{color:var(--agua)}
 .pt-video-wrap{width:200px;height:200px;margin:0 auto 16px;display:grid;place-items:center}
 .pt-video-wrap canvas{width:100%;height:100%;filter:drop-shadow(0 8px 16px #000A)}
+#tutOverlay{position:fixed;inset:0;z-index:40;pointer-events:none}
+#tutHueco{position:absolute;border-radius:14px;box-shadow:0 0 0 9999px rgba(0,0,0,.78);transition:all .25s ease}
+#tutBocadillo{position:absolute;width:240px;background:#1A1024;border:2px solid var(--oro);border-radius:14px;
+  padding:12px 16px;color:#F6EFE2;font-weight:700;font-size:.9rem;line-height:1.35;box-shadow:0 8px 24px #000A;transition:all .25s ease}
 .campo{display:flex;align-items:center;gap:10px;background:#00000033;border:1px solid #FFFFFF1F;
  border-radius:14px;padding:10px 14px;margin-bottom:12px}
 .campo span{font-size:.85rem;color:#B49FCE;min-width:74px;text-align:left}
@@ -1308,6 +1312,16 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="no" id="ptMasTarde" style="width:100%;border-radius:12px;padding:12px;font-weight:700">Más tarde</button>
 </div></div>
 
+<div class="capa" id="capaBienvenida"><div class="caja" style="max-width:380px;text-align:center">
+  <h2>¡Bienvenido a Girá y Adiviná! 🎉</h2>
+  <p class="sub" style="margin:6px 0 20px">Girá la ruleta, adiviná la frase y ganá monedas. ¿Querés un tutorial rapidito antes de arrancar?</p>
+  <button class="btn-grande cta-jugar" id="bienvenidaTutorial" style="margin-bottom:10px">
+    <span class="cta-play">🎓</span>
+    <span class="cta-txt"><b>Tutorial</b><small>Aprendé a jugar en 1 minuto</small></span>
+  </button>
+  <button class="no" id="bienvenidaCerrar" style="width:100%;border-radius:12px;padding:12px;font-weight:700">Ahora no</button>
+</div></div>
+
 <div class="capa" id="capaObjetivos"><div class="caja rk-caja">
   <h2>🎯 Objetivos diarios</h2>
   <p class="sub" id="objReinicio" style="margin:2px 0 12px"></p>
@@ -2079,6 +2093,8 @@ $("pdVamos").onclick=()=>{$("capaPartidaDiaria").classList.remove("ver");iniciar
 $("pdMasTarde").onclick=()=>{$("capaPartidaDiaria").classList.remove("ver");pdGuardarEstado("pospuesto");objActualizarBadge();ptChequearAutoPopup();};
 $("ptIrTienda").onclick=()=>{$("capaPromoTienda").classList.remove("ver");ptDetenerChromaKey();$("bTienda").click();};
 $("ptMasTarde").onclick=()=>{$("capaPromoTienda").classList.remove("ver");ptDetenerChromaKey();ptGuardarEstado("vista");};
+$("bienvenidaTutorial").onclick=()=>{$("capaBienvenida").classList.remove("ver");iniciarTutorial();};
+$("bienvenidaCerrar").onclick=()=>{$("capaBienvenida").classList.remove("ver");pdChequearAutoPopup();empujarRanking();};
 function mundoActualizarHud(){
   regenerarVidas();
   if($("mhVidas"))$("mhVidas").textContent="❤️ "+meta.vidas;
@@ -2092,6 +2108,79 @@ function fechaHoy(){const d=new Date();return d.getFullYear()+"-"+String(d.getMo
 /* Partida Diaria: 1 partida de 3 rondas por día contra la máquina;
    si se gana, se lleva un sobre sorpresa. Ganes, pierdas o abandones,
    el intento de hoy se consume (no hay reintentos). */
+/* ---- Tutorial guiado (en prueba: solo visible para el perfil "Gonzalo") ---- */
+function esGonzalo(){return (perfil.nombre||"").trim().toLowerCase()==="gonzalo";}
+let enTutorial=false,tutPasoActual=0;
+const TUT_FRASE="TOMAR MATE";
+const TUT_PASOS=[
+  {tipo:"boton",id:"bGirar",txt:"Tocá acá para girar la ruleta.",listo:()=>S.fase==="consonante"},
+  {tipo:"letra",letra:"M",txt:"Elegí la consonante M.",listo:()=>S.usadas.has("M")||S.usadas.has("T")},
+  {tipo:"boton",id:"bVocal",txt:"Comprá una vocal por $250.",listo:()=>S.fase==="vocal"},
+  {tipo:"letra",letra:"A",txt:"Elegí la vocal A.",listo:()=>S.usadas.has("A")||S.usadas.has("O")||S.usadas.has("E")},
+  {tipo:"boton",id:"bPista",txt:"¿Te trabaste? Pedí una pista (gratis en el tutorial).",listo:()=>S.pistaUsada},
+  {tipo:"boton",id:"bResolver",txt:"Ahora resolvé: escribí la frase completa y confirmá.",listo:()=>S.fase==="fin"}
+];
+function tutObtenerElemento(paso){
+  return paso.tipo==="boton"?$(paso.id):document.querySelector('#teclado button[data-l="'+paso.letra+'"]');
+}
+function tutForzarSoloElemento(elActivo){
+  ["bGirar","bVocal","bPista","bResolver"].forEach(id=>{const el=$(id);if(el&&el!==elActivo)el.disabled=true;});
+  document.querySelectorAll("#teclado button").forEach(b=>{if(b!==elActivo)b.disabled=true;});
+}
+function tutMostrarSpotlight(el,texto){
+  if(!el)return;
+  let ov=$("tutOverlay");
+  if(!ov){
+    ov=document.createElement("div");ov.id="tutOverlay";
+    ov.innerHTML='<div id="tutHueco"></div><div id="tutBocadillo"><p id="tutTexto" style="margin:0"></p></div>';
+    document.body.appendChild(ov);
+  }
+  const r=el.getBoundingClientRect();
+  const hueco=$("tutHueco");
+  hueco.style.left=(r.left-8)+"px";hueco.style.top=(r.top-8)+"px";
+  hueco.style.width=(r.width+16)+"px";hueco.style.height=(r.height+16)+"px";
+  $("tutTexto").textContent=texto;
+  const boc=$("tutBocadillo");
+  const espacioAbajo=window.innerHeight-r.bottom,abajo=espacioAbajo>120;
+  boc.style.left=Math.min(Math.max(8,r.left+r.width/2-120),window.innerWidth-248)+"px";
+  if(abajo){boc.classList.remove("tut-arriba");boc.style.top=(r.bottom+18)+"px";}
+  else{boc.classList.add("tut-arriba");boc.style.top=Math.max(8,r.top-18-boc.offsetHeight)+"px";}
+}
+function tutOcultarSpotlight(){const ov=$("tutOverlay");if(ov)ov.remove();}
+function tutorialTick(){
+  if(!enTutorial||!S)return;
+  while(tutPasoActual<TUT_PASOS.length&&TUT_PASOS[tutPasoActual].listo())tutPasoActual++;
+  if(tutPasoActual>=TUT_PASOS.length){tutOcultarSpotlight();return;}
+  const paso=TUT_PASOS[tutPasoActual],el=tutObtenerElemento(paso);
+  tutForzarSoloElemento(el);
+  tutMostrarSpotlight(el,paso.txt);
+}
+function iniciarTutorial(){
+  if(!perfilExiste()){abrirPerfil(()=>iniciarTutorial());return;}
+  $("capaBienvenida").classList.remove("ver");
+  destino=null;pasoActual=null;modo="bot";miJug=0;vinoDeJugarOnline=false;esPartidaDiaria=false;
+  rondasElegidas=1;
+  $("setup").style.display="none";$("juego").style.display="block";
+  armarTeclado();
+  iniciarPartida(perfil.nombre||"Vos","Profe Rueda",undefined,perfil.avatar||null,"avatar-01",frameEquipado||null,null);
+  S.frase=TUT_FRASE;S.catRaw="Tutorial";S.cat="Tutorial";
+  S.abiertas=new Set();S.usadas=new Set();
+  enTutorial=true;tutPasoActual=0;
+  publicar("¡Bienvenido! Seguí las indicaciones en pantalla para aprender a jugar.");
+}
+function finalizarTutorial(){
+  enTutorial=false;tutPasoActual=0;tutOcultarSpotlight();
+  pararReloj();
+  sumarMonedas(150);mundoActualizarHud();
+  $("fMapa").style.display="none";$("fSalir").style.display="block";
+  mostrarFin("🎉 ¡Aprendiste a jugar!","Ya sabés girar, comprar vocales, pedir pistas y resolver. +150 🪙 de regalo para arrancar.");
+  $("fBoton").style.display="none";
+  $("fCompartir").style.display="none";
+}
+function tutChequearBienvenida(){
+  if(esGonzalo())setTimeout(()=>{$("capaBienvenida").classList.add("ver");},900);
+  else{pdChequearAutoPopup();empujarRanking();}
+}
 let esPartidaDiaria=false;
 function pdEstadoHoy(){
   try{const raw=JSON.parse(localStorage.getItem("gya_partida_diaria")||"null");
@@ -4918,7 +5007,7 @@ function hostGirar(){
     const local=((270-(destino%360))%360+360)%360;
     s=SEG[Math.floor(local/paso)%SEG.length];
     intentos++;
-  }while(s.t==="PIERDE"&&(S.pierdeSeguidas||0)>=2&&intentos<40);
+  }while((enTutorial&&s.t&&intentos<40)||(s.t==="PIERDE"&&(S.pierdeSeguidas||0)>=2&&intentos<40));
   S.pierdeSeguidas=s.t==="PIERDE"?(S.pierdeSeguidas||0)+1:0;
   if(modo!=="local"&&modo!=="bot")enviar({tipo:"giro",destino});
   animarRueda(destino,()=>{
@@ -5216,10 +5305,10 @@ const PISTA_PRECIO=150;
 function hostPista(){
   if(modo!=="bot"||animando||S.pistaUsada)return;
   if(S.fase!=="girar"&&S.fase!=="consonante"&&S.fase!=="vocal")return;
-  if(meta.monedas<PISTA_PRECIO)return;
+  if(!enTutorial&&meta.monedas<PISTA_PRECIO)return;
   const ocultas=[...new Set(S.frase.replace(/ /g,""))].filter(c=>!S.abiertas.has(c));
   if(!ocultas.length)return;
-  meta.monedas-=PISTA_PRECIO;guardarMeta();mundoActualizarHud();
+  if(!enTutorial){meta.monedas-=PISTA_PRECIO;guardarMeta();mundoActualizarHud();}
   S.pistaUsada=true;
   const l=ocultas[Math.floor(Math.random()*ocultas.length)];
   S.usadas.add(l);S.abiertas.add(l);
@@ -5246,6 +5335,7 @@ function hostLetra(l){
   if(veces>0){
     bip(1046,.16,"sine",.07);S.abiertas.add(l);
     if(!voc){S.jug[S.turno].ronda+=S.valor*veces*(S.doble?2:1);S.doble=false;}
+    if(enTutorial&&!voc&&S.jug[S.turno].ronda<250)S.jug[S.turno].ronda=250;
     if(fraseCompleta()){
       const j=S.jug[S.turno];const gano=j.ronda;j.tot+=gano;j.rg++;
       publicar("¡Frase completa! <b>"+j.n+"</b> se lleva $"+gano+".","resuelto");
@@ -5270,7 +5360,7 @@ function hostResolver(txt,jugadorToss){
   if(animando)return;
   if(S&&S.fase==="tossup"){hostResolverToss(txt,jugadorToss);return;}
   if(S&&(S.fase==="bonus_resolver"||S.fase==="bonus_elegir")){hostResolverBonus(txt);return;}
-  if(norm(txt)===norm(S.frase)){
+  if(enTutorial||norm(txt)===norm(S.frase)){
     bip(1318,.25,"sine",.08);[...S.frase].forEach(c=>S.abiertas.add(c));
     const j=S.jug[S.turno];const gano=j.ronda;j.tot+=gano;j.rg++;
     publicar("¡Correcto! <b>"+j.n+"</b> resolvió y suma $"+gano+".","resuelto");
@@ -5293,6 +5383,7 @@ function cambiarTurno(){
   publicar("Le toca a <b>"+S.jug[S.turno].n+"</b>.");}
 function finDelJuego(){
   if(S.finYa)return;S.finYa=true;mapaUltimaConquista=null;ciudadUltima100=null;
+  if(enTutorial){finalizarTutorial();return;}
   const [a,b]=S.jug;
   // El dinero acumulado decide primero. Las rondas ganadas quedan como desempate y estadística.
   const g=calcularGanador();
@@ -6050,8 +6141,8 @@ function pintar(){
     $("bPista").style.display="";
     const fasesOk=S.fase==="girar"||S.fase==="consonante"||S.fase==="vocal";
     const quedanOcultas=!!S.frase&&[...new Set(S.frase.replace(/ /g,""))].some(c=>!S.abiertas.has(c));
-    $("bPista").disabled=!mio||!fasesOk||!!S.pistaUsada||meta.monedas<PISTA_PRECIO||!quedanOcultas;
-    $("bPista").textContent=S.pistaUsada?"💡 Pista usada":"💡 Pista 🪙"+PISTA_PRECIO;
+    $("bPista").disabled=!mio||!fasesOk||!!S.pistaUsada||(!enTutorial&&meta.monedas<PISTA_PRECIO)||!quedanOcultas;
+    $("bPista").textContent=S.pistaUsada?"💡 Pista usada":enTutorial?"💡 Pista (gratis)":"💡 Pista 🪙"+PISTA_PRECIO;
   }else{
     $("bPista").style.display="none";
   }
@@ -6091,6 +6182,7 @@ function pintar(){
     b.classList.toggle("congelada",grieta!==undefined);
     if(grieta!==undefined)b.dataset.grieta=grieta;else delete b.dataset.grieta;
   });
+  if(enTutorial)tutorialTick();
 }
 
 $("bGirar").onclick=()=>{if(modo==="guest")enviar({a:"girar"});else hostGirar();};
@@ -6532,17 +6624,18 @@ $("fBoton").onclick=()=>{
   const MIN_ESPERA=400;
   const barra=$("splashBarra").firstElementChild,cap=$("splash");
   const urls=["assets/splash.webp?v=3"].concat(MUNDO.map(d=>d.bg).filter(Boolean));
-  let hechas=0;const t0=performance.now();
+  let hechas=0,yaCerrado=false;const t0=performance.now();
   const paso=()=>{hechas++;if(hechas>=urls.length)cerrar();};
   const cerrar=()=>{
+    if(yaCerrado)return;yaCerrado=true;
     const espera=Math.max(0,MIN_ESPERA-(performance.now()-t0));
-    setTimeout(()=>{cap.classList.add("ido");setTimeout(()=>cap.remove(),800);mostrarPromptIOS();pdChequearAutoPopup();empujarRanking();},espera);
+    setTimeout(()=>{cap.classList.add("ido");setTimeout(()=>cap.remove(),800);mostrarPromptIOS();tutChequearBienvenida();},espera);
   };
   barra.style.transitionDuration=MIN_ESPERA+"ms";
   requestAnimationFrame(()=>{barra.style.width="100%";});
   urls.forEach(u=>{const im=new Image();im.onload=paso;im.onerror=paso;im.src=u;});
   setTimeout(cerrar,7000);
-  cap.onclick=()=>{cap.classList.add("ido");setTimeout(()=>cap.remove(),800);mostrarPromptIOS();pdChequearAutoPopup();empujarRanking();};
+  cap.onclick=cerrar;
 })();
 function pdActualizarTimer(){
   const medianoche=new Date();medianoche.setHours(24,0,0,0);
