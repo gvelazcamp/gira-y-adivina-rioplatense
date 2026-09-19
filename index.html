@@ -1995,7 +1995,11 @@ const OBJETIVOS=[
   {id:"partidas",nombre:"Jugá 2 partidas",icono:"🎮",meta:2,premio:60},
   {id:"giros",nombre:"Girá la rueda 6 veces",icono:"🎡",meta:6,premio:60},
   {id:"vocales",nombre:"Comprá 1 vocal",icono:"🔤",meta:1,premio:50},
-  {id:"victorias",nombre:"Ganá 1 ciudad o paso",icono:"🏆",meta:1,premio:100}
+  {id:"victorias",nombre:"Ganá 1 partida",icono:"🏆",meta:1,premio:100},
+  {id:"sobre",nombre:"Abrí 1 sobre de colección",icono:"🎁",meta:1,premio:70},
+  {id:"coleccion",nombre:"Completá una colección",icono:"📚",meta:1,premio:150},
+  {id:"rachaPartidas",nombre:"Ganá 3 partidas seguidas",icono:"🔥",meta:3,premio:100},
+  {id:"rankingTop",nombre:"Entrá al Top 3 del ranking de amigos",icono:"🥉",meta:1,premio:150}
 ];
 const OBJ_PREMIO_TODOS=200;
 function objVacio(){return{fecha:fechaHoy(),partidas:0,giros:0,vocales:0,poderes:0,victorias:0,reclamados:[]};}
@@ -2010,6 +2014,11 @@ function objObtenerHoy(){
 }
 function objSumar(id,n){
   const o=objObtenerHoy();o[id]=(o[id]||0)+n;guardarObjetivos();
+  if($("capaObjetivos")&&$("capaObjetivos").classList.contains("ver"))objRender();
+  objActualizarBadge();
+}
+function objMax(id,val){
+  const o=objObtenerHoy();o[id]=Math.max(o[id]||0,val);guardarObjetivos();
   if($("capaObjetivos")&&$("capaObjetivos").classList.contains("ver"))objRender();
   objActualizarBadge();
 }
@@ -2058,7 +2067,7 @@ function objRender(){
   const dTodos=document.createElement("div");
   dTodos.className="lg-item destacado";
   const yaTodos=o.reclamados.includes("todos");
-  dTodos.innerHTML='<div class="lg-icono">🏅</div><div class="lg-info"><b>Completá los 5 objetivos</b>'+
+  dTodos.innerHTML='<div class="lg-icono">🏅</div><div class="lg-info"><b>Completá los '+(OBJETIVOS.length+1)+' objetivos</b>'+
     '<span>'+OBJETIVOS.filter(d=>o.reclamados.includes(d.id)).length+' / '+OBJETIVOS.length+'</span>'+
     '<div class="dz-barra"><i style="width:'+Math.round(OBJETIVOS.filter(d=>o.reclamados.includes(d.id)).length/OBJETIVOS.length*100)+'%"></i></div></div>'+
     '<button class="obj-reclamar '+(yaTodos?"hecho":(todosListos?"listo":""))+'" data-id="todos" '+(yaTodos||!todosListos?"disabled":"")+'>'+
@@ -2765,6 +2774,8 @@ async function rkCargarTabla(){
     error=r.error;
   }catch(e){error=e;}
   if(error){$("rkEstado").textContent="No se pudo cargar. Revisá tu conexión.";return;}
+  const miPos=(data||[]).findIndex(f=>f.apodo===rkPerfil.apodo);
+  if(miPos>=0&&miPos<3&&!(objObtenerHoy().rankingTop||0))objSumar("rankingTop",1);
   (data||[]).forEach((f,i)=>{
     const d=document.createElement("div");
     d.className="rk-fila"+(f.apodo===rkPerfil.apodo?" yo":"");
@@ -3351,6 +3362,7 @@ function colVerificarCompletada(cual){
     cm.premioCompletadoEntregado=true;guardarColeccionMeta();
     sumarMonedas(1500);recuperarVida();
     mundoActualizarHud();
+    objSumar("coleccion",1);
     if($("pantDurazno").style.display==="block")dzActualizarHud();
     setTimeout(()=>mostrarToast("🏆","¡Colección "+c.nombre+" completada! +1500 🪙 +1 ❤️"),300);
   }else guardarColeccionMeta();
@@ -3367,6 +3379,7 @@ function colAbrirSobre(cual){
   if(colAbriendo||cm.sobres<=0)return;
   colAbriendo=true;colSobreCualActual=cual;
   cm.sobres--;guardarColeccionMeta();
+  objSumar("sobre",1);
   $("capaColeccion").classList.remove("ver");
   $("sobreAnimFase").style.display="block";
   $("sobrePremioFase").style.display="none";
@@ -5498,6 +5511,7 @@ function finDelJuego(){
   serie[g]=(serie[g]||0)+1;
   if(ultGanador===g)racha++;else{ultGanador=g;racha=1;}
   if(racha>meta.mejorRachaVictorias){meta.mejorRachaVictorias=racha;guardarMeta();}
+  if(g===miJug)objMax("rachaPartidas",racha);
   empujarRanking();
   extra=" Partidas del día: "+S.jug.map((j,i)=>j.n+" "+(serie[i]||0)).join(" — ")+
     (racha>=2?" · "+S.jug[g].n+" lleva "+racha+" al hilo.":".");
