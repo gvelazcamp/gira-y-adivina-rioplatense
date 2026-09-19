@@ -1298,7 +1298,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
 <div class="capa" id="capaPromoTienda"><div class="caja" style="max-width:380px">
   <h2>¡Mirá lo que tenemos!</h2>
   <div class="pt-video-wrap"><video src="assets/social/avatar-toxico-promo.mp4" autoplay muted loop playsinline></video></div>
-  <p>Avatares animados, marcos, tableros y sobres de colección te esperan en la Tienda.</p>
+  <p>Avatares, marcos, tableros y sobres de colección te esperan en la Tienda.</p>
   <button class="btn-grande cta-jugar" id="ptIrTienda" style="margin-bottom:10px">
     <span class="cta-play">🛍️</span>
     <span class="cta-txt"><b>Ir a Tienda</b><small>Descubrí las novedades</small></span>
@@ -6548,7 +6548,7 @@ function pdChequearAutoPopup(){
   else ptChequearAutoPopup();
 }
 function ptChequearAutoPopup(){
-  if(ptEstadoHoy()==="pendiente")setTimeout(()=>{$("capaPromoTienda").classList.add("ver");},900);
+  if(ptEstadoHoy()==="pendiente")setTimeout(()=>{$("capaPromoTienda").classList.add("ver");},2800);
 }
 
 /* ---- Mostrar el cartel de instalación a los de iPhone la primera vez, sin que
