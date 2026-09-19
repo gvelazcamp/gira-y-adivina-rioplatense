@@ -5739,7 +5739,7 @@ function efecto(f){
         c.appendChild(w);});
       $("txtResuelto").innerHTML=V.aviso||"";
       $("btnReportarFrase").disabled=false;
-      const esOnline=(modo==="host"||modo==="guest");
+      const esOnline=(modo==="host"||modo==="guest"||vinoDeJugarOnline);
       $("btnCompartirRonda").style.display=esOnline?"block":"none";
       $("capaResuelto").classList.add("ver");
       papelitos();
