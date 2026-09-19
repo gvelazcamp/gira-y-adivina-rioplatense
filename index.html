@@ -1312,14 +1312,11 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="no" id="ptMasTarde" style="width:100%;border-radius:12px;padding:12px;font-weight:700">Más tarde</button>
 </div></div>
 
-<div class="capa" id="capaBienvenida"><div class="caja" style="max-width:380px;text-align:center">
-  <h2>¡Bienvenido a Girá y Adiviná! 🎉</h2>
-  <p class="sub" style="margin:6px 0 20px">Girá la ruleta, adiviná la frase y ganá monedas. ¿Querés un tutorial rapidito antes de arrancar?</p>
-  <button class="btn-grande cta-jugar" id="bienvenidaTutorial" style="margin-bottom:10px">
-    <span class="cta-play">🎓</span>
-    <span class="cta-txt"><b>Tutorial</b><small>Aprendé a jugar en 1 minuto</small></span>
-  </button>
-  <button class="no" id="bienvenidaCerrar" style="width:100%;border-radius:12px;padding:12px;font-weight:700">Jugar sin tutorial</button>
+<div class="capa" id="capaBienvenida"><div class="caja" style="max-width:380px;padding:0;background:transparent;border:none;border-radius:20px;overflow:hidden;position:relative">
+  <img src="assets/tutorial/bienvenida.webp" alt="Aprendé en 30 segundos: girás la ruleta, elegís una letra, adivinás y ganás" style="width:100%;display:block">
+  <button id="bienvenidaCerrarX" aria-label="Cerrar" style="position:absolute;left:86.5%;top:3%;width:11%;aspect-ratio:1;background:transparent;border:none;padding:0"></button>
+  <button id="bienvenidaTutorial" style="position:absolute;left:6.5%;top:69.5%;width:87%;height:12%;background:transparent;border:none;padding:0"></button>
+  <button id="bienvenidaCerrar" style="position:absolute;left:12%;top:82.5%;width:76%;height:6.5%;background:transparent;border:none;padding:0"></button>
 </div></div>
 
 <div class="capa" id="capaObjetivos"><div class="caja rk-caja">
@@ -2095,6 +2092,7 @@ $("ptIrTienda").onclick=()=>{$("capaPromoTienda").classList.remove("ver");ptDete
 $("ptMasTarde").onclick=()=>{$("capaPromoTienda").classList.remove("ver");ptDetenerChromaKey();ptGuardarEstado("vista");};
 $("bienvenidaTutorial").onclick=()=>{$("capaBienvenida").classList.remove("ver");iniciarTutorial();};
 $("bienvenidaCerrar").onclick=()=>{$("capaBienvenida").classList.remove("ver");pdChequearAutoPopup();empujarRanking();};
+$("bienvenidaCerrarX").onclick=()=>$("bienvenidaCerrar").click();
 function mundoActualizarHud(){
   regenerarVidas();
   if($("mhVidas"))$("mhVidas").textContent="❤️ "+meta.vidas;
