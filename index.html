@@ -4902,6 +4902,13 @@ function hostLodoLimpio(jugIdx){
    y si tocaban Resolver con poco tiempo no llegaban a escribir la respuesta. */
 function avisarResolverAbierto(jugIdx){
   if(!S||S.turno!==jugIdx||animando)return;
+  /* Igual que en una ronda normal (que reinicia el reloj de 25s al
+     abrir Resolver), en la Ronda Bonus el reloj de 10s también se
+     refresca acá — si no, el tiempo que ya venía corriendo desde que
+     se eligieron las 4 letras se seguía comiendo mientras el jugador
+     escribía, y podía perder por quedarse sin tiempo escribiendo en
+     vez de por errar la respuesta. */
+  if(S.fase==="bonus_resolver"){S.bonusFin=Date.now()+BONUS_DURACION;return;}
   if(S.fase!=="girar"&&S.fase!=="consonante"&&S.fase!=="vocal")return;
   publicar(V.aviso||"");
 }
@@ -5963,14 +5970,14 @@ function abrirResolver(jugador){
     }
     if(modo==="guest")enviar({a:"toss_pausa"});
     else if(!pausarToss(j)){tossRespondedor=null;return;}
-  }else if(!esBonus){
+  }else{
     if(modo==="guest")enviar({a:"abrir_resolver"});
     else if(S)avisarResolverAbierto(S.turno);
   }
   $("modalResolver").querySelector("h2").textContent=esToss?"⚡ Resolver la Prueba":esBonus?"⭐ Resolver Ronda Bonus":"Decí la frase";
   $("modalResolver").querySelector("p").textContent=esToss?
     ((tossRespondedor!==null&&V.jug[tossRespondedor])?V.jug[tossRespondedor].n+", el tablero está congelado. Tenés 9 segundos para escribir la frase completa.":"Tenés 9 segundos para escribir la frase completa."):
-    (esBonus?"Si acertás ganás $"+BONUS_PREMIO+" extra. Si errás, perdés la Ronda Bonus — no hay segundo intento.":"Si acertás te llevás la plata de la ronda. Si errás, pasa el turno. Tenés 25 segundos frescos para escribir.");
+    (esBonus?(V.fase==="bonus_resolver"?"Tenés 10 segundos frescos para escribir. ":"")+"Si acertás ganás $"+BONUS_PREMIO+" extra. Si errás, perdés la Ronda Bonus — no hay segundo intento.":"Si acertás te llevás la plata de la ronda. Si errás, pasa el turno. Tenés 25 segundos frescos para escribir.");
   $("modalResolver").classList.add("ver");$("respuesta").value="";$("respuesta").focus();
 }
 $("bResolver").onclick=()=>{
