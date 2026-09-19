@@ -2153,10 +2153,21 @@ function tutMostrarSpotlight(el,texto,sinOscurecer){
   else{boc.classList.add("tut-arriba");boc.style.top=Math.max(8,r.top-18-boc.offsetHeight)+"px";}
 }
 function tutOcultarSpotlight(){const ov=$("tutOverlay");if(ov)ov.remove();}
-let tutTimerPaso=-1;
+let tutTimerPaso=-1,tutAvanzando=false;
 function tutorialTick(){
   if(!enTutorial||!S)return;
-  while(tutPasoActual<TUT_PASOS.length&&TUT_PASOS[tutPasoActual].listo())tutPasoActual++;
+  if(tutAvanzando)return;
+  const actual=TUT_PASOS[tutPasoActual];
+  if(actual&&actual.listo()){
+    tutOcultarSpotlight();
+    tutAvanzando=true;
+    setTimeout(()=>{
+      tutAvanzando=false;
+      while(tutPasoActual<TUT_PASOS.length&&TUT_PASOS[tutPasoActual].listo())tutPasoActual++;
+      pintar();
+    },900);
+    return;
+  }
   if(tutPasoActual>=TUT_PASOS.length){tutOcultarSpotlight();return;}
   const paso=TUT_PASOS[tutPasoActual],el=tutObtenerElemento(paso);
   tutForzarSoloElemento(el);
