@@ -972,7 +972,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     </svg>
   </button>
   <h1 class="titulo" style="font-size:2.4rem">URUGUAY</h1>
-  <div class="mundo-hud"><span id="mhVidas">❤️ 5</span><span class="mh-monedas" id="mhMonedas" title="Monedas: se ganan jugando y sirven para comprar en la Tienda">🪙 500 monedas</span><span class="mh-monedas" id="mhMates" title="Mate: tocá para canjear por monedas" style="display:none;cursor:pointer">🧉 0</span></div>
+  <div class="mundo-hud"><span id="mhVidas">❤️ 5</span><span class="mh-monedas" id="mhMonedas" title="Monedas: se ganan jugando y sirven para comprar en la Tienda">🪙 500 monedas</span><span class="mh-monedas" id="mhMates" title="Mate: tocá para ver qué podés destrabar" style="display:none;cursor:pointer">🧉 0</span></div>
   <p class="sub" id="subMundo">Ganale a cada rival y andá abriendo el país.</p>
   <div id="mapa"></div>
   <button class="btn-grande" id="bExpansion" style="margin-top:4px">🔒 Continuar expansión</button>
@@ -1317,6 +1317,15 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button id="bienvenidaCerrarX" aria-label="Cerrar" style="position:absolute;left:86.5%;top:3%;width:11%;aspect-ratio:1;background:transparent;border:none;padding:0"></button>
   <button id="bienvenidaTutorial" style="position:absolute;left:6.5%;top:69.5%;width:87%;height:12%;background:transparent;border:none;padding:0"></button>
   <button id="bienvenidaCerrar" style="position:absolute;left:12%;top:82.5%;width:76%;height:6.5%;background:transparent;border:none;padding:0"></button>
+</div></div>
+
+<div class="capa" id="capaMateUsar"><div class="caja" style="max-width:360px">
+  <h2>🧉 Usar Mate</h2>
+  <p class="sub" style="margin:6px 0 16px">Tenés <b id="mateUsarSaldo">0</b> 🧉. Probá qué puede destrabar (gasta 1 por vez):</p>
+  <button class="btn-grande" id="mateUsarVida" style="margin-bottom:10px;width:100%">❤️ Recargar vidas al máximo</button>
+  <button class="btn-grande" id="mateUsarGiro" style="margin-bottom:10px;width:100%">🎡 Giro extra gratis ya</button>
+  <button class="btn-grande" id="mateUsarObjetivo" style="margin-bottom:10px;width:100%">🎯 Destrabar un objetivo diario</button>
+  <button class="no" id="mateUsarCerrar" style="width:100%;border-radius:12px;padding:12px;font-weight:700">Cerrar</button>
 </div></div>
 
 <div class="capa" id="capaObjetivos"><div class="caja rk-caja">
@@ -1989,18 +1998,11 @@ function sumarMonedas(n){meta.monedas+=n;if(n>0)meta.monedasGanadasTotal=(meta.m
 /* ---- Prueba de "Mate": moneda premium, en test solo para Gonzalo ---- */
 function esGonzalo(){return (perfil.nombre||"").trim().toLowerCase()==="gonzalo";}
 function sumarMates(n){meta.mates=(meta.mates||0)+n;guardarMeta();mundoActualizarHud();}
-const MATE_TASA_MONEDAS=12;
-function mateCanjear(){
-  if((meta.mates||0)<1)return;
-  $("confirmCompraTxt").textContent="¿Canjear 1 🧉 Mate por 🪙 "+MATE_TASA_MONEDAS+" monedas?";
-  $("confirmCompraSi").textContent="Canjear";
-  $("confirmCompra").style.display="flex";
-  $("confirmCompraSi").onclick=()=>{
-    $("confirmCompra").style.display="none";
-    meta.mates=(meta.mates||0)-1;guardarMeta();
-    sumarMonedas(MATE_TASA_MONEDAS);mundoActualizarHud();
-  };
-  $("confirmCompraNo").onclick=()=>{$("confirmCompra").style.display="none";};
+function mateIntentar(fn){
+  if((meta.mates||0)<1){mostrarToast("🧉","No te quedan Mates.");return;}
+  if(fn()===false)return;
+  meta.mates=(meta.mates||0)-1;guardarMeta();mundoActualizarHud();
+  if($("mateUsarSaldo"))$("mateUsarSaldo").textContent=meta.mates||0;
 }
 function textoProxima(){
   if(meta.vidas>=VIDAS_MAX||!meta.proxima)return"";
@@ -2120,7 +2122,30 @@ $("ptMasTarde").onclick=()=>{$("capaPromoTienda").classList.remove("ver");ptDete
 $("bienvenidaTutorial").onclick=()=>{$("capaBienvenida").classList.remove("ver");iniciarTutorial();};
 $("bienvenidaCerrar").onclick=()=>{$("capaBienvenida").classList.remove("ver");pdChequearAutoPopup();empujarRanking();};
 $("bienvenidaCerrarX").onclick=()=>$("bienvenidaCerrar").click();
-$("mhMates").onclick=mateCanjear;
+$("mhMates").onclick=()=>{
+  if(!esGonzalo())return;
+  $("mateUsarSaldo").textContent=meta.mates||0;
+  $("capaMateUsar").classList.add("ver");
+};
+$("mateUsarCerrar").onclick=()=>$("capaMateUsar").classList.remove("ver");
+$("mateUsarVida").onclick=()=>mateIntentar(()=>{
+  if(meta.vidas>=VIDAS_MAX){mostrarToast("❤️","Ya tenés las vidas al máximo.");return false;}
+  meta.vidas=VIDAS_MAX;meta.proxima=0;guardarMeta();mundoActualizarHud();
+  mostrarToast("❤️","¡Vidas al máximo!");
+});
+$("mateUsarGiro").onclick=()=>mateIntentar(()=>{
+  if(rwPuedeGirar()){mostrarToast("🎡","Ya tenías un giro gratis disponible.");return false;}
+  meta.ultimaRuleta=0;guardarMeta();rwActualizarBadge();
+  mostrarToast("🎡","¡Tenés un giro extra disponible!");
+});
+$("mateUsarObjetivo").onclick=()=>mateIntentar(()=>{
+  const o=objObtenerHoy();
+  const pendiente=OBJETIVOS.find(d=>(o[d.id]||0)<d.meta&&!o.reclamados.includes(d.id));
+  if(!pendiente){mostrarToast("🎯","Ya tenés todos los objetivos listos.");return false;}
+  o[pendiente.id]=pendiente.meta;guardarObjetivos();
+  objRender();objActualizarBadge();
+  mostrarToast("🎯","¡\""+pendiente.nombre+"\" destrabado!");
+});
 function mundoActualizarHud(){
   regenerarVidas();
   if($("mhVidas"))$("mhVidas").textContent="❤️ "+meta.vidas;
