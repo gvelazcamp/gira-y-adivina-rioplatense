@@ -2179,9 +2179,11 @@ function tutorialTick(){
     setTimeout(()=>{if(enTutorial&&tutPasoActual===idx){tutPasoActual++;pintar();}},paso.auto);
   }
 }
+let tutRecienTerminado=false;
 function iniciarTutorial(){
   if(!perfilExiste()){abrirPerfil(()=>iniciarTutorial());return;}
   $("capaBienvenida").classList.remove("ver");
+  ptGuardarEstado("vista");
   destino=null;pasoActual=null;modo="bot";miJug=0;vinoDeJugarOnline=false;esPartidaDiaria=false;
   rondasElegidas=1;
   $("setup").style.display="none";$("juego").style.display="block";
@@ -2193,7 +2195,7 @@ function iniciarTutorial(){
   publicar("¡Bienvenido! Seguí las indicaciones en pantalla para aprender a jugar.");
 }
 function finalizarTutorial(){
-  enTutorial=false;tutPasoActual=0;tutOcultarSpotlight();
+  enTutorial=false;tutPasoActual=0;tutOcultarSpotlight();tutRecienTerminado=true;
   pararReloj();
   sumarMonedas(150);mundoActualizarHud();
   $("fMapa").style.display="none";$("fSalir").style.display="block";
@@ -6270,6 +6272,10 @@ $("fSalir").onclick=()=>{
   modo="local";sala="";S=null;
   $("juego").style.display="none";
   $("setup").style.display="block";
+  if(tutRecienTerminado){
+    tutRecienTerminado=false;
+    if(pdEstadoHoy()==="pendiente")setTimeout(()=>{pdActualizarTimer();$("capaPartidaDiaria").classList.add("ver");},600);
+  }
 };
 $("bAbandonarPartida").onclick=()=>{
   if(!S||S.fase==="fin")return;
