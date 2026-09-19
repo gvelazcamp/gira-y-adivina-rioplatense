@@ -2113,21 +2113,24 @@ function esGonzalo(){return (perfil.nombre||"").trim().toLowerCase()==="gonzalo"
 let enTutorial=false,tutPasoActual=0;
 const TUT_FRASE="TOMAR MATE";
 const TUT_PASOS=[
-  {tipo:"boton",id:"bGirar",txt:"Tocá acá para girar la ruleta.",listo:()=>S.fase==="consonante"},
+  {tipo:"boton",id:"bGirar",txt:"Tocá acá para girar la ruleta.",listo:()=>S.fase==="consonante",sinOscurecer:true},
   {tipo:"letra",letra:"M",txt:"Elegí la consonante M.",listo:()=>S.usadas.has("M")||S.usadas.has("T")},
-  {tipo:"boton",id:"bVocal",txt:"Con la plata que juntaste (mirá arriba) podés comprar una vocal por $250.",listo:()=>S.fase==="vocal"},
+  {tipo:"elemento",sel:"#j0 .ronda",txt:"¡Mirá! Ya juntaste esta plata en la ronda.",listo:()=>false,auto:2200},
+  {tipo:"boton",id:"bVocal",txt:"Con esa plata podés comprar una vocal por $250. Tocá acá.",listo:()=>S.fase==="vocal"},
   {tipo:"letra",letra:"A",txt:"Elegí la vocal A.",listo:()=>S.usadas.has("A")||S.usadas.has("O")||S.usadas.has("E")},
   {tipo:"boton",id:"bPista",txt:"¿Te trabaste? Pedí una pista (gratis en el tutorial).",listo:()=>S.pistaUsada},
   {tipo:"boton",id:"bResolver",txt:"Ahora resolvé: escribí la frase completa y confirmá.",listo:()=>S.fase==="fin"||fraseCompleta()}
 ];
 function tutObtenerElemento(paso){
-  return paso.tipo==="boton"?$(paso.id):document.querySelector('#teclado button[data-l="'+paso.letra+'"]');
+  if(paso.tipo==="boton")return $(paso.id);
+  if(paso.tipo==="letra")return document.querySelector('#teclado button[data-l="'+paso.letra+'"]');
+  return document.querySelector(paso.sel);
 }
 function tutForzarSoloElemento(elActivo){
   ["bGirar","bVocal","bPista","bResolver"].forEach(id=>{const el=$(id);if(el&&el!==elActivo)el.disabled=true;});
   document.querySelectorAll("#teclado button").forEach(b=>{if(b!==elActivo)b.disabled=true;});
 }
-function tutMostrarSpotlight(el,texto){
+function tutMostrarSpotlight(el,texto,sinOscurecer){
   if(!el)return;
   let ov=$("tutOverlay");
   if(!ov){
@@ -2137,8 +2140,11 @@ function tutMostrarSpotlight(el,texto){
   }
   const r=el.getBoundingClientRect();
   const hueco=$("tutHueco");
-  hueco.style.left=(r.left-8)+"px";hueco.style.top=(r.top-8)+"px";
-  hueco.style.width=(r.width+16)+"px";hueco.style.height=(r.height+16)+"px";
+  hueco.style.display=sinOscurecer?"none":"";
+  if(!sinOscurecer){
+    hueco.style.left=(r.left-8)+"px";hueco.style.top=(r.top-8)+"px";
+    hueco.style.width=(r.width+16)+"px";hueco.style.height=(r.height+16)+"px";
+  }
   $("tutTexto").textContent=texto;
   const boc=$("tutBocadillo");
   const espacioAbajo=window.innerHeight-r.bottom,abajo=espacioAbajo>120;
@@ -2147,13 +2153,19 @@ function tutMostrarSpotlight(el,texto){
   else{boc.classList.add("tut-arriba");boc.style.top=Math.max(8,r.top-18-boc.offsetHeight)+"px";}
 }
 function tutOcultarSpotlight(){const ov=$("tutOverlay");if(ov)ov.remove();}
+let tutTimerPaso=-1;
 function tutorialTick(){
   if(!enTutorial||!S)return;
   while(tutPasoActual<TUT_PASOS.length&&TUT_PASOS[tutPasoActual].listo())tutPasoActual++;
   if(tutPasoActual>=TUT_PASOS.length){tutOcultarSpotlight();return;}
   const paso=TUT_PASOS[tutPasoActual],el=tutObtenerElemento(paso);
   tutForzarSoloElemento(el);
-  tutMostrarSpotlight(el,paso.txt);
+  tutMostrarSpotlight(el,paso.txt,!!paso.sinOscurecer);
+  if(paso.auto&&tutTimerPaso!==tutPasoActual){
+    tutTimerPaso=tutPasoActual;
+    const idx=tutPasoActual;
+    setTimeout(()=>{if(enTutorial&&tutPasoActual===idx){tutPasoActual++;pintar();}},paso.auto);
+  }
 }
 function iniciarTutorial(){
   if(!perfilExiste()){abrirPerfil(()=>iniciarTutorial());return;}
