@@ -465,7 +465,7 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 .pt-video-wrap{width:200px;height:200px;margin:0 auto 16px;display:grid;place-items:center}
 .pt-video-wrap canvas{width:100%;height:100%;filter:drop-shadow(0 8px 16px #000A)}
 #tutOverlay{position:fixed;inset:0;z-index:40;pointer-events:none}
-#tutHueco{position:absolute;border-radius:14px;box-shadow:0 0 0 9999px rgba(0,0,0,.78);transition:all .25s ease}
+#tutHueco{position:absolute;border-radius:14px;box-shadow:0 0 0 9999px rgba(0,0,0,.4);transition:all .25s ease}
 #tutBocadillo{position:absolute;width:240px;background:#1A1024;border:2px solid var(--oro);border-radius:14px;
   padding:12px 16px;color:#F6EFE2;font-weight:700;font-size:.9rem;line-height:1.35;box-shadow:0 8px 24px #000A;transition:all .25s ease}
 .campo{display:flex;align-items:center;gap:10px;background:#00000033;border:1px solid #FFFFFF1F;
@@ -2115,7 +2115,7 @@ const TUT_FRASE="TOMAR MATE";
 const TUT_PASOS=[
   {tipo:"boton",id:"bGirar",txt:"Tocá acá para girar la ruleta.",listo:()=>S.fase==="consonante"},
   {tipo:"letra",letra:"M",txt:"Elegí la consonante M.",listo:()=>S.usadas.has("M")||S.usadas.has("T")},
-  {tipo:"boton",id:"bVocal",txt:"Comprá una vocal por $250.",listo:()=>S.fase==="vocal"},
+  {tipo:"boton",id:"bVocal",txt:"Con la plata que juntaste (mirá arriba) podés comprar una vocal por $250.",listo:()=>S.fase==="vocal"},
   {tipo:"letra",letra:"A",txt:"Elegí la vocal A.",listo:()=>S.usadas.has("A")||S.usadas.has("O")||S.usadas.has("E")},
   {tipo:"boton",id:"bPista",txt:"¿Te trabaste? Pedí una pista (gratis en el tutorial).",listo:()=>S.pistaUsada},
   {tipo:"boton",id:"bResolver",txt:"Ahora resolvé: escribí la frase completa y confirmá.",listo:()=>S.fase==="fin"||fraseCompleta()}
@@ -6216,7 +6216,7 @@ function abrirResolver(jugador){
   $("modalResolver").querySelector("p").textContent=esToss?
     ((tossRespondedor!==null&&V.jug[tossRespondedor])?V.jug[tossRespondedor].n+", el tablero está congelado. Tenés 9 segundos para escribir la frase completa.":"Tenés 9 segundos para escribir la frase completa."):
     (esBonus?(V.fase==="bonus_resolver"?"Tenés 10 segundos frescos para escribir. ":"")+"Si acertás ganás $"+BONUS_PREMIO+" extra. Si errás, perdés la Ronda Bonus — no hay segundo intento.":"Si acertás te llevás la plata de la ronda. Si errás, pasa el turno. Tenés 25 segundos frescos para escribir.");
-  $("modalResolver").classList.add("ver");$("respuesta").value="";$("respuesta").focus();
+  $("modalResolver").classList.add("ver");$("respuesta").value=enTutorial?TUT_FRASE:"";$("respuesta").focus();
   if(enTutorial)tutOcultarSpotlight();
 }
 $("bResolver").onclick=()=>{
