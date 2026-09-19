@@ -5322,7 +5322,7 @@ function mostrarFin(tit,txt,selloImg){
   $("fTitulo").textContent=tit;$("fTexto").textContent=txt;
   const juegoCompleto=mapaUltimaConquista&&ganados.size===MUNDO.length;
   const ciudadCompleta=mapaUltimaConquista&&ciudadUltima100&&!juegoCompleto;
-  $("fCompartir").style.display=mapaUltimaConquista?"none":"block";
+  $("fCompartir").style.display=(mapaUltimaConquista||tit.startsWith("Partida abandonada"))?"none":"block";
   $("fCompartirConquista").style.display=(mapaUltimaConquista&&!juegoCompleto&&!ciudadCompleta)?"block":"none";
   $("fCompartirCiudad100").style.display=ciudadCompleta?"block":"none";
   $("fCompartir100").style.display=juegoCompleto?"block":"none";
