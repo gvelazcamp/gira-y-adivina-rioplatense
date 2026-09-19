@@ -2609,6 +2609,7 @@ async function reportarFraseActual(){
 }
 $("btnReportarFrase").onclick=reportarFraseActual;
 const RK_GRUPO="global";
+const RK_APODOS_OCULTOS=["vale"];
 function cargarRkPerfil(){
   try{return JSON.parse(localStorage.getItem("gya_ranking_perfil"));}catch(e){return null;}
 }
@@ -2639,7 +2640,8 @@ async function rkCargarTabla(){
   let data,error;
   try{
     const r=await supa.from("gya_ranking").select("*").eq("grupo",RK_GRUPO).order("monedas_totales",{ascending:false});
-    data=r.data;error=r.error;
+    data=(r.data||[]).filter(f=>!RK_APODOS_OCULTOS.includes(String(f.apodo||"").trim().toLowerCase()));
+    error=r.error;
   }catch(e){error=e;}
   if(error){$("rkEstado").textContent="No se pudo cargar. Revisá tu conexión.";return;}
   (data||[]).forEach((f,i)=>{
