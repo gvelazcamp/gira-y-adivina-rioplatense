@@ -1277,6 +1277,17 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="no" id="lgCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
 </div></div>
 
+<div class="capa" id="capaPartidaDiaria"><div class="caja" style="max-width:380px">
+  <h2>🎁 Partida Diaria</h2>
+  <p>Jugá 3 rondas contra la máquina. Si ganás la partida, te llevás un sobre sorpresa. Un solo intento por día.</p>
+  <img src="assets/shop/regalo.webp" alt="" style="width:110px;display:block;margin:0 auto 18px">
+  <button class="btn-grande cta-jugar" id="pdVamos" style="margin-bottom:10px">
+    <span class="cta-play">▶</span>
+    <span class="cta-txt"><b>Vamos</b><small>Jugar la Partida Diaria</small></span>
+  </button>
+  <button class="no" id="pdMasTarde" style="width:100%;border-radius:12px;padding:12px;font-weight:700">Más tarde</button>
+</div></div>
+
 <div class="capa" id="capaObjetivos"><div class="caja rk-caja">
   <h2>🎯 Objetivos diarios</h2>
   <p class="sub" id="objReinicio" style="margin:2px 0 12px"></p>
@@ -1994,6 +2005,7 @@ function objActualizarBadge(){
   const o=objObtenerHoy();
   let pendientes=OBJETIVOS.filter(d=>(o[d.id]||0)>=d.meta&&!o.reclamados.includes(d.id)).length;
   if(OBJETIVOS.every(d=>o.reclamados.includes(d.id))&&!o.reclamados.includes("todos"))pendientes++;
+  if(pdEstadoHoy()==="pospuesto")pendientes++;
   b.textContent=pendientes>0?pendientes:"";
 }
 function objRender(){
@@ -2003,6 +2015,14 @@ function objRender(){
   const hh=Math.floor(rest/3600000),mm=Math.floor(rest%3600000/60000);
   $("objReinicio").textContent="Se reinician en "+hh+"h "+mm+"min";
   const cont=$("objLista");cont.innerHTML="";
+  if(pdEstadoHoy()==="pospuesto"){
+    const dPD=document.createElement("div");
+    dPD.className="lg-item destacado";
+    dPD.innerHTML='<div class="lg-icono">🎁</div><div class="lg-info"><b>Partida Diaria</b>'+
+      '<span>Ganá 3 rondas y llevate un sobre sorpresa</span></div>'+
+      '<button class="obj-reclamar listo" data-id="partida_diaria">Vamos</button>';
+    cont.appendChild(dPD);
+  }
   const todosListos=OBJETIVOS.every(d=>o.reclamados.includes(d.id));
   const dTodos=document.createElement("div");
   dTodos.className="lg-item destacado";
@@ -2031,8 +2051,12 @@ $("objCerrar").onclick=()=>{$("capaObjetivos").classList.remove("ver");objActual
 objActualizarBadge();
 $("objLista").addEventListener("click",e=>{
   const b=e.target.closest(".obj-reclamar");if(!b||b.disabled)return;
-  const id=b.dataset.id;if(id==="todos")objReclamarTodos();else objReclamar(id);
+  const id=b.dataset.id;
+  if(id==="partida_diaria"){$("capaObjetivos").classList.remove("ver");iniciarPartidaDiaria();return;}
+  if(id==="todos")objReclamarTodos();else objReclamar(id);
 });
+$("pdVamos").onclick=()=>{$("capaPartidaDiaria").classList.remove("ver");iniciarPartidaDiaria();};
+$("pdMasTarde").onclick=()=>{$("capaPartidaDiaria").classList.remove("ver");pdGuardarEstado("pospuesto");objActualizarBadge();};
 function mundoActualizarHud(){
   regenerarVidas();
   if($("mhVidas"))$("mhVidas").textContent="❤️ "+meta.vidas;
@@ -2043,6 +2067,17 @@ function mundoActualizarHud(){
   if($("setupRacha"))$("setupRacha").innerHTML="🔥 <b>"+meta.diaRacha+"</b>";
 }
 function fechaHoy(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+/* Partida Diaria: 1 partida de 3 rondas por día contra la máquina;
+   si se gana, se lleva un sobre sorpresa. Ganes, pierdas o abandones,
+   el intento de hoy se consume (no hay reintentos). */
+let esPartidaDiaria=false;
+function pdEstadoHoy(){
+  try{const raw=JSON.parse(localStorage.getItem("gya_partida_diaria")||"null");
+    if(!raw||raw.dia!==fechaHoy())return"pendiente";
+    return raw.estado;}catch(e){return"pendiente";}
+}
+function pdGuardarEstado(estado){try{localStorage.setItem("gya_partida_diaria",JSON.stringify({dia:fechaHoy(),estado}));}catch(e){}}
+function iniciarPartidaDiaria(){esPartidaDiaria=true;jugarOnlineFalso(false);}
 function diasEntreFechas(a,b){return Math.round((new Date(b+"T00:00:00")-new Date(a+"T00:00:00"))/86400000);}
 function chequearRachaDiaria(){
   const hoy=fechaHoy();
@@ -4766,18 +4801,23 @@ function finalizarPartidaPendiente(bonusGanado){
   if(!f)return;
   const detalle=detalleResultado(f.g);
   const bonusTxt=bonusGanado===true?" · Ronda Bonus: +$"+BONUS_PREMIO+".":bonusGanado===false?" · Ronda Bonus sin premio.":"";
+  let pdTxt="";
+  if(esPartidaDiaria){esPartidaDiaria=false;pdGuardarEstado("jugada");objActualizarBadge();
+    otorgarSobreSorpresa();
+    pdTxt=" · ¡Ganaste la Partida Diaria! Te llevaste un sobre sorpresa.";}
   S.finalPendiente=null;S.fase="fin";pararReloj();limpiarBonus();
   $("modalResolver").classList.remove("ver");
   publicar("Partida terminada.");
-  if(modo!=="local"&&modo!=="bot")enviar({tipo:"fin",txt:detalle+f.extra+bonusTxt,tit:f.tit});
+  if(modo!=="local"&&modo!=="bot")enviar({tipo:"fin",txt:detalle+f.extra+bonusTxt+pdTxt,tit:f.tit});
   fSiguientePaso=null;
   $("fMapa").style.display=(modo==="bot")?"block":"none";
   $("fSalir").style.display=(modo==="tvhost"||(modo==="bot"&&destino!==null))?"none":"block";
   $("fMapa").textContent=(destino!==null)?"Volver al mapa":"Elegir modalidad";
-  mostrarFin(f.tit,detalle+f.extra+bonusTxt,f.selloImg);
+  mostrarFin(f.tit,detalle+f.extra+bonusTxt+pdTxt,f.selloImg);
 }
 function terminarPorAbandono(idx){
   if(!S||S.fase==="fin")return;
+  if(esPartidaDiaria){esPartidaDiaria=false;pdGuardarEstado("jugada");objActualizarBadge();}
   S.finYa=true;S.fase="fin";pararReloj();limpiarBonus();
   $("modalResolver").classList.remove("ver");
   const quien=(S.jug[idx]&&S.jug[idx].n)||"Un jugador";
@@ -5277,6 +5317,8 @@ function finDelJuego(){
     if(g<0)tit="¡Empate!";
     else{tit="Te ganó "+b.n;extra=" Probá de nuevo cuando quieras.";}
     if(bonusJugado>0)extra+=" +"+bonusJugado+" 🪙 por lo jugado.";
+    if(esPartidaDiaria){esPartidaDiaria=false;pdGuardarEstado("jugada");objActualizarBadge();
+      extra+=" No ganaste la Partida Diaria de hoy — probá mañana.";}
     S.fase="fin";pararReloj();publicar("Partida terminada.");
     $("fMapa").style.display="block";$("fSalir").style.display=(destino!==null)?"none":"block";
     $("fMapa").textContent=(destino!==null)?"Volver al mapa":"Elegir modalidad";
@@ -6456,14 +6498,17 @@ $("fBoton").onclick=()=>{
   const paso=()=>{hechas++;if(hechas>=urls.length)cerrar();};
   const cerrar=()=>{
     const espera=Math.max(0,MIN_ESPERA-(performance.now()-t0));
-    setTimeout(()=>{cap.classList.add("ido");setTimeout(()=>cap.remove(),800);mostrarPromptIOS();},espera);
+    setTimeout(()=>{cap.classList.add("ido");setTimeout(()=>cap.remove(),800);mostrarPromptIOS();pdChequearAutoPopup();},espera);
   };
   barra.style.transitionDuration=MIN_ESPERA+"ms";
   requestAnimationFrame(()=>{barra.style.width="100%";});
   urls.forEach(u=>{const im=new Image();im.onload=paso;im.onerror=paso;im.src=u;});
   setTimeout(cerrar,7000);
-  cap.onclick=()=>{cap.classList.add("ido");setTimeout(()=>cap.remove(),800);mostrarPromptIOS();};
+  cap.onclick=()=>{cap.classList.add("ido");setTimeout(()=>cap.remove(),800);mostrarPromptIOS();pdChequearAutoPopup();};
 })();
+function pdChequearAutoPopup(){
+  if(pdEstadoHoy()==="pendiente")setTimeout(()=>$("capaPartidaDiaria").classList.add("ver"),900);
+}
 
 /* ---- Mostrar el cartel de instalación a los de iPhone la primera vez, sin que
    tengan que encontrar el botón "Instalar" solos ---- */
