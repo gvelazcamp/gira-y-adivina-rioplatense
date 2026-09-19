@@ -2118,7 +2118,7 @@ const TUT_PASOS=[
   {tipo:"boton",id:"bVocal",txt:"Comprá una vocal por $250.",listo:()=>S.fase==="vocal"},
   {tipo:"letra",letra:"A",txt:"Elegí la vocal A.",listo:()=>S.usadas.has("A")||S.usadas.has("O")||S.usadas.has("E")},
   {tipo:"boton",id:"bPista",txt:"¿Te trabaste? Pedí una pista (gratis en el tutorial).",listo:()=>S.pistaUsada},
-  {tipo:"boton",id:"bResolver",txt:"Ahora resolvé: escribí la frase completa y confirmá.",listo:()=>S.fase==="fin"}
+  {tipo:"boton",id:"bResolver",txt:"Ahora resolvé: escribí la frase completa y confirmá.",listo:()=>S.fase==="fin"||fraseCompleta()}
 ];
 function tutObtenerElemento(paso){
   return paso.tipo==="boton"?$(paso.id):document.querySelector('#teclado button[data-l="'+paso.letra+'"]');
