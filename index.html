@@ -6274,7 +6274,7 @@ $("fSalir").onclick=()=>{
   $("setup").style.display="block";
   if(tutRecienTerminado){
     tutRecienTerminado=false;
-    if(pdEstadoHoy()==="pendiente")setTimeout(()=>{pdActualizarTimer();$("capaPartidaDiaria").classList.add("ver");},600);
+    if(pdEstadoHoy()==="pendiente"||esGonzalo())setTimeout(()=>{pdActualizarTimer();$("capaPartidaDiaria").classList.add("ver");},600);
   }
 };
 $("bAbandonarPartida").onclick=()=>{
