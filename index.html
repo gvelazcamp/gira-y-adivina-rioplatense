@@ -4078,6 +4078,7 @@ let modoVelocidadElegido=false,vinoDeJugarOnline=false;
 function jugarOnlineFalso(velocidad){
   if(!perfilExiste()){abrirPerfil(()=>jugarOnlineFalso(velocidad));return;}
   modoVelocidadElegido=!!velocidad;
+  if(velocidad)rondasElegidas=1; // TEMP prueba Gonzalo, sacar después
   const rival=rivalOnlineFalso();
   $("buscandoTit").textContent="🌐 Buscando rival…";
   $("buscandoTxt").textContent="Conectando con jugadores online";
