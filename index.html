@@ -391,8 +391,11 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 .rk-acciones{display:flex;gap:8px;margin-bottom:12px}
 .rk-acciones button{flex:1;border-radius:10px;padding:9px 4px;font-weight:700;font-size:.76rem}
 .rk-lista{text-align:left}
-.rk-fila{display:flex;align-items:center;gap:10px;background:#00000033;border:1px solid #FFFFFF1F;
- border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.rk-fila{display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:#00000033;border:1px solid #FFFFFF1F;
+ border-radius:12px;padding:10px 12px;margin-bottom:8px;cursor:pointer}
+.rk-detalle{flex-basis:100%;display:flex;gap:14px;margin-top:8px;padding-top:8px;border-top:1px solid #FFFFFF1F}
+.rk-det-item{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:.68rem;color:#B49FCE;flex-shrink:0}
+.rk-det-item img{width:64px;height:64px;border-radius:10px;object-fit:cover;background:#00000055;border:1px solid #FFFFFF22}
 .rk-fila.yo{border-color:var(--oro);background:#F5B30122}
 .rk-puesto{font-size:1rem;font-weight:800;width:26px;text-align:center;flex-shrink:0;color:#B49FCE}
 .rk-fila:nth-child(1) .rk-puesto{color:#F5B301}
@@ -2553,6 +2556,8 @@ async function empujarRanking(){
       mejor_racha:meta.mejorRachaVictorias||0,
       logros:logrosGanados.size,
       avatar:perfil.avatar||null,
+      tablero:tableroEquipado||null,
+      marco:fichaSkinEquipada||null,
       actualizado_en:new Date().toISOString()
     },{onConflict:"grupo,apodo"});
   }catch(e){}
@@ -2576,6 +2581,15 @@ async function rkCargarTabla(){
       '<div class="rk-info"><b>'+rkEsc(f.apodo)+(f.apodo===rkPerfil.apodo?" (vos)":"")+'</b>'+
       '<span>🗺️ '+f.ciudades_ganadas+'/9 · 🏆 racha '+f.mejor_racha+' · 🏅 '+f.logros+'</span></div>'+
       '<div class="rk-monedas">🪙 '+f.monedas_totales+'</div>';
+    d.onclick=()=>{
+      const abierto=d.querySelector(".rk-detalle");
+      cont.querySelectorAll(".rk-detalle").forEach(x=>x.remove());
+      if(abierto)return;
+      const det=document.createElement("div");det.className="rk-detalle";
+      det.innerHTML=(f.tablero?'<div class="rk-det-item"><img src="assets/tableros/'+rkEsc(f.tablero)+'.webp"><span>Tablero</span></div>':'<div class="rk-det-item"><span>Sin tablero equipado</span></div>')+
+        (f.marco?'<div class="rk-det-item"><img src="assets/fichas/'+rkEsc(f.marco)+'.webp"><span>Marco</span></div>':'<div class="rk-det-item"><span>Sin marco equipado</span></div>');
+      d.appendChild(det);
+    };
     cont.appendChild(d);
   });
   $("rkEstado").textContent=(data&&data.length)?"":"Todavía no hay nadie más — invitá amigos.";
