@@ -393,9 +393,7 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 .rk-lista{text-align:left}
 .rk-fila{display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:#00000033;border:1px solid #FFFFFF1F;
  border-radius:12px;padding:10px 12px;margin-bottom:8px;cursor:pointer}
-.rk-detalle{flex-basis:100%;display:flex;gap:14px;margin-top:8px;padding-top:8px;border-top:1px solid #FFFFFF1F}
-.rk-det-item{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:.68rem;color:#B49FCE;flex-shrink:0}
-.rk-det-item img{width:64px;height:64px;border-radius:10px;object-fit:cover;background:#00000055;border:1px solid #FFFFFF22}
+.rk-detalle{flex-basis:100%;display:flex;gap:10px;margin-top:8px;padding-top:8px;border-top:1px solid #FFFFFF1F}
 .rk-fila.yo{border-color:var(--oro);background:#F5B30122}
 .rk-puesto{font-size:1rem;font-weight:800;width:26px;text-align:center;flex-shrink:0;color:#B49FCE}
 .rk-fila:nth-child(1) .rk-puesto{color:#F5B301}
@@ -2593,9 +2591,15 @@ async function rkCargarTabla(){
       const abierto=d.querySelector(".rk-detalle");
       cont.querySelectorAll(".rk-detalle").forEach(x=>x.remove());
       if(abierto)return;
+      const tabInfo=MARCOS_TABLERO.find(x=>x.id===f.tableros);
+      const marInfo=FICHAS_SKIN.find(x=>x.id===f.marcos);
       const det=document.createElement("div");det.className="rk-detalle";
-      det.innerHTML=(f.tableros?'<div class="rk-det-item"><img src="assets/tableros/'+rkEsc(f.tableros)+'.webp"><span>Tablero</span></div>':'<div class="rk-det-item"><span>Sin tablero equipado</span></div>')+
-        (f.marcos?'<div class="rk-det-item"><img src="assets/fichas/'+rkEsc(f.marcos)+'.webp"><span>Marco</span></div>':'<div class="rk-det-item"><span>Sin marco equipado</span></div>');
+      det.innerHTML='<div class="frame-card" style="flex:1;padding:8px">'+
+          (f.tableros?'<span class="tablero-preview" style="background-image:url(\'assets/tableros/'+rkEsc(f.tableros)+'.webp\')"></span>':'<span class="tablero-preview tablero-preview-vacio">Sin fondo</span>')+
+          '<b>'+(tabInfo?rkEsc(tabInfo.nombre):"Sin tablero")+'</b></div>'+
+        '<div class="frame-card" style="flex:1;padding:8px">'+
+          (f.marcos?'<span class="ficha-skin-preview" style="background-image:url(\'assets/fichas/'+rkEsc(f.marcos)+'.webp\')"></span>':'<span class="ficha-skin-preview ficha-skin-preview-vacio">Clásica</span>')+
+          '<b>'+(marInfo?rkEsc(marInfo.nombre):"Sin marco")+'</b></div>';
       d.appendChild(det);
     };
     cont.appendChild(d);
