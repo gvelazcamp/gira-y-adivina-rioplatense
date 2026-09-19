@@ -2113,7 +2113,7 @@ function esGonzalo(){return (perfil.nombre||"").trim().toLowerCase()==="gonzalo"
 let enTutorial=false,tutPasoActual=0;
 const TUT_FRASE="TOMAR MATE";
 const TUT_PASOS=[
-  {tipo:"boton",id:"bGirar",txt:"Tocá acá para girar la ruleta.",listo:()=>S.fase==="consonante",sinOscurecer:true},
+  {tipo:"boton",id:"bGirar",txt:"Tocá acá para girar la ruleta.",listo:()=>S.fase==="consonante"},
   {tipo:"letra",letra:"M",txt:"Elegí la consonante M.",listo:()=>S.usadas.has("M")||S.usadas.has("T")},
   {tipo:"elemento",sel:"#j0 .ronda",txt:"¡Mirá! Ya juntaste esta plata en la ronda.",listo:()=>false,auto:2200},
   {tipo:"boton",id:"bVocal",txt:"Con esa plata podés comprar una vocal por $250. Tocá acá.",listo:()=>S.fase==="vocal"},
