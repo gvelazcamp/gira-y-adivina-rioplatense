@@ -5349,7 +5349,10 @@ function finDelJuego(){
       iniciarBonus(g,{g,tit,extra,selloImg});return;
     }
     if(g<0)tit="¡Empate!";
-    else{tit="Te ganó "+b.n;extra=" Probá de nuevo cuando quieras.";}
+    else{
+      tit="Te ganó "+b.n;extra=" Probá de nuevo cuando quieras.";
+      if(vinoDeJugarOnline&&!esPartidaDiaria){gastarVida();extra+=" -1 ❤️.";}
+    }
     if(bonusJugado>0)extra+=" +"+bonusJugado+" 🪙 por lo jugado.";
     if(esPartidaDiaria){esPartidaDiaria=false;pdGuardarEstado("jugada");objActualizarBadge();
       extra+=" No ganaste la Partida Diaria de hoy — probá mañana.";}
