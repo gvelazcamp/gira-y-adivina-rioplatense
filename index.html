@@ -6239,7 +6239,11 @@ function abrirResolver(jugador){
       return;
     }
     if(modo==="guest")enviar({a:"toss_pausa"});
-    else if(!pausarToss(j)){tossRespondedor=null;return;}
+    else if(!pausarToss(j)){
+      tossRespondedor=null;
+      $("aviso").innerHTML="<span>⏳ "+(S.jug[S.tossRespondedor]?S.jug[S.tossRespondedor].n:"Otro jugador")+" apretó primero. Esperá tu turno.</span>";
+      return;
+    }
   }else{
     if(modo==="guest")enviar({a:"abrir_resolver"});
     else if(S)avisarResolverAbierto(S.turno);
