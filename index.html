@@ -565,6 +565,14 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 #codigoInput{text-transform:uppercase;letter-spacing:.2em;text-align:center}
 
 #juego{display:none;max-width:1060px;margin:0 auto}
+.juego-abandonar{position:fixed;top:10px;left:10px;z-index:55;width:44px;height:44px;
+  border-radius:50%;padding:0;color:var(--oro);
+  background:radial-gradient(circle at 35% 30%,#2A1A3C,#120A1D);
+  border:2px solid #F5B301AA;box-shadow:0 6px 18px #000000AA,0 0 14px #F5B30155;
+  display:grid;place-items:center;transition:transform .12s ease}
+.juego-abandonar svg{width:58%;height:58%}
+.juego-abandonar:active{transform:scale(.9)}
+@media(hover:hover){.juego-abandonar:hover{box-shadow:0 6px 18px #000000AA,0 0 20px #F5B301AA}}
 .serie{text-align:center;text-shadow:0 2px 6px #000;color:#B49FCE;font-size:.9rem;margin-bottom:10px;min-height:20px}
 #jgHud{display:none}
 #jgHud>div{background:#160B24E6;border:1px solid #F5B30166;color:var(--oro);font-weight:800;font-size:.82rem;
@@ -811,7 +819,7 @@ body.tvhost #juego{max-width:1240px}
 body.tvhost #juego .marcador{grid-template-columns:repeat(auto-fit,minmax(145px,1fr))}
 body.tvhost #juego .acciones,body.tvhost #juego .teclado,body.tvhost #juego .reacciones,body.tvhost #tossBuzz,
 body.tvhost #juego .poderes,body.tvhost #juego .lodo-zona,body.tvhost #juego .confirm-poder,
-body.tvhost #jgHud{display:none!important}
+body.tvhost #jgHud,body.tvhost .juego-abandonar{display:none!important}
 #poderesFila,#tvcPoderes,#confirmPoder,#tvcConfirmPoder{display:none!important}
 body.tvhost #juego .tablero{padding:26px 18px}
 body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66px);font-size:clamp(1.1rem,2.6vw,1.8rem)}
@@ -1470,6 +1478,16 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
 </section>
 
 <section id="juego">
+  <button class="juego-abandonar" id="bAbandonarPartida" type="button" aria-label="Abandonar partida" title="Abandonar partida">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9.5 15.5 4 10l5.5-5.5"/>
+      <path d="M4 10h11a5.5 5.5 0 0 1 0 11h-3.5"/>
+    </svg>
+  </button>
+  <div class="confirm-poder" id="confirmAbandonar" style="display:none">
+    <p>¿Seguro que querés abandonar la partida? Se cuenta como partida perdida.</p>
+    <div class="confirm-poder-btns"><button class="no" id="confirmAbandonarNo">Cancelar</button><button class="ok" id="confirmAbandonarSi">Abandonar</button></div>
+  </div>
   <div id="jgHud">
     <div id="jgMonedas" title="Monedas: se ganan jugando y sirven para comprar en la Tienda">🪙 0 monedas</div>
     <div id="jgSobre" style="display:none">🎁 0/3</div>
@@ -4439,6 +4457,7 @@ function recibirHost(d){
   if((S.fase==="bonus_resolver"||S.fase==="bonus_elegir")&&S.turno===1&&d.a==="resolver"){hostResolverBonus(d.txt);return;}
   if(S.fase==="lodo"&&S.turno===1&&d.a==="lodo_limpio"){hostLodoLimpio(1);return;}
   if(d.a==="abrir_resolver"){avisarResolverAbierto(1);return;}
+  if(d.a==="abandonar"){terminarPorAbandono(1);return;}
   if(S.turno!==1||animando)return;
   if(d.a==="girar")hostGirar();
   else if(d.a==="vocal")hostVocal();
@@ -4738,6 +4757,25 @@ function finalizarPartidaPendiente(bonusGanado){
   $("fSalir").style.display=(modo==="tvhost"||(modo==="bot"&&destino!==null))?"none":"block";
   $("fMapa").textContent=(destino!==null)?"Volver al mapa":"Elegir modalidad";
   mostrarFin(f.tit,detalle+f.extra+bonusTxt,f.selloImg);
+}
+function terminarPorAbandono(idx){
+  if(!S||S.fase==="fin")return;
+  S.finYa=true;S.fase="fin";pararReloj();limpiarBonus();
+  $("modalResolver").classList.remove("ver");
+  const quien=(S.jug[idx]&&S.jug[idx].n)||"Un jugador";
+  const tit="Partida abandonada",txt=quien+" abandonó la partida.";
+  publicar(txt,"error");
+  if(modo!=="local"&&modo!=="bot")enviar({tipo:"fin",txt,tit});
+  fSiguientePaso=null;
+  const enMapa=(modo==="bot"&&destino!==null);
+  $("fMapa").style.display=enMapa?"block":"none";
+  $("fSalir").style.display=enMapa?"none":"block";
+  if(enMapa)$("fMapa").textContent="Volver al mapa";
+  mostrarFin(tit,txt);
+}
+function abandonarPartidaPropia(){
+  if(modo==="guest"){enviar({a:"abandonar"});return;}
+  terminarPorAbandono(miJug);
 }
 const mask=()=>[...S.frase].map((c,i)=>c===" "?" ":(S.fase==="tossup"&&S.tossPos?S.tossPos.has(i)?c:"_":(S.abiertas.has(c)||(S.pistaPos&&S.pistaPos.has(i)))?c:"_")).join("");
 const consRestantes=()=>[...new Set(S.frase.replace(/ /g,""))].filter(c=>!VOCALES.includes(c)&&!S.abiertas.has(c)).length;
@@ -5279,7 +5317,8 @@ function mostrarFin(tit,txt,selloImg){
     $("fCopa").style.display="none";
   }else{fSello.classList.remove("ver");$("fCopa").style.display="";
     $("fCopa").textContent=tit.startsWith("¡Empate")?"🤝":tit.startsWith("¡Victoria")?"🏆":
-      (tit.startsWith("Te ganó")||tit.startsWith("No pudiste"))?"😤":tit.startsWith("¡Paso")?"✅":"🏅";}
+      (tit.startsWith("Te ganó")||tit.startsWith("No pudiste"))?"😤":tit.startsWith("¡Paso")?"✅":
+      tit.startsWith("Partida abandonada")?"🚪":"🏅";}
   $("fTitulo").textContent=tit;$("fTexto").textContent=txt;
   const juegoCompleto=mapaUltimaConquista&&ganados.size===MUNDO.length;
   const ciudadCompleta=mapaUltimaConquista&&ciudadUltima100&&!juegoCompleto;
@@ -6010,6 +6049,12 @@ $("confirmar").onclick=()=>{
   tossRespondedor=null;
 };
 $("fSalir").onclick=()=>location.reload();
+$("bAbandonarPartida").onclick=()=>{
+  if(!S||S.fase==="fin")return;
+  $("confirmAbandonar").style.display="flex";
+};
+$("confirmAbandonarNo").onclick=()=>{$("confirmAbandonar").style.display="none";};
+$("confirmAbandonarSi").onclick=()=>{$("confirmAbandonar").style.display="none";abandonarPartidaPropia();};
 function csCargarImg(src){
   return new Promise((res,rej)=>{const im=new Image();im.crossOrigin="anonymous";im.onload=()=>res(im);im.onerror=rej;im.src=src;});
 }
