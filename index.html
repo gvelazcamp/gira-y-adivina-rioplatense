@@ -972,7 +972,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     </svg>
   </button>
   <h1 class="titulo" style="font-size:2.4rem">URUGUAY</h1>
-  <div class="mundo-hud"><span id="mhVidas">❤️ 5</span><span class="mh-monedas" id="mhMonedas" title="Monedas: se ganan jugando y sirven para comprar en la Tienda">🪙 500 monedas</span><span class="mh-monedas" id="mhMates" title="Mate: moneda especial en prueba" style="display:none">🧉 0</span></div>
+  <div class="mundo-hud"><span id="mhVidas">❤️ 5</span><span class="mh-monedas" id="mhMonedas" title="Monedas: se ganan jugando y sirven para comprar en la Tienda">🪙 500 monedas</span><span class="mh-monedas" id="mhMates" title="Mate: tocá para canjear por monedas" style="display:none;cursor:pointer">🧉 0</span></div>
   <p class="sub" id="subMundo">Ganale a cada rival y andá abriendo el país.</p>
   <div id="mapa"></div>
   <button class="btn-grande" id="bExpansion" style="margin-top:4px">🔒 Continuar expansión</button>
@@ -1989,6 +1989,19 @@ function sumarMonedas(n){meta.monedas+=n;if(n>0)meta.monedasGanadasTotal=(meta.m
 /* ---- Prueba de "Mate": moneda premium, en test solo para Gonzalo ---- */
 function esGonzalo(){return (perfil.nombre||"").trim().toLowerCase()==="gonzalo";}
 function sumarMates(n){meta.mates=(meta.mates||0)+n;guardarMeta();mundoActualizarHud();}
+const MATE_TASA_MONEDAS=12;
+function mateCanjear(){
+  if((meta.mates||0)<1)return;
+  $("confirmCompraTxt").textContent="¿Canjear 1 🧉 Mate por 🪙 "+MATE_TASA_MONEDAS+" monedas?";
+  $("confirmCompraSi").textContent="Canjear";
+  $("confirmCompra").style.display="flex";
+  $("confirmCompraSi").onclick=()=>{
+    $("confirmCompra").style.display="none";
+    meta.mates=(meta.mates||0)-1;guardarMeta();
+    sumarMonedas(MATE_TASA_MONEDAS);mundoActualizarHud();
+  };
+  $("confirmCompraNo").onclick=()=>{$("confirmCompra").style.display="none";};
+}
 function textoProxima(){
   if(meta.vidas>=VIDAS_MAX||!meta.proxima)return"";
   const rest=Math.max(0,meta.proxima-Date.now());
@@ -2107,6 +2120,7 @@ $("ptMasTarde").onclick=()=>{$("capaPromoTienda").classList.remove("ver");ptDete
 $("bienvenidaTutorial").onclick=()=>{$("capaBienvenida").classList.remove("ver");iniciarTutorial();};
 $("bienvenidaCerrar").onclick=()=>{$("capaBienvenida").classList.remove("ver");pdChequearAutoPopup();empujarRanking();};
 $("bienvenidaCerrarX").onclick=()=>$("bienvenidaCerrar").click();
+$("mhMates").onclick=mateCanjear;
 function mundoActualizarHud(){
   regenerarVidas();
   if($("mhVidas"))$("mhVidas").textContent="❤️ "+meta.vidas;
