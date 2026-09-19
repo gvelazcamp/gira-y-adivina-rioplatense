@@ -2108,8 +2108,7 @@ function fechaHoy(){const d=new Date();return d.getFullYear()+"-"+String(d.getMo
 /* Partida Diaria: 1 partida de 3 rondas por día contra la máquina;
    si se gana, se lleva un sobre sorpresa. Ganes, pierdas o abandones,
    el intento de hoy se consume (no hay reintentos). */
-/* ---- Tutorial guiado (en prueba: solo visible para el perfil "Gonzalo") ---- */
-function esGonzalo(){return (perfil.nombre||"").trim().toLowerCase()==="gonzalo";}
+/* ---- Tutorial guiado ---- */
 let enTutorial=false,tutPasoActual=0;
 const TUT_FRASE="TOMAR MATE";
 const TUT_PASOS=[
@@ -2209,7 +2208,6 @@ function tutEsPrimeraVez(){
 }
 function tutMarcarBienvenidaVista(){try{localStorage.setItem("gya_bienvenida_vista","1");}catch(e){}}
 function tutChequearBienvenida(){
-  if(esGonzalo()){setTimeout(()=>{$("capaBienvenida").classList.add("ver");},900);return;}
   if(tutEsPrimeraVez()){
     tutMarcarBienvenidaVista();
     setTimeout(()=>{$("capaBienvenida").classList.add("ver");},900);
@@ -6284,7 +6282,7 @@ $("fSalir").onclick=()=>{
   $("setup").style.display="block";
   if(tutRecienTerminado){
     tutRecienTerminado=false;
-    if(pdEstadoHoy()==="pendiente"||esGonzalo())setTimeout(()=>{pdActualizarTimer();$("capaPartidaDiaria").classList.add("ver");},600);
+    if(pdEstadoHoy()==="pendiente")setTimeout(()=>{pdActualizarTimer();$("capaPartidaDiaria").classList.add("ver");},600);
   }
 };
 $("bAbandonarPartida").onclick=()=>{
