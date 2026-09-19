@@ -4698,6 +4698,7 @@ function hostResolverBonus(txt){
 function finBonusTiempo(){
   if(!S||S.fase!=="bonus_resolver")return;
   limpiarBonus();abrirTodoBonus();S.fase="bonus_fin";
+  $("modalResolver").classList.remove("ver");
   publicar("Se terminó el tiempo de la Ronda Bonus. La respuesta era <b>"+S.frase+"</b>.","error");
   setTimeout(tk(()=>finalizarPartidaPendiente(false)),3600);
 }
@@ -4720,6 +4721,7 @@ function finalizarPartidaPendiente(bonusGanado){
   const detalle=detalleResultado(f.g);
   const bonusTxt=bonusGanado===true?" · Ronda Bonus: +$"+BONUS_PREMIO+".":bonusGanado===false?" · Ronda Bonus sin premio.":"";
   S.finalPendiente=null;S.fase="fin";pararReloj();limpiarBonus();
+  $("modalResolver").classList.remove("ver");
   publicar("Partida terminada.");
   if(modo!=="local"&&modo!=="bot")enviar({tipo:"fin",txt:detalle+f.extra+bonusTxt,tit:f.tit});
   fSiguientePaso=null;
