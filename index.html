@@ -2203,9 +2203,19 @@ function finalizarTutorial(){
   $("fBoton").style.display="none";
   $("fCompartir").style.display="none";
 }
+function tutEsPrimeraVez(){
+  if(perfilExiste())return false;
+  try{return localStorage.getItem("gya_bienvenida_vista")!=="1";}catch(e){return true;}
+}
+function tutMarcarBienvenidaVista(){try{localStorage.setItem("gya_bienvenida_vista","1");}catch(e){}}
 function tutChequearBienvenida(){
-  if(esGonzalo())setTimeout(()=>{$("capaBienvenida").classList.add("ver");},900);
-  else{pdChequearAutoPopup();empujarRanking();}
+  if(esGonzalo()){setTimeout(()=>{$("capaBienvenida").classList.add("ver");},900);return;}
+  if(tutEsPrimeraVez()){
+    tutMarcarBienvenidaVista();
+    setTimeout(()=>{$("capaBienvenida").classList.add("ver");},900);
+    return;
+  }
+  pdChequearAutoPopup();empujarRanking();
 }
 let esPartidaDiaria=false;
 function pdEstadoHoy(){
