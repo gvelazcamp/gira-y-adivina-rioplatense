@@ -462,6 +462,9 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 .pd-timer{display:inline-block;background:#00000055;border:1px solid #FFFFFF22;border-radius:99px;
   padding:6px 14px;font-size:.78rem;font-weight:700;color:#C9B8DE;margin-bottom:12px}
 .pd-timer b{color:var(--agua)}
+.pt-video-wrap{width:200px;height:200px;margin:0 auto 16px;border-radius:20px;overflow:hidden;
+ background:#fff;display:grid;place-items:center;box-shadow:0 8px 24px #0007}
+.pt-video-wrap video{width:100%;height:100%;object-fit:cover}
 .campo{display:flex;align-items:center;gap:10px;background:#00000033;border:1px solid #FFFFFF1F;
  border-radius:14px;padding:10px 14px;margin-bottom:12px}
 .campo span{font-size:.85rem;color:#B49FCE;min-width:74px;text-align:left}
@@ -1292,6 +1295,17 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="no" id="pdMasTarde" style="width:100%;border-radius:12px;padding:12px;font-weight:700">Más tarde</button>
 </div></div>
 
+<div class="capa" id="capaPromoTienda"><div class="caja" style="max-width:380px">
+  <h2>¡Mirá lo que tenemos!</h2>
+  <div class="pt-video-wrap"><video src="assets/social/avatar-toxico-promo.mp4" autoplay muted loop playsinline></video></div>
+  <p>Avatares animados, marcos, tableros y sobres de colección te esperan en la Tienda.</p>
+  <button class="btn-grande cta-jugar" id="ptIrTienda" style="margin-bottom:10px">
+    <span class="cta-play">🛍️</span>
+    <span class="cta-txt"><b>Ir a Tienda</b><small>Descubrí las novedades</small></span>
+  </button>
+  <button class="no" id="ptMasTarde" style="width:100%;border-radius:12px;padding:12px;font-weight:700">Más tarde</button>
+</div></div>
+
 <div class="capa" id="capaObjetivos"><div class="caja rk-caja">
   <h2>🎯 Objetivos diarios</h2>
   <p class="sub" id="objReinicio" style="margin:2px 0 12px"></p>
@@ -2060,7 +2074,9 @@ $("objLista").addEventListener("click",e=>{
   if(id==="todos")objReclamarTodos();else objReclamar(id);
 });
 $("pdVamos").onclick=()=>{$("capaPartidaDiaria").classList.remove("ver");iniciarPartidaDiaria();};
-$("pdMasTarde").onclick=()=>{$("capaPartidaDiaria").classList.remove("ver");pdGuardarEstado("pospuesto");objActualizarBadge();};
+$("pdMasTarde").onclick=()=>{$("capaPartidaDiaria").classList.remove("ver");pdGuardarEstado("pospuesto");objActualizarBadge();ptChequearAutoPopup();};
+$("ptIrTienda").onclick=()=>{$("capaPromoTienda").classList.remove("ver");$("bTienda").click();};
+$("ptMasTarde").onclick=()=>{$("capaPromoTienda").classList.remove("ver");ptGuardarEstado("vista");};
 function mundoActualizarHud(){
   regenerarVidas();
   if($("mhVidas"))$("mhVidas").textContent="❤️ "+meta.vidas;
@@ -2082,6 +2098,12 @@ function pdEstadoHoy(){
 }
 function pdGuardarEstado(estado){try{localStorage.setItem("gya_partida_diaria",JSON.stringify({dia:fechaHoy(),estado}));}catch(e){}}
 function iniciarPartidaDiaria(){esPartidaDiaria=true;jugarOnlineFalso(false);}
+function ptEstadoHoy(){
+  try{const raw=JSON.parse(localStorage.getItem("gya_promo_tienda")||"null");
+    if(!raw||raw.dia!==fechaHoy())return"pendiente";
+    return raw.estado;}catch(e){return"pendiente";}
+}
+function ptGuardarEstado(estado){try{localStorage.setItem("gya_promo_tienda",JSON.stringify({dia:fechaHoy(),estado}));}catch(e){}}
 function diasEntreFechas(a,b){return Math.round((new Date(b+"T00:00:00")-new Date(a+"T00:00:00"))/86400000);}
 function chequearRachaDiaria(){
   const hoy=fechaHoy();
@@ -6523,6 +6545,10 @@ function pdActualizarTimer(){
 }
 function pdChequearAutoPopup(){
   if(pdEstadoHoy()==="pendiente")setTimeout(()=>{pdActualizarTimer();$("capaPartidaDiaria").classList.add("ver");},900);
+  else ptChequearAutoPopup();
+}
+function ptChequearAutoPopup(){
+  if(ptEstadoHoy()==="pendiente")setTimeout(()=>{$("capaPromoTienda").classList.add("ver");},900);
 }
 
 /* ---- Mostrar el cartel de instalación a los de iPhone la primera vez, sin que
