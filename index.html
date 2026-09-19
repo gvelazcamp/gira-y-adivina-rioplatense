@@ -2564,8 +2564,8 @@ async function empujarRanking(){
       mejor_racha:meta.mejorRachaVictorias||0,
       logros:logrosGanados.size,
       avatar:perfil.avatar||null,
-      tablero:tableroEquipado||null,
-      marco:fichaSkinEquipada||null,
+      tableros:tableroEquipado||null,
+      marcos:fichaSkinEquipada||null,
       actualizado_en:new Date().toISOString()
     },{onConflict:"grupo,apodo"});
   }catch(e){}
@@ -2594,8 +2594,8 @@ async function rkCargarTabla(){
       cont.querySelectorAll(".rk-detalle").forEach(x=>x.remove());
       if(abierto)return;
       const det=document.createElement("div");det.className="rk-detalle";
-      det.innerHTML=(f.tablero?'<div class="rk-det-item"><img src="assets/tableros/'+rkEsc(f.tablero)+'.webp"><span>Tablero</span></div>':'<div class="rk-det-item"><span>Sin tablero equipado</span></div>')+
-        (f.marco?'<div class="rk-det-item"><img src="assets/fichas/'+rkEsc(f.marco)+'.webp"><span>Marco</span></div>':'<div class="rk-det-item"><span>Sin marco equipado</span></div>');
+      det.innerHTML=(f.tableros?'<div class="rk-det-item"><img src="assets/tableros/'+rkEsc(f.tableros)+'.webp"><span>Tablero</span></div>':'<div class="rk-det-item"><span>Sin tablero equipado</span></div>')+
+        (f.marcos?'<div class="rk-det-item"><img src="assets/fichas/'+rkEsc(f.marcos)+'.webp"><span>Marco</span></div>':'<div class="rk-det-item"><span>Sin marco equipado</span></div>');
       d.appendChild(det);
     };
     cont.appendChild(d);
