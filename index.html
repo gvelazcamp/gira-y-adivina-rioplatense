@@ -2156,6 +2156,7 @@ function tutOcultarSpotlight(){const ov=$("tutOverlay");if(ov)ov.remove();}
 let tutTimerPaso=-1,tutAvanzando=false;
 function tutorialTick(){
   if(!enTutorial||!S)return;
+  if(animando){tutOcultarSpotlight();return;}
   if(tutAvanzando)return;
   const actual=TUT_PASOS[tutPasoActual];
   if(actual&&actual.listo()){
