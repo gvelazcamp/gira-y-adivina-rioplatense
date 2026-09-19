@@ -1,4 +1,4 @@
-const CACHE_NAME = "gya-cache-v9";
+const CACHE_NAME = "gya-cache-v10";
 const APP_SHELL = ["./", "./index.html", "./manifest.json", "./icono-192.png", "./icono-512.png", "./assets/logo.webp"];
 
 self.addEventListener("install", (e) => {
