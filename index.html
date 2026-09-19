@@ -402,6 +402,7 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 .rk-info b{font-size:.9rem}
 .rk-info span{font-size:.72rem;color:#B49FCE}
 .rk-monedas{font-weight:800;color:var(--oro);font-size:.85rem;flex-shrink:0;white-space:nowrap}
+.rk-avatar{width:34px;height:34px;border-radius:50%;flex-shrink:0;object-fit:cover;border:1px solid #FFFFFF33;background:#00000055}
 .lg-check{font-size:1.3rem;color:#1DBF5F;flex-shrink:0}
 #xGlobalCerrar{display:none;position:fixed;top:14px;right:14px;z-index:60;width:38px;height:38px;
  border-radius:50%;background:#2A1A3CEE;color:var(--crema);border:1px solid #FFFFFF33;
@@ -2561,6 +2562,7 @@ async function empujarRanking(){
       ciudades_ganadas:ganados.size,
       mejor_racha:meta.mejorRachaVictorias||0,
       logros:logrosGanados.size,
+      avatar:perfil.avatar||null,
       actualizado_en:new Date().toISOString()
     },{onConflict:"grupo,apodo"});
   }catch(e){}
@@ -2580,6 +2582,7 @@ async function rkCargarTabla(){
     const d=document.createElement("div");
     d.className="rk-fila"+(f.apodo===rkPerfil.apodo?" yo":"");
     d.innerHTML='<div class="rk-puesto">'+(i+1)+'</div>'+
+      (f.avatar?'<img class="rk-avatar" src="assets/avatars/'+rkEsc(f.avatar)+'.webp" alt="">':'')+
       '<div class="rk-info"><b>'+rkEsc(f.apodo)+(f.apodo===rkPerfil.apodo?" (vos)":"")+'</b>'+
       '<span>🗺️ '+f.ciudades_ganadas+'/9 · 🏆 racha '+f.mejor_racha+' · 🏅 '+f.logros+'</span></div>'+
       '<div class="rk-monedas">🪙 '+f.monedas_totales+'</div>';
