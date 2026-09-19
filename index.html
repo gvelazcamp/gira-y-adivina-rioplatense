@@ -4823,6 +4823,7 @@ function finalizarPartidaPendiente(bonusGanado){
 }
 function terminarPorAbandono(idx){
   if(!S||S.fase==="fin")return;
+  const eraPartidaDiaria=esPartidaDiaria;
   if(esPartidaDiaria){esPartidaDiaria=false;pdGuardarEstado("jugada");objActualizarBadge();}
   S.finYa=true;S.fase="fin";pararReloj();limpiarBonus();
   $("modalResolver").classList.remove("ver");
@@ -4836,6 +4837,7 @@ function terminarPorAbandono(idx){
   $("fSalir").style.display=enMapa?"none":"block";
   if(enMapa)$("fMapa").textContent="Volver al mapa";
   mostrarFin(tit,txt);
+  $("fBoton").style.display=eraPartidaDiaria?"none":"";
 }
 function abandonarPartidaPropia(){
   if(modo==="guest"){enviar({a:"abandonar"});return;}
@@ -5374,6 +5376,7 @@ function revancha(){
   else continuar2();
 }
 function mostrarFin(tit,txt,selloImg){
+  $("fBoton").style.display="";
   $("capaResuelto").classList.remove("ver");
   $("capaResuelto").querySelectorAll(".papel").forEach(x=>x.remove());
   $("capaRueda").classList.remove("ver");
