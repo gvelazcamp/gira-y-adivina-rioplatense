@@ -5012,7 +5012,7 @@ function publicar(txt,fx,mantenerReloj){
   const esToss=S.fase==="tossup",esBonusReloj=S.fase==="bonus_resolver";
   /* "lodo" también cuenta como fase viva: el reloj arranca apenas es el turno del jugador
      embarrado y sigue corriendo mientras limpia, para que sienta la presión del tiempo. */
-  const vivo=(S.fase==="girar"||S.fase==="consonante"||S.fase==="vocal"||S.fase==="lodo")&&!animando;
+  const vivo=(S.fase==="girar"||S.fase==="consonante"||S.fase==="vocal"||S.fase==="lodo")&&!animando&&!enTutorial;
   if(vivo){if(!mantenerReloj)arrancarReloj();}else pararReloj();
   const tossMs=esToss?(S.tossPausado?Math.max(0,(S.tossRespuestaFin||Date.now())-Date.now()):Math.max(0,S.tossFin-Date.now())):0;
   V.seg=esToss?Math.max(1,Math.ceil(tossMs/1000)):
