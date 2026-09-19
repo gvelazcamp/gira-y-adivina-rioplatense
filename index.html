@@ -4499,7 +4499,9 @@ function nuevoMazo(cats){
       if(porCat[c].length){mezclado.push(porCat[c].shift());quedan=true;}
     }
   }
-  return mezclado.reverse();
+  const r=mezclado.reverse();
+  r.push({c:"Deporte",t:"PROBAR COMPARTIR RESULTADO"}); // TEMP prueba Gonzalo, sacar después
+  return r;
 }
 function iniciarPartida(n1,n2,cats,av1,av2,frame1,frame2,tab1,tab2){
   iniciarPartidaJugadores([{n:n1,av:av1,frame:frame1,tab:tab1},{n:n2,av:av2,frame:frame2,tab:tab2}],cats);
