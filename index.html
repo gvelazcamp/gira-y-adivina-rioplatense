@@ -1067,20 +1067,8 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <div class="tn-item tn-pack-img" style="background-image:url('assets/shop/pack-racha.webp')">
   <button class="tn-comprar" data-tipo="pack_racha" data-precio="1800" data-real-agregado="1" data-nombre="el Pack Racha">🪙 1800</button>
   </div>
-  <div class="tn-item tn-card">
-  <div class="tn-card-img" style="background-image:url('assets/tableros/fondo-lab-toxico.webp');aspect-ratio:1400/788;background-size:cover"></div>
-  <div class="tn-card-info"><b>Pack Mutante</b><span>Avatar Tóxico + Tablero Laboratorio Mutante + Marco Núcleo Mutante</span></div>
-  <button class="tn-comprar" data-tipo="pack_mutante" data-precio="5200" data-nombre="el Pack Mutante">🪙 5200</button>
-  </div>
-  <div class="tn-item tn-card">
-  <div class="tn-card-img" style="background-image:url('assets/tableros/fondo-synthwave.webp');aspect-ratio:1400/788;background-size:cover"></div>
-  <div class="tn-card-info"><b>Pack Neón</b><span>Avatar Diablita Neón + Tablero Synthwave 80s + Marco Reactor Neón</span></div>
-  <button class="tn-comprar" data-tipo="pack_neon" data-precio="5000" data-nombre="el Pack Neón">🪙 5000</button>
-  </div>
-  <div class="tn-item tn-card">
-  <div class="tn-card-img" style="background-image:url('assets/tableros/fondo-cementerio.webp');aspect-ratio:1400/788;background-size:cover"></div>
-  <div class="tn-card-info"><b>Pack Terror</b><span>Avatar Calabaza + Tablero Cementerio Gótico + Marco Ojo Mutante</span></div>
-  <button class="tn-comprar" data-tipo="pack_terror" data-precio="5200" data-nombre="el Pack Terror">🪙 5200</button>
+  <div class="tn-item tn-pack-img" style="background-image:url('assets/shop/pack-mutante.webp')">
+  <button class="tn-comprar" data-tipo="pack_mutante" data-precio="5200" data-real-agregado="1" data-nombre="el Pack Mutante">🪙 5200</button>
   </div>
   <h3 class="tn-subtitulo" data-fijo="1">⏳ Ofertas diarias</h3>
   <div class="tn-grid">
@@ -2197,8 +2185,6 @@ function tnPuedeComprar(tipo){
   if(tipo==="oferta_gratis")return gratisDiariaPuedeReclamar();
   if(tipo.indexOf("marco_")===0)return!framesComprados.has(tipo.slice(6));
   if(tipo==="pack_mutante")return!avataresComprados.has("avatar-27")||!tablerosComprados.has("fondo-lab-toxico")||!fichasComprados.has("ficha-lab-toxico-2");
-  if(tipo==="pack_neon")return!avataresComprados.has("avatar-24")||!tablerosComprados.has("fondo-synthwave")||!fichasComprados.has("ficha-lab-toxico-3");
-  if(tipo==="pack_terror")return!avataresComprados.has("avatar-29")||!tablerosComprados.has("fondo-cementerio")||!fichasComprados.has("ficha-monstruo");
   return true;
 }
 function tnRazonBloqueo(tipo){
@@ -2207,7 +2193,7 @@ function tnRazonBloqueo(tipo){
   if(tipo.indexOf("sobre_")===0)return sobreTextoEspera(tipo.slice(6));
   if(tipo==="oferta_gratis")return gratisDiariaTextoEspera();
   if(tipo.indexOf("marco_")===0)return"✅ Ya lo tenés";
-  if(tipo==="pack_mutante"||tipo==="pack_neon"||tipo==="pack_terror")return"✅ Ya lo tenés completo";
+  if(tipo==="pack_mutante")return"✅ Ya lo tenés completo";
   return"";
 }
 function otorgarSobreSorpresa(){
@@ -2391,14 +2377,6 @@ function tnEjecutarCompra(tipo,precio){
     avataresComprados.add("avatar-27");guardarAvataresComprados();equiparAvatarPremium("avatar-27");
     tablerosComprados.add("fondo-lab-toxico");guardarTablerosComprados();equiparTablero("fondo-lab-toxico");
     fichasComprados.add("ficha-lab-toxico-2");guardarFichasComprados();equiparFichaSkin("ficha-lab-toxico-2");
-  }else if(tipo==="pack_neon"){
-    avataresComprados.add("avatar-24");guardarAvataresComprados();equiparAvatarPremium("avatar-24");
-    tablerosComprados.add("fondo-synthwave");guardarTablerosComprados();equiparTablero("fondo-synthwave");
-    fichasComprados.add("ficha-lab-toxico-3");guardarFichasComprados();equiparFichaSkin("ficha-lab-toxico-3");
-  }else if(tipo==="pack_terror"){
-    avataresComprados.add("avatar-29");guardarAvataresComprados();equiparAvatarPremium("avatar-29");
-    tablerosComprados.add("fondo-cementerio");guardarTablerosComprados();equiparTablero("fondo-cementerio");
-    fichasComprados.add("ficha-monstruo");guardarFichasComprados();equiparFichaSkin("ficha-monstruo");
   }else if(tipo==="oferta_gratis"){
     meta.ultimaGratisDiaria=Date.now();sumarMonedas(80);
   }else if(tipo.indexOf("marco_")===0){
