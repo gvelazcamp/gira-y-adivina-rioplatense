@@ -6137,7 +6137,7 @@ async function generarCanvasCompartir(){
   }
   let fichaImg=null;
   if(fichaSkinEquipada){try{fichaImg=await csCargarImg("assets/fichas/"+fichaSkinEquipada+".webp");}catch(e){}}
-  if(S&&S.frase){csDibujarFrase(cx,mask(),px1,py1,pw1,pbh1,fichaImg);}
+  if(S&&S.frase){csDibujarFrase(cx,S.frase,px1,py1,pw1,pbh1,fichaImg);}
   if(perfil.avatar){
     try{
       const av=await csCargarImg("assets/avatars/"+perfil.avatar+".webp");
