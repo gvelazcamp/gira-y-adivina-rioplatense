@@ -1067,6 +1067,9 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <div class="tn-item tn-pack-img" style="background-image:url('assets/shop/pack-racha.webp')">
   <button class="tn-comprar" data-tipo="pack_racha" data-precio="1800" data-real-agregado="1" data-nombre="el Pack Racha">🪙 1800</button>
   </div>
+  <div class="tn-item tn-pack-img" style="background-image:url('assets/shop/pack-mutante.webp')">
+  <button class="tn-comprar" data-tipo="pack_mutante" data-precio="5200" data-real-agregado="1" data-nombre="el Pack Mutante">🪙 5200</button>
+  </div>
   <h3 class="tn-subtitulo" data-fijo="1">⏳ Ofertas diarias</h3>
   <div class="tn-grid">
   <div class="tn-item tn-card">
@@ -2181,6 +2184,7 @@ function tnPuedeComprar(tipo){
   if(tipo.indexOf("sobre_")===0)return sobrePuedeComprar(tipo.slice(6));
   if(tipo==="oferta_gratis")return gratisDiariaPuedeReclamar();
   if(tipo.indexOf("marco_")===0)return!framesComprados.has(tipo.slice(6));
+  if(tipo==="pack_mutante")return!avataresComprados.has("avatar-27")||!tablerosComprados.has("fondo-lab-toxico")||!fichasComprados.has("ficha-lab-toxico-2");
   return true;
 }
 function tnRazonBloqueo(tipo){
@@ -2189,6 +2193,7 @@ function tnRazonBloqueo(tipo){
   if(tipo.indexOf("sobre_")===0)return sobreTextoEspera(tipo.slice(6));
   if(tipo==="oferta_gratis")return gratisDiariaTextoEspera();
   if(tipo.indexOf("marco_")===0)return"✅ Ya lo tenés";
+  if(tipo==="pack_mutante")return"✅ Ya lo tenés completo";
   return"";
 }
 function otorgarSobreSorpresa(){
@@ -2368,6 +2373,10 @@ function tnEjecutarCompra(tipo,precio){
     meta.vidas=VIDAS_MAX;meta.proxima=0;meta.ultimaRuleta=0;
     const cual=otorgarSobreSorpresa();otorgarSobreSorpresa();
     colMostrarSobreConseguido(cual,true);
+  }else if(tipo==="pack_mutante"){
+    avataresComprados.add("avatar-27");guardarAvataresComprados();equiparAvatarPremium("avatar-27");
+    tablerosComprados.add("fondo-lab-toxico");guardarTablerosComprados();equiparTablero("fondo-lab-toxico");
+    fichasComprados.add("ficha-lab-toxico-2");guardarFichasComprados();equiparFichaSkin("ficha-lab-toxico-2");
   }else if(tipo==="oferta_gratis"){
     meta.ultimaGratisDiaria=Date.now();sumarMonedas(80);
   }else if(tipo.indexOf("marco_")===0){
