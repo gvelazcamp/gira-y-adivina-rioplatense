@@ -4268,14 +4268,27 @@ function renderAvatarGrid(){
 }
 function actualizarBotonPerfil(){
   $("perfilContinuar").disabled=!($("perfilNombre").value.trim()&&avatarElegido);
+  perfilActualizarSpotlight();
+}
+/* Reutiliza el mismo sistema de foquito oscurecido del tutorial (aunque
+   ya haya terminado) para guiar a quien todavía no tiene perfil: primero
+   señala el nombre, después el avatar, y por último el botón. */
+function perfilActualizarSpotlight(){
+  if($("pantPerfil").style.display!=="block")return;
+  if(!$("perfilNombre").value.trim()){tutMostrarSpotlight($("perfilNombre"),"Escribí tu nombre para poder jugar.");return;}
+  if(!avatarElegido){tutMostrarSpotlight($("avatarGrid"),"Ahora elegí tu avatar.");return;}
+  tutMostrarSpotlight($("perfilContinuar"),"¡Listo! Tocá para continuar.");
 }
 function abrirPerfil(callback){
   perfilCallback=callback||null;
   $("perfilNombre").value=perfil.nombre||$("miNombre").value.trim()||"";
   avatarElegido=perfil.avatar||null;
-  renderAvatarGrid();actualizarBotonPerfil();
   $("setup").style.display="none";$("mundo").style.display="none";$("pantDurazno").style.display="none";
   $("pantPerfil").style.display="block";
+  /* El foquito (perfilActualizarSpotlight, dentro de actualizarBotonPerfil)
+     necesita que la pantalla ya esté con display:block para poder medir
+     dónde está el campo — por eso esto va DESPUÉS de mostrarla. */
+  renderAvatarGrid();actualizarBotonPerfil();
 }
 $("perfilNombre").addEventListener("input",()=>{renderAvatarGrid();actualizarBotonPerfil();});
 $("perfilContinuar").onclick=()=>{
@@ -4283,6 +4296,7 @@ $("perfilContinuar").onclick=()=>{
   if(!n||!avatarElegido)return;
   if(avatarElegido===AVATAR_EXCLUSIVO.id&&n.toLowerCase()!==AVATAR_EXCLUSIVO.nombre)return;
   guardarPerfil(n,avatarElegido);
+  tutOcultarSpotlight();
   $("pantPerfil").style.display="none";
   if(perfilCallback){const cb=perfilCallback;perfilCallback=null;cb();}
   else $("setup").style.display="block";
@@ -4290,6 +4304,7 @@ $("perfilContinuar").onclick=()=>{
 $("cambiarPerfil").onclick=()=>abrirPerfil(null);
 $("perfilCerrar").onclick=()=>{
   perfilCallback=null;
+  tutOcultarSpotlight();
   $("pantPerfil").style.display="none";
   $("setup").style.display="block";
 };
