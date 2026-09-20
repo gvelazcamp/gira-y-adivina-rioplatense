@@ -2056,7 +2056,9 @@ const OBJETIVOS=[
   {id:"sobre",nombre:"Abrí 1 sobre de colección",icono:"🎁",meta:1,premio:70},
   {id:"coleccion",nombre:"Completá una colección",icono:"📚",meta:1,premio:150},
   {id:"rachaPartidas",nombre:"Ganá 4 partidas seguidas",icono:"🔥",meta:4,premio:100},
-  {id:"rankingTop",nombre:"Entrá al Top 3 del ranking de amigos",icono:"🥉",meta:1,premio:150}
+  {id:"rankingUnirse",nombre:"Unite al ranking de amigos",icono:"🤝",meta:1,premio:50},
+  {id:"rankingTop",nombre:"Entrá al Top 3 del ranking de amigos",icono:"🥉",meta:1,premio:150},
+  {id:"rankingTop1",nombre:"Llegá al Top 1 del ranking de amigos",icono:"🥇",meta:1,premio:200}
 ];
 const OBJ_PREMIO_TODOS=200;
 function objVacio(){return{fecha:fechaHoy(),partidas:0,giros:0,vocales:0,poderes:0,victorias:0,reclamados:[]};}
@@ -2830,6 +2832,7 @@ function rkEsc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;
 async function empujarRanking(){
   const rkPerfil=cargarRkPerfil(),supa=obtenerSupa();
   if(!rkPerfil||!supa)return;
+  objMax("rankingUnirse",1);
   try{
     await supa.from("gya_ranking").upsert({
       grupo:RK_GRUPO,apodo:rkPerfil.apodo,
@@ -2881,6 +2884,10 @@ async function rkCargarTabla(){
   if(error){$("rkEstado").textContent="No se pudo cargar. Revisá tu conexión.";return;}
   const miPos=(data||[]).findIndex(f=>f.apodo===rkPerfil.apodo);
   if(miPos>=0&&miPos<3&&!(objObtenerHoy().rankingTop||0))objSumar("rankingTop",1);
+  /* Guardado con !(...) para que sume una sola vez por día aunque en el
+     medio bajes y vuelvas a subir al 1er puesto varias veces (no hay que
+     festejarlo cada vez que se re-entra al Top 1 el mismo día). */
+  if(miPos===0&&!(objObtenerHoy().rankingTop1||0))objSumar("rankingTop1",1);
   (data||[]).forEach((f,i)=>{
     const d=document.createElement("div");
     d.className="rk-fila"+(f.apodo===rkPerfil.apodo?" yo":"");
