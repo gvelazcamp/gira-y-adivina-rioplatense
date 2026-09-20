@@ -4275,7 +4275,7 @@ function actualizarBotonPerfil(){
    señala el nombre, después el avatar, y por último el botón. */
 function perfilActualizarSpotlight(){
   if($("pantPerfil").style.display!=="block")return;
-  if(!$("perfilNombre").value.trim()){tutMostrarSpotlight($("perfilNombre"),"Escribí tu nombre para poder jugar.");return;}
+  if(!$("perfilNombre").value.trim()){tutMostrarSpotlight($("perfilNombre").closest(".campo")||$("perfilNombre"),"Escribí tu nombre para poder jugar.");return;}
   if(!avatarElegido){tutMostrarSpotlight($("avatarGrid"),"Ahora elegí tu avatar.");return;}
   tutMostrarSpotlight($("perfilContinuar"),"¡Listo! Tocá para continuar.");
 }
