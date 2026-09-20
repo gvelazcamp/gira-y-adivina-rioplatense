@@ -2927,8 +2927,13 @@ async function usrCargarLista(){
   if(!supa){$("usrEstado").textContent="No se pudo cargar. Revisá tu conexión.";return;}
   let data,error;
   try{
-    const r=await supa.from("gya_ranking").select("*").eq("grupo",USR_GRUPO).order("apodo",{ascending:true});
-    data=(r.data||[]).filter(f=>!RK_APODOS_OCULTOS.includes(String(f.apodo||"").trim().toLowerCase()));
+    const r=await supa.from("gya_ranking").select("*").in("grupo",[USR_GRUPO,RK_GRUPO]).order("apodo",{ascending:true});
+    const vistos=new Set();
+    data=(r.data||[]).filter(f=>{
+      const clave=String(f.apodo||"").trim().toLowerCase();
+      if(!clave||RK_APODOS_OCULTOS.includes(clave)||vistos.has(clave))return false;
+      vistos.add(clave);return true;
+    });
     error=r.error;
   }catch(e){error=e;}
   if(error){$("usrEstado").textContent="No se pudo cargar. Revisá tu conexión.";return;}
