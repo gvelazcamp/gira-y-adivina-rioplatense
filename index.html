@@ -1652,7 +1652,7 @@ function tk(fn){
 }
 const norm=s=>s.toUpperCase().normalize("NFD").replace(/[\u0300-\u0304\u0306-\u036f]/g,"").replace(/\s+/g," ").trim();
 
-let modo="local", miJug=0, mq=null, sala="", rondasElegidas=3, holaTimer=null, serie=[0,0], arranca=0, ultGanador=-1, racha=0, relojID=null;
+let modo="local", miJug=0, mq=null, sala="", rondasElegidas=3, holaTimer=null, serie=[0,0], arranca=0, ultGanador=-1, racha=0, relojID=null, relojOculto=null;
 let familiaJugadores=[],tvPartidaIniciada=false,tvMiIndex=-1;
 let tvId=(()=>{try{let x=sessionStorage.getItem("larueda_tv_id");if(!x){x="p"+Math.random().toString(36).slice(2,10);sessionStorage.setItem("larueda_tv_id",x);}return x;}catch(e){return "p"+Math.random().toString(36).slice(2,10);}})();
 let S=null, V={mask:"",cat:"",usadas:[],jug:[{n:"",tot:0,ronda:0},{n:"",tot:0,ronda:0}],turno:0,fase:"girar",hayVoc:true,cons:1,aviso:""};
@@ -1781,7 +1781,17 @@ actualizarBotonMusica();
 ["pointerdown","touchend","click","keydown"].forEach(ev=>
   document.addEventListener(ev,()=>sincronizarMusica(),{once:true,passive:true}));
 document.addEventListener("visibilitychange",()=>{
-  if(document.visibilityState==="visible")sincronizarMusica();else detenerMusica();
+  if(document.visibilityState==="visible"){
+    sincronizarMusica();
+    /* El reloj de la ronda usa Date.now(), que sigue corriendo aunque el
+       celular esté bloqueado o la app en segundo plano. Sin este ajuste,
+       al volver el tiempo ya estaba "cumplido" y el turno pasaba solo
+       (el bot jugaba en silencio mientras el jugador no miraba). */
+    if(relojOculto!=null&&S&&S.tFin){S.tFin=Date.now()+relojOculto;if(typeof V!=="undefined"&&V)V.seg=Math.max(1,Math.round(relojOculto/1000));relojOculto=null;if(typeof pintarTodo==="function")pintarTodo();}
+  }else{
+    detenerMusica();
+    if(relojID&&S&&S.tFin)relojOculto=Math.max(0,S.tFin-Date.now());
+  }
 });
 /* Los videos de fondo (Durazno, Montevideo, etc.) traen loop nativo,
    pero el navegador reinicia recién cuando llega justo al último
