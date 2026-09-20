@@ -4276,7 +4276,9 @@ function actualizarBotonPerfil(){
 function perfilActualizarSpotlight(){
   if($("pantPerfil").style.display!=="block")return;
   if(!$("perfilNombre").value.trim()){tutMostrarSpotlight($("perfilNombre").closest(".campo")||$("perfilNombre"),"Escribí tu nombre para poder jugar.");return;}
-  if(!avatarElegido){tutMostrarSpotlight($("avatarGrid"),"Ahora elegí tu avatar.");return;}
+  /* El avatar es libre elección — no hace falta oscurecer y forzar la
+     mirada a uno en particular, solo un aviso sin oscurecer. */
+  if(!avatarElegido){tutMostrarSpotlight($("avatarGrid"),"Ahora elegí tu avatar.",true);return;}
   tutMostrarSpotlight($("perfilContinuar"),"¡Listo! Tocá para continuar.");
 }
 function abrirPerfil(callback){
