@@ -2828,6 +2828,29 @@ async function empujarRanking(){
     },{onConflict:"grupo,apodo"});
   }catch(e){}
 }
+/* Registro de "todos los usuarios" (distinto del Ranking, que es opt-in
+   con apodo propio): reusa la misma tabla gya_ranking con otro grupo, y
+   se llama cada vez que hay un perfil (nombre+avatar) guardado, así con
+   el tiempo termina reflejando a todo el que jugó, no solo a quien entró
+   al Ranking. */
+const USR_GRUPO="usuarios";
+async function empujarUsuario(){
+  const supa=obtenerSupa();
+  if(!perfilExiste()||!supa)return;
+  try{
+    await supa.from("gya_ranking").upsert({
+      grupo:USR_GRUPO,apodo:perfil.nombre,
+      monedas_totales:meta.monedasGanadasTotal||0,
+      ciudades_ganadas:ganados.size,
+      mejor_racha:meta.mejorRachaVictorias||0,
+      logros:logrosGanados.size,
+      avatar:perfil.avatar||null,
+      tableros:tableroEquipado||null,
+      marcos:fichaSkinEquipada||null,
+      actualizado_en:new Date().toISOString()
+    },{onConflict:"grupo,apodo"});
+  }catch(e){}
+}
 async function rkCargarTabla(){
   const rkPerfil=cargarRkPerfil(),supa=obtenerSupa();
   if(!rkPerfil||!supa)return;
@@ -2904,7 +2927,7 @@ async function usrCargarLista(){
   if(!supa){$("usrEstado").textContent="No se pudo cargar. Revisá tu conexión.";return;}
   let data,error;
   try{
-    const r=await supa.from("gya_ranking").select("*").eq("grupo",RK_GRUPO).order("apodo",{ascending:true});
+    const r=await supa.from("gya_ranking").select("*").eq("grupo",USR_GRUPO).order("apodo",{ascending:true});
     data=(r.data||[]).filter(f=>!RK_APODOS_OCULTOS.includes(String(f.apodo||"").trim().toLowerCase()));
     error=r.error;
   }catch(e){error=e;}
@@ -4368,6 +4391,7 @@ function guardarPerfil(nombre,avatar){
   $("miNombre").value=nombre;
   actualizarChipPerfil();
   logroDesbloquear("avatar");
+  empujarUsuario();
 }
 let avatarElegido=null,perfilCallback=null,previsualizandoPerfil=false;
 function listaAvataresDisponibles(){
@@ -4439,6 +4463,7 @@ $("perfilCerrar").onclick=()=>{
   $("setup").style.display="block";
 };
 actualizarChipPerfil();
+if(perfilExiste())empujarUsuario();
 mundoActualizarHud();
 chequearRachaDiaria();
 if(perfilExiste())$("miNombre").value=perfil.nombre;
