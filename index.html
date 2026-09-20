@@ -4815,6 +4815,14 @@ function arrancarIntervaloToss(){
   },120);
 }
 function iniciarTossUp(f){
+  /* El reloj normal (relojID/S.tFin) es de la ronda anterior y no se
+     detiene solo al pasar a Toss-Up (que tiene su propio reloj
+     independiente: tossTimer/S.tossFin). Si no se para acá, sigue
+     corriendo de fondo y, cuando se vence, dispara el "pasa el turno"
+     normal en medio de la Prueba de Velocidad — pisa S.fase a "girar"
+     dejando el cartel diciendo "Prueba de velocidad" pero la ronda
+     jugándose como una ronda normal. */
+  pararReloj();
   S.fase="tossup";S.tossPos=new Set();S.tossBloq=Array(S.jug.length).fill(false);
   S.tossPausado=false;S.tossRespondedor=null;S.tossRestante=TOSS_DURACION;S.tossHastaProx=TOSS_PASO;
   S.tossOrden=[...S.frase].map((c,i)=>c===" "?null:i).filter(i=>i!==null).sort(()=>Math.random()-.5);
@@ -5444,6 +5452,10 @@ function hostResolver(txt,jugadorToss){
   }
 }
 function cambiarTurno(){
+  /* Defensa extra: esta función es solo para rondas normales. Si por algún
+     timer atrasado llega a dispararse durante una Toss-Up (u otra fase que
+     no pasa turno así), no tiene que pisar esa fase. */
+  if(!S||S.fase==="tossup"||S.fase==="toss_fin"||S.fase==="bonus_elegir"||S.fase==="bonus_resolver")return;
   S.turno=(S.turno+1)%S.jug.length;S.fase="girar";S.valor=0;S.doble=false;
   S.jug[S.turno].poderUsadoTurno=false;
   if(S.jug[S.turno].lodo){
