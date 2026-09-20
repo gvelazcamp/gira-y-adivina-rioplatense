@@ -6790,7 +6790,21 @@ function ptDibujarFrameChroma(){
     for(let x=0;x<canvas.width;x++)d[(x*4)+3]=0;
     ctx.putImageData(frame,0,0);
   }
-  ptRafId=requestAnimationFrame(ptDibujarFrameChroma);
+  ptProgramarSiguienteFrame();
+}
+/* requestAnimationFrame dispara ~60 veces por segundo sin importar si el
+   video ya mostró un frame nuevo o no — en un celular de gama media, repetir
+   el procesamiento por píxel (getImageData/putImageData) de más se siente
+   como que el video "traba" en vez de fluir. requestVideoFrameCallback
+   (cuando está disponible) redibuja justo cuando hay un frame nuevo del
+   video, ni más ni menos. */
+function ptProgramarSiguienteFrame(){
+  const video=$("ptVideo");
+  if(video&&typeof video.requestVideoFrameCallback==="function"){
+    ptRafId=video.requestVideoFrameCallback(ptDibujarFrameChroma);
+  }else{
+    ptRafId=requestAnimationFrame(ptDibujarFrameChroma);
+  }
 }
 function ptIniciarChromaKey(){
   const video=$("ptVideo");
@@ -6800,9 +6814,12 @@ function ptIniciarChromaKey(){
   if(!ptRafId)ptDibujarFrameChroma();
 }
 function ptDetenerChromaKey(){
-  if(ptRafId)cancelAnimationFrame(ptRafId);
-  ptRafId=null;
   const video=$("ptVideo");
+  if(ptRafId){
+    if(video&&typeof video.cancelVideoFrameCallback==="function")video.cancelVideoFrameCallback(ptRafId);
+    else cancelAnimationFrame(ptRafId);
+  }
+  ptRafId=null;
   if(video)video.pause();
 }
 
