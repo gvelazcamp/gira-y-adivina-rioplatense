@@ -2472,7 +2472,7 @@ function tnPuedeComprar(tipo){
   if(tipo==="oferta_gratis")return gratisDiariaPuedeReclamar();
   if(tipo.indexOf("marco_")===0)return!framesComprados.has(tipo.slice(6));
   if(tipo==="pack_mutante")return!avataresComprados.has("avatar-27")||!tablerosComprados.has("fondo-lab-toxico")||!fichasComprados.has("ficha-lab-toxico-2");
-  if(tipo==="pack_ovni")return!avataresComprados.has("avatar-31")||!framesComprados.has("ovni")||!tablerosComprados.has("fondo-ovni");
+  if(tipo==="pack_ovni")return!avataresComprados.has("avatar-31")||!fichasComprados.has("ficha-ovni")||!tablerosComprados.has("fondo-ovni");
   return true;
 }
 function tnRazonBloqueo(tipo){
@@ -2690,10 +2690,10 @@ function tnEjecutarCompra(tipo,precio){
     ]);
   }else if(tipo==="pack_ovni"){
     avataresComprados.add("avatar-31");guardarAvataresComprados();equiparAvatarPremium("avatar-31");
-    framesComprados.add("ovni");guardarFramesComprados();equiparMarco("ovni");
+    fichasComprados.add("ficha-ovni");guardarFichasComprados();equiparFichaSkin("ficha-ovni");
     tablerosComprados.add("fondo-ovni");guardarTablerosComprados();equiparTablero("fondo-ovni");
     mostrarPackItems([
-      {texto:"Marco",html:packPreviewMarco("ovni","avatar-31")},
+      {texto:"Marco",html:packPreviewFicha("ficha-ovni")},
       {texto:"Avatar",html:packPreviewAvatar("avatar-31")},
       {texto:"Tablero",html:packPreviewTablero("fondo-ovni")}
     ]);
@@ -3053,8 +3053,7 @@ const FRAMES=[
   {id:"electrico",nombre:"Eléctrico",desc:"Energía pura a tu alrededor.",precio:2750},
   {id:"diamante",nombre:"Diamante",desc:"El brillo más exclusivo.",precio:3000},
   {id:"real",nombre:"Real",desc:"Un marco digno de la corona.",precio:3750},
-  {id:"celestial",nombre:"Celestial",desc:"Estrellas que te acompañan.",precio:5000,basico:true},
-  {id:"ovni",nombre:"OVNI",desc:"Abducido por la moda espacial.",precio:5500}
+  {id:"celestial",nombre:"Celestial",desc:"Estrellas que te acompañan.",precio:5000,basico:true}
 ];
 function cargarFramesComprados(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_frames_owned")||"[]"));}catch(e){return new Set();}
@@ -6058,7 +6057,8 @@ const FICHAS_SKIN=[
   {id:"ficha-monstruo",nombre:"Ojo Mutante",precio:1750,nuevo:true},
   {id:"ficha-oro",nombre:"Joya Real",precio:2250,nuevo:true},
   {id:"ficha-alien",nombre:"Nave Alien",precio:1875,nuevo:true},
-  {id:"ficha-rayo",nombre:"Tormenta Eléctrica",precio:1750,nuevo:true}
+  {id:"ficha-rayo",nombre:"Tormenta Eléctrica",precio:1750,nuevo:true},
+  {id:"ficha-ovni",nombre:"Abducción",precio:2250,nuevo:true}
 ];
 function cargarFichasComprados(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_fichas_owned")||"[]"));}catch(e){return new Set();}
