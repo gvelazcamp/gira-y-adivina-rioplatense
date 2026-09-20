@@ -4463,7 +4463,10 @@ $("perfilCerrar").onclick=()=>{
   $("setup").style.display="block";
 };
 actualizarChipPerfil();
-if(perfilExiste())empujarUsuario();
+/* window.supabase todavía no existe acá: este script corre sincrónico
+   durante el parseo, antes de que termine de cargar supabase.js (que es
+   "defer"). Por eso el registro de usuario espera al evento load. */
+window.addEventListener("load",()=>{if(perfilExiste())empujarUsuario();});
 mundoActualizarHud();
 chequearRachaDiaria();
 if(perfilExiste())$("miNombre").value=perfil.nombre;
