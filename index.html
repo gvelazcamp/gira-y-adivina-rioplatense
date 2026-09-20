@@ -1425,6 +1425,12 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="no" id="cerrarInstalarIOS" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:14px">Entendido</button>
 </div></div>
 
+<div class="capa" id="modalPackItem"><div class="caja" style="text-align:center;cursor:pointer" id="packItemCaja">
+  <div id="packItemIcono" style="font-size:5.5rem;margin:26px 0 6px;animation:selloGanado .5s cubic-bezier(.34,1.56,.64,1)"></div>
+  <h2 id="packItemTexto" style="margin-bottom:0"></h2>
+  <p style="color:#C9B8DE;margin-top:22px;font-weight:700">Tocá para continuar</p>
+</div></div>
+
 <div class="capa" id="modalPackRecibido"><div class="caja" style="text-align:center">
   <h2>🎉 ¡RECIBISTE!</h2>
   <div id="packRecibidoGrid" style="display:flex;justify-content:center;gap:22px;flex-wrap:wrap;margin:22px 0"></div>
@@ -2612,20 +2618,20 @@ function tnEjecutarCompra(tipo,precio){
   }else if(tipo==="pack_explorador"){
     recuperarVida();sumarMonedas(300);
     const cual=otorgarSobreSorpresa();
-    mostrarPackRecibido([
+    mostrarPackItems([
       {icono:"❤️",texto:"+1 vida"},{icono:"🪙",texto:"+300"},{icono:"🎁",texto:"+1 sobre"}
     ],()=>colMostrarSobreConseguido(cual,true));
   }else if(tipo==="pack_racha"){
     meta.vidas=VIDAS_MAX;meta.proxima=0;meta.ultimaRuleta=0;
     const cual1=otorgarSobreSorpresa();otorgarSobreSorpresa();
-    mostrarPackRecibido([
+    mostrarPackItems([
       {icono:"❤️",texto:"Vidas llenas"},{icono:"🎁",texto:"+2 sobres"}
     ],()=>colMostrarSobreConseguido(cual1,true));
   }else if(tipo==="pack_mutante"){
     avataresComprados.add("avatar-27");guardarAvataresComprados();equiparAvatarPremium("avatar-27");
     tablerosComprados.add("fondo-lab-toxico");guardarTablerosComprados();equiparTablero("fondo-lab-toxico");
     fichasComprados.add("ficha-lab-toxico-2");guardarFichasComprados();equiparFichaSkin("ficha-lab-toxico-2");
-    mostrarPackRecibido([
+    mostrarPackItems([
       {icono:"🖼️",texto:"Marco"},{icono:"👤",texto:"Avatar"},{icono:"🗺️",texto:"Tablero"}
     ]);
   }else if(tipo==="oferta_gratis"){
@@ -3343,6 +3349,22 @@ $("packRecibidoOk").onclick=()=>{
   $("modalPackRecibido").classList.remove("ver");
   if(packRecibidoCallback){const cb=packRecibidoCallback;packRecibidoCallback=null;cb();}
 };
+/* Primero cada cosa se muestra sola, grande, una atrás de la otra
+   (tocando se avanza a la siguiente) — y recién al final aparece el
+   resumen con todo junto, como pediste viendo el otro juego. */
+function mostrarPackItems(items,callback){
+  let i=0;
+  const siguiente=()=>{
+    if(i>=items.length){$("modalPackItem").classList.remove("ver");mostrarPackRecibido(items,callback);return;}
+    const it=items[i++];
+    $("packItemIcono").textContent=it.icono;
+    $("packItemTexto").textContent=it.texto;
+    $("modalPackItem").classList.add("ver");
+    bip(700,.2,"sine",.08);
+  };
+  $("packItemCaja").onclick=siguiente;
+  siguiente();
+}
 const MENUS_CON_X={capaRuleta:"rwCerrar",capaTienda:"tnCerrar",capaLogros:"lgCerrar",
   capaObjetivos:"objCerrar",capaRecords:"recCerrar",capaRanking:"rkCerrar",capaMas:"masCerrar",
   capaTutorial:"tutoCerrar",capaSalaTVMenu:"salaTVMenuCerrar",capaJugarOnlineMenu:"jugarOnlineMenuCerrar",
