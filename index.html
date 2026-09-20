@@ -935,9 +935,18 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
 <div class="capa" id="capaSocial">
   <div class="caja" style="max-width:420px;padding:16px">
     <img src="assets/social/promo-redes.webp" alt="Girá y Adiviná Rioplatense en redes" style="width:100%;border-radius:14px;display:block;margin-bottom:14px">
+    <button class="btn-grande" id="socialContinuar" style="display:none;margin-bottom:10px">Continuar</button>
     <button class="no" id="socialCerrar" style="width:100%;border-radius:12px;padding:13px;font-weight:700">Cerrar</button>
   </div>
 </div>
+
+<div class="capa" id="capaUsuarios"><div class="caja rk-caja">
+  <h2>👥 Usuarios</h2>
+  <p class="sub" style="margin:6px 0 14px">Todos los que jugaron y activaron el ranking.</p>
+  <div class="rk-lista" id="usrLista"></div>
+  <p class="estado" id="usrEstado" style="margin-top:8px"></p>
+  <button class="no" id="usrCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
+</div></div>
 
 <section id="pantPerfil">
   <h1 class="titulo" style="font-size:2.1rem">ELEGÍ TU JUGADOR</h1>
@@ -2877,8 +2886,44 @@ function rkAbrir(){
   if(rkPerfil&&rkPerfil.apodo)rkMostrarTabla();else rkMostrarSetup();
 }
 $("bRanking").onclick=rkAbrir;
-$("bSocial").onclick=()=>$("capaSocial").classList.add("ver");
+/* Prototipo en prueba, solo visible para Gonzalo: botón "Continuar" en el
+   modal de Social que lleva a un listado de todos los usuarios (reusa la
+   tabla gya_ranking, ya usada por el Ranking, pero mostrada como listado
+   simple de jugadores en vez de tabla de puntajes). */
+function esGonzalo(){try{return(perfil&&perfil.nombre||"").trim().toLowerCase()==="gonzalo";}catch(e){return false;}}
+$("bSocial").onclick=()=>{
+  $("socialContinuar").style.display=esGonzalo()?"block":"none";
+  $("capaSocial").classList.add("ver");
+};
 $("socialCerrar").onclick=()=>$("capaSocial").classList.remove("ver");
+$("socialContinuar").onclick=()=>{$("capaSocial").classList.remove("ver");usrAbrir();};
+async function usrCargarLista(){
+  const supa=obtenerSupa();
+  $("usrEstado").textContent="Cargando…";
+  const cont=$("usrLista");cont.innerHTML="";
+  if(!supa){$("usrEstado").textContent="No se pudo cargar. Revisá tu conexión.";return;}
+  let data,error;
+  try{
+    const r=await supa.from("gya_ranking").select("*").eq("grupo",RK_GRUPO).order("apodo",{ascending:true});
+    data=(r.data||[]).filter(f=>!RK_APODOS_OCULTOS.includes(String(f.apodo||"").trim().toLowerCase()));
+    error=r.error;
+  }catch(e){error=e;}
+  if(error){$("usrEstado").textContent="No se pudo cargar. Revisá tu conexión.";return;}
+  (data||[]).forEach(f=>{
+    const d=document.createElement("div");
+    d.className="rk-fila";
+    d.innerHTML=(f.avatar?'<img class="rk-avatar" src="assets/avatars/'+rkEsc(f.avatar)+'.webp" alt="">':'')+
+      '<div class="rk-info"><b>'+rkEsc(f.apodo)+'</b>'+
+      '<span>🗺️ '+f.ciudades_ganadas+'/9 · 🏆 racha '+f.mejor_racha+' · 🏅 '+f.logros+'</span></div>';
+    cont.appendChild(d);
+  });
+  $("usrEstado").textContent=(data&&data.length)?"":"Todavía no hay usuarios.";
+}
+function usrAbrir(){
+  $("capaUsuarios").classList.add("ver");
+  usrCargarLista();
+}
+$("usrCerrar").onclick=()=>$("capaUsuarios").classList.remove("ver");
 $("rkCerrar").onclick=()=>$("capaRanking").classList.remove("ver");
 $("rkCrear").onclick=async()=>{
   const apodo=$("rkApodo").value.trim().slice(0,14);
@@ -3380,7 +3425,7 @@ function mostrarPackItems(items,callback){
 const MENUS_CON_X={capaRuleta:"rwCerrar",capaTienda:"tnCerrar",capaLogros:"lgCerrar",
   capaObjetivos:"objCerrar",capaRecords:"recCerrar",capaRanking:"rkCerrar",capaMas:"masCerrar",
   capaTutorial:"tutoCerrar",capaSalaTVMenu:"salaTVMenuCerrar",capaJugarOnlineMenu:"jugarOnlineMenuCerrar",
-  capaModoOnline:"modoOnlineCerrar",capaSeccionTienda:"seccionTiendaCerrar"};
+  capaModoOnline:"modoOnlineCerrar",capaSeccionTienda:"seccionTiendaCerrar",capaUsuarios:"usrCerrar"};
 $("bMasOpciones").onclick=()=>$("capaMas").classList.add("ver");
 $("bTutorial").onclick=()=>$("capaTutorial").classList.add("ver");
 $("tutoCerrar").onclick=()=>$("capaTutorial").classList.remove("ver");
