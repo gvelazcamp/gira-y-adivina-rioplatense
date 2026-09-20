@@ -4728,12 +4728,23 @@ let vistas=(()=>{try{return new Set(JSON.parse(localStorage.getItem("larueda_vis
 const guardarVistas=()=>{try{localStorage.setItem("larueda_vistas",JSON.stringify([...vistas]));}catch(e){}};
 function nuevoMazo(cats){
   const base=cats&&cats.length?FRASES.filter(f=>cats.includes(f.c)):FRASES;
-  let d=base.filter(f=>!vistas.has(f.t));
-  if(!d.length)d=[...base];
   const porCat={};
-  d.forEach(f=>{(porCat[f.c]=porCat[f.c]||[]).push(f);});
+  base.forEach(f=>{(porCat[f.c]=porCat[f.c]||[]).push(f);});
+  /* El filtro de "ya vistas" tiene que aplicarse POR categoría, no sobre
+     todo el pool junto: si se filtra global y una categoría se quedó con
+     menos frases frescas que la otra (por ejemplo porque se jugó mucho una
+     ciudad y esa categoría se usa menos en otras), esa categoría queda casi
+     vacía y el resto del mazo termina copado por la otra — se pierde la
+     alternancia pareja entre categorías. Por categoría: primero las no
+     vistas, y solo si esa categoría se queda corta, se completa con las ya
+     vistas de esa MISMA categoría (nunca con las de otra). */
+  Object.keys(porCat).forEach(c=>{
+    const lista=porCat[c];
+    const noVistas=lista.filter(f=>!vistas.has(f.t)).sort(()=>Math.random()-.5);
+    const vistasCat=lista.filter(f=>vistas.has(f.t)).sort(()=>Math.random()-.5);
+    porCat[c]=[...noVistas,...vistasCat];
+  });
   const categorias=Object.keys(porCat).sort(()=>Math.random()-.5);
-  categorias.forEach(c=>porCat[c].sort(()=>Math.random()-.5));
   const mezclado=[];
   let quedan=true;
   while(quedan){
