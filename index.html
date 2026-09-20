@@ -2844,7 +2844,7 @@ async function empujarRanking(){
       tableros:tableroEquipado||null,
       marcos:fichaSkinEquipada||null,
       tableros_todos:[...tablerosComprados],
-      marcos_todos:[...framesComprados],
+      marcos_todos:[...fichasComprados],
       avatares_todos:[...avataresComprados],
       actualizado_en:new Date().toISOString()
     },{onConflict:"grupo,apodo"});
@@ -2901,25 +2901,18 @@ async function rkCargarTabla(){
       '<div class="rk-monedas">🪙 '+f.monedas_totales+'</div>';
     d.onclick=()=>{
       $("seccionTiendaTitulo").textContent=f.apodo+(f.apodo===rkPerfil.apodo?" (vos)":"");
-      const seccion=(titulo,ids,lista,armarPreview)=>{
-        let html='<h3 class="tn-subtitulo" style="grid-column:1/-1;margin-top:10px">'+titulo+'</h3>';
-        const vistos=(Array.isArray(ids)?ids:[]).filter(Boolean);
-        if(!vistos.length)return html+'<p class="sub" style="grid-column:1/-1;margin:0 0 4px">Todavía no compró nada acá.</p>';
-        return html+vistos.map(id=>{
-          const info=lista.find(x=>x.id===id);
-          return '<div class="frame-card">'+armarPreview(id)+'<b>'+rkEsc(info?info.nombre:id)+'</b></div>';
-        }).join("");
-      };
-      $("seccionTiendaContenido").innerHTML=
-        seccion("🗺️ Tableros",f.tableros_todos,MARCOS_TABLERO,id=>
+      const tarjetas=(ids,lista,armarPreview)=>(Array.isArray(ids)?ids:[]).filter(Boolean).map(id=>{
+        const info=lista.find(x=>x.id===id);
+        return '<div class="frame-card">'+armarPreview(id)+'<b>'+rkEsc(info?info.nombre:id)+'</b></div>';
+      }).join("");
+      const html=
+        tarjetas(f.tableros_todos,MARCOS_TABLERO,id=>
           '<span class="tablero-preview" style="background-image:url(\'assets/tableros/'+rkEsc(id)+'.webp\')"></span>')+
-        seccion("🖼️ Marcos",f.marcos_todos,FRAMES,id=>
-          '<span class="avatar-wrap frame-preview">'+
-            (f.avatar?'<img class="avatar-img" src="assets/avatars/'+rkEsc(f.avatar)+'.webp" alt="">':'')+
-            '<img class="avatar-frame ver" src="assets/frames/frame-'+rkEsc(id)+'.png" alt="">'+
-          '</span>')+
-        seccion("🧑 Avatares",f.avatares_todos,AVATARES_PREMIUM,id=>
+        tarjetas(f.marcos_todos,FICHAS_SKIN,id=>
+          '<span class="ficha-skin-preview" style="background-image:url(\'assets/fichas/'+rkEsc(id)+'.webp\')"></span>')+
+        tarjetas(f.avatares_todos,AVATARES_PREMIUM,id=>
           '<span class="avatar-wrap frame-preview"><img class="avatar-img" src="assets/avatars/'+rkEsc(id)+'.webp" alt=""></span>');
+      $("seccionTiendaContenido").innerHTML=html||'<p class="sub" style="grid-column:1/-1">Todavía no compró nada.</p>';
       $("capaSeccionTienda").classList.add("ver");
     };
     cont.appendChild(d);
