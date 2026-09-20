@@ -2225,11 +2225,7 @@ function finalizarTutorial(){
   $("fBoton").style.display="none";
   $("fCompartir").style.display="none";
 }
-/* Pedido explícito de Gonzalo para revisar el tutorial y el video promo
-   en su propia cuenta las veces que quiera — sacar apenas lo confirme. */
-function esGonzalo(){try{return(perfil&&perfil.nombre||"").trim().toLowerCase()==="gonzalo";}catch(e){return false;}}
 function tutEsPrimeraVez(){
-  if(esGonzalo())return true;
   if(perfilExiste())return false;
   try{return localStorage.getItem("gya_bienvenida_vista")!=="1";}catch(e){return true;}
 }
@@ -6780,7 +6776,7 @@ function pdChequearAutoPopup(){
   else ptChequearAutoPopup();
 }
 function ptChequearAutoPopup(){
-  if(esGonzalo()||(ptEstadoHoy()==="pendiente"&&!esMismoDiaDeAlta()))setTimeout(()=>{$("capaPromoTienda").classList.add("ver");ptIniciarChromaKey();},2800);
+  if(ptEstadoHoy()==="pendiente"&&!esMismoDiaDeAlta())setTimeout(()=>{$("capaPromoTienda").classList.add("ver");ptIniciarChromaKey();},2800);
 }
 let ptRafId=null;
 function ptDibujarFrameChroma(){
