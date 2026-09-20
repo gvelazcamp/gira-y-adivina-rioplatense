@@ -4572,7 +4572,10 @@ function renderTVControl(){
   });
 }
 
-$("bTV").onclick=()=>$("capaSalaTVMenu").classList.add("ver");
+$("bTV").onclick=()=>{
+  if(!perfilExiste()){abrirPerfil(()=>$("capaSalaTVMenu").classList.add("ver"));return;}
+  $("capaSalaTVMenu").classList.add("ver");
+};
 $("salaTVMenuCerrar").onclick=()=>$("capaSalaTVMenu").classList.remove("ver");
 $("bSalaTVCrear").onclick=()=>{$("capaSalaTVMenu").classList.remove("ver");crearSalaTV();};
 $("bSalaTVEntrar").onclick=()=>{$("capaSalaTVMenu").classList.remove("ver");$("bEntrarTV").click();};
@@ -4602,7 +4605,10 @@ $("tvcEnviarResp").onclick=()=>{const t=$("tvcRespuesta").value.trim();if(!t)ret
 $("tvcRespuesta").addEventListener("keydown",e=>{if(e.key==="Enter")$("tvcEnviarResp").click();});
 $("tvcReacciones").addEventListener("click",e=>{const b=e.target.closest("button");if(b)enviar({a:"reaccion",e:b.dataset.e});});
 
-$("bJugarOnline").onclick=()=>$("capaJugarOnlineMenu").classList.add("ver");
+$("bJugarOnline").onclick=()=>{
+  if(!perfilExiste()){abrirPerfil(()=>$("capaJugarOnlineMenu").classList.add("ver"));return;}
+  $("capaJugarOnlineMenu").classList.add("ver");
+};
 $("jugarOnlineMenuCerrar").onclick=()=>$("capaJugarOnlineMenu").classList.remove("ver");
 $("bMenuCrearSala").onclick=()=>{$("capaJugarOnlineMenu").classList.remove("ver");$("bCrear").click();};
 $("bMenuEntrarCodigo").onclick=()=>{$("capaJugarOnlineMenu").classList.remove("ver");$("bUnirse").click();};
@@ -4617,6 +4623,7 @@ $("bLobbySalir").onclick=()=>{
 };
 
 $("bCrear").onclick=()=>{
+  if(!perfilExiste()){abrirPerfil(()=>$("bCrear").click());return;}
   modo="host";miJug=0;
   $("setup").style.display="none";$("lobby").style.display="block";
   sala=Array.from({length:4},()=>"ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[Math.floor(Math.random()*32)]).join("");
@@ -4641,6 +4648,7 @@ $("bCopiar").onclick=async()=>{
 };
 
 $("bUnirse").onclick=()=>{
+  if(!perfilExiste()){abrirPerfil(()=>$("bUnirse").click());return;}
   modo="guest";miJug=1;
   $("setup").style.display="none";$("lobby").style.display="block";
   $("zonaCodigo").style.display="none";$("zonaEntrar").style.display="block";
@@ -4671,7 +4679,10 @@ if(tvEnLink){
   $("bJugarOnline").style.display="none";$("bBot").style.display="none";$("bTV").style.display="none";
   document.querySelector("#setup p.sub").textContent="Te invitaron a una Sala TV. Escribí tu nombre y entrá.";
   $("bEntrarTV").className="btn-grande";$("bEntrarTV").style.display="";$("bEntrarTV").textContent="Entrar a Sala TV "+tvEnLink;
-  $("bEntrarTV").onclick=()=>{const n=$("miNombre").value.trim();if(!n){$("miNombre").focus();return;}try{localStorage.setItem("larueda_nombre",n);}catch(e){}unirseTV(tvEnLink);};
+  $("bEntrarTV").onclick=()=>{
+    if(!perfilExiste()){abrirPerfil(()=>$("bEntrarTV").click());return;}
+    const n=$("miNombre").value.trim();if(!n){$("miNombre").focus();return;}try{localStorage.setItem("larueda_nombre",n);}catch(e){}unirseTV(tvEnLink);
+  };
 }
 const salaEnLink=(new URLSearchParams(location.search).get("sala")||"").toUpperCase();
 if(salaEnLink){
@@ -4681,6 +4692,7 @@ if(salaEnLink){
   $("bUnirse").className="btn-grande";$("bUnirse").style.display="";
   $("bUnirse").textContent="Entrar a la sala "+salaEnLink;
   $("bUnirse").onclick=()=>{
+    if(!perfilExiste()){abrirPerfil(()=>$("bUnirse").click());return;}
     const n=$("miNombre").value.trim();
     if(!n){$("miNombre").focus();
       document.querySelector("#setup p.sub").textContent="Escribí tu nombre para entrar.";return;}
