@@ -5038,7 +5038,12 @@ function terminarPorAbandono(idx){
   S.finYa=true;S.fase="fin";pararReloj();limpiarBonus();
   $("modalResolver").classList.remove("ver");
   const quien=(S.jug[idx]&&S.jug[idx].n)||"Un jugador";
-  const tit="Partida abandonada",txt=quien+" abandonó la partida.";
+  const tit="Partida abandonada";let txt=quien+" abandonó la partida.";
+  /* Abandonar en "Jugar online" es, en la práctica, perder la partida
+     (no hay forma de volver) — tiene que costar la misma vida que
+     perder normalmente, si no, es un atajo gratis para escaparse de
+     una partida que se está por perder. */
+  if(idx===miJug&&vinoDeJugarOnline&&!esPartidaDiaria){gastarVida();txt+=" -1 ❤️.";}
   publicar(txt,"error");
   if(modo!=="local"&&modo!=="bot")enviar({tipo:"fin",txt,tit});
   fSiguientePaso=null;
