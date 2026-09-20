@@ -2233,7 +2233,12 @@ function tutEsPrimeraVez(){
   if(perfilExiste())return false;
   try{return localStorage.getItem("gya_bienvenida_vista")!=="1";}catch(e){return true;}
 }
-function tutMarcarBienvenidaVista(){try{localStorage.setItem("gya_bienvenida_vista","1");}catch(e){}}
+function tutMarcarBienvenidaVista(){try{localStorage.setItem("gya_bienvenida_vista","1");
+  if(!localStorage.getItem("gya_dia_alta"))localStorage.setItem("gya_dia_alta",fechaHoy());}catch(e){}}
+/* El día que alguien arranca (ve el tutorial por primera vez) solo tiene
+   que ver el tutorial — nada de Partida Diaria ni video de la tienda
+   encima. Recién al otro día arranca todo lo demás con normalidad. */
+function esMismoDiaDeAlta(){try{return localStorage.getItem("gya_dia_alta")===fechaHoy();}catch(e){return false;}}
 function tutChequearBienvenida(){
   if(tutEsPrimeraVez()){
     tutMarcarBienvenidaVista();
@@ -6349,9 +6354,12 @@ $("fSalir").onclick=()=>{
   modo="local";sala="";S=null;
   $("juego").style.display="none";
   $("setup").style.display="block";
+  /* El día que alguien recién ve el tutorial, no lo encadenamos a la
+     Partida Diaria — ese día solo tiene que ver el tutorial. Desde el
+     día siguiente ya arranca todo con normalidad. */
   if(tutRecienTerminado){
     tutRecienTerminado=false;
-    if(pdEstadoHoy()==="pendiente")setTimeout(()=>{pdActualizarTimer();$("capaPartidaDiaria").classList.add("ver");},600);
+    if(!esMismoDiaDeAlta()&&pdEstadoHoy()==="pendiente")setTimeout(()=>{pdActualizarTimer();$("capaPartidaDiaria").classList.add("ver");},600);
   }
 };
 $("bAbandonarPartida").onclick=()=>{
@@ -6764,11 +6772,15 @@ function pdActualizarTimer(){
   $("pdTimerTxt").textContent=hh+"h "+mm+"min";
 }
 function pdChequearAutoPopup(){
+  /* El día que alguien recién ve el tutorial, no le mostramos ni la
+     Partida Diaria ni el video de la tienda arriba — solo el tutorial.
+     Arranca todo lo demás con normalidad desde el día siguiente. */
+  if(esMismoDiaDeAlta())return;
   if(pdEstadoHoy()==="pendiente")setTimeout(()=>{pdActualizarTimer();$("capaPartidaDiaria").classList.add("ver");},900);
   else ptChequearAutoPopup();
 }
 function ptChequearAutoPopup(){
-  if(esGonzalo()||ptEstadoHoy()==="pendiente")setTimeout(()=>{$("capaPromoTienda").classList.add("ver");ptIniciarChromaKey();},2800);
+  if(esGonzalo()||(ptEstadoHoy()==="pendiente"&&!esMismoDiaDeAlta()))setTimeout(()=>{$("capaPromoTienda").classList.add("ver");ptIniciarChromaKey();},2800);
 }
 let ptRafId=null;
 function ptDibujarFrameChroma(){
