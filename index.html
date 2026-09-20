@@ -4249,7 +4249,7 @@ function guardarPerfil(nombre,avatar){
   actualizarChipPerfil();
   logroDesbloquear("avatar");
 }
-let avatarElegido=null,perfilCallback=null;
+let avatarElegido=null,perfilCallback=null,previsualizandoPerfil=false;
 function listaAvataresDisponibles(){
   return AVATARES;
 }
@@ -4290,8 +4290,16 @@ function abrirPerfil(callback){
      dónde está el campo — por eso esto va DESPUÉS de mostrarla. */
   renderAvatarGrid();actualizarBotonPerfil();
 }
+function previsualizarPerfilVacio(){
+  previsualizandoPerfil=true;perfilCallback=null;
+  $("perfilNombre").value="";avatarElegido=null;
+  $("setup").style.display="none";$("mundo").style.display="none";$("pantDurazno").style.display="none";
+  $("pantPerfil").style.display="block";
+  renderAvatarGrid();actualizarBotonPerfil();
+}
 $("perfilNombre").addEventListener("input",()=>{renderAvatarGrid();actualizarBotonPerfil();});
 $("perfilContinuar").onclick=()=>{
+  if(previsualizandoPerfil){previsualizandoPerfil=false;tutOcultarSpotlight();$("pantPerfil").style.display="none";$("setup").style.display="block";return;}
   const n=$("perfilNombre").value.trim().slice(0,12);
   if(!n||!avatarElegido)return;
   if(avatarElegido===AVATAR_EXCLUSIVO.id&&n.toLowerCase()!==AVATAR_EXCLUSIVO.nombre)return;
@@ -4303,7 +4311,7 @@ $("perfilContinuar").onclick=()=>{
 };
 $("cambiarPerfil").onclick=()=>abrirPerfil(null);
 $("perfilCerrar").onclick=()=>{
-  perfilCallback=null;
+  perfilCallback=null;previsualizandoPerfil=false;
   tutOcultarSpotlight();
   $("pantPerfil").style.display="none";
   $("setup").style.display="block";
@@ -6788,6 +6796,14 @@ $("fBoton").onclick=()=>{
         setTimeout(()=>{$("capaPromoTienda").classList.add("ver");ptIniciarChromaKey();},4000);
         return;
       }
+      /* Debug para previsualizar la pantalla de "nombre y avatar
+         obligatorio" en una cuenta que YA tiene perfil, sin tocarlo: abrir
+         con ?probarperfil=1 muestra la pantalla vacía y con el foquito
+         igual que la vería alguien nuevo. Tocar "Continuar" acá NO
+         guarda nada (es solo para mirar) — para salir sin cambios, tocar
+         Cerrar o Continuar, da igual. */
+      let probarperfil=false;try{probarperfil=new URLSearchParams(location.search).get("probarperfil")==="1";}catch(e){}
+      if(probarperfil){setTimeout(previsualizarPerfilVacio,900);return;}
       tutChequearBienvenida();},espera);
   };
   barra.style.transitionDuration=MIN_ESPERA+"ms";
