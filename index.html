@@ -944,10 +944,19 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
 
 <div class="capa" id="capaUsuarios"><div class="caja rk-caja">
   <h2>👥 Usuarios</h2>
-  <p class="sub" style="margin:6px 0 14px">Todos los que jugaron y activaron el ranking.</p>
+  <p class="sub" style="margin:6px 0 14px">Todos los que jugaron, se hayan anotado al ranking o no.</p>
   <div class="rk-lista" id="usrLista"></div>
   <p class="estado" id="usrEstado" style="margin-top:8px"></p>
   <button class="no" id="usrCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
+</div></div>
+
+<div class="capa" id="capaInvitacion"><div class="caja" style="max-width:340px">
+  <h2>🎮 ¡Te invitaron a jugar!</h2>
+  <p class="sub" style="margin:6px 0 16px"><b id="invDe"></b> te invitó a una partida en línea.</p>
+  <div class="rk-acciones" style="margin-bottom:0">
+    <button class="no" id="invRechazar">No, gracias</button>
+    <button class="btn-grande" id="invAceptar" style="padding:9px 4px;font-size:.9rem">Aceptar</button>
+  </div>
 </div></div>
 
 <section id="pantPerfil">
@@ -1680,6 +1689,7 @@ function tk(fn){
 const norm=s=>s.toUpperCase().normalize("NFD").replace(/[\u0300-\u0304\u0306-\u036f]/g,"").replace(/\s+/g," ").trim();
 
 let modo="local", miJug=0, mq=null, sala="", rondasElegidas=3, holaTimer=null, serie=[0,0], arranca=0, ultGanador=-1, racha=0, relojID=null, relojOculto=null;
+let mqInv=null, invPendiente=null;
 let familiaJugadores=[],tvPartidaIniciada=false,tvMiIndex=-1;
 let tvId=(()=>{try{let x=sessionStorage.getItem("larueda_tv_id");if(!x){x="p"+Math.random().toString(36).slice(2,10);sessionStorage.setItem("larueda_tv_id",x);}return x;}catch(e){return "p"+Math.random().toString(36).slice(2,10);}})();
 let S=null, V={mask:"",cat:"",usadas:[],jug:[{n:"",tot:0,ronda:0},{n:"",tot:0,ronda:0}],turno:0,fase:"girar",hayVoc:true,cons:1,aviso:""};
@@ -1951,14 +1961,18 @@ const enviar=o=>{try{
 }catch(e){}};
 
 const BROKERS=["wss://broker.emqx.io:8084/mqtt","wss://broker.hivemq.com:8884/mqtt","wss://test.mosquitto.org:8081/mqtt"];
-function conectar(alConectar,alFallar,i){
+/* asignar: a qué variable global queda el cliente conectado (por defecto
+   "mq", la de la sala de juego activa). El listener de invitaciones usa
+   su propia conexión aparte ("mqInv") para no pisar la de una partida. */
+function conectar(alConectar,alFallar,asignar,i){
+  asignar=asignar||(c=>{mq=c;});
   i=i||0;
   if(i>=BROKERS.length)return alFallar();
   let listo=false,muerto=false;
   const c=mqtt.connect(BROKERS[i],{clientId:"lr"+Math.random().toString(16).slice(2),
     connectTimeout:7000,reconnectPeriod:0,clean:true});
-  const siguiente=()=>{if(listo||muerto)return;muerto=true;try{c.end(true);}catch(e){}conectar(alConectar,alFallar,i+1);};
-  c.on("connect",()=>{if(muerto)return;listo=true;mq=c;c.options.reconnectPeriod=2500;alConectar();});
+  const siguiente=()=>{if(listo||muerto)return;muerto=true;try{c.end(true);}catch(e){}conectar(alConectar,alFallar,asignar,i+1);};
+  c.on("connect",()=>{if(muerto)return;listo=true;asignar(c);c.options.reconnectPeriod=2500;alConectar();});
   c.on("error",siguiente);
   c.on("close",()=>{if(!listo)siguiente();});
 }
@@ -2943,13 +2957,23 @@ async function usrCargarLista(){
      su latido (empujarUsuario, cada 90s mientras el juego está abierto)
      hace menos de 3 minutos. */
   const AHORA=Date.now(),VENTANA_ONLINE_MS=3*60*1000;
+  const rkPerfil=cargarRkPerfil();
+  const misClaves=[normApodo(perfil.nombre),rkPerfil&&rkPerfil.apodo?normApodo(rkPerfil.apodo):null];
   (data||[]).forEach(f=>{
     const online=f.actualizado_en&&(AHORA-new Date(f.actualizado_en).getTime())<VENTANA_ONLINE_MS;
+    const soyYo=misClaves.includes(normApodo(f.apodo));
     const d=document.createElement("div");
     d.className="rk-fila";
     d.innerHTML=(f.avatar?'<span class="rk-avatar-wrap"><img class="rk-avatar" src="assets/avatars/'+rkEsc(f.avatar)+'.webp" alt="">'+(online?'<span class="rk-online-dot"></span>':'')+'</span>':'')+
-      '<div class="rk-info"><b>'+rkEsc(f.apodo)+'</b>'+
+      '<div class="rk-info"><b>'+rkEsc(f.apodo)+(soyYo?" (vos)":"")+'</b>'+
       '<span>🗺️ '+f.ciudades_ganadas+'/9 · 🏆 racha '+f.mejor_racha+' · 🏅 '+f.logros+'</span></div>';
+    if(!soyYo){
+      const b=document.createElement("button");
+      b.className="no";b.textContent="Invitar";
+      b.style.cssText="flex-shrink:0;padding:8px 12px;font-size:.78rem;border-radius:10px";
+      b.onclick=()=>invEnviar(f.apodo);
+      d.appendChild(b);
+    }
     cont.appendChild(d);
   });
   $("usrEstado").textContent=(data&&data.length)?"":"Todavía no hay usuarios.";
@@ -4481,6 +4505,7 @@ actualizarChipPerfil();
 window.addEventListener("load",()=>{
   if(!perfilExiste())return;
   empujarUsuario();
+  invConectar();
   /* Late para "conectado ahora": no hay presencia en tiempo real, así que
      se aproxima con un latido cada 90s mientras el juego está abierto y
      visible — actualizado_en se usa después como "online" si es reciente. */
@@ -4815,18 +4840,26 @@ $("bLobbySalir").onclick=()=>{
   $("capaJugarOnlineMenu").classList.add("ver");
 };
 
-$("bCrear").onclick=()=>{
-  if(!perfilExiste()){abrirPerfil(()=>$("bCrear").click());return;}
+/* Crea una sala como host: genera el código y conecta, sin tocar la
+   pantalla — la usan tanto el botón "Crear sala" normal como el envío
+   de una invitación directa desde Usuarios. */
+function crearSalaHost(alListo,alFallar){
   modo="host";miJug=0;
-  $("setup").style.display="none";$("lobby").style.display="block";
   sala=Array.from({length:4},()=>"ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[Math.floor(Math.random()*32)]).join("");
-  $("miCodigo").textContent=sala;
-  $("estado").textContent="Conectando…";
   conectar(()=>{
     mq.subscribe(tema("accion"));
     mq.on("message",(t,pl)=>{if(t===tema("accion")){try{recibirHost(JSON.parse(pl.toString()));}catch(e){}}});
+    if(alListo)alListo();
+  },()=>{if(alFallar)alFallar();});
+}
+$("bCrear").onclick=()=>{
+  if(!perfilExiste()){abrirPerfil(()=>$("bCrear").click());return;}
+  $("setup").style.display="none";$("lobby").style.display="block";
+  $("estado").textContent="Conectando…";
+  crearSalaHost(()=>{
     $("estado").textContent="Sala lista. Esperando al otro jugador…";
   },()=>{$("estado").textContent="No se pudo conectar a internet para la sala. Probá con otra red (datos del celular).";});
+  $("miCodigo").textContent=sala;
 };
 
 const invitacion=()=>"Jugamos a Girá y Adiviná\n"+location.origin+location.pathname+"?sala="+sala+"\nCódigo: "+sala;
@@ -4863,6 +4896,65 @@ function unirse(cod){
   },()=>{$("estado").textContent="No se pudo conectar. Probá con otra red (datos del celular).";});
 }
 $("bConectar").onclick=()=>{const c=$("codigoInput").value.trim().toUpperCase();if(modo==="tvguest")unirseTV(c);else unirse(c);};
+
+/* ---- Invitar a jugar desde Usuarios (prototipo, en prueba) ----
+   Cada uno con perfil escucha en su propio "canal" (basado en su nombre,
+   y también en su apodo de Ranking si tiene uno distinto) mientras el
+   juego está abierto, salvo que esté jugando una partida en ese momento.
+   No hay cuentas reales, así que el nombre es la única identidad. */
+function normApodo(s){
+  return String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"")
+    .toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")||"x";
+}
+const invTema=who=>"larueda2p/invite/"+normApodo(who);
+function invManejarMensaje(t,pl){
+  let payload;try{payload=JSON.parse(pl.toString());}catch(e){return;}
+  if(!payload||!payload.de||payload.de===perfil.nombre)return;
+  if(payload.tipo==="rechazo"){
+    mostrarToast("📨",payload.de+" rechazó tu invitación.");
+    if(modo==="host"&&$("lobby").style.display==="block")$("bLobbySalir").click();
+    return;
+  }
+  if(!payload.sala)return;
+  if($("juego").style.display==="block")return;
+  invPendiente=payload;
+  $("invDe").textContent=payload.de;
+  $("capaInvitacion").classList.add("ver");
+}
+function invConectar(){
+  if(mqInv&&mqInv.connected)return;
+  conectar(()=>{
+    mqInv.subscribe(invTema(perfil.nombre));
+    const rkPerfil=cargarRkPerfil();
+    if(rkPerfil&&rkPerfil.apodo&&rkPerfil.apodo!==perfil.nombre)mqInv.subscribe(invTema(rkPerfil.apodo));
+    mqInv.on("message",invManejarMensaje);
+  },()=>{setTimeout(invConectar,15000);},c=>{mqInv=c;});
+}
+function invEnviar(apodoDestino){
+  $("capaUsuarios").classList.remove("ver");
+  $("setup").style.display="none";$("lobby").style.display="block";
+  $("zonaCodigo").style.display="block";$("zonaEntrar").style.display="none";
+  $("estado").textContent="Invitando a "+apodoDestino+"…";
+  crearSalaHost(()=>{
+    try{mq.publish(invTema(apodoDestino),JSON.stringify({tipo:"invitar",de:perfil.nombre,deAvatar:perfil.avatar||null,sala,ts:Date.now()}));}catch(e){}
+    mostrarToast("📨","Invitación enviada a "+apodoDestino+".");
+    $("estado").textContent="Esperando que "+apodoDestino+" acepte…";
+  },()=>{$("estado").textContent="No se pudo conectar a internet para invitar. Probá con otra red (datos del celular).";});
+  $("miCodigo").textContent=sala;
+}
+$("invAceptar").onclick=()=>{
+  const p=invPendiente;invPendiente=null;
+  $("capaInvitacion").classList.remove("ver");
+  if(!p||!p.sala)return;
+  $("capaUsuarios").classList.remove("ver");$("capaSocial").classList.remove("ver");$("capaMas").classList.remove("ver");
+  unirse(p.sala);
+};
+$("invRechazar").onclick=()=>{
+  const p=invPendiente;invPendiente=null;
+  $("capaInvitacion").classList.remove("ver");
+  if(!p||!p.de)return;
+  try{if(mqInv&&mqInv.connected)mqInv.publish(invTema(p.de),JSON.stringify({tipo:"rechazo",de:perfil.nombre,ts:Date.now()}));}catch(e){}
+};
 
 try{$("miNombre").value=perfil.nombre||localStorage.getItem("larueda_nombre")||"";}catch(e){}
 $("miNombre").addEventListener("change",()=>{try{localStorage.setItem("larueda_nombre",$("miNombre").value.trim());}catch(e){}});
