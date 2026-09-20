@@ -5546,7 +5546,10 @@ function finDelJuego(){
     if(g<0)tit="¡Empate!";
     else{
       tit="Te ganó "+b.n;extra=" Probá de nuevo cuando quieras.";
-      if(vinoDeJugarOnline&&!esPartidaDiaria){gastarVida();extra+=" -1 ❤️.";}
+      /* Jugar la Partida Diaria es opcional (está el botón "Jugar más
+         tarde" para saltearla) — pero si decidís jugarla, perder cuesta
+         vida igual que en cualquier otro modo bot. */
+      if(vinoDeJugarOnline){gastarVida();extra+=" -1 ❤️.";}
     }
     if(bonusJugado>0)extra+=" +"+bonusJugado+" 🪙 por lo jugado.";
     if(esPartidaDiaria){esPartidaDiaria=false;pdGuardarEstado("jugada");objActualizarBadge();
