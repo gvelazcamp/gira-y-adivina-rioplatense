@@ -3544,7 +3544,14 @@ function sumarRondaColeccion(cual){
   cm.sobres++;
   guardarColeccionMeta();colActualizarBloqueDurazno();
   setTimeout(()=>{
-    if($("modalFin").classList.contains("ver"))sobrePendienteCual=cual;
+    /* Antes solo miraba si la pantalla de "partida terminada" estaba
+       abierta — pero en esos 650ms la partida podía ya haber arrancado
+       la ronda siguiente (o la Ronda Bonus), que tampoco es "partida
+       terminada", y el cartel del sobre aparecía interrumpiendo esa
+       ronda en curso. Ahora espera mientras haya cualquier partida
+       activa (S existe) y solo lo muestra ya si de verdad no hay nada
+       en curso. */
+    if(S)sobrePendienteCual=cual;
     else colMostrarSobreConseguido(cual);
   },650);
 }
