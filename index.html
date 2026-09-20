@@ -424,6 +424,10 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 /* Sobres y colección de Durazno */
 .sobre-conseguido-img{width:150px;margin:0 auto 14px;display:block;
  filter:drop-shadow(0 10px 24px #000000AA);animation:selloGanado .8s cubic-bezier(.34,1.56,.64,1)}
+.pack-recibido-item{display:flex;flex-direction:column;align-items:center;gap:6px;font-weight:800;min-width:70px;
+ animation:selloGanado .5s cubic-bezier(.34,1.56,.64,1)}
+.pack-recibido-item span:first-child{font-size:2.6rem;filter:drop-shadow(0 4px 8px #00000066)}
+.pack-recibido-item span:last-child{color:var(--oro)}
 .col-caja{max-width:460px;max-height:86vh;overflow-y:auto}
 .col-resumen{color:#C9B8DE;margin-bottom:12px;font-weight:700}
 .col-sobres{display:flex;align-items:center;justify-content:space-between;gap:10px;
@@ -1419,6 +1423,12 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
       <span class="pios-txt">Tocá <b>"Agregar"</b> — listo, ya tenés tu ícono</span></div>
   </div>
   <button class="no" id="cerrarInstalarIOS" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:14px">Entendido</button>
+</div></div>
+
+<div class="capa" id="modalPackRecibido"><div class="caja" style="text-align:center">
+  <h2>🎉 ¡RECIBISTE!</h2>
+  <div id="packRecibidoGrid" style="display:flex;justify-content:center;gap:22px;flex-wrap:wrap;margin:22px 0"></div>
+  <button class="btn-grande" id="packRecibidoOk">Genial</button>
 </div></div>
 
 <div class="capa" id="modalSobreConseguido"><div class="caja">
@@ -2602,15 +2612,22 @@ function tnEjecutarCompra(tipo,precio){
   }else if(tipo==="pack_explorador"){
     recuperarVida();sumarMonedas(300);
     const cual=otorgarSobreSorpresa();
-    colMostrarSobreConseguido(cual,true);
+    mostrarPackRecibido([
+      {icono:"❤️",texto:"+1 vida"},{icono:"🪙",texto:"+300"},{icono:"🎁",texto:"+1 sobre"}
+    ],()=>colMostrarSobreConseguido(cual,true));
   }else if(tipo==="pack_racha"){
     meta.vidas=VIDAS_MAX;meta.proxima=0;meta.ultimaRuleta=0;
-    const cual=otorgarSobreSorpresa();otorgarSobreSorpresa();
-    colMostrarSobreConseguido(cual,true);
+    const cual1=otorgarSobreSorpresa();otorgarSobreSorpresa();
+    mostrarPackRecibido([
+      {icono:"❤️",texto:"Vidas llenas"},{icono:"🎁",texto:"+2 sobres"}
+    ],()=>colMostrarSobreConseguido(cual1,true));
   }else if(tipo==="pack_mutante"){
     avataresComprados.add("avatar-27");guardarAvataresComprados();equiparAvatarPremium("avatar-27");
     tablerosComprados.add("fondo-lab-toxico");guardarTablerosComprados();equiparTablero("fondo-lab-toxico");
     fichasComprados.add("ficha-lab-toxico-2");guardarFichasComprados();equiparFichaSkin("ficha-lab-toxico-2");
+    mostrarPackRecibido([
+      {icono:"🖼️",texto:"Marco"},{icono:"👤",texto:"Avatar"},{icono:"🗺️",texto:"Tablero"}
+    ]);
   }else if(tipo==="oferta_gratis"){
     meta.ultimaGratisDiaria=Date.now();sumarMonedas(80);
   }else if(tipo.indexOf("marco_")===0){
@@ -3304,6 +3321,28 @@ function mostrarToast(icono,texto){
   clearTimeout(logroToastTimer);
   logroToastTimer=setTimeout(()=>$("logroToast").classList.remove("ver"),2600);
 }
+let packRecibidoCallback=null;
+/* Al comprar un pack (Explorador/Racha/Mutante) se otorgan varias cosas
+   juntas (vida, monedas, sobres, cosméticos) pero antes solo se veía la
+   confirmación del sobre — el resto se acreditaba en silencio y no
+   quedaba claro qué se había ganado. Esta pantalla junta todo en un
+   solo vistazo, como "RECIBISTE:" de otros juegos. */
+function mostrarPackRecibido(items,callback){
+  const cont=$("packRecibidoGrid");cont.innerHTML="";
+  items.forEach(it=>{
+    const d=document.createElement("div");
+    d.className="pack-recibido-item";
+    d.innerHTML="<span>"+it.icono+"</span><span>"+it.texto+"</span>";
+    cont.appendChild(d);
+  });
+  packRecibidoCallback=callback||null;
+  $("modalPackRecibido").classList.add("ver");
+  bip(700,.2,"sine",.08);
+}
+$("packRecibidoOk").onclick=()=>{
+  $("modalPackRecibido").classList.remove("ver");
+  if(packRecibidoCallback){const cb=packRecibidoCallback;packRecibidoCallback=null;cb();}
+};
 const MENUS_CON_X={capaRuleta:"rwCerrar",capaTienda:"tnCerrar",capaLogros:"lgCerrar",
   capaObjetivos:"objCerrar",capaRecords:"recCerrar",capaRanking:"rkCerrar",capaMas:"masCerrar",
   capaTutorial:"tutoCerrar",capaSalaTVMenu:"salaTVMenuCerrar",capaJugarOnlineMenu:"jugarOnlineMenuCerrar",
