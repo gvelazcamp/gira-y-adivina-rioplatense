@@ -6768,6 +6768,11 @@ function ptDibujarFrameChroma(){
       if(minc>245)d[i+3]=0;
       else if(minc>190)d[i+3]=Math.min(d[i+3],Math.round(255*(245-minc)/55));
     }
+    /* El video en sí trae 1px de artefacto de codificación oscuro pegado
+       al borde superior (no es blanco, así que el chroma-key de arriba no
+       lo agarra) — se veía como una rayita fina arriba del personaje.
+       Se fuerza transparente directamente por posición, no por color. */
+    for(let x=0;x<canvas.width;x++)d[(x*4)+3]=0;
     ctx.putImageData(frame,0,0);
   }
   ptRafId=requestAnimationFrame(ptDibujarFrameChroma);
