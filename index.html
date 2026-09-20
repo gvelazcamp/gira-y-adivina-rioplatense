@@ -2684,14 +2684,18 @@ function tnEjecutarCompra(tipo,precio){
     tablerosComprados.add("fondo-lab-toxico");guardarTablerosComprados();equiparTablero("fondo-lab-toxico");
     fichasComprados.add("ficha-lab-toxico-2");guardarFichasComprados();equiparFichaSkin("ficha-lab-toxico-2");
     mostrarPackItems([
-      {icono:"🖼️",texto:"Marco"},{icono:"👤",texto:"Avatar"},{icono:"🗺️",texto:"Tablero"}
+      {texto:"Marco",html:packPreviewFicha("ficha-lab-toxico-2")},
+      {texto:"Avatar",html:packPreviewAvatar("avatar-27")},
+      {texto:"Tablero",html:packPreviewTablero("fondo-lab-toxico")}
     ]);
   }else if(tipo==="pack_ovni"){
     avataresComprados.add("avatar-31");guardarAvataresComprados();equiparAvatarPremium("avatar-31");
     framesComprados.add("ovni");guardarFramesComprados();equiparMarco("ovni");
     tablerosComprados.add("fondo-ovni");guardarTablerosComprados();equiparTablero("fondo-ovni");
     mostrarPackItems([
-      {icono:"🖼️",texto:"Marco"},{icono:"👤",texto:"Avatar"},{icono:"🗺️",texto:"Tablero"}
+      {texto:"Marco",html:packPreviewMarco("ovni","avatar-31")},
+      {texto:"Avatar",html:packPreviewAvatar("avatar-31")},
+      {texto:"Tablero",html:packPreviewTablero("fondo-ovni")}
     ]);
   }else if(tipo==="oferta_gratis"){
     meta.ultimaGratisDiaria=Date.now();sumarMonedas(80);
@@ -3492,7 +3496,7 @@ function mostrarPackRecibido(items,callback){
   items.forEach(it=>{
     const d=document.createElement("div");
     d.className="pack-recibido-item";
-    d.innerHTML="<span>"+it.icono+"</span><span>"+it.texto+"</span>";
+    d.innerHTML=(it.html||"<span>"+it.icono+"</span>")+"<span>"+it.texto+"</span>";
     cont.appendChild(d);
   });
   packRecibidoCallback=callback||null;
@@ -3503,6 +3507,26 @@ $("packRecibidoOk").onclick=()=>{
   $("modalPackRecibido").classList.remove("ver");
   if(packRecibidoCallback){const cb=packRecibidoCallback;packRecibidoCallback=null;cb();}
 };
+/* Vistas previas reales (no emojis genéricos) para lo que otorga un
+   pack de cosméticos — mismo estilo que usan sus pantallas normales
+   de la Tienda/Ranking, para que se vea de verdad lo que se ganó. */
+function packPreviewAvatar(id){
+  return '<img src="assets/avatars/'+id+'.webp" style="width:110px;height:110px;border-radius:50%;object-fit:cover;display:block;margin:0 auto">';
+}
+function packPreviewMarco(idMarco,idAvatar){
+  /* frame-preview trae un transform:scale(1.45) pensado para las tarjetas
+     chicas de 64px de la tienda — acá, más grande, hace que el marco se
+     salga de su caja y tape el texto de abajo. Se anula con transform:none. */
+  return '<span class="avatar-wrap frame-preview" style="width:110px;height:110px;margin:0 auto;display:inline-block">'+
+    '<img class="avatar-img" src="assets/avatars/'+idAvatar+'.webp">'+
+    '<img class="avatar-frame ver" src="assets/frames/frame-'+idMarco+'.png" style="transform:none"></span>';
+}
+function packPreviewFicha(id){
+  return '<span class="ficha-skin-preview" style="width:110px;height:110px;margin:0 auto;background-image:url(\'assets/fichas/'+id+'.webp\')"></span>';
+}
+function packPreviewTablero(id){
+  return '<span class="tablero-preview" style="width:150px;margin:0 auto;background-image:url(\'assets/tableros/'+id+'.webp\')"></span>';
+}
 /* Primero cada cosa se muestra sola, grande, una atrás de la otra
    (tocando se avanza a la siguiente) — y recién al final aparece el
    resumen con todo junto, como pediste viendo el otro juego. */
@@ -3511,7 +3535,7 @@ function mostrarPackItems(items,callback){
   const siguiente=()=>{
     if(i>=items.length){$("modalPackItem").classList.remove("ver");mostrarPackRecibido(items,callback);return;}
     const it=items[i++];
-    $("packItemIcono").textContent=it.icono;
+    $("packItemIcono").innerHTML=it.html||it.icono;
     $("packItemTexto").textContent=it.texto;
     $("modalPackItem").classList.add("ver");
     bip(700,.2,"sine",.08);
