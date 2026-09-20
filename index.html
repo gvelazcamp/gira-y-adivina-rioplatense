@@ -1122,6 +1122,10 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="tn-comprar" data-tipo="pack_mutante" data-precio="13000" data-real-agregado="1" data-nombre="el Pack Mutante">🪙 13000</button>
   <span class="tn-pack-precio-fijo" id="tnPrecioFijoMutante">🪙 13000</span>
   </div>
+  <div class="tn-item tn-pack-img" style="background-image:url('assets/shop/pack-ovni.webp')">
+  <button class="tn-comprar" data-tipo="pack_ovni" data-precio="17000" data-real-agregado="1" data-nombre="el Pack OVNI">🪙 17000</button>
+  <span class="tn-pack-precio-fijo" id="tnPrecioFijoOvni">🪙 17000</span>
+  </div>
   <h3 class="tn-subtitulo" data-fijo="1">⏳ Ofertas diarias</h3>
   <div class="tn-grid">
   <div class="tn-item tn-card">
@@ -2468,6 +2472,7 @@ function tnPuedeComprar(tipo){
   if(tipo==="oferta_gratis")return gratisDiariaPuedeReclamar();
   if(tipo.indexOf("marco_")===0)return!framesComprados.has(tipo.slice(6));
   if(tipo==="pack_mutante")return!avataresComprados.has("avatar-27")||!tablerosComprados.has("fondo-lab-toxico")||!fichasComprados.has("ficha-lab-toxico-2");
+  if(tipo==="pack_ovni")return!avataresComprados.has("avatar-31")||!framesComprados.has("ovni")||!tablerosComprados.has("fondo-ovni");
   return true;
 }
 function tnRazonBloqueo(tipo){
@@ -2477,6 +2482,7 @@ function tnRazonBloqueo(tipo){
   if(tipo==="oferta_gratis")return gratisDiariaTextoEspera();
   if(tipo.indexOf("marco_")===0)return"✅ Ya lo tenés";
   if(tipo==="pack_mutante")return"✅ Ya lo tenés completo";
+  if(tipo==="pack_ovni")return"✅ Ya lo tenés completo";
   return"";
 }
 function otorgarSobreSorpresa(garantizado){
@@ -2677,6 +2683,13 @@ function tnEjecutarCompra(tipo,precio){
     avataresComprados.add("avatar-27");guardarAvataresComprados();equiparAvatarPremium("avatar-27");
     tablerosComprados.add("fondo-lab-toxico");guardarTablerosComprados();equiparTablero("fondo-lab-toxico");
     fichasComprados.add("ficha-lab-toxico-2");guardarFichasComprados();equiparFichaSkin("ficha-lab-toxico-2");
+    mostrarPackItems([
+      {icono:"🖼️",texto:"Marco"},{icono:"👤",texto:"Avatar"},{icono:"🗺️",texto:"Tablero"}
+    ]);
+  }else if(tipo==="pack_ovni"){
+    avataresComprados.add("avatar-31");guardarAvataresComprados();equiparAvatarPremium("avatar-31");
+    framesComprados.add("ovni");guardarFramesComprados();equiparMarco("ovni");
+    tablerosComprados.add("fondo-ovni");guardarTablerosComprados();equiparTablero("fondo-ovni");
     mostrarPackItems([
       {icono:"🖼️",texto:"Marco"},{icono:"👤",texto:"Avatar"},{icono:"🗺️",texto:"Tablero"}
     ]);
@@ -3036,7 +3049,8 @@ const FRAMES=[
   {id:"electrico",nombre:"Eléctrico",desc:"Energía pura a tu alrededor.",precio:2750},
   {id:"diamante",nombre:"Diamante",desc:"El brillo más exclusivo.",precio:3000},
   {id:"real",nombre:"Real",desc:"Un marco digno de la corona.",precio:3750},
-  {id:"celestial",nombre:"Celestial",desc:"Estrellas que te acompañan.",precio:5000,basico:true}
+  {id:"celestial",nombre:"Celestial",desc:"Estrellas que te acompañan.",precio:5000,basico:true},
+  {id:"ovni",nombre:"OVNI",desc:"Abducido por la moda espacial.",precio:5500}
 ];
 function cargarFramesComprados(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_frames_owned")||"[]"));}catch(e){return new Set();}
@@ -3105,7 +3119,8 @@ const AVATARES_PREMIUM=[
   {id:"avatar-27",nombre:"Tóxico",precio:7500},
   {id:"avatar-28",nombre:"Arácnida",precio:7500},
   {id:"avatar-29",nombre:"Calabaza",precio:8000},
-  {id:"avatar-30",nombre:"Slime Rosa",precio:8000}
+  {id:"avatar-30",nombre:"Slime Rosa",precio:8000},
+  {id:"avatar-31",nombre:"Alien Cósmico",precio:8000}
 ];
 function cargarAvataresComprados(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_avatars_owned")||"[]"));}catch(e){return new Set();}
@@ -6000,7 +6015,8 @@ const MARCOS_TABLERO=[
   {id:"fondo-candy-5",nombre:"Gomitas Felices",precio:6000,nuevo:true},
   {id:"fondo-candy-6",nombre:"Galaxia Dulce",precio:7000,nuevo:true},
   {id:"fondo-candy-7",nombre:"Corona de Merengue",precio:7250,nuevo:true},
-  {id:"fondo-candy-8",nombre:"Fiesta de Macarons",precio:7250,nuevo:true}
+  {id:"fondo-candy-8",nombre:"Fiesta de Macarons",precio:7250,nuevo:true},
+  {id:"fondo-ovni",nombre:"Círculos en el Campo",precio:7500,nuevo:true}
 ];
 /* Marcos de tablero: NO son fondos de tablero — son un skin para cada
    ficha/cuadradito de letra (los cuadraditos chicos donde van las
