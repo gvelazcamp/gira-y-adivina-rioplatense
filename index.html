@@ -1940,27 +1940,27 @@ $("rondas").addEventListener("click",e=>{const b=e.target.closest("button");if(!
  [...$("rondas").children].forEach(x=>x.setAttribute("aria-pressed",x===b));rondasElegidas=+b.dataset.r;});
 
 const MUNDO=[
- {id:"durazno",pasos:[[24, 16], [36, 23], [20, 36], [33, 50]],nx:50,ny:60,bg:"assets/worlds/durazno.webp",video:"assets/worlds/durazno-loop.mp4",n:"Durazno",r:"El Tío del Asado",rondas:3,cats:["Dicho popular","Persona"],rica:true},
- {id:"montevideo",pasos:[[20, 22], [34, 31], [46, 41], [30, 55]],nx:58,ny:60,bg:"assets/worlds/montevideo.webp",video:"assets/worlds/montevideo-loop.mp4",n:"Montevideo",r:"La Vecina Curiosa",rondas:3,cats:["Lugar","Casa y trabajo"],rica:true},
- {id:"piriapolis",pasos:[[22, 20], [35, 28], [26, 40], [40, 52]],nx:56,ny:58,bg:"assets/worlds/piriapolis.webp",n:"Piriápolis",r:"El Guardavidas",rondas:3,cats:["Clima y verano","Viaje"],rica:true},
+ {id:"durazno",pasos:[[24, 16], [36, 23], [20, 36], [33, 50]],nx:50,ny:60,bg:"assets/worlds/durazno.webp",video:"assets/worlds/durazno-loop.mp4",n:"Durazno",r:"El Tío del Asado",rondas:4,cats:["Dicho popular","Persona"],rica:true},
+ {id:"montevideo",pasos:[[20, 22], [34, 31], [46, 41], [30, 55]],nx:58,ny:60,bg:"assets/worlds/montevideo.webp",video:"assets/worlds/montevideo-loop.mp4",n:"Montevideo",r:"La Vecina Curiosa",rondas:4,cats:["Lugar","Casa y trabajo"],rica:true},
+ {id:"piriapolis",pasos:[[22, 20], [35, 28], [26, 40], [40, 52]],nx:56,ny:58,bg:"assets/worlds/piriapolis.webp",n:"Piriápolis",r:"El Guardavidas",rondas:4,cats:["Clima y verano","Viaje"],rica:true},
  {id:"punta",pasos:[[20, 22], [32, 30], [24, 42], [38, 52]],nx:50,ny:62,bg:"assets/worlds/punta-del-este.webp",n:"Punta del Este",r:"La Turista",rondas:4,cats:["Cosa","Cosas de la casa"],rica:true},
  {id:"salto",pasos:[[22, 20], [34, 28], [24, 40], [38, 50]],nx:52,ny:46,bg:"assets/worlds/salto.webp",video:"assets/worlds/salto-loop.mp4",n:"Salto",r:"El Parrillero",rondas:4,cats:["Comida","Animales"],rica:true},
  {id:"tacuarembo",pasos:[[28, 18], [20, 28], [30, 40], [22, 52]],nx:55,ny:58,bg:"assets/worlds/tacuarembo.webp",video:"assets/worlds/tacuarembo-loop.mp4",n:"Tacuarembó",r:"El Gaucho",rondas:4,cats:["Actividades","Deporte"],rica:true},
- {id:"polonio",pasos:[[46, 16], [38, 28], [30, 40], [36, 52]],nx:45,ny:62,bg:"assets/worlds/cabo-polonio.webp",video:"assets/worlds/polonio-loop.mp4",n:"Cabo Polonio",r:"El Farolero",rondas:5,cats:["Musica y fiesta","Escuela e infancia"],rica:true},
- {id:"colonia",pasos:[[20, 20], [32, 28], [24, 38], [38, 48]],nx:56,ny:44,bg:"assets/worlds/colonia.webp",n:"Colonia",r:"El Cinéfilo",rondas:5,cats:["Pelicula","Programa de TV"],rica:true},
- {id:"artigas",pasos:[[22, 18], [34, 26], [24, 38], [38, 50]],nx:48,ny:58,bg:"assets/worlds/artigas.webp",n:"Artigas",r:"El Prócer",rondas:6,cats:["Historia de Uruguay","Persona"],rica:true},
- {id:"canelones",pasos:[[24, 20], [36, 28], [26, 40], [40, 50]],nx:58,ny:48,bg:"assets/worlds/canelones.webp",n:"Canelones",r:"El Quintero",rondas:6,cats:["Ciudades de Uruguay","Comida"],rica:true},
- {id:"cerro-largo",pasos:[[20, 18], [32, 26], [22, 38], [36, 48]],nx:46,ny:60,bg:"assets/worlds/cerro-largo.webp",n:"Melo",r:"El Domador",rondas:6,cats:["Animales","Deporte"],rica:true},
- {id:"flores",pasos:[[26, 20], [38, 28], [28, 40], [42, 50]],nx:56,ny:50,bg:"assets/worlds/flores.webp",n:"Trinidad",r:"Venancio Flores",rondas:6,cats:["Cosa","Viaje"],rica:true},
- {id:"florida",pasos:[[22, 16], [34, 24], [24, 36], [38, 48]],nx:50,ny:62,bg:"assets/worlds/florida.webp",n:"Florida",r:"Piedra Alta",rondas:6,cats:["Historia de Uruguay","Lugar"],rica:true},
- {id:"lavalleja",pasos:[[28, 18], [20, 28], [32, 40], [24, 52]],nx:60,ny:46,bg:"assets/worlds/lavalleja.webp",n:"Minas",r:"Juan Antonio Lavalleja",rondas:6,cats:["Cultura uruguaya","Musica y fiesta"],rica:true},
- {id:"paysandu",pasos:[[24, 18], [36, 26], [26, 38], [40, 50]],nx:44,ny:58,bg:"assets/worlds/paysandu.webp",n:"Paysandú",r:"Meseta de Artigas",rondas:6,cats:["Ciudades de Uruguay","Actividades"],rica:true},
- {id:"rio-negro",pasos:[[20, 20], [32, 28], [22, 40], [36, 50]],nx:54,ny:50,bg:"assets/worlds/rio-negro.webp",n:"Fray Bentos",r:"Puente San Martín",rondas:6,cats:["Historia de Uruguay","Comida"],rica:true},
- {id:"rivera",pasos:[[26, 16], [38, 26], [28, 38], [42, 48]],nx:58,ny:60,bg:"assets/worlds/rivera.webp",n:"Rivera",r:"Fructuoso Rivera",rondas:6,cats:["Ciudades de Uruguay","Viaje"],rica:true},
- {id:"san-jose",pasos:[[22, 20], [34, 28], [24, 40], [38, 50]],nx:48,ny:46,bg:"assets/worlds/san-jose.webp",n:"San José de Mayo",r:"El Tambero",rondas:6,cats:["Casa y trabajo","Escuela e infancia"],rica:true},
- {id:"soriano",pasos:[[24, 18], [36, 26], [26, 38], [40, 48]],nx:56,ny:56,bg:"assets/worlds/soriano.webp",n:"Mercedes",r:"El Navegante",rondas:6,cats:["Cosas de la casa","Persona"],rica:true},
- {id:"treinta-y-tres",pasos:[[20, 16], [32, 24], [22, 36], [36, 48]],nx:46,ny:48,bg:"assets/worlds/treinta-y-tres.webp",n:"Treinta y Tres",r:"El Pescador",rondas:6,cats:["Cultura uruguaya","Pelicula"],rica:true},
- {id:"centenario",pasos:[[20, 22], [32, 30], [22, 42], [36, 52]],nx:60,ny:55,bg:"assets/worlds/estadio-centenario.webp",n:"Estadio Centenario",r:"La Campeona",rondas:7,cats:["Personajes","Dicho popular"],rica:true}];
+ {id:"polonio",pasos:[[46, 16], [38, 28], [30, 40], [36, 52]],nx:45,ny:62,bg:"assets/worlds/cabo-polonio.webp",video:"assets/worlds/polonio-loop.mp4",n:"Cabo Polonio",r:"El Farolero",rondas:4,cats:["Musica y fiesta","Escuela e infancia"],rica:true},
+ {id:"colonia",pasos:[[20, 20], [32, 28], [24, 38], [38, 48]],nx:56,ny:44,bg:"assets/worlds/colonia.webp",n:"Colonia",r:"El Cinéfilo",rondas:4,cats:["Pelicula","Programa de TV"],rica:true},
+ {id:"artigas",pasos:[[22, 18], [34, 26], [24, 38], [38, 50]],nx:48,ny:58,bg:"assets/worlds/artigas.webp",n:"Artigas",r:"El Prócer",rondas:4,cats:["Historia de Uruguay","Persona"],rica:true},
+ {id:"canelones",pasos:[[24, 20], [36, 28], [26, 40], [40, 50]],nx:58,ny:48,bg:"assets/worlds/canelones.webp",n:"Canelones",r:"El Quintero",rondas:4,cats:["Ciudades de Uruguay","Comida"],rica:true},
+ {id:"cerro-largo",pasos:[[20, 18], [32, 26], [22, 38], [36, 48]],nx:46,ny:60,bg:"assets/worlds/cerro-largo.webp",n:"Melo",r:"El Domador",rondas:4,cats:["Animales","Deporte"],rica:true},
+ {id:"flores",pasos:[[26, 20], [38, 28], [28, 40], [42, 50]],nx:56,ny:50,bg:"assets/worlds/flores.webp",n:"Trinidad",r:"Venancio Flores",rondas:4,cats:["Cosa","Viaje"],rica:true},
+ {id:"florida",pasos:[[22, 16], [34, 24], [24, 36], [38, 48]],nx:50,ny:62,bg:"assets/worlds/florida.webp",n:"Florida",r:"Piedra Alta",rondas:4,cats:["Historia de Uruguay","Lugar"],rica:true},
+ {id:"lavalleja",pasos:[[28, 18], [20, 28], [32, 40], [24, 52]],nx:60,ny:46,bg:"assets/worlds/lavalleja.webp",n:"Minas",r:"Juan Antonio Lavalleja",rondas:4,cats:["Cultura uruguaya","Musica y fiesta"],rica:true},
+ {id:"paysandu",pasos:[[24, 18], [36, 26], [26, 38], [40, 50]],nx:44,ny:58,bg:"assets/worlds/paysandu.webp",n:"Paysandú",r:"Meseta de Artigas",rondas:4,cats:["Ciudades de Uruguay","Actividades"],rica:true},
+ {id:"rio-negro",pasos:[[20, 20], [32, 28], [22, 40], [36, 50]],nx:54,ny:50,bg:"assets/worlds/rio-negro.webp",n:"Fray Bentos",r:"Puente San Martín",rondas:4,cats:["Historia de Uruguay","Comida"],rica:true},
+ {id:"rivera",pasos:[[26, 16], [38, 26], [28, 38], [42, 48]],nx:58,ny:60,bg:"assets/worlds/rivera.webp",n:"Rivera",r:"Fructuoso Rivera",rondas:4,cats:["Ciudades de Uruguay","Viaje"],rica:true},
+ {id:"san-jose",pasos:[[22, 20], [34, 28], [24, 40], [38, 50]],nx:48,ny:46,bg:"assets/worlds/san-jose.webp",n:"San José de Mayo",r:"El Tambero",rondas:4,cats:["Casa y trabajo","Escuela e infancia"],rica:true},
+ {id:"soriano",pasos:[[24, 18], [36, 26], [26, 38], [40, 48]],nx:56,ny:56,bg:"assets/worlds/soriano.webp",n:"Mercedes",r:"El Navegante",rondas:4,cats:["Cosas de la casa","Persona"],rica:true},
+ {id:"treinta-y-tres",pasos:[[20, 16], [32, 24], [22, 36], [36, 48]],nx:46,ny:48,bg:"assets/worlds/treinta-y-tres.webp",n:"Treinta y Tres",r:"El Pescador",rondas:4,cats:["Cultura uruguaya","Pelicula"],rica:true},
+ {id:"centenario",pasos:[[20, 22], [32, 30], [22, 42], [36, 52]],nx:60,ny:55,bg:"assets/worlds/estadio-centenario.webp",n:"Estadio Centenario",r:"La Campeona",rondas:4,cats:["Personajes","Dicho popular"],rica:true}];
 let ganados=(()=>{try{return new Set(JSON.parse(localStorage.getItem("larueda_mundo")||"[]"));}catch(e){return new Set();}})();
 const guardarMundo=()=>{try{localStorage.setItem("larueda_mundo",JSON.stringify([...ganados]));}catch(e){}};
 let destino=null,pasoActual=null,fSiguientePaso=null;
