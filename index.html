@@ -2629,10 +2629,10 @@ function tnEjecutarCompra(tipo,precio){
       {icono:"❤️",texto:"+1 vida"},{icono:"🪙",texto:"+300"},{icono:"🎁",texto:"+1 sobre"}
     ],()=>colMostrarSobreConseguido(cual,true));
   }else if(tipo==="pack_racha"){
-    meta.vidas=VIDAS_MAX;meta.proxima=0;meta.ultimaRuleta=0;
+    meta.vidas=VIDAS_MAX;meta.proxima=0;meta.ultimaRuleta=0;sumarMonedas(500);
     const cual1=otorgarSobreSorpresa(true);otorgarSobreSorpresa(true);
     mostrarPackItems([
-      {icono:"❤️",texto:"Vidas llenas"},{icono:"🎁",texto:"+2 sobres"}
+      {icono:"❤️",texto:"Vidas llenas"},{icono:"🪙",texto:"+500"},{icono:"🎁",texto:"+2 sobres"}
     ],()=>colMostrarSobreConseguido(cual1,true));
   }else if(tipo==="pack_mutante"){
     avataresComprados.add("avatar-27");guardarAvataresComprados();equiparAvatarPremium("avatar-27");
