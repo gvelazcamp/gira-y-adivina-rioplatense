@@ -3407,21 +3407,29 @@ function colAbrirSobre(cual){
   setTimeout(()=>{try{
     $("sobreAnimImg").src=COLECCIONES[cual].sobreAbierto;
     setTimeout(()=>{try{
-      if(cm.completada){
+      /* Antes, mientras faltaban coleccionables, un sobre SIEMPRE daba uno
+         nuevo (100% predecible: los primeros N sobres de una ciudad son
+         coleccionable garantizado, recién después viene el premio extra).
+         Para que abrir sobres tenga algo de sorpresa incluso antes de
+         completar la colección, hay una chance de premio extra igual que
+         cuando ya está completa. */
+      const sorpresaExtra=!cm.completada&&Math.random()<0.35;
+      if(cm.completada||sorpresaExtra){
         const premio=colPremioExtra();
         $("sobreAnimFase").style.display="none";
         $("sobrePremioFase").style.display="block";
         $("sobrePremioImg").src=COLECCIONES[cual].sobreAbierto;
         colUltimoPremio=null;$("sobrePremioCompartir").style.display="none";
         ciudadUltima100=null;$("sobrePremio100Compartir").style.display="none";
+        const razon=cm.completada?"Colección completa — sobre extra":"¡Sobre sorpresa!";
         if(premio.tipo==="vida"){
           recuperarVida();
           $("sobrePremioTit").textContent="❤️ ¡VIDA EXTRA!";
-          $("sobrePremioTxt").textContent="Colección completa — sobre extra: +1 vida de regalo.";
+          $("sobrePremioTxt").textContent=razon+": +1 vida de regalo.";
         }else{
           sumarMonedas(premio.valor);
           $("sobrePremioTit").textContent="🪙 ¡MONEDAS EXTRA!";
-          $("sobrePremioTxt").textContent="Colección completa — sobre extra: +"+premio.valor+" 🪙 de regalo.";
+          $("sobrePremioTxt").textContent=razon+": +"+premio.valor+" 🪙 de regalo.";
         }
         mundoActualizarHud();
         if($("pantDurazno").style.display==="block")dzActualizarHud();
