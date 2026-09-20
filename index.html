@@ -408,6 +408,8 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 .rk-info span{font-size:.72rem;color:#B49FCE}
 .rk-monedas{font-weight:800;color:var(--oro);font-size:.85rem;flex-shrink:0;white-space:nowrap}
 .rk-avatar{width:34px;height:34px;border-radius:50%;flex-shrink:0;object-fit:cover;border:1px solid #FFFFFF33;background:#00000055}
+.rk-avatar-wrap{position:relative;flex-shrink:0;line-height:0}
+.rk-online-dot{position:absolute;bottom:0;right:0;width:10px;height:10px;border-radius:50%;background:#2ECC71;border:2px solid #1B0F2E}
 .lg-check{font-size:1.3rem;color:#1DBF5F;flex-shrink:0}
 #xGlobalCerrar{display:none;position:fixed;top:14px;right:14px;z-index:60;width:38px;height:38px;
  border-radius:50%;background:#2A1A3CEE;color:var(--crema);border:1px solid #FFFFFF33;
@@ -2937,10 +2939,15 @@ async function usrCargarLista(){
     error=r.error;
   }catch(e){error=e;}
   if(error){$("usrEstado").textContent="No se pudo cargar. Revisá tu conexión.";return;}
+  /* No hay presencia en tiempo real: se aproxima "conectado" a si mandó
+     su latido (empujarUsuario, cada 90s mientras el juego está abierto)
+     hace menos de 3 minutos. */
+  const AHORA=Date.now(),VENTANA_ONLINE_MS=3*60*1000;
   (data||[]).forEach(f=>{
+    const online=f.actualizado_en&&(AHORA-new Date(f.actualizado_en).getTime())<VENTANA_ONLINE_MS;
     const d=document.createElement("div");
     d.className="rk-fila";
-    d.innerHTML=(f.avatar?'<img class="rk-avatar" src="assets/avatars/'+rkEsc(f.avatar)+'.webp" alt="">':'')+
+    d.innerHTML=(f.avatar?'<span class="rk-avatar-wrap"><img class="rk-avatar" src="assets/avatars/'+rkEsc(f.avatar)+'.webp" alt="">'+(online?'<span class="rk-online-dot"></span>':'')+'</span>':'')+
       '<div class="rk-info"><b>'+rkEsc(f.apodo)+'</b>'+
       '<span>🗺️ '+f.ciudades_ganadas+'/9 · 🏆 racha '+f.mejor_racha+' · 🏅 '+f.logros+'</span></div>';
     cont.appendChild(d);
@@ -4471,7 +4478,15 @@ actualizarChipPerfil();
 /* window.supabase todavía no existe acá: este script corre sincrónico
    durante el parseo, antes de que termine de cargar supabase.js (que es
    "defer"). Por eso el registro de usuario espera al evento load. */
-window.addEventListener("load",()=>{if(perfilExiste())empujarUsuario();});
+window.addEventListener("load",()=>{
+  if(!perfilExiste())return;
+  empujarUsuario();
+  /* Late para "conectado ahora": no hay presencia en tiempo real, así que
+     se aproxima con un latido cada 90s mientras el juego está abierto y
+     visible — actualizado_en se usa después como "online" si es reciente. */
+  setInterval(()=>{if(document.visibilityState==="visible")empujarUsuario();},90000);
+  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")empujarUsuario();});
+});
 mundoActualizarHud();
 chequearRachaDiaria();
 if(perfilExiste())$("miNombre").value=perfil.nombre;
