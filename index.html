@@ -6797,12 +6797,13 @@ $("fBoton").onclick=()=>{
         return;
       }
       /* Debug para previsualizar la pantalla de "nombre y avatar
-         obligatorio" en una cuenta que YA tiene perfil, sin tocarlo: abrir
-         con ?probarperfil=1 muestra la pantalla vacía y con el foquito
-         igual que la vería alguien nuevo. Tocar "Continuar" acá NO
-         guarda nada (es solo para mirar) — para salir sin cambios, tocar
-         Cerrar o Continuar, da igual. */
-      let probarperfil=false;try{probarperfil=new URLSearchParams(location.search).get("probarperfil")==="1";}catch(e){}
+         obligatorio" en una cuenta que YA tiene perfil, sin tocarlo:
+         se muestra sola en la cuenta de Gonzalo (por nombre de perfil) o
+         con ?probarperfil=1 en la URL. Tocar "Continuar" acá NO guarda
+         nada (es solo para mirar) — sacar el chequeo de "Gonzalo" apenas
+         lo confirme. */
+      let probarperfil=false;try{probarperfil=new URLSearchParams(location.search).get("probarperfil")==="1"||
+        (perfil&&perfil.nombre||"").trim().toLowerCase()==="gonzalo";}catch(e){}
       if(probarperfil){setTimeout(previsualizarPerfilVacio,900);return;}
       tutChequearBienvenida();},espera);
   };
