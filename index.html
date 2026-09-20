@@ -2057,8 +2057,7 @@ const OBJETIVOS=[
   {id:"sobre",nombre:"Abrí 1 sobre de colección",icono:"🎁",meta:1,premio:70},
   {id:"coleccion",nombre:"Completá una colección",icono:"📚",meta:1,premio:150},
   {id:"rachaPartidas",nombre:"Ganá 4 partidas seguidas",icono:"🔥",meta:4,premio:100},
-  {id:"rankingTop",nombre:"Entrá al Top 3 del ranking de amigos",icono:"🥉",meta:1,premio:150},
-  {id:"rankingTop1",nombre:"Llegá al Top 1 del ranking de amigos",icono:"🥇",meta:1,premio:200}
+  {id:"rankingTop",nombre:"Entrá al Top 3 del ranking de amigos",icono:"🥉",meta:1,premio:150}
 ];
 const OBJ_PREMIO_TODOS=200;
 function objVacio(){return{fecha:fechaHoy(),partidas:0,giros:0,vocales:0,poderes:0,victorias:0,reclamados:[]};}
@@ -2721,7 +2720,8 @@ const LOGROS=[
   {id:"ruleta",nombre:"Con suerte",desc:"Girá la ruleta de premios",icono:"🎡",premio:30},
   {id:"jackpot",nombre:"¡Pozo grande!",desc:"Ganá el premio mayor de la ruleta",icono:"💰",premio:100},
   {id:"tienda",nombre:"Comprador",desc:"Comprá algo en la tienda",icono:"🛍️",premio:30},
-  {id:"monedas1000",nombre:"Ahorrista",desc:"Juntá 1000 monedas",icono:"🪙",premio:50}
+  {id:"monedas1000",nombre:"Ahorrista",desc:"Juntá 1000 monedas",icono:"🪙",premio:50},
+  {id:"rankingTop1",nombre:"En la cima",desc:"Llegá al 1er puesto del ranking de amigos",icono:"🥇",premio:200}
 ];
 function cargarLogros(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_logros")||"[]"));}catch(e){return new Set();}
@@ -2884,10 +2884,10 @@ async function rkCargarTabla(){
   if(error){$("rkEstado").textContent="No se pudo cargar. Revisá tu conexión.";return;}
   const miPos=(data||[]).findIndex(f=>f.apodo===rkPerfil.apodo);
   if(miPos>=0&&miPos<3&&!(objObtenerHoy().rankingTop||0))objSumar("rankingTop",1);
-  /* Guardado con !(...) para que sume una sola vez por día aunque en el
-     medio bajes y vuelvas a subir al 1er puesto varias veces (no hay que
-     festejarlo cada vez que se re-entra al Top 1 el mismo día). */
-  if(miPos===0&&!(objObtenerHoy().rankingTop1||0))objSumar("rankingTop1",1);
+  /* Logro (no objetivo diario): se paga una sola vez, para siempre — si
+     fuera diario, alguien constante en el 1er puesto cobraría de nuevo
+     cada día solo por seguir ahí arriba. */
+  if(miPos===0)logroDesbloquear("rankingTop1");
   (data||[]).forEach((f,i)=>{
     const d=document.createElement("div");
     d.className="rk-fila"+(f.apodo===rkPerfil.apodo?" yo":"");
