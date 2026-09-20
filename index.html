@@ -6734,7 +6734,18 @@ $("fBoton").onclick=()=>{
   const cerrar=()=>{
     if(yaCerrado)return;yaCerrado=true;
     const espera=Math.max(0,MIN_ESPERA-(performance.now()-t0));
-    setTimeout(()=>{cap.classList.add("ido");setTimeout(()=>cap.remove(),800);mostrarPromptIOS();tutChequearBienvenida();},espera);
+    setTimeout(()=>{cap.classList.add("ido");setTimeout(()=>cap.remove(),800);mostrarPromptIOS();
+      /* Debug para revisar el video promo y el tutorial en una cuenta ya
+         creada (que normalmente nunca los vuelve a ver): abrir el juego
+         con ?revisar=1 en la URL los fuerza a los dos, sin tocar el
+         comportamiento normal de nadie más. */
+      let revisar=false;try{revisar=new URLSearchParams(location.search).get("revisar")==="1";}catch(e){}
+      if(revisar){
+        setTimeout(()=>{$("capaBienvenida").classList.add("ver");},900);
+        setTimeout(()=>{$("capaPromoTienda").classList.add("ver");ptIniciarChromaKey();},4000);
+        return;
+      }
+      tutChequearBienvenida();},espera);
   };
   barra.style.transitionDuration=MIN_ESPERA+"ms";
   requestAnimationFrame(()=>{barra.style.width="100%";});
