@@ -2444,11 +2444,18 @@ function tnRazonBloqueo(tipo){
   if(tipo==="pack_mutante")return"✅ Ya lo tenés completo";
   return"";
 }
-function otorgarSobreSorpresa(){
+function otorgarSobreSorpresa(garantizado){
   const ids=Object.keys(COLECCIONES);
   const cual=ids[Math.floor(Math.random()*ids.length)];
   const cm=coleccionMeta[cual];
-  if(cm){cm.sobres++;guardarColeccionMeta();}
+  /* Los packs que ya traen vida y monedas como parte del pack (Explorador,
+     Racha) no necesitan que el sobre de adentro TAMBIÉN pueda darte más
+     vida o monedas — eso se siente repetido. Para esos, el sobre viene
+     "garantizado": siempre da un coleccionable nuevo (salvo que la
+     colección ya esté 100% completa, ahí no queda otra que el premio
+     extra). Los sobres normales de juego siguen con su sorpresa de
+     siempre. */
+  if(cm){cm.sobres++;if(garantizado)cm.sobresGarantizados=(cm.sobresGarantizados||0)+1;guardarColeccionMeta();}
   return cual;
 }
 function tnActualizar(){
@@ -2617,13 +2624,13 @@ function tnEjecutarCompra(tipo,precio){
     }
   }else if(tipo==="pack_explorador"){
     recuperarVida();sumarMonedas(300);
-    const cual=otorgarSobreSorpresa();
+    const cual=otorgarSobreSorpresa(true);
     mostrarPackItems([
       {icono:"❤️",texto:"+1 vida"},{icono:"🪙",texto:"+300"},{icono:"🎁",texto:"+1 sobre"}
     ],()=>colMostrarSobreConseguido(cual,true));
   }else if(tipo==="pack_racha"){
     meta.vidas=VIDAS_MAX;meta.proxima=0;meta.ultimaRuleta=0;
-    const cual1=otorgarSobreSorpresa();otorgarSobreSorpresa();
+    const cual1=otorgarSobreSorpresa(true);otorgarSobreSorpresa(true);
     mostrarPackItems([
       {icono:"❤️",texto:"Vidas llenas"},{icono:"🎁",texto:"+2 sobres"}
     ],()=>colMostrarSobreConseguido(cual1,true));
@@ -3299,6 +3306,7 @@ function cargarColeccionMeta(){
     const cm=m[cual];
     if(typeof cm.rondasProgreso!=="number")cm.rondasProgreso=0;
     if(typeof cm.sobres!=="number")cm.sobres=0;
+    if(typeof cm.sobresGarantizados!=="number")cm.sobresGarantizados=0;
     if(!Array.isArray(cm.coleccionables))cm.coleccionables=[];
     if(typeof cm.ultimaCompraSobre!=="number")cm.ultimaCompraSobre=0;
     // Saca ids viejos/inválidos que hayan quedado de versiones anteriores de la colección,
@@ -3462,6 +3470,8 @@ function colAbrirSobre(cual){
   const cm=coleccionMeta[cual];
   if(colAbriendo||cm.sobres<=0)return;
   colAbriendo=true;colSobreCualActual=cual;
+  const esGarantizado=(cm.sobresGarantizados||0)>0;
+  if(esGarantizado)cm.sobresGarantizados--;
   cm.sobres--;guardarColeccionMeta();
   objSumar("sobre",1);
   $("capaColeccion").classList.remove("ver");
@@ -3479,7 +3489,7 @@ function colAbrirSobre(cual){
          Para que abrir sobres tenga algo de sorpresa incluso antes de
          completar la colección, hay una chance de premio extra igual que
          cuando ya está completa. */
-      const sorpresaExtra=!cm.completada&&Math.random()<0.35;
+      const sorpresaExtra=!cm.completada&&!esGarantizado&&Math.random()<0.35;
       if(cm.completada||sorpresaExtra){
         const premio=colPremioExtra();
         $("sobreAnimFase").style.display="none";
