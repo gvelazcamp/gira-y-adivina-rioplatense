@@ -6286,12 +6286,26 @@ let ruedasComprados=cargarRuedasComprados();
 const guardarRuedasComprados=()=>{try{localStorage.setItem("gya_ruedas_owned",JSON.stringify([...ruedasComprados]));}catch(e){}};
 /* Termina la prueba temporal que regalaba todos los Marcos de ruleta:
    se saca lo que se había regalado (una sola vez por dispositivo, no
-   vuelve a tocar compras hechas después de esto). */
-if(!localStorage.getItem("gya_ruedas_prueba_limpiada")){
+   vuelve a tocar compras hechas después de esto). La primera versión
+   de esta limpieza (gya_ruedas_prueba_limpiada) se olvidó de sacar 7
+   de las 15 ruletas regaladas (sheriff, desierto, forajido, pepitas,
+   locomotora, rodeo, casino) y nunca revisaba si la que había quedado
+   equipada seguía siendo propia — por eso algunos dispositivos que ya
+   habían corrido la limpieza vieja seguían viendo y jugando con una
+   ruleta que no habían comprado. Esta v2 corre de nuevo en todos, saca
+   las 15, y si la equipada ya no es propia, vuelve a la Clásica. */
+if(!localStorage.getItem("gya_ruedas_prueba_limpiada_v2")){
   ["rueda-fuego","rueda-hielo","rueda-oro","rueda-neon","rueda-candy",
-   "rueda-espacio","rueda-selva","rueda-circo"].forEach(id=>ruedasComprados.delete(id));
+   "rueda-espacio","rueda-selva","rueda-circo","rueda-sheriff","rueda-desierto",
+   "rueda-forajido","rueda-pepitas","rueda-locomotora","rueda-rodeo","rueda-casino"
+  ].forEach(id=>ruedasComprados.delete(id));
   guardarRuedasComprados();
-  try{localStorage.setItem("gya_ruedas_prueba_limpiada","1");}catch(e){}
+  if(ruedaSkinEquipada&&!ruedasComprados.has(ruedaSkinEquipada)){
+    ruedaSkinEquipada="";
+    try{localStorage.setItem("gya_rueda_skin_equipada","");}catch(e){}
+    aplicarRuedaSkin();
+  }
+  try{localStorage.setItem("gya_ruedas_prueba_limpiada_v2","1");}catch(e){}
 }
 const ruedaSkinPoseida=m=>!m.precio||ruedasComprados.has(m.id);
 const guardarRuedaSkinEquipada=()=>{try{localStorage.setItem("gya_rueda_skin_equipada",ruedaSkinEquipada||"");}catch(e){}};
