@@ -1,4 +1,4 @@
-const CACHE_NAME = "gya-cache-v21";
+const CACHE_NAME = "gya-cache-v22";
 const APP_SHELL = ["./", "./index.html", "./manifest.json", "./icono-192.png", "./icono-512.png", "./assets/logo.webp"];
 
 self.addEventListener("install", (e) => {
@@ -47,9 +47,13 @@ self.addEventListener("fetch", (e) => {
   // versión más nueva del juego cuando hay internet (antes era
   // cache-primero y por eso el celular seguía viendo versiones viejas
   // aunque ya se hubiera subido un arreglo). Si no hay conexión, usa lo
-  // cacheado.
+  // cacheado. cache:"no-store" es clave acá: sin esto, el fetch podía
+  // resolverse con la caché HTTP propia del navegador (por los headers
+  // que manda GitHub Pages) sin ir realmente a la red, y el celular
+  // seguía viendo una versión vieja aunque "network-first" pareciera
+  // estar andando.
   e.respondWith(
-    fetch(e.request)
+    fetch(e.request, { cache: "no-store" })
       .then((resp) => {
         if (resp && resp.status === 200 && resp.type === "basic") {
           const clone = resp.clone();
