@@ -83,6 +83,24 @@ ya existe sin usar en `assets/shop/pack-marco-vacio.webp` (mismo
 estilo que el Pack Racha pero en blanco) — no hace falta generar arte
 nuevo, solo poner ícono + texto de cada evento arriba de ese marco.
 
+### Pool de recompensas para ir variando
+
+Para que la recompensa de los eventos no sea siempre lo mismo,
+armamos un pool de premios de bajo valor (nunca nada premium) y de
+ahí se va rotando/combinando cuál toca cada vez — referencia: Pocket
+Champs varía entre monedas, gemas, tickets, boosts y skins
+cosméticas, siempre bajo valor.
+
+Pool para este juego (decidido con Gonzalo):
+- 🪙 Monedas (cantidad variable, ej. 100-300)
+- ❤️ Vida
+- 🖼️ Marco de avatar (ya lo usa el Evento 1, prototipo actual)
+- 🖼️ Marco de tablero / ficha (ya lo usa el Evento 2, prototipo actual)
+- 🔍 Una Pista gratis (hoy cuesta 🪙150 en la partida — regalarla de
+  vez en cuando se siente bien sin regalar nada caro)
+- 🎁 Un coleccionable de alguna colección (lo mismo que ya da el modo
+  Mundo normal al ganar una ronda)
+
 ## Otras cosas ya con base preparada pero sin terminar
 
 - [ ] **Dinero real**: la UI de paquetes con dinero real ya está armada
