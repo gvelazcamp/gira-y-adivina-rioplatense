@@ -3117,8 +3117,7 @@ const AVATARES_PREMIUM=[
   {id:"avatar-28",nombre:"Arácnida",precio:7500},
   {id:"avatar-29",nombre:"Calabaza",precio:8000},
   {id:"avatar-30",nombre:"Slime Rosa",precio:8000},
-  {id:"avatar-31",nombre:"Alien Cósmico",precio:8000},
-  {id:"avatar-32",nombre:"Abuelo Hippie",precio:8000}
+  {id:"avatar-31",nombre:"Alien Cósmico",precio:8000}
 ];
 function cargarAvataresComprados(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_avatars_owned")||"[]"));}catch(e){return new Set();}
@@ -4461,7 +4460,7 @@ function empezarDestino(i,paso){
 let botT=null,botTossT=null;
 
 /* ---- Perfil del jugador (nombre + avatar) ---- */
-const AVATARES=Array.from({length:21},(_,i)=>"avatar-"+String(i+1).padStart(2,"0"));
+const AVATARES=Array.from({length:21},(_,i)=>"avatar-"+String(i+1).padStart(2,"0")).concat(["avatar-33"]);
 const AVATAR_EXCLUSIVO={id:"avatar-22",nombre:"gonzalo"};
 function cargarPerfil(){
   let nombre="",avatar="";
@@ -4601,7 +4600,7 @@ const NOMBRES_ONLINE=[
   {n:"Bruno.Salto",g:"m"},{n:"Ro_Colonia",g:"f"},{n:"NatyPaysandu",g:"f"},{n:"Gonza_Tacua",g:"m"},
   {n:"Meli_BsAs",g:"f"},{n:"ElTanoUY",g:"m"},{n:"Fabi_Rocha",g:"f"},{n:"Juanma22",g:"m"},
   {n:"LauriUY",g:"f"},{n:"Nacho.Rivera",g:"m"},{n:"Sole_Maldo",g:"f"},{n:"Ceci_Artigas",g:"f"}];
-const AVATARES_M=["avatar-01","avatar-03","avatar-05","avatar-07","avatar-09","avatar-11","avatar-13","avatar-15","avatar-18","avatar-21"];
+const AVATARES_M=["avatar-01","avatar-03","avatar-05","avatar-07","avatar-09","avatar-11","avatar-13","avatar-15","avatar-18","avatar-21","avatar-33"];
 const AVATARES_F=["avatar-02","avatar-04","avatar-06","avatar-08","avatar-10","avatar-12","avatar-14","avatar-16","avatar-17","avatar-19","avatar-20"];
 function rivalOnlineFalso(){
   const nombreExcl=(perfil.nombre||"").trim().toLowerCase();
