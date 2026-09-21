@@ -52,6 +52,24 @@ Ascent" cada 2 semanas):
   (diaria, con overlap) que lo que cuentan las notas de actualización
   oficiales, que solo anuncian los eventos "grandes".
 
+### Referencia: cómo lo hace Pocket Champs (juego de carreras)
+
+Gonzalo lo tiene instalado y mirando la app en vivo ve esto (no sale
+así de claro buscando en internet, los blogs oficiales solo hablan de
+eventos más grandes tipo "Squad Training" cada 4 semanas o "Gadget
+Ascent" cada 2 semanas):
+
+- Cada 24hs hay **Carrera diaria** (da un sobre) + al menos 2
+  "Eventos especiales" nuevos corriendo en paralelo, cada uno con su
+  propia duración (ej. "Concurso de correr" dura 24hs, y ya se ve
+  "Maravillas selváticas" anunciado para arrancar en 24hs más).
+- Da la sensación de que hay que completar uno para que se habilite
+  otro (progresión/desbloqueo encadenado), no que todos estén sueltos
+  a la vez — a confirmar jugando más para entender bien la regla.
+- O sea la cadencia real que se siente jugando es mucho más seguida
+  (diaria, con overlap) que lo que cuentan las notas de actualización
+  oficiales, que solo anuncian los eventos "grandes".
+
 ## Otras cosas ya con base preparada pero sin terminar
 
 - [ ] **Dinero real**: la UI de paquetes con dinero real ya está armada
