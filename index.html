@@ -1881,7 +1881,7 @@ let ruedaSkinEquipada=cargarRuedaSkinEquipada();
    el juego dice que ganó SIEMPRE es el que está dibujado bajo la
    flecha. */
 const RUEDAS_PAUSADAS=false;
-const RUEDA_TEXTO_HORNEADO=new Set(["rueda-fuego","rueda-hielo","rueda-oro","rueda-neon","rueda-candy","rueda-espacio","rueda-selva","rueda-circo","rueda-sheriff","rueda-desierto","rueda-forajido","rueda-pepitas","rueda-locomotora","rueda-rodeo","rueda-casino"]);
+const RUEDA_TEXTO_HORNEADO=new Set(["rueda-fuego","rueda-hielo","rueda-oro","rueda-neon","rueda-candy","rueda-espacio","rueda-selva","rueda-circo","rueda-sheriff","rueda-desierto","rueda-forajido","rueda-pepitas","rueda-locomotora","rueda-rodeo","rueda-casino","rueda-ovni","rueda-abduccion"]);
 function dibujarRuedaJuego(){
   const CENTRO=300,paso=Math.PI*2/SEG.length,conSkin=!RUEDAS_PAUSADAS&&!!ruedaSkinEquipada;
   cx.clearRect(0,0,600,600);
@@ -6258,7 +6258,9 @@ const RUEDAS_SKIN=[
   {id:"rueda-pepitas",nombre:"Rueda de Oro Salvaje",precio:9500,nuevo:true},
   {id:"rueda-locomotora",nombre:"Rueda Locomotora",precio:9500,nuevo:true},
   {id:"rueda-rodeo",nombre:"Rueda Rodeo",precio:9500,nuevo:true},
-  {id:"rueda-casino",nombre:"Rueda Casino",precio:9500,nuevo:true}
+  {id:"rueda-casino",nombre:"Rueda Casino",precio:9500,nuevo:true},
+  {id:"rueda-ovni",nombre:"Rueda OVNI",precio:9500,nuevo:true},
+  {id:"rueda-abduccion",nombre:"Rueda Abducción",precio:9500,nuevo:true}
 ];
 function cargarRuedasComprados(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_ruedas_owned")||"[]"));}catch(e){return new Set();}
