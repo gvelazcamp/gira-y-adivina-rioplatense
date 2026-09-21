@@ -353,11 +353,6 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 .tn-comprar-mini,.tn-item.tn-real,
 #tituloDineroReal,#tituloDineroReal+.tn-proximamente,#tituloDineroReal+.tn-proximamente+.tn-grid{
   display:none!important}
-/* PAUSA DE MARCOS DE RULETA: a pedido de Gonzalo, mientras decide qué
-   hacer con el desfasaje de las imágenes (ver RUEDAS_PAUSADAS en el
-   JS). Nada se borra, sólo se esconde. Para reactivar, borrar este
-   bloque Y poner RUEDAS_PAUSADAS=false más arriba. */
-#tituloRuedas,#ruedaGrid,#ruedaSelector{display:none!important}
 #sobresGrid .tn-item:not(.sobre-basico){display:none}
 .tn-item.tn-card{display:flex;flex-direction:column;align-items:stretch;gap:6px;text-align:center;
  padding:10px;min-width:0;border-width:2px;border-radius:18px;box-shadow:0 4px 0 #00000060,inset 0 1px 0 #FFFFFF1A;
@@ -1879,40 +1874,14 @@ function cargarRuedaSkinEquipada(){
   try{return localStorage.getItem("gya_rueda_skin_equipada")||"";}catch(e){return"";}
 }
 let ruedaSkinEquipada=cargarRuedaSkinEquipada();
-/* PAUSA DE MARCOS DE RULETA: a pedido de Gonzalo, mientras decide qué
-   hacer con el desfasaje de las imágenes. No se borra nada (compras,
-   equipado, tienda siguen intactos en los datos) — sólo se oculta la
-   parte visual: la rueda real siempre se ve Clásica, no aparece la
-   sección en la Tienda ni el selector en Jugar online. Para reactivar,
-   poner esto en false (y sacar el bloque CSS de más abajo con el
-   mismo comentario). */
-const RUEDAS_PAUSADAS=true;
-/* Cada imagen de ruleta comprada viene con sus 24 gajos ya dibujados,
-   pero no todas empiezan el primer gajo en el mismo lugar que nuestra
-   grilla de 24 partes iguales (arranca en el 3 en punto). En algunas
-   el centro de un gajo queda justo donde debería estar un borde, así
-   que el numerito cae pisando dos colores. Se midió a ojo/con
-   análisis de píxeles cuánto hay que correr cada una para que caiga
-   centrado en el gajo real de la imagen (medio gajo = 7.5°). */
-const RUEDA_OFFSET={
-  "rueda-oro":-7.5,
-  "rueda-locomotora":-7.5,"rueda-pepitas":-7.5,"rueda-rodeo":-7.5,
-  "rueda-desierto":-7.5
-};
-/* PRUEBA TEMPORAL: estas 8 ya vienen con el número de cada gajo
-   horneado en la imagen (no en blanco como el resto) — con esas no
-   hay que dibujar el numerito propio del juego encima, se pisaría con
-   el de la imagen. */
-const RUEDA_TEXTO_HORNEADO=new Set(["rueda-hielo","rueda-sheriff","rueda-casino","rueda-neon","rueda-espacio","rueda-selva","rueda-candy","rueda-circo"]);
-/* PRUEBA TEMPORAL: a diferencia de RUEDA_OFFSET (que corrige la
-   rotación de la etiqueta chica sobre una imagen en blanco), esto
-   corrige la rotación de TODA la imagen horneada, para que el gajo que
-   el juego cree que ganó sea el mismo que se lee dibujado en la
-   imagen. Medido comparando, gajo por gajo, dónde cae cada uno en la
-   imagen contra dónde lo espera el juego (ver segmentoDe). Solo
-   "rueda-circo" está medida y confirmada por ahora — las otras 7
-   quedan con corrección 0 (sin verificar) hasta medirlas igual. */
-const RUEDA_ROTACION_HORNEADO={"rueda-circo":-15};
+/* Las 15 imágenes de assets/ruedas/ están dibujadas por código (no por
+   IA) con exactamente los mismos 24 gajos, en el mismo orden y el
+   mismo ángulo que usa segmentoDe() para calcular el resultado — por
+   eso ninguna necesita corrección de rotación ni offset: el gajo que
+   el juego dice que ganó SIEMPRE es el que está dibujado bajo la
+   flecha. */
+const RUEDAS_PAUSADAS=false;
+const RUEDA_TEXTO_HORNEADO=new Set(["rueda-fuego","rueda-hielo","rueda-oro","rueda-neon","rueda-candy","rueda-espacio","rueda-selva","rueda-circo","rueda-sheriff","rueda-desierto","rueda-forajido","rueda-pepitas","rueda-locomotora","rueda-rodeo","rueda-casino"]);
 function dibujarRuedaJuego(){
   const CENTRO=300,paso=Math.PI*2/SEG.length,conSkin=!RUEDAS_PAUSADAS&&!!ruedaSkinEquipada;
   cx.clearRect(0,0,600,600);
@@ -1932,32 +1901,9 @@ function dibujarRuedaJuego(){
     return;
   }
   /* Con un marco de ruleta comprado, la rueda YA ES el diseño comprado
-     (los gajos, colores y bordes son el fondo del canvas) — acá no se
-     dibuja ningún gajo propio del juego. Sólo se pone el número/etiqueta
-     de cada gajo en una chip chica arriba del diseño, para que se lea
-     sin importar los colores de abajo, y respetando exactamente los
-     mismos 24 gajos que la imagen comprada ya trae dibujados. Si la
-     imagen ya trae el número horneado (RUEDA_TEXTO_HORNEADO), no se
-     dibuja nada más — se pisaría con el de la imagen. */
-  if(RUEDA_TEXTO_HORNEADO.has(ruedaSkinEquipada))return;
-  const R=225,corrGrados=RUEDA_OFFSET[ruedaSkinEquipada]||0;
-  SEG.forEach((s,i)=>{const a0=i*paso,mid=a0+paso/2+corrGrados*Math.PI/180;
-   const et=s.t?ETI[s.t]:"$"+s.v;
-   const flip=mid>Math.PI/2&&mid<Math.PI*1.5;
-   cx.save();cx.translate(CENTRO,CENTRO);cx.rotate(mid);
-   if(flip)cx.rotate(Math.PI);
-   cx.translate(flip?-R:R,0);
-   cx.font=s.t?"700 19px Outfit, sans-serif":"800 23px 'Archivo Black', sans-serif";
-   cx.textAlign="center";cx.textBaseline="middle";
-   const w=cx.measureText(et).width,chipW=w+18,chipH=27;
-   cx.beginPath();
-   if(cx.roundRect)cx.roundRect(-chipW/2,-chipH/2,chipW,chipH,chipH/2);
-   else cx.rect(-chipW/2,-chipH/2,chipW,chipH);
-   cx.globalAlpha=.85;cx.fillStyle=s.t?FONDO[s.t]:"#0C0616";cx.fill();cx.globalAlpha=1;
-   cx.lineWidth=1.4;cx.strokeStyle="rgba(255,255,255,.32)";cx.stroke();
-   cx.fillStyle=s.t?TINTA[s.t]:"#F6EFE2";
-   cx.fillText(et,0,1);
-   cx.restore();});
+     (los gajos, colores, bordes y el número de cada gajo vienen
+     dibujados en la propia imagen) — acá no hay nada más para dibujar
+     en el canvas, que queda transparente mostrando el fondo. */
 }
 cv.style.backgroundImage=(!RUEDAS_PAUSADAS&&ruedaSkinEquipada)?"url('assets/ruedas/"+ruedaSkinEquipada+".webp')":"none";
 dibujarRuedaJuego();
@@ -1978,7 +1924,7 @@ function animarRueda(destino,alFinal){
   requestAnimationFrame(function frame(t){
     const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3.2);
     giroActual=ini+(destino-ini)*e;
-    cv.style.transform="rotate("+(giroActual+(RUEDA_ROTACION_HORNEADO[ruedaSkinEquipada]||0)).toFixed(2)+"deg) translateZ(0)";
+    cv.style.transform="rotate("+giroActual.toFixed(2)+"deg) translateZ(0)";
     const k=Math.floor(giroActual/paso);
     if(k!==ult){
       if(ult>=0){
