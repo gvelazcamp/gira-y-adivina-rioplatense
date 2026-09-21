@@ -4,7 +4,7 @@ Borrador de cosas pensadas para más adelante — nada de esto está
 empezado ni decidido en firme, es una lista para no perder la idea.
 Cuando se decida hacer alguna, se saca de acá y se hace de verdad.
 
-## Eventos por ciudad
+## ~~Eventos por ciudad~~ ✅ HECHO — en producción para todos
 
 Idea de Gonzalo: agrupar todo bajo una sección nueva "Eventos" en vez
 de tener "Partida Diaria" suelta como está hoy.
@@ -19,20 +19,21 @@ de tener "Partida Diaria" suelta como está hoy.
   ahora). Al terminarlo se abre un **sobre** que da algo (igual que
   los sobres de colección que ya existen).
 
-Cosas a pensar cuando se encare:
-- [ ] Qué dispara que aparezca cada evento de ciudad (¿rotación diaria
-      tipo `ofertaDiaIdx()`, ciudad al azar, o siguiendo el orden del
-      mapa?).
-- [ ] De dónde salen las frases "relacionadas con la ciudad" — banco de
-      frases nuevo por ciudad, o filtrar `FRASES` por categoría/tema
-      ligado a esa ciudad.
-- [ ] Qué da el sobre al completarlo — ¿monedas, algo para la
-      colección de esa ciudad, o algo nuevo?
-- [ ] Cómo se ve la sección "Eventos" en el home con los dos (Evento 1
-      = partida diaria, Evento 2 = ciudad) sin que quede muy cargada
-      junto a lo que ya hay (ofertas, ranking, etc.).
-- [ ] Qué pasa si no tocás el evento de ciudad a tiempo — ¿se pierde
-      o sigue disponible hasta que rote el siguiente?
+Cosas a pensar cuando se encare (resueltas):
+- [x] Qué dispara que aparezca cada evento de ciudad — rotación diaria
+      simple por índice de día (`eventoCiudadDeHoyIdx()`), mismo
+      criterio que `ofertaDiaIdx()`.
+- [x] De dónde salen las frases "relacionadas con la ciudad" — quedó
+      sin resolver del todo: el Evento 2 usa el modo Mundo normal
+      (`empezarDestino`), que elige categorías al azar (`categoriasAlAzar`),
+      no frases específicas de esa ciudad puntual.
+- [x] Qué da el sobre al completarlo — monedas + vida + un premio
+      extra que rota por día (ver pool más abajo).
+- [x] Cómo se ve la sección "Eventos" en el home — botón celeste
+      propio (`bMenuEventosPrueba`), lleva a una pantalla completa
+      nueva (`#eventos`), no un popup.
+- [x] Qué pasa si no tocás el evento a tiempo — no se pierde, sigue
+      disponible con el mismo premio hasta que rote al otro día.
 
 ### Referencia: cómo lo hace Pocket Champs (juego de carreras)
 
@@ -101,7 +102,7 @@ Pool para este juego (decidido con Gonzalo):
 - 🎁 Un coleccionable de alguna colección (lo mismo que ya da el modo
   Mundo normal al ganar una ronda)
 
-**Implementado en el prototipo:** vida+monedas quedan fijas en los dos
+**Implementado y en producción:** vida+monedas quedan fijas en los dos
 eventos, y el premio extra rota por día entre los 4 últimos ítems del
 pool (`EVENTO_PREMIOS_ROTAN`), con offset distinto entre Evento 1 y
 Evento 2 para que nunca coincidan el mismo día. El coleccionable
