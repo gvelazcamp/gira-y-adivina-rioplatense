@@ -935,7 +935,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <button class="menu-card mc-azul" id="bJugarOnline"><span class="mc-ico">👥</span><span class="mc-tit">Jugar con amigos</span><span class="mc-sub">Crear sala o entrar con código</span></button>
     <button class="menu-card mc-verde" id="bTienda" style="grid-column:1/-1"><span class="mc-ico">🛍️</span><span class="mc-tit">Tienda</span><span class="mc-sub">Monedas, marcos y más</span></button>
     <button class="menu-card mc-naranja" id="bSocial" style="grid-column:1/-1"><span class="mc-ico">📱</span><span class="mc-tit">Social</span><span class="mc-sub">Seguinos en redes</span></button>
-    <button class="menu-card mc-celeste" id="bMenuEventosPrueba" style="grid-column:1/-1;display:none"><span class="mc-ico">🎉</span><span class="mc-tit">Eventos</span><span class="mc-sub">Vista previa — solo vos</span></button>
+    <button class="menu-card mc-celeste" id="bMenuEventosPrueba" style="grid-column:1/-1"><span class="mc-ico">🎉</span><span class="mc-tit">Eventos</span><span class="mc-sub">Volvé cada día por algo nuevo</span></button>
   </div>
   <div class="mini-tit-fila">
     <img src="assets/decor/mas-disfrutar.png" alt="Más para disfrutar" class="deco-mas-disfrutar">
@@ -1674,20 +1674,15 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   </div>
 </section>
 
-<!-- PRUEBA TEMPORAL: vista previa real de "Eventos" (ver IDEAS.md) —
-     solo visible para Gonzalo, para ver cómo quedaría antes de
-     mostrarlo a todos. Evento 1 reusa la Partida Diaria tal cual ya
-     funciona; Evento 2 reusa el modo Mundo contra la máquina en la
-     ciudad del día (empezarDestino), que ya entrega un sobre de
-     colección de esa ciudad al ganar una ronda — no hace falta premio
-     nuevo. Tarjetas con los colores del juego (no la imagen azul de
-     Pocket Champs: quedaba con fondo blanco del botón por detrás). Es
-     una <section> de pantalla completa como #mundo o #setup, no un
-     popup chico — Gonzalo pidió específicamente que tocar "Eventos"
-     lleve a una pantalla nueva entera. -->
+<!-- Sección "Eventos" (ver IDEAS.md). Evento 1 reusa la Partida Diaria
+     tal cual ya funciona; Evento 2 reusa el modo Mundo contra la
+     máquina en la ciudad del día (empezarDestino). Tarjetas con los
+     colores del juego (no la imagen azul de Pocket Champs: quedaba
+     con fondo blanco del botón por detrás). Es una <section> de
+     pantalla completa como #mundo o #setup, no un popup chico. -->
 <section id="eventos">
   <h1 class="titulo" style="font-size:2.2rem">EVENTOS</h1>
-  <p class="sub">Vista previa — solo vos, Gonzalo</p>
+  <p class="sub">Volvé cada día por algo nuevo</p>
   <button type="button" class="evento-card cerrado" id="evBanner1">
     <span class="ev-cerrado">¡NUEVO EVENTO!</span>
     <span class="ev-abierto">
@@ -2354,23 +2349,21 @@ function tutChequearBienvenida(){
   pdChequearAutoPopup();empujarRanking();
 }
 let esPartidaDiaria=false;
-/* PRUEBA TEMPORAL (ver IDEAS.md): marca que la partida en curso vino
-   del Evento 2 (ciudad) de la vista previa de Eventos — así
-   sumarRondaColeccion() sabe que, al ganar la primera ronda, hay que
-   dar la recompensa fija del evento (monedas + vida + marco de
-   tablero elegido) en vez del sobre de colección normal de esa
-   ciudad, sin tocar cómo funciona el modo Mundo para todos los demás
-   casos. */
+/* Marca que la partida en curso vino del Evento 2 (ciudad) de
+   Eventos (ver IDEAS.md) — así sumarRondaColeccion() sabe que, al
+   ganar la primera ronda, hay que dar la recompensa del evento
+   (monedas + vida + premio rotativo) en vez del sobre de colección
+   normal de esa ciudad, sin tocar cómo funciona el modo Mundo para
+   todos los demás casos. */
 let esEventoCiudad=false;
 function eventoCiudadFichaDeHoyId(){
   const disp=FICHAS_SKIN.filter(f=>f.id);
   return disp[Math.floor(Date.now()/86400000)%disp.length].id;
 }
-/* PRUEBA TEMPORAL (ver IDEAS.md): pool de premios "extra" que van
-   rotando en los dos Eventos, además de la vida+monedas de siempre —
-   así no es siempre la misma combinación. Offset distinto entre
-   Evento 1 y Evento 2 (0 y 2, sobre un pool de 4) para que nunca
-   coincidan el mismo día. */
+/* Pool de premios "extra" que van rotando en los dos Eventos, además
+   de la vida+monedas de siempre — así no es siempre la misma
+   combinación. Offset distinto entre Evento 1 y Evento 2 (0 y 2,
+   sobre un pool de 4) para que nunca coincidan el mismo día. */
 const EVENTO_PREMIOS_ROTAN=[
   {tipo:"marco",nombre:"Marco de avatar"},
   {tipo:"ficha",nombre:"Marco de tablero"},
@@ -3179,11 +3172,10 @@ function cargarFramesComprados(){
 }
 let framesComprados=cargarFramesComprados();
 const guardarFramesComprados=()=>{try{localStorage.setItem("gya_frames_owned",JSON.stringify([...framesComprados]));}catch(e){}};
-/* PRUEBA TEMPORAL (ver IDEAS.md): rotación diaria simple, mismo
-   criterio que ofertaDiaIdx(), para que el marco de avatar que puede
-   dar la Partida Diaria sea el mismo durante todo el día — así la
-   vista previa de Eventos puede mostrar exactamente cuál es antes de
-   jugar. */
+/* Rotación diaria simple, mismo criterio que ofertaDiaIdx(), para que
+   el marco de avatar que puede dar la Partida Diaria sea el mismo
+   durante todo el día — así la pantalla de Eventos puede mostrar
+   exactamente cuál es antes de jugar. */
 function partidaDiariaMarcoDeHoyId(){return FRAMES[Math.floor(Date.now()/86400000)%FRAMES.length].id;}
 function cargarFrameEquipado(){
   try{return localStorage.getItem("gya_frame_equipped")||"";}catch(e){return"";}
@@ -4702,10 +4694,6 @@ $("perfilCerrar").onclick=()=>{
   $("setup").style.display="block";
 };
 actualizarChipPerfil();
-/* PRUEBA TEMPORAL: botón "Menú Prueba" en el inicio, solo visible para
-   Gonzalo, para entrar directo a probar ruletas sin gastar vidas ni
-   pasar por Jugar Online. */
-if($("bMenuEventosPrueba"))$("bMenuEventosPrueba").style.display=esGonzalo()?"":"none";
 /* window.supabase todavía no existe acá: este script corre sincrónico
    durante el parseo, antes de que termine de cargar supabase.js (que es
    "defer"). Por eso el registro de usuario espera al evento load. */
@@ -6485,13 +6473,10 @@ $("ruedaNext").onclick=()=>{
   equiparRuedaSkin(disp[ruedaSelectorIdx].id);
   $("ruedaNombreSel").textContent=disp[ruedaSelectorIdx].nombre;
 };
-/* PRUEBA TEMPORAL: prototipo de "Eventos" (ver IDEAS.md), solo visible
-   para Gonzalo (esGonzalo(), más abajo). Evento 1 = la Partida Diaria
-   de siempre, solo con otro marco. Evento 2 = la ciudad del día
+/* Sección "Eventos" (ver IDEAS.md). Evento 1 = la Partida Diaria de
+   siempre, con otro marco visual. Evento 2 = la ciudad del día
    (rotación simple por índice de día, como ofertaDiaIdx) jugada en
-   modo Mundo contra la máquina — el sobre de colección de esa ciudad
-   ya se entrega solo al ganar una ronda (sumarRondaColeccion), no
-   hace falta premio nuevo para probar la idea. */
+   modo Mundo contra la máquina. */
 function eventoCiudadDeHoyIdx(){return Math.floor(Date.now()/86400000)%MUNDO.length;}
 function eventoTiempoRestanteTxt(){
   const ms=86400000-(Date.now()%86400000);
