@@ -340,6 +340,13 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
  padding:14px 16px;margin-bottom:14px;border:2px solid #F5B30166;
  background:linear-gradient(160deg,var(--noche2),var(--noche));
  box-shadow:0 4px 0 #00000060,inset 0 1px 0 #FFFFFF1A;cursor:pointer}
+.evento-card .ev-abierto{display:block}
+.evento-card .ev-cerrado{display:none}
+.evento-card.cerrado{text-align:center;padding:26px 16px;border-color:#FFE49A;
+ background:linear-gradient(160deg,#FFD65C,var(--oro))}
+.evento-card.cerrado .ev-abierto{display:none}
+.evento-card.cerrado .ev-cerrado{display:block;color:var(--tinta);font-size:1.3rem;
+ font-weight:900;letter-spacing:.5px;text-shadow:0 1px 0 #FFFFFF55}
 .evento-card-tiempo{display:inline-flex;align-items:center;gap:5px;background:#00000055;
  color:var(--oro);font-size:.7rem;font-weight:800;padding:4px 10px;border-radius:20px;
  margin-bottom:10px;border:1px solid #F5B30144}
@@ -1673,22 +1680,28 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
      popup chico — Gonzalo pidió específicamente que tocar "Eventos"
      lleve a una pantalla nueva entera. -->
 <section id="eventos">
-  <h1 class="titulo" style="font-size:2.2rem">🎉 EVENTOS</h1>
+  <h1 class="titulo" style="font-size:2.2rem">EVENTOS</h1>
   <p class="sub">Vista previa — solo vos, Gonzalo</p>
-  <button type="button" class="evento-card" id="evBanner1">
-    <span class="evento-card-tiempo" id="evTiempo1">⏳</span>
-    <span class="evento-card-cuerpo">
-      <span class="evento-card-ico">🎁</span>
-      <span class="evento-card-info"><b>Partida Diaria</b>
-        <small>3 rondas contra la máquina — recompensa sorpresa</small></span>
+  <button type="button" class="evento-card cerrado" id="evBanner1">
+    <span class="ev-cerrado">¡NUEVO EVENTO!</span>
+    <span class="ev-abierto">
+      <span class="evento-card-tiempo" id="evTiempo1">⏳</span>
+      <span class="evento-card-cuerpo">
+        <span class="evento-card-ico">🎁</span>
+        <span class="evento-card-info"><b>Partida Diaria</b>
+          <small>3 rondas contra la máquina — recompensa sorpresa</small></span>
+      </span>
     </span>
   </button>
-  <button type="button" class="evento-card" id="evBanner2">
-    <span class="evento-card-tiempo" id="evTiempo2">⏳</span>
-    <span class="evento-card-cuerpo">
-      <img class="evento-card-img" id="evSobreImg" src="" alt="">
-      <span class="evento-card-info"><b id="evCiudadTit">Evento de ciudad</b>
-        <small>Ganá una ronda y llevate el sobre de esta ciudad</small></span>
+  <button type="button" class="evento-card cerrado" id="evBanner2">
+    <span class="ev-cerrado">¡NUEVO EVENTO!</span>
+    <span class="ev-abierto">
+      <span class="evento-card-tiempo" id="evTiempo2">⏳</span>
+      <span class="evento-card-cuerpo">
+        <img class="evento-card-img" id="evSobreImg" src="" alt="">
+        <span class="evento-card-info"><b id="evCiudadTit">Evento de ciudad</b>
+          <small>Ganá una ronda y llevate el sobre de esta ciudad</small></span>
+      </span>
     </span>
   </button>
   <button class="btn-grande sec" id="evCerrar">Volver al inicio</button>
@@ -6394,6 +6407,10 @@ function abrirEventos(){
   $("evSobreImg").src=col.sobreCerrado;
   const t=eventoTiempoRestanteTxt();
   $("evTiempo1").textContent=t;$("evTiempo2").textContent=t;
+  /* Cada vez que se entra a Eventos, las dos tarjetas arrancan tapadas
+     — "¡NUEVO EVENTO!" — y recién se revela cuál es al tocarlas. */
+  $("evBanner1").classList.add("cerrado");
+  $("evBanner2").classList.add("cerrado");
   document.querySelectorAll(".capa.ver").forEach(c=>c.classList.remove("ver"));
   $("setup").style.display="none";$("mundo").style.display="none";$("pantDurazno").style.display="none";
   $("eventos").style.display="block";
@@ -6401,8 +6418,14 @@ function abrirEventos(){
 function cerrarEventos(){$("eventos").style.display="none";$("setup").style.display="block";}
 $("bMenuEventosPrueba").onclick=abrirEventos;
 $("evCerrar").onclick=cerrarEventos;
-$("evBanner1").onclick=()=>{cerrarEventos();iniciarPartidaDiaria();};
-$("evBanner2").onclick=()=>{cerrarEventos();empezarDestino(eventoCiudadDeHoyIdx());};
+$("evBanner1").onclick=()=>{
+  if($("evBanner1").classList.contains("cerrado")){$("evBanner1").classList.remove("cerrado");return;}
+  cerrarEventos();iniciarPartidaDiaria();
+};
+$("evBanner2").onclick=()=>{
+  if($("evBanner2").classList.contains("cerrado")){$("evBanner2").classList.remove("cerrado");return;}
+  cerrarEventos();empezarDestino(eventoCiudadDeHoyIdx());
+};
 function tnRenderRuedas(contId,soloBasicos){
   const cont=$(contId||"ruedaGrid");if(!cont)return;cont.innerHTML="";
   const lista=soloBasicos?RUEDAS_SKIN.filter(m=>m.basico):
