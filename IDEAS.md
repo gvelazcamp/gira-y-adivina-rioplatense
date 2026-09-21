@@ -94,12 +94,19 @@ cosméticas, siempre bajo valor.
 Pool para este juego (decidido con Gonzalo):
 - 🪙 Monedas (cantidad variable, ej. 100-300)
 - ❤️ Vida
-- 🖼️ Marco de avatar (ya lo usa el Evento 1, prototipo actual)
-- 🖼️ Marco de tablero / ficha (ya lo usa el Evento 2, prototipo actual)
+- 🖼️ Marco de avatar
+- 🖼️ Marco de tablero / ficha
 - 🔍 Una Pista gratis (hoy cuesta 🪙150 en la partida — regalarla de
   vez en cuando se siente bien sin regalar nada caro)
 - 🎁 Un coleccionable de alguna colección (lo mismo que ya da el modo
   Mundo normal al ganar una ronda)
+
+**Implementado en el prototipo:** vida+monedas quedan fijas en los dos
+eventos, y el premio extra rota por día entre los 4 últimos ítems del
+pool (`EVENTO_PREMIOS_ROTAN`), con offset distinto entre Evento 1 y
+Evento 2 para que nunca coincidan el mismo día. El coleccionable
+siempre es el de la "ciudad del día". Se agregó `meta.pistasGratis`
+para que el premio de pista se pueda gastar de verdad en `hostPista()`.
 
 ## Otras cosas ya con base preparada pero sin terminar
 
