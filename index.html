@@ -1891,10 +1891,24 @@ try{document.body.classList.toggle("ruedas-visibles",!RUEDAS_PAUSADAS);}catch(e)
    análisis de píxeles cuánto hay que correr cada una para que caiga
    centrado en el gajo real de la imagen (medio gajo = 7.5°). */
 const RUEDA_OFFSET={
-  "rueda-oro":-7.5,"rueda-hielo":-7.5,"rueda-casino":-7.5,
+  "rueda-oro":-7.5,
   "rueda-locomotora":-7.5,"rueda-pepitas":-7.5,"rueda-rodeo":-7.5,
   "rueda-desierto":-7.5
 };
+/* PRUEBA TEMPORAL: estas 8 ya vienen con el número de cada gajo
+   horneado en la imagen (no en blanco como el resto) — con esas no
+   hay que dibujar el numerito propio del juego encima, se pisaría con
+   el de la imagen. */
+const RUEDA_TEXTO_HORNEADO=new Set(["rueda-hielo","rueda-sheriff","rueda-casino","rueda-neon","rueda-espacio","rueda-selva","rueda-candy","rueda-circo"]);
+/* PRUEBA TEMPORAL: a diferencia de RUEDA_OFFSET (que corrige la
+   rotación de la etiqueta chica sobre una imagen en blanco), esto
+   corrige la rotación de TODA la imagen horneada, para que el gajo que
+   el juego cree que ganó sea el mismo que se lee dibujado en la
+   imagen. Medido comparando, gajo por gajo, dónde cae cada uno en la
+   imagen contra dónde lo espera el juego (ver segmentoDe). Solo
+   "rueda-circo" está medida y confirmada por ahora — las otras 7
+   quedan con corrección 0 (sin verificar) hasta medirlas igual. */
+const RUEDA_ROTACION_HORNEADO={"rueda-circo":-15};
 function dibujarRuedaJuego(){
   const CENTRO=300,paso=Math.PI*2/SEG.length,conSkin=!RUEDAS_PAUSADAS&&!!ruedaSkinEquipada;
   cx.clearRect(0,0,600,600);
@@ -1918,7 +1932,10 @@ function dibujarRuedaJuego(){
      dibuja ningún gajo propio del juego. Sólo se pone el número/etiqueta
      de cada gajo en una chip chica arriba del diseño, para que se lea
      sin importar los colores de abajo, y respetando exactamente los
-     mismos 24 gajos que la imagen comprada ya trae dibujados. */
+     mismos 24 gajos que la imagen comprada ya trae dibujados. Si la
+     imagen ya trae el número horneado (RUEDA_TEXTO_HORNEADO), no se
+     dibuja nada más — se pisaría con el de la imagen. */
+  if(RUEDA_TEXTO_HORNEADO.has(ruedaSkinEquipada))return;
   const R=225,corrGrados=RUEDA_OFFSET[ruedaSkinEquipada]||0;
   SEG.forEach((s,i)=>{const a0=i*paso,mid=a0+paso/2+corrGrados*Math.PI/180;
    const et=s.t?ETI[s.t]:"$"+s.v;
@@ -1957,7 +1974,7 @@ function animarRueda(destino,alFinal){
   requestAnimationFrame(function frame(t){
     const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3.2);
     giroActual=ini+(destino-ini)*e;
-    cv.style.transform="rotate("+giroActual.toFixed(2)+"deg) translateZ(0)";
+    cv.style.transform="rotate("+(giroActual+(RUEDA_ROTACION_HORNEADO[ruedaSkinEquipada]||0)).toFixed(2)+"deg) translateZ(0)";
     const k=Math.floor(giroActual/paso);
     if(k!==ult){
       if(ult>=0){
