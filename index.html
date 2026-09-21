@@ -355,6 +355,7 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 .evento-card-img{width:54px;height:54px;object-fit:contain;flex:0 0 auto;
  filter:drop-shadow(0 3px 4px #00000066)}
 .evento-card-marco.avatar-wrap.frame-preview{width:54px;height:54px;margin:0;flex:0 0 auto}
+.evento-card-marco.ficha-skin-preview{width:54px;height:54px;max-width:54px;margin:0;flex:0 0 auto}
 .evento-card-info{min-width:0}
 .evento-card-info b{display:block;color:var(--crema);font-size:1.05rem;margin-bottom:3px}
 .evento-card-info small{display:block;color:#C9B8DE;font-size:.8rem;line-height:1.3}
@@ -1704,10 +1705,10 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <span class="ev-abierto">
       <span class="evento-card-tiempo" id="evTiempo2">⏳</span>
       <span class="evento-card-cuerpo">
-        <img class="evento-card-img" id="evSobreImg" src="" alt="">
+        <span class="ficha-skin-preview evento-card-marco" id="evFichaSwatch"></span>
         <span class="evento-card-info"><b id="evCiudadTit">Evento de ciudad</b>
           <small>Ganá una ronda para conseguirlo</small>
-          <small class="evento-card-premio" id="evPremioTxt">🎁 Coleccionable · a veces 🪙 monedas o ❤️ vida</small></span>
+          <small class="evento-card-premio">🪙 Monedas · ❤️ Vida · 🖼️ Marco <span id="evFichaNombre">Clásica</span></small></span>
       </span>
     </span>
   </button>
@@ -2344,6 +2345,18 @@ function tutChequearBienvenida(){
   pdChequearAutoPopup();empujarRanking();
 }
 let esPartidaDiaria=false;
+/* PRUEBA TEMPORAL (ver IDEAS.md): marca que la partida en curso vino
+   del Evento 2 (ciudad) de la vista previa de Eventos — así
+   sumarRondaColeccion() sabe que, al ganar la primera ronda, hay que
+   dar la recompensa fija del evento (monedas + vida + marco de
+   tablero elegido) en vez del sobre de colección normal de esa
+   ciudad, sin tocar cómo funciona el modo Mundo para todos los demás
+   casos. */
+let esEventoCiudad=false;
+function eventoCiudadFichaDeHoyId(){
+  const disp=FICHAS_SKIN.filter(f=>f.id);
+  return disp[Math.floor(Date.now()/86400000)%disp.length].id;
+}
 function pdEstadoHoy(){
   try{const raw=JSON.parse(localStorage.getItem("gya_partida_diaria")||"null");
     if(!raw||raw.dia!==fechaHoy())return"pendiente";
@@ -3638,6 +3651,15 @@ function jgActualizarSobre(){
 function sumarRondaColeccion(cual){
   // Solo cuenta en Mundo Uruguay -> ciudad con colección -> jugador solo (evita ventajas/duplicados en multijugador).
   if(modo!=="bot"||destino===null||!MUNDO[destino]||MUNDO[destino].id!==cual)return;
+  if(esEventoCiudad){
+    esEventoCiudad=false;
+    const idFicha=eventoCiudadFichaDeHoyId(),ficha=FICHAS_SKIN.find(f=>f.id===idFicha);
+    if(!fichasComprados.has(idFicha)){fichasComprados.add(idFicha);guardarFichasComprados();}
+    equiparFichaSkin(idFicha);
+    sumarMonedas(200);recuperarVida();mundoActualizarHud();
+    setTimeout(()=>mostrarToast("🎉","¡Evento conseguido! +200 🪙 +1 ❤️ + marco "+ficha.nombre),300);
+    return;
+  }
   const cm=coleccionMeta[cual];if(!cm)return;
   cm.sobres++;
   guardarColeccionMeta();colActualizarBloqueDurazno();
@@ -6419,14 +6441,15 @@ function eventoTiempoRestanteTxt(){
   return "⏳ Termina en "+h+"h "+m+"min";
 }
 function abrirEventos(){
-  const ciudad=MUNDO[eventoCiudadDeHoyIdx()],col=COLECCIONES[ciudad.id];
+  const ciudad=MUNDO[eventoCiudadDeHoyIdx()];
   $("evCiudadTit").textContent="Evento en "+ciudad.n;
-  $("evSobreImg").src=col.sobreCerrado;
-  $("evPremioTxt").textContent="🎁 Coleccionable de "+ciudad.n+" · a veces 🪙 monedas o ❤️ vida";
   const idMarco=partidaDiariaMarcoDeHoyId(),marco=FRAMES.find(fr=>fr.id===idMarco);
   $("evMarcoAvatarImg").src="assets/avatars/"+(perfil.avatar||"avatar-01")+".webp";
   $("evMarcoFrameImg").src="assets/frames/frame-"+idMarco+".png";
   $("evMarcoNombre").textContent=marco.nombre;
+  const idFicha=eventoCiudadFichaDeHoyId(),ficha=FICHAS_SKIN.find(f=>f.id===idFicha);
+  $("evFichaSwatch").style.backgroundImage="url('assets/fichas/"+idFicha+".webp')";
+  $("evFichaNombre").textContent=ficha.nombre;
   const t=eventoTiempoRestanteTxt();
   $("evTiempo1").textContent=t;$("evTiempo2").textContent=t;
   /* Cada vez que se entra a Eventos, las dos tarjetas arrancan tapadas
@@ -6446,7 +6469,7 @@ $("evBanner1").onclick=()=>{
 };
 $("evBanner2").onclick=()=>{
   if($("evBanner2").classList.contains("cerrado")){$("evBanner2").classList.remove("cerrado");return;}
-  cerrarEventos();empezarDestino(eventoCiudadDeHoyIdx());
+  cerrarEventos();esEventoCiudad=true;empezarDestino(eventoCiudadDeHoyIdx());
 };
 function tnRenderRuedas(contId,soloBasicos){
   const cont=$(contId||"ruedaGrid");if(!cont)return;cont.innerHTML="";
