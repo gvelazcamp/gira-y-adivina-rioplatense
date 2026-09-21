@@ -5584,7 +5584,7 @@ function avisarResolverAbierto(jugIdx){
      se eligieron las 4 letras se seguía comiendo mientras el jugador
      escribía, y podía perder por quedarse sin tiempo escribiendo en
      vez de por errar la respuesta. */
-  if(S.fase==="bonus_resolver"){S.bonusFin=Date.now()+BONUS_DURACION;return;}
+  if(S.fase==="bonus_resolver"){S.bonusFin=Date.now()+BONUS_DURACION;publicar(V.aviso||"",null,true);return;}
   if(S.fase!=="girar"&&S.fase!=="consonante"&&S.fase!=="vocal")return;
   publicar(V.aviso||"");
 }
