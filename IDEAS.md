@@ -6,22 +6,33 @@ Cuando se decida hacer alguna, se saca de acá y se hace de verdad.
 
 ## Eventos por ciudad
 
-Un botón nuevo en la pantalla principal (tipo "🎉 Nuevo evento:
-Durazno") que va apareciendo de tanto en tanto, ciudad por ciudad,
-avisando que hay un evento especial ahí. Al tocarlo arranca una
-partida cuyas frases son todas relacionadas con esa ciudad puntual
-(no categorías genéricas al azar como ahora).
+Idea de Gonzalo: agrupar todo bajo una sección nueva "Eventos" en vez
+de tener "Partida Diaria" suelta como está hoy.
+
+- La **Partida Diaria actual pasa a ser el Evento 1**: el botón se
+  renombra a algo tipo "🎉 Nuevo evento" y adentro sigue siendo la
+  misma partida diaria de siempre (no cambia la mecánica, cambia el
+  marco/nombre).
+- Se agrega un **Evento 2, el "de ciudad"**: cambia cada 24hs, ciudad
+  por ciudad (tipo "🎉 Nuevo evento: Durazno"), con frases
+  relacionadas a esa ciudad puntual (no categorías al azar como
+  ahora). Al terminarlo se abre un **sobre** que da algo (igual que
+  los sobres de colección que ya existen).
 
 Cosas a pensar cuando se encare:
-- [ ] Qué dispara que aparezca un evento (¿rotación diaria tipo
-      `ofertaDiaIdx()`, ciudad al azar, o siguiendo el orden del mapa?).
+- [ ] Qué dispara que aparezca cada evento de ciudad (¿rotación diaria
+      tipo `ofertaDiaIdx()`, ciudad al azar, o siguiendo el orden del
+      mapa?).
 - [ ] De dónde salen las frases "relacionadas con la ciudad" — banco de
       frases nuevo por ciudad, o filtrar `FRASES` por categoría/tema
       ligado a esa ciudad.
-- [ ] Si da algún premio/recompensa extra por jugarlo, o es solo
-      temático.
-- [ ] Dónde vive el botón (¿home, junto a "Partida Diaria"?) y qué pasa
-      si no lo tocás — ¿se pierde ese evento o sigue disponible?
+- [ ] Qué da el sobre al completarlo — ¿monedas, algo para la
+      colección de esa ciudad, o algo nuevo?
+- [ ] Cómo se ve la sección "Eventos" en el home con los dos (Evento 1
+      = partida diaria, Evento 2 = ciudad) sin que quede muy cargada
+      junto a lo que ya hay (ofertas, ranking, etc.).
+- [ ] Qué pasa si no tocás el evento de ciudad a tiempo — ¿se pierde
+      o sigue disponible hasta que rote el siguiente?
 
 ### Referencia: cómo lo hace Pocket Champs (juego de carreras)
 
