@@ -359,9 +359,8 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 .evento-card-info{min-width:0}
 .evento-card-info b{display:block;color:var(--crema);font-size:1.05rem;margin-bottom:3px}
 .evento-card-info small{display:block;color:#C9B8DE;font-size:.8rem;line-height:1.3}
-.evento-card-premios{display:flex;align-items:center;gap:10px;margin-top:8px}
+.evento-card-premios{display:flex;align-items:center;gap:10px;margin-left:auto;flex:0 0 auto;padding-left:10px}
 .evento-card-premio-emoji{font-size:1.9rem;line-height:1;filter:drop-shadow(0 2px 2px #00000055)}
-.evento-card-info small.evento-card-premio-nombre{color:var(--oro);font-weight:700;margin-top:5px}
 .tn-comprar{background:var(--oro);color:var(--tinta);font-weight:800;border-radius:10px;padding:10px 14px;
  flex-shrink:0;font-size:.85rem;white-space:nowrap;box-shadow:0 3px 0 #B3860099;border:1px solid #FFE49A66}
 .tn-item.tn-real{border-color:#37D6C077;background:linear-gradient(135deg,#37D6C01A,#7B3FE41A);border-width:2px}
@@ -1695,16 +1694,15 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
       <span class="evento-card-cuerpo">
         <span class="evento-card-ico">🎁</span>
         <span class="evento-card-info"><b>Partida Diaria</b>
-          <small>3 rondas contra la máquina</small>
-          <span class="evento-card-premios">
-            <span class="evento-card-premio-emoji">❤️</span>
-            <span class="evento-card-premio-emoji">🪙</span>
-            <span class="avatar-wrap frame-preview evento-card-marco" id="evMarcoSwatch">
-              <img class="avatar-img" id="evMarcoAvatarImg" src="" alt="">
-              <img class="avatar-frame ver" id="evMarcoFrameImg" src="" style="transform:none" alt="">
-            </span>
+          <small>3 rondas contra la máquina</small></span>
+        <span class="evento-card-premios">
+          <span class="evento-card-premio-emoji">❤️</span>
+          <span class="evento-card-premio-emoji">🪙</span>
+          <span class="avatar-wrap frame-preview evento-card-marco" id="evMarcoSwatch">
+            <img class="avatar-img" id="evMarcoAvatarImg" src="" alt="">
+            <img class="avatar-frame ver" id="evMarcoFrameImg" src="" style="transform:none" alt="">
           </span>
-          <small class="evento-card-premio-nombre">Marco <span id="evMarcoNombre">Dorado</span></small></span>
+        </span>
       </span>
     </span>
   </button>
@@ -1715,13 +1713,12 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
       <span class="evento-card-cuerpo">
         <span class="evento-card-ico">🎁</span>
         <span class="evento-card-info"><b id="evCiudadTit">Evento de ciudad</b>
-          <small>Ganá una ronda para conseguirlo</small>
-          <span class="evento-card-premios">
-            <span class="evento-card-premio-emoji">🪙</span>
-            <span class="evento-card-premio-emoji">❤️</span>
-            <span class="ficha-skin-preview evento-card-marco" id="evFichaSwatch"></span>
-          </span>
-          <small class="evento-card-premio-nombre">Marco <span id="evFichaNombre">Clásica</span></small></span>
+          <small>Ganá una ronda para conseguirlo</small></span>
+        <span class="evento-card-premios">
+          <span class="evento-card-premio-emoji">🪙</span>
+          <span class="evento-card-premio-emoji">❤️</span>
+          <span class="ficha-skin-preview evento-card-marco" id="evFichaSwatch"></span>
+        </span>
       </span>
     </span>
   </button>
@@ -6456,13 +6453,11 @@ function eventoTiempoRestanteTxt(){
 function abrirEventos(){
   const ciudad=MUNDO[eventoCiudadDeHoyIdx()];
   $("evCiudadTit").textContent="Evento en "+ciudad.n;
-  const idMarco=partidaDiariaMarcoDeHoyId(),marco=FRAMES.find(fr=>fr.id===idMarco);
+  const idMarco=partidaDiariaMarcoDeHoyId();
   $("evMarcoAvatarImg").src="assets/avatars/"+(perfil.avatar||"avatar-01")+".webp";
   $("evMarcoFrameImg").src="assets/frames/frame-"+idMarco+".png";
-  $("evMarcoNombre").textContent=marco.nombre;
-  const idFicha=eventoCiudadFichaDeHoyId(),ficha=FICHAS_SKIN.find(f=>f.id===idFicha);
+  const idFicha=eventoCiudadFichaDeHoyId();
   $("evFichaSwatch").style.backgroundImage="url('assets/fichas/"+idFicha+".webp')";
-  $("evFichaNombre").textContent=ficha.nombre;
   const t=eventoTiempoRestanteTxt();
   $("evTiempo1").textContent=t;$("evTiempo2").textContent=t;
   /* Cada vez que se entra a Eventos, las dos tarjetas arrancan tapadas
