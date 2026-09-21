@@ -6244,21 +6244,21 @@ function tnRenderCuadrosTablero(contId,soloBasicos){
    (el juego le pone rotate() encima), así que la imagen gira con él. */
 const RUEDAS_SKIN=[
   {id:null,nombre:"Clásica",precio:0,basico:true},
-  {id:"rueda-fuego",nombre:"Rueda de Fuego",precio:3750,basico:true},
-  {id:"rueda-hielo",nombre:"Rueda de Hielo",precio:3750,basico:true},
-  {id:"rueda-oro",nombre:"Rueda Real",precio:4500,basico:true},
-  {id:"rueda-neon",nombre:"Rueda Neón",precio:4000,basico:true},
-  {id:"rueda-candy",nombre:"Rueda Candy",precio:3750,basico:true},
-  {id:"rueda-espacio",nombre:"Rueda Galáctica",precio:4250,nuevo:true},
-  {id:"rueda-selva",nombre:"Rueda Tiki",precio:4000,nuevo:true},
-  {id:"rueda-circo",nombre:"Rueda de Circo",precio:4250,nuevo:true},
-  {id:"rueda-sheriff",nombre:"Rueda Sheriff",precio:4250,nuevo:true},
-  {id:"rueda-desierto",nombre:"Rueda del Desierto",precio:4250,nuevo:true},
-  {id:"rueda-forajido",nombre:"Rueda Forajido",precio:4250,nuevo:true},
-  {id:"rueda-pepitas",nombre:"Rueda de Oro Salvaje",precio:4500,nuevo:true},
-  {id:"rueda-locomotora",nombre:"Rueda Locomotora",precio:4250,nuevo:true},
-  {id:"rueda-rodeo",nombre:"Rueda Rodeo",precio:4250,nuevo:true},
-  {id:"rueda-casino",nombre:"Rueda Casino",precio:4500,nuevo:true}
+  {id:"rueda-fuego",nombre:"Rueda de Fuego",precio:9500,basico:true},
+  {id:"rueda-hielo",nombre:"Rueda de Hielo",precio:9500,basico:true},
+  {id:"rueda-oro",nombre:"Rueda Real",precio:9500,basico:true},
+  {id:"rueda-neon",nombre:"Rueda Neón",precio:9500,basico:true},
+  {id:"rueda-candy",nombre:"Rueda Candy",precio:9500,basico:true},
+  {id:"rueda-espacio",nombre:"Rueda Galáctica",precio:9500,nuevo:true},
+  {id:"rueda-selva",nombre:"Rueda Tiki",precio:9500,nuevo:true},
+  {id:"rueda-circo",nombre:"Rueda de Circo",precio:9500,nuevo:true},
+  {id:"rueda-sheriff",nombre:"Rueda Sheriff",precio:9500,nuevo:true},
+  {id:"rueda-desierto",nombre:"Rueda del Desierto",precio:9500,nuevo:true},
+  {id:"rueda-forajido",nombre:"Rueda Forajido",precio:9500,nuevo:true},
+  {id:"rueda-pepitas",nombre:"Rueda de Oro Salvaje",precio:9500,nuevo:true},
+  {id:"rueda-locomotora",nombre:"Rueda Locomotora",precio:9500,nuevo:true},
+  {id:"rueda-rodeo",nombre:"Rueda Rodeo",precio:9500,nuevo:true},
+  {id:"rueda-casino",nombre:"Rueda Casino",precio:9500,nuevo:true}
 ];
 function cargarRuedasComprados(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_ruedas_owned")||"[]"));}catch(e){return new Set();}
