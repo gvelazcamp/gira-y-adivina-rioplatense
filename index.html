@@ -553,6 +553,11 @@ body.tst-fondologo .setup-fondo-logo{display:block;position:fixed;inset:0;z-inde
  background-size:100% 100%,72% auto;background-color:var(--noche)}
 body.tst-fondologo .logo-inicio,body.tst-fondologo .deco-mate,body.tst-fondologo .deco-banderas{display:none}
 body.tst-fondologo #setup>p.sub{margin-top:18px}
+/* Con el logo de fondo, el topbar y las píldoras semitransparentes se
+   ven mal encima (se mezclan con los colores del logo) — pasan a un
+   azul sólido tipo el de la Ruleta de premios (--agua). */
+body.tst-fondologo .setup-topbar{background:#0E4864E6;border-color:#37D6C055}
+body.tst-fondologo .stat-pill{background:#0B3B52F0;border-color:#37D6C055}
 .setup-topbar{position:relative;z-index:1;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;
  gap:8px 10px;background:#00000030;border:1px solid #FFFFFF1F;border-radius:20px;padding:9px 14px;margin:0 0 18px}
 .setup-topbar .perfil-chip{margin:0;flex:1;min-width:130px;justify-content:flex-start}
