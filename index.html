@@ -356,7 +356,8 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
  filter:drop-shadow(0 3px 4px #00000066)}
 .evento-card-info{min-width:0}
 .evento-card-info b{display:block;color:var(--crema);font-size:1.05rem;margin-bottom:3px}
-.evento-card-info small{color:#C9B8DE;font-size:.8rem;line-height:1.3}
+.evento-card-info small{display:block;color:#C9B8DE;font-size:.8rem;line-height:1.3}
+.evento-card-info small.evento-card-premio{color:var(--oro);font-weight:700;margin-top:4px}
 .tn-comprar{background:var(--oro);color:var(--tinta);font-weight:800;border-radius:10px;padding:10px 14px;
  flex-shrink:0;font-size:.85rem;white-space:nowrap;box-shadow:0 3px 0 #B3860099;border:1px solid #FFE49A66}
 .tn-item.tn-real{border-color:#37D6C077;background:linear-gradient(135deg,#37D6C01A,#7B3FE41A);border-width:2px}
@@ -1689,7 +1690,8 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
       <span class="evento-card-cuerpo">
         <span class="evento-card-ico">🎁</span>
         <span class="evento-card-info"><b>Partida Diaria</b>
-          <small>3 rondas contra la máquina — recompensa sorpresa</small></span>
+          <small>3 rondas contra la máquina</small>
+          <small class="evento-card-premio">Recompensa: ❤️ Vida · 🪙 Monedas · 🎁 Sobre de colección</small></span>
       </span>
     </span>
   </button>
@@ -1700,7 +1702,8 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
       <span class="evento-card-cuerpo">
         <img class="evento-card-img" id="evSobreImg" src="" alt="">
         <span class="evento-card-info"><b id="evCiudadTit">Evento de ciudad</b>
-          <small>Ganá una ronda y llevate el sobre de esta ciudad</small></span>
+          <small>Ganá una ronda para conseguirlo</small>
+          <small class="evento-card-premio" id="evPremioTxt">Recompensa: coleccionable · a veces 🪙 monedas o ❤️ vida</small></span>
       </span>
     </span>
   </button>
@@ -6405,6 +6408,7 @@ function abrirEventos(){
   const ciudad=MUNDO[eventoCiudadDeHoyIdx()],col=COLECCIONES[ciudad.id];
   $("evCiudadTit").textContent="Evento en "+ciudad.n;
   $("evSobreImg").src=col.sobreCerrado;
+  $("evPremioTxt").textContent="Recompensa: coleccionable de "+ciudad.n+" · a veces 🪙 monedas o ❤️ vida";
   const t=eventoTiempoRestanteTxt();
   $("evTiempo1").textContent=t;$("evTiempo2").textContent=t;
   /* Cada vez que se entra a Eventos, las dos tarjetas arrancan tapadas
