@@ -543,29 +543,22 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 .setup-cielo .e5{top:18px;left:46%;font-size:.6rem;animation-delay:1.7s}
 .setup-cielo .e6{top:88px;left:14%;font-size:.9rem;animation-delay:2.1s}
 @keyframes centelleo{0%,100%{opacity:.35;transform:scale(.85)}50%{opacity:1;transform:scale(1.15)}}
-.logo-inicio,#setup>p.sub{position:relative;z-index:1}
-/* Prueba solo para Gonzalo: logo como fondo fijo detrás de todo, con
-   degradé arriba/abajo para que los íconos y textos sigan legibles. */
-.setup-fondo-logo{display:none}
-body.tst-fondologo .setup-fondo-logo{display:block;position:fixed;inset:0;z-index:-1;
+/* Logo como fondo fijo detrás de todo, con degradé arriba/abajo para
+   que los íconos y textos sigan legibles. */
+.setup-fondo-logo{display:block;position:fixed;inset:0;z-index:-1;
  background-image:linear-gradient(180deg,var(--noche) 0%,#160B24CC 28%,#160B24CC 66%,var(--noche) 100%),url('assets/logo.webp');
  background-repeat:no-repeat,no-repeat;background-position:center,top 2% center;
  background-size:100% 100%,72% auto;background-color:var(--noche)}
-body.tst-fondologo .logo-inicio,body.tst-fondologo .deco-mate,body.tst-fondologo .deco-banderas,body.tst-fondologo #setup>p.sub{display:none}
-body.tst-fondologo .setup-topbar{margin-top:14px}
-/* Con el logo de fondo, el topbar y las píldoras semitransparentes se
-   ven mal encima (se mezclan con los colores del logo) — pasan a un
-   azul sólido tipo el de la Ruleta de premios (--agua). */
-body.tst-fondologo .setup-topbar{background:#0E4864E6;border-color:#37D6C055}
-body.tst-fondologo .stat-pill{background:#0B3B52F0;border-color:#37D6C055}
+.logo-inicio,.deco-mate,.deco-banderas,#setup>p.sub{display:none}
 .setup-topbar{position:relative;z-index:1;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;
- gap:8px 10px;background:#00000030;border:1px solid #FFFFFF1F;border-radius:20px;padding:9px 14px;margin:0 0 18px}
+ gap:8px 10px;margin:14px 0 18px;padding:9px 14px;border-radius:20px;
+ background:#0E4864E6;border:1px solid #37D6C055}
 .setup-topbar .perfil-chip{margin:0;flex:1;min-width:130px;justify-content:flex-start}
 .setup-topbar #perfilNombreTxt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:110px;font-weight:800;color:var(--crema);font-size:1.05rem}
 #cambiarPerfil{font-size:1.05rem;text-decoration:none!important;background:#FFFFFF14!important;
  width:32px;height:32px;border-radius:50%;display:inline-grid;place-items:center;padding:0!important;flex:0 0 auto}
 .setup-stats{display:flex;gap:8px;flex:0 0 auto}
-.stat-pill{background:#00000038;border:1px solid #FFFFFF1F;border-radius:99px;padding:6px 12px;
+.stat-pill{background:#0B3B52F0;border:1px solid #37D6C055;border-radius:99px;padding:6px 12px;
  font-weight:800;font-size:.85rem;white-space:nowrap}
 .stat-pill b{font-weight:800;margin-left:2px}
 .stat-monedas{color:var(--oro)}
@@ -4645,7 +4638,6 @@ function actualizarChipPerfil(){
     pintarMiMarco("perfilFrameImg");
   }else chip.style.display="none";
   if($("campoNombre"))$("campoNombre").style.display=perfilExiste()?"none":"";
-  document.body.classList.toggle("tst-fondologo",esGonzalo());
 }
 function guardarPerfil(nombre,avatar){
   perfil={nombre,avatar};
