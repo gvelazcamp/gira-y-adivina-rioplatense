@@ -1184,7 +1184,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="tn-comprar" id="ofertaSobreBtn" data-tipo="sobre_durazno" data-precio="1000">🪙 1000</button>
   </div>
   </div>
-  <h3 class="tn-subtitulo" data-fijo="1">🧑‍🎤 Avatares premium</h3>
+  <h3 class="tn-subtitulo" data-fijo="1" id="tituloAvatares">🧑‍🎤 Avatares premium</h3>
   <div class="frame-grid" id="avatarPremiumGrid"></div>
   <h3 class="tn-subtitulo" data-fijo="1" id="tituloTableros">🎲 Tableros</h3>
   <div class="frame-grid" id="tableroGrid"></div>
@@ -2682,11 +2682,21 @@ function armarSeccionesColapsablesTienda(){
   });
 }
 armarSeccionesColapsablesTienda();
-$("bTienda").onclick=()=>{actualizarOfertasDiarias();tnActualizar();tnRenderFrames("frameGrid",true);tnRenderAvataresPremium();tnRenderTableros("tableroGrid",true);tnRenderCuadrosTablero("cuadroTableroGrid",true);tnRenderRuedas("ruedaGrid",true);$("capaTienda").classList.add("ver");};
+$("bTienda").onclick=()=>{actualizarOfertasDiarias();tnActualizar();tnRenderFrames("frameGrid",true);tnRenderAvataresPremium("avatarPremiumGrid",true);tnRenderTableros("tableroGrid",true);tnRenderCuadrosTablero("cuadroTableroGrid",true);tnRenderRuedas("ruedaGrid",true);$("capaTienda").classList.add("ver");};
 $("tituloMarcos").onclick=()=>{
   seccionTiendaEsFrames=true;
   $("seccionTiendaTitulo").textContent=$("tituloMarcos").textContent;
   tnRenderFrames("seccionTiendaContenido",false);
+  $("capaSeccionTienda").classList.add("ver");
+};
+/* "Avatares premium" muestra ahí abajo solo 4 (los marcados como
+   básicos, con "Tóxico" primero — es la mascota del juego, la que sale
+   en el video promo de la Tienda); tocar el título abre una pantalla
+   aparte con los 9. */
+$("tituloAvatares").onclick=()=>{
+  seccionTiendaEsAvatares=true;
+  $("seccionTiendaTitulo").textContent=$("tituloAvatares").textContent;
+  tnRenderAvataresPremium("seccionTiendaContenido",false);
   $("capaSeccionTienda").classList.add("ver");
 };
 /* "Tableros" muestra ahí abajo solo los básicos (Sin marco + los de
@@ -2772,6 +2782,7 @@ $("seccionTiendaCerrar").onclick=()=>{
   seccionTiendaEsFrames=false;
   seccionTiendaEsFichas=false;
   seccionTiendaEsRuedas=false;
+  seccionTiendaEsAvatares=false;
   $("capaSeccionTienda").classList.remove("ver");
 };
 function tnNombreItem(b){
@@ -3250,11 +3261,11 @@ function tnRenderFrames(contId,soloBasicos){
 
 /* ---- Avatares premium ---- */
 const AVATARES_PREMIUM=[
-  {id:"avatar-23",nombre:"Fantasma Verde",precio:6200},
-  {id:"avatar-24",nombre:"Diablita Neón",precio:6200},
-  {id:"avatar-25",nombre:"Hielo Ártico",precio:7000},
+  {id:"avatar-27",nombre:"Tóxico",precio:7500,basico:true},
+  {id:"avatar-23",nombre:"Fantasma Verde",precio:6200,basico:true},
+  {id:"avatar-24",nombre:"Diablita Neón",precio:6200,basico:true},
+  {id:"avatar-25",nombre:"Hielo Ártico",precio:7000,basico:true},
   {id:"avatar-26",nombre:"Gatita Lunar",precio:7000},
-  {id:"avatar-27",nombre:"Tóxico",precio:7500},
   {id:"avatar-28",nombre:"Arácnida",precio:7500},
   {id:"avatar-29",nombre:"Calabaza",precio:8000},
   {id:"avatar-30",nombre:"Slime Rosa",precio:8000},
@@ -3265,15 +3276,18 @@ function cargarAvataresComprados(){
 }
 let avataresComprados=cargarAvataresComprados();
 const guardarAvataresComprados=()=>{try{localStorage.setItem("gya_avatars_owned",JSON.stringify([...avataresComprados]));}catch(e){}};
+let seccionTiendaEsAvatares=false;
 function equiparAvatarPremium(id){
   perfil.avatar=id;
   try{localStorage.setItem("gya_avatar",id);}catch(e){}
   actualizarChipPerfil();
-  tnRenderAvataresPremium();
+  tnRenderAvataresPremium("avatarPremiumGrid",true);
+  if(seccionTiendaEsAvatares)tnRenderAvataresPremium("seccionTiendaContenido",false);
 }
-function tnRenderAvataresPremium(){
-  const cont=$("avatarPremiumGrid");if(!cont)return;cont.innerHTML="";
-  AVATARES_PREMIUM.forEach(a=>{
+function tnRenderAvataresPremium(contId,soloBasicos){
+  const cont=$(contId||"avatarPremiumGrid");if(!cont)return;cont.innerHTML="";
+  const lista=soloBasicos?AVATARES_PREMIUM.filter(a=>a.basico):AVATARES_PREMIUM;
+  lista.forEach(a=>{
     const poseido=avataresComprados.has(a.id);
     const equipado=perfil.avatar===a.id;
     const card=document.createElement("div");card.className="frame-card";
