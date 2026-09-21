@@ -51,6 +51,31 @@ Ascent" cada 2 semanas):
 - O sea la cadencia real que se siente jugando es mucho más seguida
   (diaria, con overlap) que lo que cuentan las notas de actualización
   oficiales, que solo anuncian los eventos "grandes".
+- Gonzalo mandó capturas de la pantalla real de "Eventos" de Pocket
+  Champs — la organizan en 3 niveles, de arriba a abajo:
+  1. **Eventos en directo**: lo que está pasando/rotando ahora mismo
+     (Carrera Diaria, Campo de Entrenamiento) + un próximo evento
+     grande con cuenta regresiva para cuando arranca (ej. "Gadget
+     Ascent — Empieza en 10d 19h").
+  2. **Eventos especiales**: el activo ahora ("Concurso de Correr",
+     23h34min restantes, con una barra de progreso de recompensas
+     tipo pase de batalla) + el siguiente ya anunciado con cuenta
+     regresiva ("Maravillas Selváticas — Empieza en 23h34min").
+  3. **Eventos permanentes**: cosas que no rotan, tipo "Rueda de la
+     Fortuna" (ganás la carrera y girás para premios) — acá calzaría
+     bien meter nuestra ruleta de skins ya calibrada si algún día se
+     retoma ese feature.
+- Idea/decisión de Gonzalo sobre las recompensas: que lo que se gana
+  en estos eventos sea **de bajo valor** — puede ser un avatar o un
+  marco (de tablero o de avatar), pero **nunca algo de la gama
+  premium** (los ítems de 8000-9500 monedas de la Tienda). La
+  recompensa del evento tiene que quedar claramente por debajo de lo
+  que se compra con monedas, para no romper la razón de comprar.
+
+Para arrancar (fase 1, sin copiar los 3 niveles todavía): Evento 1
+(partida diaria) + Evento 2 (ciudad, con sobre de recompensa barata).
+El nivel "permanente" y el de "próximo evento con cuenta regresiva"
+quedan para más adelante si esto funciona bien.
 
 ## Otras cosas ya con base preparada pero sin terminar
 
