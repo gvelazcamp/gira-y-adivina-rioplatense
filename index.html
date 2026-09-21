@@ -336,6 +336,15 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
  box-shadow:0 2px 0 #B3860099;border:1px solid #FFE49A66;pointer-events:none}
 .tn-pack-img .tn-comprar:has(+.tn-pack-precio-fijo):disabled{background:transparent;color:transparent;
  position:absolute;inset:0;width:100%;height:100%}
+.evento-banner{display:flex;align-items:center;gap:14px;width:100%;min-height:92px;
+ background-image:url('assets/eventos/marco-banner.webp');background-size:100% 100%;
+ background-repeat:no-repeat;background-position:center;border:none;padding:0 24px;
+ margin-bottom:14px;cursor:pointer;text-align:left}
+.evento-banner .evento-ico{font-size:2.3rem;flex:0 0 auto;filter:drop-shadow(0 3px 3px #00000055)}
+.evento-banner .evento-sobre{width:52px;height:52px;object-fit:contain;flex:0 0 auto}
+.evento-banner .evento-info{display:flex;flex-direction:column;gap:4px;min-width:0}
+.evento-banner .evento-info b{color:#F6EFE2;font-size:1rem}
+.evento-banner .evento-info small{color:#BFE0FF;font-size:.76rem;line-height:1.25}
 .tn-comprar{background:var(--oro);color:var(--tinta);font-weight:800;border-radius:10px;padding:10px 14px;
  flex-shrink:0;font-size:.85rem;white-space:nowrap;box-shadow:0 3px 0 #B3860099;border:1px solid #FFE49A66}
 .tn-item.tn-real{border-color:#37D6C077;background:linear-gradient(135deg,#37D6C01A,#7B3FE41A);border-width:2px}
@@ -908,7 +917,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <button class="menu-card mc-azul" id="bJugarOnline"><span class="mc-ico">👥</span><span class="mc-tit">Jugar con amigos</span><span class="mc-sub">Crear sala o entrar con código</span></button>
     <button class="menu-card mc-verde" id="bTienda" style="grid-column:1/-1"><span class="mc-ico">🛍️</span><span class="mc-tit">Tienda</span><span class="mc-sub">Monedas, marcos y más</span></button>
     <button class="menu-card mc-naranja" id="bSocial" style="grid-column:1/-1"><span class="mc-ico">📱</span><span class="mc-tit">Social</span><span class="mc-sub">Seguinos en redes</span></button>
-    <button class="menu-card mc-naranja" id="bMenuEventosPrueba" style="grid-column:1/-1;display:none"><span class="mc-ico">🎉</span><span class="mc-tit">Eventos (prueba)</span><span class="mc-sub">Solo vos — prototipo</span></button>
+    <button class="menu-card mc-naranja" id="bMenuEventosPrueba" style="grid-column:1/-1;display:none"><span class="mc-ico">🎉</span><span class="mc-tit">Eventos</span><span class="mc-sub">Vista previa — solo vos</span></button>
   </div>
   <div class="mini-tit-fila">
     <img src="assets/decor/mas-disfrutar.png" alt="Más para disfrutar" class="deco-mas-disfrutar">
@@ -1647,19 +1656,30 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   </div>
 </section>
 
-<!-- PRUEBA TEMPORAL: prototipo de "Eventos" (ver IDEAS.md) — solo
-     visible para Gonzalo, para probar la idea antes de mostrarla a
-     todos. Evento 1 reusa la Partida Diaria tal cual ya funciona;
-     Evento 2 reusa el modo Mundo contra la máquina en la ciudad del
-     día (empezarDestino), que ya entrega un sobre de colección de esa
-     ciudad al ganar una ronda — no hace falta premio nuevo. -->
-<div id="capaEventosPrueba" style="display:none;position:fixed;left:0;right:0;bottom:0;z-index:9999;
- background:#160B24F5;padding:14px 16px calc(14px + env(safe-area-inset-bottom));border-top:2px solid #F5B301">
-  <p id="evPruebaTexto" style="margin:0 0 10px;text-align:center;color:#F6EFE2"></p>
-  <button id="evPrueba1" class="girar" style="width:100%;margin-bottom:8px">🎉 Evento 1: Partida Diaria</button>
-  <button id="evPrueba2" class="girar" style="width:100%">🎉 Evento 2: ciudad del día</button>
-  <button id="evPruebaSalir" class="no" style="width:100%;margin-top:10px">Salir de Eventos (prueba)</button>
-</div>
+<!-- PRUEBA TEMPORAL: vista previa real de "Eventos" (ver IDEAS.md) —
+     solo visible para Gonzalo, para ver cómo quedaría antes de
+     mostrarlo a todos. Evento 1 reusa la Partida Diaria tal cual ya
+     funciona; Evento 2 reusa el modo Mundo contra la máquina en la
+     ciudad del día (empezarDestino), que ya entrega un sobre de
+     colección de esa ciudad al ganar una ronda — no hace falta premio
+     nuevo. Los dos banners usan assets/eventos/marco-banner.webp (el
+     marco azul que ya estaba en assets/shop/pack-marco-vacio.webp,
+     sin usar en ningún lado). -->
+<div class="capa" id="capaEventos"><div class="caja" style="max-width:420px">
+  <h2>🎉 Eventos</h2>
+  <p class="sub" style="margin:0 0 16px">Vista previa — solo vos, Gonzalo</p>
+  <button type="button" class="evento-banner" id="evBanner1">
+    <span class="evento-ico">🎁</span>
+    <span class="evento-info"><b>Evento 1 · Partida Diaria</b>
+      <small>3 rondas contra la máquina — recompensa sorpresa</small></span>
+  </button>
+  <button type="button" class="evento-banner" id="evBanner2">
+    <img class="evento-sobre" id="evSobreImg" src="" alt="">
+    <span class="evento-info"><b id="evCiudadTit">Evento 2 · Ciudad</b>
+      <small>Ganá una ronda y llevate el sobre de esta ciudad — cambia cada 24hs</small></span>
+  </button>
+  <button class="no" id="evCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:4px">Cerrar</button>
+</div></div>
 
 <div class="capa" id="modalResolver"><div class="caja">
   <h2>Decí la frase</h2>
@@ -6350,16 +6370,17 @@ $("ruedaNext").onclick=()=>{
    ya se entrega solo al ganar una ronda (sumarRondaColeccion), no
    hace falta premio nuevo para probar la idea. */
 function eventoCiudadDeHoyIdx(){return Math.floor(Date.now()/86400000)%MUNDO.length;}
-function abrirMenuEventosPrueba(){
+function abrirEventos(){
+  const ciudad=MUNDO[eventoCiudadDeHoyIdx()],col=COLECCIONES[ciudad.id];
+  $("evCiudadTit").textContent="Evento 2 · "+ciudad.n;
+  $("evSobreImg").src=col.sobreCerrado;
   document.querySelectorAll(".capa.ver").forEach(c=>c.classList.remove("ver"));
-  $("setup").style.display="none";$("mundo").style.display="none";$("pantDurazno").style.display="none";
-  $("evPruebaTexto").textContent="Ciudad del evento de hoy: "+MUNDO[eventoCiudadDeHoyIdx()].n;
-  $("capaEventosPrueba").style.display="block";
+  $("capaEventos").classList.add("ver");
 }
-$("bMenuEventosPrueba").onclick=abrirMenuEventosPrueba;
-$("evPruebaSalir").onclick=()=>{$("capaEventosPrueba").style.display="none";};
-$("evPrueba1").onclick=()=>{$("capaEventosPrueba").style.display="none";iniciarPartidaDiaria();};
-$("evPrueba2").onclick=()=>{$("capaEventosPrueba").style.display="none";empezarDestino(eventoCiudadDeHoyIdx());};
+$("bMenuEventosPrueba").onclick=abrirEventos;
+$("evCerrar").onclick=()=>$("capaEventos").classList.remove("ver");
+$("evBanner1").onclick=()=>{$("capaEventos").classList.remove("ver");iniciarPartidaDiaria();};
+$("evBanner2").onclick=()=>{$("capaEventos").classList.remove("ver");empezarDestino(eventoCiudadDeHoyIdx());};
 function tnRenderRuedas(contId,soloBasicos){
   const cont=$(contId||"ruedaGrid");if(!cont)return;cont.innerHTML="";
   const lista=soloBasicos?RUEDAS_SKIN.filter(m=>m.basico):
