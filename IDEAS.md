@@ -77,6 +77,12 @@ Para arrancar (fase 1, sin copiar los 3 niveles todavía): Evento 1
 El nivel "permanente" y el de "próximo evento con cuenta regresiva"
 quedan para más adelante si esto funciona bien.
 
+**Decidido:** van 2 eventos (fase 1, arriba). Para el arte de los
+botones/banners de evento en el home, se reutiliza el marco azul que
+ya existe sin usar en `assets/shop/pack-marco-vacio.webp` (mismo
+estilo que el Pack Racha pero en blanco) — no hace falta generar arte
+nuevo, solo poner ícono + texto de cada evento arriba de ese marco.
+
 ## Otras cosas ya con base preparada pero sin terminar
 
 - [ ] **Dinero real**: la UI de paquetes con dinero real ya está armada
