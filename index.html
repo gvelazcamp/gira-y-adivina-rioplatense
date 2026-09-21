@@ -354,6 +354,7 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 .evento-card-ico{font-size:2.1rem;flex:0 0 auto;filter:drop-shadow(0 3px 3px #00000055)}
 .evento-card-img{width:54px;height:54px;object-fit:contain;flex:0 0 auto;
  filter:drop-shadow(0 3px 4px #00000066)}
+.evento-card-marco.avatar-wrap.frame-preview{width:54px;height:54px;margin:0;flex:0 0 auto}
 .evento-card-info{min-width:0}
 .evento-card-info b{display:block;color:var(--crema);font-size:1.05rem;margin-bottom:3px}
 .evento-card-info small{display:block;color:#C9B8DE;font-size:.8rem;line-height:1.3}
@@ -1688,10 +1689,13 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <span class="ev-abierto">
       <span class="evento-card-tiempo" id="evTiempo1">⏳</span>
       <span class="evento-card-cuerpo">
-        <span class="evento-card-ico">🎁</span>
+        <span class="avatar-wrap frame-preview evento-card-marco" id="evMarcoSwatch">
+          <img class="avatar-img" id="evMarcoAvatarImg" src="" alt="">
+          <img class="avatar-frame ver" id="evMarcoFrameImg" src="" style="transform:none" alt="">
+        </span>
         <span class="evento-card-info"><b>Partida Diaria</b>
           <small>3 rondas contra la máquina</small>
-          <small class="evento-card-premio">Recompensa: ❤️ Vida · 🪙 Monedas · 🎁 Sobre de colección</small></span>
+          <small class="evento-card-premio">❤️ Vida · 🪙 Monedas · 🖼️ Marco <span id="evMarcoNombre">Dorado</span></small></span>
       </span>
     </span>
   </button>
@@ -1703,7 +1707,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
         <img class="evento-card-img" id="evSobreImg" src="" alt="">
         <span class="evento-card-info"><b id="evCiudadTit">Evento de ciudad</b>
           <small>Ganá una ronda para conseguirlo</small>
-          <small class="evento-card-premio" id="evPremioTxt">Recompensa: coleccionable · a veces 🪙 monedas o ❤️ vida</small></span>
+          <small class="evento-card-premio" id="evPremioTxt">🎁 Coleccionable · a veces 🪙 monedas o ❤️ vida</small></span>
       </span>
     </span>
   </button>
@@ -3101,6 +3105,12 @@ function cargarFramesComprados(){
 }
 let framesComprados=cargarFramesComprados();
 const guardarFramesComprados=()=>{try{localStorage.setItem("gya_frames_owned",JSON.stringify([...framesComprados]));}catch(e){}};
+/* PRUEBA TEMPORAL (ver IDEAS.md): rotación diaria simple, mismo
+   criterio que ofertaDiaIdx(), para que el marco de avatar que puede
+   dar la Partida Diaria sea el mismo durante todo el día — así la
+   vista previa de Eventos puede mostrar exactamente cuál es antes de
+   jugar. */
+function partidaDiariaMarcoDeHoyId(){return FRAMES[Math.floor(Date.now()/86400000)%FRAMES.length].id;}
 function cargarFrameEquipado(){
   try{return localStorage.getItem("gya_frame_equipped")||"";}catch(e){return"";}
 }
@@ -5432,7 +5442,11 @@ function finalizarPartidaPendiente(bonusGanado){
     const suerte=Math.floor(Math.random()*3);
     if(suerte===0){recuperarVida();pdTxt=" · ¡Ganaste la Partida Diaria! +1 vida.";}
     else if(suerte===1){recuperarVida();sumarMonedas(100);mundoActualizarHud();pdTxt=" · ¡Ganaste la Partida Diaria! +1 vida y +100 🪙.";}
-    else{otorgarSobreSorpresa();pdTxt=" · ¡Ganaste la Partida Diaria! Te llevaste un sobre de colección.";}}
+    else{
+      const idMarco=partidaDiariaMarcoDeHoyId();
+      if(!framesComprados.has(idMarco)){framesComprados.add(idMarco);guardarFramesComprados();}
+      pdTxt=" · ¡Ganaste la Partida Diaria! Te llevaste el marco "+FRAMES.find(fr=>fr.id===idMarco).nombre+".";
+    }}
   S.finalPendiente=null;S.fase="fin";pararReloj();limpiarBonus();
   $("modalResolver").classList.remove("ver");
   publicar("Partida terminada.");
@@ -6408,7 +6422,11 @@ function abrirEventos(){
   const ciudad=MUNDO[eventoCiudadDeHoyIdx()],col=COLECCIONES[ciudad.id];
   $("evCiudadTit").textContent="Evento en "+ciudad.n;
   $("evSobreImg").src=col.sobreCerrado;
-  $("evPremioTxt").textContent="Recompensa: coleccionable de "+ciudad.n+" · a veces 🪙 monedas o ❤️ vida";
+  $("evPremioTxt").textContent="🎁 Coleccionable de "+ciudad.n+" · a veces 🪙 monedas o ❤️ vida";
+  const idMarco=partidaDiariaMarcoDeHoyId(),marco=FRAMES.find(fr=>fr.id===idMarco);
+  $("evMarcoAvatarImg").src="assets/avatars/"+(perfil.avatar||"avatar-01")+".webp";
+  $("evMarcoFrameImg").src="assets/frames/frame-"+idMarco+".png";
+  $("evMarcoNombre").textContent=marco.nombre;
   const t=eventoTiempoRestanteTxt();
   $("evTiempo1").textContent=t;$("evTiempo2").textContent=t;
   /* Cada vez que se entra a Eventos, las dos tarjetas arrancan tapadas
