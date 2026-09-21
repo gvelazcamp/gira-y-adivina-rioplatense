@@ -571,16 +571,21 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
  border:5px solid #FFFFFF26;border-top-color:var(--agua);animation:girarBuscando .9s linear infinite}
 @keyframes girarBuscando{to{transform:rotate(360deg)}}
 .menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:4px 0 4px}
-.menu-card{border-radius:18px;padding:16px 12px;display:flex;flex-direction:column;align-items:flex-start;
- gap:3px;text-align:left;color:#fff;position:relative;min-height:104px;justify-content:flex-end}
-.menu-card .mc-ico{position:absolute;top:12px;left:12px;font-size:1.55rem;filter:drop-shadow(0 2px 4px #0004)}
-.menu-card .mc-tit{font-weight:800;font-size:.96rem;line-height:1.15}
-.menu-card .mc-sub{font-size:.68rem;opacity:.85;font-weight:600;line-height:1.25}
-.mc-rosa{background:linear-gradient(150deg,#9A3FD1,#6423A8)}
-.mc-azul{background:linear-gradient(150deg,#4A5FE0,#2F3FAE)}
-.mc-naranja{background:linear-gradient(150deg,#F5A301,#D9660F)}
-.mc-verde{background:linear-gradient(150deg,#12B87A,#0D8A63)}
-.mc-celeste{background:linear-gradient(150deg,#3AB4E8,#1E7FB8)}
+.menu-card{border-radius:18px;padding:13px 12px;display:flex;align-items:center;gap:9px;
+ text-align:left;color:#fff;position:relative;min-height:88px}
+.menu-card .mc-ico{flex:0 0 auto;width:38px;height:38px;border-radius:11px;background:#FFFFFF26;
+ display:grid;place-items:center;font-size:1.3rem;filter:drop-shadow(0 2px 4px #0004)}
+.menu-card .mc-txt{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1 1 auto}
+.menu-card .mc-tit{font-weight:800;font-size:.9rem;line-height:1.15}
+.menu-card .mc-sub{font-size:.65rem;opacity:.85;font-weight:600;line-height:1.25}
+.menu-card .mc-flecha{flex:0 0 auto;width:24px;height:24px;border-radius:50%;background:#FFFFFF26;
+ display:grid;place-items:center;font-size:.95rem;font-weight:800}
+.mc-rosa{background:linear-gradient(150deg,#9A3FD1,#6423A8);box-shadow:0 6px 0 #4A1670}
+.mc-azul{background:linear-gradient(150deg,#4A5FE0,#2F3FAE);box-shadow:0 6px 0 #1F2A80}
+.mc-naranja{background:linear-gradient(150deg,#F5A301,#D9660F);box-shadow:0 6px 0 #A34C00}
+.mc-verde{background:linear-gradient(150deg,#12B87A,#0D8A63);box-shadow:0 6px 0 #085C42}
+.mc-celeste{background:linear-gradient(150deg,#3AB4E8,#1E7FB8);box-shadow:0 6px 0 #145E85}
+.mc-teal{background:linear-gradient(150deg,#18C2A8,#0E8C79);box-shadow:0 6px 0 #0B6656}
 .mini-tit{margin:18px 0 10px;color:#E9C9F0;font-weight:700;font-size:.9rem}
 .mini-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .mini-card{background:#2A1A3C;border-radius:16px;padding:12px 4px 10px;display:flex;flex-direction:column;
@@ -926,16 +931,13 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <span class="cta-play">▶</span>
     <span class="cta-txt"><b>¡Jugar ahora!</b><small>Uruguay, vos contra la máquina</small></span>
   </button>
-  <button class="btn-grande cta-jugar cta-online" id="bOnline">
-    <span class="cta-play">🌐</span>
-    <span class="cta-txt"><b>Jugar online</b><small>Buscá un rival y arrancá ya</small></span>
-  </button>
   <div class="menu-grid">
-    <button class="menu-card mc-rosa" id="bTV"><span class="mc-ico">📺</span><span class="mc-tit">Sala TV / Familia</span><span class="mc-sub">Jugá todos juntos</span></button>
-    <button class="menu-card mc-azul" id="bJugarOnline"><span class="mc-ico">👥</span><span class="mc-tit">Jugar con amigos</span><span class="mc-sub">Crear sala o entrar con código</span></button>
-    <button class="menu-card mc-verde" id="bTienda" style="grid-column:1/-1"><span class="mc-ico">🛍️</span><span class="mc-tit">Tienda</span><span class="mc-sub">Monedas, marcos y más</span></button>
-    <button class="menu-card mc-naranja" id="bSocial" style="grid-column:1/-1"><span class="mc-ico">📱</span><span class="mc-tit">Social</span><span class="mc-sub">Seguinos en redes</span></button>
-    <button class="menu-card mc-celeste" id="bMenuEventosPrueba" style="grid-column:1/-1"><span class="mc-ico">🎉</span><span class="mc-tit">Eventos</span><span class="mc-sub">Volvé cada día por algo nuevo</span></button>
+    <button class="menu-card mc-teal" id="bOnline"><span class="mc-ico">🌐</span><span class="mc-txt"><span class="mc-tit">Jugar online</span><span class="mc-sub">Buscá un rival y arrancá ya</span></span><span class="mc-flecha">›</span></button>
+    <button class="menu-card mc-rosa" id="bTV"><span class="mc-ico">📺</span><span class="mc-txt"><span class="mc-tit">Sala TV / Familia</span><span class="mc-sub">Jugá todos juntos</span></span><span class="mc-flecha">›</span></button>
+    <button class="menu-card mc-azul" id="bJugarOnline"><span class="mc-ico">👥</span><span class="mc-txt"><span class="mc-tit">Jugar con amigos</span><span class="mc-sub">Crear sala o entrar con código</span></span><span class="mc-flecha">›</span></button>
+    <button class="menu-card mc-verde" id="bTienda"><span class="mc-ico">🛍️</span><span class="mc-txt"><span class="mc-tit">Tienda</span><span class="mc-sub">Monedas, marcos y más</span></span><span class="mc-flecha">›</span></button>
+    <button class="menu-card mc-naranja" id="bSocial"><span class="mc-ico">📱</span><span class="mc-txt"><span class="mc-tit">Social</span><span class="mc-sub">Seguinos en redes</span></span><span class="mc-flecha">›</span></button>
+    <button class="menu-card mc-celeste" id="bMenuEventosPrueba"><span class="mc-ico">🎉</span><span class="mc-txt"><span class="mc-tit">Eventos</span><span class="mc-sub">Volvé cada día por algo nuevo</span></span><span class="mc-flecha">›</span></button>
   </div>
   <div class="mini-tit-fila">
     <img src="assets/decor/mas-disfrutar.png" alt="Más para disfrutar" class="deco-mas-disfrutar">
