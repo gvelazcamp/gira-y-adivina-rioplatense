@@ -361,6 +361,7 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 .evento-card-info small{display:block;color:#C9B8DE;font-size:.8rem;line-height:1.3}
 .evento-card-premios{display:flex;align-items:center;gap:10px;margin-left:auto;flex:0 0 auto;padding-left:10px}
 .evento-card-premio-emoji{font-size:1.9rem;line-height:1;filter:drop-shadow(0 2px 2px #00000055)}
+.evento-card-premio-visual{display:inline-flex;align-items:center;flex:0 0 auto}
 .tn-comprar{background:var(--oro);color:var(--tinta);font-weight:800;border-radius:10px;padding:10px 14px;
  flex-shrink:0;font-size:.85rem;white-space:nowrap;box-shadow:0 3px 0 #B3860099;border:1px solid #FFE49A66}
 .tn-item.tn-real{border-color:#37D6C077;background:linear-gradient(135deg,#37D6C01A,#7B3FE41A);border-width:2px}
@@ -1698,10 +1699,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
         <span class="evento-card-premios">
           <span class="evento-card-premio-emoji">❤️</span>
           <span class="evento-card-premio-emoji">🪙</span>
-          <span class="avatar-wrap frame-preview evento-card-marco" id="evMarcoSwatch">
-            <img class="avatar-img" id="evMarcoAvatarImg" src="" alt="">
-            <img class="avatar-frame ver" id="evMarcoFrameImg" src="" style="transform:none" alt="">
-          </span>
+          <span class="evento-card-premio-visual" id="evVisual1"></span>
         </span>
       </span>
     </span>
@@ -1717,7 +1715,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
         <span class="evento-card-premios">
           <span class="evento-card-premio-emoji">🪙</span>
           <span class="evento-card-premio-emoji">❤️</span>
-          <span class="ficha-skin-preview evento-card-marco" id="evFichaSwatch"></span>
+          <span class="evento-card-premio-visual" id="evVisual2"></span>
         </span>
       </span>
     </span>
@@ -2079,6 +2077,7 @@ function cargarMeta(){
   if(typeof m.ultimoDiaJugado!=="string")m.ultimoDiaJugado="";
   if(typeof m.mejorRachaDias!=="number")m.mejorRachaDias=0;
   if(typeof m.mejorRachaVictorias!=="number")m.mejorRachaVictorias=0;
+  if(typeof m.pistasGratis!=="number")m.pistasGratis=0;
   return m;
 }
 let meta=cargarMeta();
@@ -2366,6 +2365,58 @@ let esEventoCiudad=false;
 function eventoCiudadFichaDeHoyId(){
   const disp=FICHAS_SKIN.filter(f=>f.id);
   return disp[Math.floor(Date.now()/86400000)%disp.length].id;
+}
+/* PRUEBA TEMPORAL (ver IDEAS.md): pool de premios "extra" que van
+   rotando en los dos Eventos, además de la vida+monedas de siempre —
+   así no es siempre la misma combinación. Offset distinto entre
+   Evento 1 y Evento 2 (0 y 2, sobre un pool de 4) para que nunca
+   coincidan el mismo día. */
+const EVENTO_PREMIOS_ROTAN=[
+  {tipo:"marco",nombre:"Marco de avatar"},
+  {tipo:"ficha",nombre:"Marco de tablero"},
+  {tipo:"pista",nombre:"Pista gratis"},
+  {tipo:"coleccionable",nombre:"Coleccionable"}
+];
+function eventoPremioDeHoy(offset){
+  const dia=Math.floor(Date.now()/86400000);
+  return EVENTO_PREMIOS_ROTAN[(dia+offset)%EVENTO_PREMIOS_ROTAN.length];
+}
+function premioVisualHTML(premio){
+  if(premio.tipo==="marco"){
+    const idMarco=partidaDiariaMarcoDeHoyId();
+    return '<span class="avatar-wrap frame-preview evento-card-marco"><img class="avatar-img" src="assets/avatars/'+(perfil.avatar||"avatar-01")+'.webp" alt=""><img class="avatar-frame ver" src="assets/frames/frame-'+idMarco+'.png" style="transform:none" alt=""></span>';
+  }
+  if(premio.tipo==="ficha"){
+    const idFicha=eventoCiudadFichaDeHoyId();
+    return '<span class="ficha-skin-preview evento-card-marco" style="background-image:url(\'assets/fichas/'+idFicha+'.webp\')"></span>';
+  }
+  if(premio.tipo==="pista")return '<span class="evento-card-premio-emoji">🔍</span>';
+  const col=COLECCIONES[MUNDO[eventoCiudadDeHoyIdx()].id];
+  return '<img class="evento-card-img" src="'+col.sobreCerrado+'" alt="">';
+}
+/* Otorga de verdad el premio que tocó hoy (mismo que se ve en la
+   vista previa) y devuelve el texto para el aviso. El coleccionable
+   siempre es el de la "ciudad del día" (misma que usa el Evento 2),
+   así lo que se ve en la tarjeta es exactamente lo que se recibe. */
+function otorgarPremioRotativo(premio){
+  if(premio.tipo==="marco"){
+    const idMarco=partidaDiariaMarcoDeHoyId();
+    if(!framesComprados.has(idMarco)){framesComprados.add(idMarco);guardarFramesComprados();}
+    return "el marco "+FRAMES.find(fr=>fr.id===idMarco).nombre;
+  }
+  if(premio.tipo==="ficha"){
+    const idFicha=eventoCiudadFichaDeHoyId();
+    if(!fichasComprados.has(idFicha)){fichasComprados.add(idFicha);guardarFichasComprados();}
+    equiparFichaSkin(idFicha);
+    return "el marco de tablero "+FICHAS_SKIN.find(f=>f.id===idFicha).nombre;
+  }
+  if(premio.tipo==="pista"){
+    meta.pistasGratis=(meta.pistasGratis||0)+1;guardarMeta();
+    return "una pista gratis";
+  }
+  const cual=MUNDO[eventoCiudadDeHoyIdx()].id,cm=coleccionMeta[cual];
+  if(cm){cm.sobres++;guardarColeccionMeta();colActualizarBloqueDurazno();}
+  return "un sobre de "+COLECCIONES[cual].nombre;
 }
 function pdEstadoHoy(){
   try{const raw=JSON.parse(localStorage.getItem("gya_partida_diaria")||"null");
@@ -3663,11 +3714,9 @@ function sumarRondaColeccion(cual){
   if(modo!=="bot"||destino===null||!MUNDO[destino]||MUNDO[destino].id!==cual)return;
   if(esEventoCiudad){
     esEventoCiudad=false;
-    const idFicha=eventoCiudadFichaDeHoyId(),ficha=FICHAS_SKIN.find(f=>f.id===idFicha);
-    if(!fichasComprados.has(idFicha)){fichasComprados.add(idFicha);guardarFichasComprados();}
-    equiparFichaSkin(idFicha);
     sumarMonedas(200);recuperarVida();mundoActualizarHud();
-    setTimeout(()=>mostrarToast("🎉","¡Evento conseguido! +200 🪙 +1 ❤️ + marco "+ficha.nombre),300);
+    const extra=otorgarPremioRotativo(eventoPremioDeHoy(2));
+    setTimeout(()=>mostrarToast("🎉","¡Evento conseguido! +200 🪙 +1 ❤️ + "+extra),300);
     return;
   }
   const cm=coleccionMeta[cual];if(!cm)return;
@@ -5471,14 +5520,9 @@ function finalizarPartidaPendiente(bonusGanado){
   const bonusTxt=bonusGanado===true?" · Ronda Bonus: +$"+BONUS_PREMIO+".":bonusGanado===false?" · Ronda Bonus sin premio.":"";
   let pdTxt="";
   if(esPartidaDiaria){esPartidaDiaria=false;pdGuardarEstado("jugada");objActualizarBadge();
-    const suerte=Math.floor(Math.random()*3);
-    if(suerte===0){recuperarVida();pdTxt=" · ¡Ganaste la Partida Diaria! +1 vida.";}
-    else if(suerte===1){recuperarVida();sumarMonedas(100);mundoActualizarHud();pdTxt=" · ¡Ganaste la Partida Diaria! +1 vida y +100 🪙.";}
-    else{
-      const idMarco=partidaDiariaMarcoDeHoyId();
-      if(!framesComprados.has(idMarco)){framesComprados.add(idMarco);guardarFramesComprados();}
-      pdTxt=" · ¡Ganaste la Partida Diaria! Te llevaste el marco "+FRAMES.find(fr=>fr.id===idMarco).nombre+".";
-    }}
+    recuperarVida();sumarMonedas(100);mundoActualizarHud();
+    const extra=otorgarPremioRotativo(eventoPremioDeHoy(0));
+    pdTxt=" · ¡Ganaste la Partida Diaria! +1 vida, +100 🪙 y "+extra+".";}
   S.finalPendiente=null;S.fase="fin";pararReloj();limpiarBonus();
   $("modalResolver").classList.remove("ver");
   publicar("Partida terminada.");
@@ -5863,10 +5907,14 @@ const PISTA_PRECIO=150;
 function hostPista(){
   if(modo!=="bot"||animando||S.pistaUsada)return;
   if(S.fase!=="girar"&&S.fase!=="consonante"&&S.fase!=="vocal")return;
-  if(!enTutorial&&meta.monedas<PISTA_PRECIO)return;
+  const tienePistaGratis=(meta.pistasGratis||0)>0;
+  if(!enTutorial&&!tienePistaGratis&&meta.monedas<PISTA_PRECIO)return;
   const ocultas=[...new Set(S.frase.replace(/ /g,""))].filter(c=>!S.abiertas.has(c));
   if(!ocultas.length)return;
-  if(!enTutorial){meta.monedas-=PISTA_PRECIO;guardarMeta();mundoActualizarHud();}
+  if(!enTutorial){
+    if(tienePistaGratis)meta.pistasGratis--;else meta.monedas-=PISTA_PRECIO;
+    guardarMeta();mundoActualizarHud();
+  }
   S.pistaUsada=true;
   const l=ocultas[Math.floor(Math.random()*ocultas.length)];
   S.usadas.add(l);S.abiertas.add(l);
@@ -6453,11 +6501,8 @@ function eventoTiempoRestanteTxt(){
 function abrirEventos(){
   const ciudad=MUNDO[eventoCiudadDeHoyIdx()];
   $("evCiudadTit").textContent="Evento en "+ciudad.n;
-  const idMarco=partidaDiariaMarcoDeHoyId();
-  $("evMarcoAvatarImg").src="assets/avatars/"+(perfil.avatar||"avatar-01")+".webp";
-  $("evMarcoFrameImg").src="assets/frames/frame-"+idMarco+".png";
-  const idFicha=eventoCiudadFichaDeHoyId();
-  $("evFichaSwatch").style.backgroundImage="url('assets/fichas/"+idFicha+".webp')";
+  $("evVisual1").innerHTML=premioVisualHTML(eventoPremioDeHoy(0));
+  $("evVisual2").innerHTML=premioVisualHTML(eventoPremioDeHoy(2));
   const t=eventoTiempoRestanteTxt();
   $("evTiempo1").textContent=t;$("evTiempo2").textContent=t;
   /* Cada vez que se entra a Eventos, las dos tarjetas arrancan tapadas
@@ -6767,8 +6812,10 @@ function pintar(){
     $("bPista").style.display="";
     const fasesOk=S.fase==="girar"||S.fase==="consonante"||S.fase==="vocal";
     const quedanOcultas=!!S.frase&&[...new Set(S.frase.replace(/ /g,""))].some(c=>!S.abiertas.has(c));
-    $("bPista").disabled=!mio||!fasesOk||!!S.pistaUsada||(!enTutorial&&meta.monedas<PISTA_PRECIO)||!quedanOcultas;
-    $("bPista").textContent=S.pistaUsada?"💡 Pista usada":enTutorial?"💡 Pista (gratis)":"💡 Pista 🪙"+PISTA_PRECIO;
+    const tienePistaGratis=(meta.pistasGratis||0)>0;
+    $("bPista").disabled=!mio||!fasesOk||!!S.pistaUsada||(!enTutorial&&!tienePistaGratis&&meta.monedas<PISTA_PRECIO)||!quedanOcultas;
+    $("bPista").textContent=S.pistaUsada?"💡 Pista usada":enTutorial?"💡 Pista (gratis)":
+      tienePistaGratis?"💡 Pista (gratis, te quedan "+meta.pistasGratis+")":"💡 Pista 🪙"+PISTA_PRECIO;
   }else{
     $("bPista").style.display="none";
   }
