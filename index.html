@@ -6369,7 +6369,6 @@ $("ruedaNext").onclick=()=>{
    modo Mundo contra la máquina — el sobre de colección de esa ciudad
    ya se entrega solo al ganar una ronda (sumarRondaColeccion), no
    hace falta premio nuevo para probar la idea. */
-function eventoCiudadDeHoyIdx(){return Math.floor(Date.now()/86400000)%MUNDO.length;}
 function abrirEventos(){
   const ciudad=MUNDO[eventoCiudadDeHoyIdx()],col=COLECCIONES[ciudad.id];
   $("evCiudadTit").textContent="Evento 2 · "+ciudad.n;
