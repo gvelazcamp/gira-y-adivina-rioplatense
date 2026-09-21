@@ -80,8 +80,8 @@ h1,h2,.disp{font-family:'Archivo Black',sans-serif;letter-spacing:-.01em}
 button{font-family:inherit;cursor:pointer;border:none}
 button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 
-#setup,#lobby,#mundo{max-width:520px;margin:5vh auto;text-align:center}
-#lobby,#mundo{display:none}
+#setup,#lobby,#mundo,#eventos{max-width:520px;margin:5vh auto;text-align:center}
+#lobby,#mundo,#eventos{display:none}
 #mapa{max-height:72vh;overflow-y:auto;border-radius:22px;border:1px solid #FFFFFF1F;
  margin-bottom:16px;-webkit-overflow-scrolling:touch;background:#0C0616;touch-action:pan-y;cursor:grab}
 #mapa.arrastrando{cursor:grabbing}
@@ -1668,10 +1668,13 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
      ciudad del día (empezarDestino), que ya entrega un sobre de
      colección de esa ciudad al ganar una ronda — no hace falta premio
      nuevo. Tarjetas con los colores del juego (no la imagen azul de
-     Pocket Champs: quedaba con fondo blanco del botón por detrás). -->
-<div class="capa" id="capaEventos"><div class="caja" style="max-width:420px">
-  <h2>🎉 Eventos</h2>
-  <p class="sub" style="margin:0 0 16px">Vista previa — solo vos, Gonzalo</p>
+     Pocket Champs: quedaba con fondo blanco del botón por detrás). Es
+     una <section> de pantalla completa como #mundo o #setup, no un
+     popup chico — Gonzalo pidió específicamente que tocar "Eventos"
+     lleve a una pantalla nueva entera. -->
+<section id="eventos">
+  <h1 class="titulo" style="font-size:2.2rem">🎉 EVENTOS</h1>
+  <p class="sub">Vista previa — solo vos, Gonzalo</p>
   <button type="button" class="evento-card" id="evBanner1">
     <span class="evento-card-tiempo" id="evTiempo1">⏳</span>
     <span class="evento-card-cuerpo">
@@ -1688,8 +1691,8 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
         <small>Ganá una ronda y llevate el sobre de esta ciudad</small></span>
     </span>
   </button>
-  <button class="no" id="evCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:4px">Cerrar</button>
-</div></div>
+  <button class="btn-grande sec" id="evCerrar">Volver al inicio</button>
+</section>
 
 <div class="capa" id="modalResolver"><div class="caja">
   <h2>Decí la frase</h2>
@@ -6392,12 +6395,14 @@ function abrirEventos(){
   const t=eventoTiempoRestanteTxt();
   $("evTiempo1").textContent=t;$("evTiempo2").textContent=t;
   document.querySelectorAll(".capa.ver").forEach(c=>c.classList.remove("ver"));
-  $("capaEventos").classList.add("ver");
+  $("setup").style.display="none";$("mundo").style.display="none";$("pantDurazno").style.display="none";
+  $("eventos").style.display="block";
 }
+function cerrarEventos(){$("eventos").style.display="none";$("setup").style.display="block";}
 $("bMenuEventosPrueba").onclick=abrirEventos;
-$("evCerrar").onclick=()=>$("capaEventos").classList.remove("ver");
-$("evBanner1").onclick=()=>{$("capaEventos").classList.remove("ver");iniciarPartidaDiaria();};
-$("evBanner2").onclick=()=>{$("capaEventos").classList.remove("ver");empezarDestino(eventoCiudadDeHoyIdx());};
+$("evCerrar").onclick=cerrarEventos;
+$("evBanner1").onclick=()=>{cerrarEventos();iniciarPartidaDiaria();};
+$("evBanner2").onclick=()=>{cerrarEventos();empezarDestino(eventoCiudadDeHoyIdx());};
 function tnRenderRuedas(contId,soloBasicos){
   const cont=$(contId||"ruedaGrid");if(!cont)return;cont.innerHTML="";
   const lista=soloBasicos?RUEDAS_SKIN.filter(m=>m.basico):
