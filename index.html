@@ -1689,7 +1689,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
       <span class="evento-card-tiempo" id="evTiempo1">⏳</span>
       <span class="evento-card-cuerpo">
         <span class="evento-card-ico">🎁</span>
-        <span class="evento-card-info"><b>Partida Diaria</b>
+        <span class="evento-card-info"><b>Evento diario</b>
           <small>3 rondas contra la máquina</small></span>
         <span class="evento-card-premios">
           <span class="evento-card-premio-emoji">❤️</span>
@@ -2349,6 +2349,12 @@ function tutChequearBienvenida(){
   pdChequearAutoPopup();empujarRanking();
 }
 let esPartidaDiaria=false;
+/* Solo cambia cómo se nombra en los mensajes de fin de partida: si se
+   arrancó desde la tarjeta "Evento diario" en Eventos, se dice así;
+   si vino de la ventana vieja o de Objetivos diarios, se sigue
+   diciendo "Partida Diaria" como siempre — misma mecánica en los dos
+   casos (esPartidaDiaria), esto es solo texto. */
+let eventoDiarioUI=false;
 /* Marca que la partida en curso vino del Evento 2 (ciudad) de
    Eventos (ver IDEAS.md) — así sumarRondaColeccion() sabe que, al
    ganar la primera ronda, hay que dar la recompensa del evento
@@ -5510,7 +5516,8 @@ function finalizarPartidaPendiente(bonusGanado){
   if(esPartidaDiaria){esPartidaDiaria=false;pdGuardarEstado("jugada");objActualizarBadge();
     recuperarVida();sumarMonedas(100);mundoActualizarHud();
     const extra=otorgarPremioRotativo(eventoPremioDeHoy(0));
-    pdTxt=" · ¡Ganaste la Partida Diaria! +1 vida, +100 🪙 y "+extra+".";}
+    const nombre=eventoDiarioUI?"el Evento diario":"la Partida Diaria";eventoDiarioUI=false;
+    pdTxt=" · ¡Ganaste "+nombre+"! +1 vida, +100 🪙 y "+extra+".";}
   S.finalPendiente=null;S.fase="fin";pararReloj();limpiarBonus();
   $("modalResolver").classList.remove("ver");
   publicar("Partida terminada.");
@@ -6047,7 +6054,8 @@ function finDelJuego(){
     }
     if(bonusJugado>0)extra+=" +"+bonusJugado+" 🪙 por lo jugado.";
     if(esPartidaDiaria){esPartidaDiaria=false;pdGuardarEstado("jugada");objActualizarBadge();
-      extra+=" No ganaste la Partida Diaria de hoy — probá mañana.";}
+      const nombre=eventoDiarioUI?"el Evento diario":"la Partida Diaria";eventoDiarioUI=false;
+      extra+=" No ganaste "+nombre+" de hoy — probá mañana.";}
     S.fase="fin";pararReloj();publicar("Partida terminada.");
     $("fMapa").style.display="block";$("fSalir").style.display=(destino!==null)?"none":"block";
     $("fMapa").textContent=(destino!==null)?"Volver al mapa":"Elegir modalidad";
@@ -6503,7 +6511,7 @@ $("bMenuEventosPrueba").onclick=abrirEventos;
 $("evCerrar").onclick=cerrarEventos;
 $("evBanner1").onclick=()=>{
   if($("evBanner1").classList.contains("cerrado")){$("evBanner1").classList.remove("cerrado");return;}
-  cerrarEventos();iniciarPartidaDiaria();
+  cerrarEventos();eventoDiarioUI=true;iniciarPartidaDiaria();
 };
 $("evBanner2").onclick=()=>{
   if($("evBanner2").classList.contains("cerrado")){$("evBanner2").classList.remove("cerrado");return;}
