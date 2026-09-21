@@ -356,13 +356,8 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 /* PAUSA DE MARCOS DE RULETA: a pedido de Gonzalo, mientras decide qué
    hacer con el desfasaje de las imágenes (ver RUEDAS_PAUSADAS en el
    JS). Nada se borra, sólo se esconde. Para reactivar, borrar este
-   bloque Y poner RUEDAS_PAUSADAS=false más arriba.
-   PRUEBA TEMPORAL: como RUEDAS_PAUSADAS ahora depende de la cuenta (ver
-   comentario en el JS), esto ya no puede ser un display:none fijo para
-   todos — el body lleva la clase "ruedas-visibles" solo cuando está
-   destrabado, puesta por el mismo JS que calcula RUEDAS_PAUSADAS. */
-body:not(.ruedas-visibles) #tituloRuedas,body:not(.ruedas-visibles) #ruedaGrid,
-body:not(.ruedas-visibles) #ruedaSelector{display:none!important}
+   bloque Y poner RUEDAS_PAUSADAS=false más arriba. */
+#tituloRuedas,#ruedaGrid,#ruedaSelector{display:none!important}
 #sobresGrid .tn-item:not(.sobre-basico){display:none}
 .tn-item.tn-card{display:flex;flex-direction:column;align-items:stretch;gap:6px;text-align:center;
  padding:10px;min-width:0;border-width:2px;border-radius:18px;box-shadow:0 4px 0 #00000060,inset 0 1px 0 #FFFFFF1A;
@@ -1890,16 +1885,8 @@ let ruedaSkinEquipada=cargarRuedaSkinEquipada();
    parte visual: la rueda real siempre se ve Clásica, no aparece la
    sección en la Tienda ni el selector en Jugar online. Para reactivar,
    poner esto en false (y sacar el bloque CSS de más abajo con el
-   mismo comentario).
-   PRUEBA TEMPORAL (hasta que Gonzalo diga qué le pareció): la pausa se
-   destraba solo en su cuenta, para probar las ruletas nuevas con el
-   texto ya dibujado. No se puede usar esGonzalo()/perfil acá — todavía
-   no están cargados a esta altura del script — así que se lee
-   localStorage directo, igual que hace cargarPerfil() más abajo. */
-const RUEDAS_PAUSADAS=(function(){
-  try{return(localStorage.getItem("gya_nombre")||"").trim().toLowerCase()!=="gonzalo";}catch(e){return true;}
-})();
-try{document.body.classList.toggle("ruedas-visibles",!RUEDAS_PAUSADAS);}catch(e){}
+   mismo comentario). */
+const RUEDAS_PAUSADAS=true;
 /* Cada imagen de ruleta comprada viene con sus 24 gajos ya dibujados,
    pero no todas empiezan el primer gajo en el mismo lugar que nuestra
    grilla de 24 partes iguales (arranca en el 3 en punto). En algunas
