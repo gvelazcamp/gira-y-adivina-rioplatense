@@ -918,6 +918,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <button class="menu-card mc-azul" id="bJugarOnline"><span class="mc-ico">👥</span><span class="mc-tit">Jugar con amigos</span><span class="mc-sub">Crear sala o entrar con código</span></button>
     <button class="menu-card mc-verde" id="bTienda" style="grid-column:1/-1"><span class="mc-ico">🛍️</span><span class="mc-tit">Tienda</span><span class="mc-sub">Monedas, marcos y más</span></button>
     <button class="menu-card mc-naranja" id="bSocial" style="grid-column:1/-1"><span class="mc-ico">📱</span><span class="mc-tit">Social</span><span class="mc-sub">Seguinos en redes</span></button>
+    <button class="menu-card mc-naranja" id="bMenuPrueba" style="grid-column:1/-1;display:none"><span class="mc-ico">🔧</span><span class="mc-tit">Menú Prueba</span><span class="mc-sub">Solo vos — no gasta vidas</span></button>
   </div>
   <div class="mini-tit-fila">
     <img src="assets/decor/mas-disfrutar.png" alt="Más para disfrutar" class="deco-mas-disfrutar">
@@ -1669,6 +1670,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   </div>
   <button id="prGirarBtn" class="girar" style="width:100%">🎡 Girar de nuevo</button>
   <div id="prGirarLog" style="max-height:110px;overflow:auto;margin-top:10px;font-size:.8rem;color:#F6EFE2CC"></div>
+  <button id="prGirarSalir" class="no" style="width:100%;margin-top:10px">Salir del Menú Prueba</button>
 </div>
 
 <div class="capa" id="modalResolver"><div class="caja">
@@ -4612,6 +4614,10 @@ $("perfilCerrar").onclick=()=>{
   $("setup").style.display="block";
 };
 actualizarChipPerfil();
+/* PRUEBA TEMPORAL: botón "Menú Prueba" en el inicio, solo visible para
+   Gonzalo, para entrar directo a probar ruletas sin gastar vidas ni
+   pasar por Jugar Online. */
+if($("bMenuPrueba"))$("bMenuPrueba").style.display=esGonzalo()?"":"none";
 /* window.supabase todavía no existe acá: este script corre sincrónico
    durante el parseo, antes de que termine de cargar supabase.js (que es
    "defer"). Por eso el registro de usuario espera al evento load. */
@@ -4670,7 +4676,6 @@ function jugarOnlineFalso(velocidad){
       $("setup").style.display="none";$("juego").style.display="block";
       armarTeclado();
       iniciarPartida(perfil.nombre||"Vos",rival.n,undefined,perfil.avatar||null,rival.a,frameEquipado||null,null);
-      if(!RUEDAS_PAUSADAS){$("ruedaSelector").style.display="flex";aplicarRuedaSelector();}
     },900);
   },1500+Math.random()*900);
 }
@@ -6378,22 +6383,27 @@ $("ruedaNext").onclick=()=>{
    giro coincide con el número que queda bajo la flecha. Solo entra con
    ?probarrueda=1 y solo si la cuenta ya tiene RUEDAS_PAUSADAS=false
    (Gonzalo). */
-const probarRuedaEnLink=(new URLSearchParams(location.search).get("probarrueda")||"")==="1";
-if(probarRuedaEnLink){
-  window.addEventListener("load",()=>{
-    if(RUEDAS_PAUSADAS){alert("Esto por ahora solo anda en la cuenta Gonzalo.");return;}
-    document.querySelectorAll(".capa.ver").forEach(c=>c.classList.remove("ver"));
-    $("setup").style.display="none";$("mundo").style.display="none";$("pantDurazno").style.display="none";
-    $("juego").style.display="block";
-    aplicarRuedaSelector();
-    $("prGirarNombre").textContent=$("ruedaNombreSel").textContent;
-    $("capaProbarRueda").style.display="block";
-    /* Partida Diaria/promo de tienda se auto-abren con su propio
-       setTimeout un rato después de cargar — se sacan de encima si
-       aparecen, para poder entrar a probar sin distracciones. */
-    setTimeout(()=>document.querySelectorAll(".capa.ver").forEach(c=>{if(c.id!=="capaRueda")c.classList.remove("ver");}),3200);
-  });
+function abrirMenuPrueba(){
+  if(RUEDAS_PAUSADAS){alert("Esto por ahora solo anda en la cuenta Gonzalo.");return;}
+  document.querySelectorAll(".capa.ver").forEach(c=>c.classList.remove("ver"));
+  $("setup").style.display="none";$("mundo").style.display="none";$("pantDurazno").style.display="none";
+  $("juego").style.display="block";
+  aplicarRuedaSelector();
+  $("prGirarNombre").textContent=$("ruedaNombreSel").textContent;
+  $("capaProbarRueda").style.display="block";
+  /* Partida Diaria/promo de tienda se auto-abren con su propio
+     setTimeout un rato después de cargar — se sacan de encima si
+     aparecen, para poder entrar a probar sin distracciones. */
+  setTimeout(()=>document.querySelectorAll(".capa.ver").forEach(c=>{if(c.id!=="capaRueda")c.classList.remove("ver");}),3200);
 }
+const probarRuedaEnLink=(new URLSearchParams(location.search).get("probarrueda")||"")==="1";
+if(probarRuedaEnLink)window.addEventListener("load",abrirMenuPrueba);
+$("bMenuPrueba").onclick=abrirMenuPrueba;
+$("prGirarSalir").onclick=()=>{
+  $("capaProbarRueda").style.display="none";
+  $("capaRueda").classList.remove("ver");
+  $("juego").style.display="none";$("setup").style.display="block";
+};
 $("prGirarPrev").onclick=()=>{$("ruedaPrev").click();$("prGirarNombre").textContent=$("ruedaNombreSel").textContent;};
 $("prGirarNext").onclick=()=>{$("ruedaNext").click();$("prGirarNombre").textContent=$("ruedaNombreSel").textContent;};
 $("prGirarBtn").onclick=()=>{
