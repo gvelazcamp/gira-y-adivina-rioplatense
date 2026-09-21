@@ -6108,6 +6108,7 @@ function revancha(){
   else continuar2();
 }
 function mostrarFin(tit,txt,selloImg){
+  if(!tit.startsWith("Partida abandonada"))objSumar("partidas",1);
   $("fBoton").style.display="";
   $("capaResuelto").classList.remove("ver");
   $("capaResuelto").querySelectorAll(".papel").forEach(x=>x.remove());
@@ -6134,7 +6135,6 @@ function mostrarFin(tit,txt,selloImg){
 function armarTeclado(){
   mundoActualizarHud();
   jgActualizarSobre();
-  objSumar("partidas",1);
   $("teclado").innerHTML="";
   LETRAS.forEach(l=>{const b=document.createElement("button");b.textContent=l;b.dataset.l=l;
     if(VOCALES.includes(l))b.classList.add("vocal");
