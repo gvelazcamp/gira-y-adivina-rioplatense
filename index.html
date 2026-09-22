@@ -340,6 +340,7 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
  padding:14px 16px;margin-bottom:14px;border:2px solid #F5B30166;
  background:linear-gradient(160deg,var(--noche2),var(--noche));
  box-shadow:0 4px 0 #00000060,inset 0 1px 0 #FFFFFF1A;cursor:pointer}
+.evento-card.bloqueado{filter:grayscale(1);opacity:.65;cursor:default}
 .evento-card .ev-abierto{display:block}
 .evento-card .ev-cerrado{display:none}
 .evento-card.cerrado{text-align:center;padding:26px 16px;border-color:#FFE49A;
@@ -1717,7 +1718,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
       <span class="evento-card-cuerpo">
         <span class="evento-card-ico">🎁</span>
         <span class="evento-card-info"><b id="evCiudadTit">Evento de ciudad</b>
-          <small>Ganá una ronda para conseguirlo</small></span>
+          <small id="evCiudadEstado">3 rondas · Un intento por día · Ganá un sobre</small></span>
         <span class="evento-card-premios">
           <span class="evento-card-premio-emoji">🪙</span>
           <span class="evento-card-premio-emoji">❤️</span>
@@ -2419,13 +2420,61 @@ let esPartidaDiaria=false;
    diciendo "Partida Diaria" como siempre — misma mecánica en los dos
    casos (esPartidaDiaria), esto es solo texto. */
 let eventoDiarioUI=false;
-/* Marca que la partida en curso vino del Evento 2 (ciudad) de
-   Eventos (ver IDEAS.md) — así sumarRondaColeccion() sabe que, al
-   ganar la primera ronda, hay que dar la recompensa del evento
-   (monedas + vida + premio rotativo) en vez del sobre de colección
-   normal de esa ciudad, sin tocar cómo funciona el modo Mundo para
-   todos los demás casos. */
-let esEventoCiudad=false;
+/* Evento 2: partida independiente con un intento diario. El sobre ganado
+   comparte la colección de la localidad, pero nunca avanza el mapa. */
+let esEventoCiudad=false,eventoCiudadPartida=null,eventoCiudadResultado=false;
+let eventoCiudadRegistro=(()=>{try{return JSON.parse(localStorage.getItem("gya_evento_ciudad"));}catch(e){return null;}})();
+function leerEventoCiudad(){
+  try{eventoCiudadRegistro=JSON.parse(localStorage.getItem("gya_evento_ciudad"))||eventoCiudadRegistro;}catch(e){}
+  return eventoCiudadRegistro;
+}
+function guardarEventoCiudad(registro){
+  eventoCiudadRegistro=registro;
+  try{localStorage.setItem("gya_evento_ciudad",JSON.stringify(registro));}catch(e){}
+}
+function estadoEventoCiudad(){
+  const r=leerEventoCiudad();
+  return r&&r.dia===Math.floor(Date.now()/86400000)?r.estado:"pendiente";
+}
+function iniciarEventoCiudad(){
+  if(estadoEventoCiudad()!=="pendiente")return;
+  if(!perfilExiste()){abrirPerfil(iniciarEventoCiudad);return;}
+  regenerarVidas();if(meta.vidas<=0){mostrarToast("❤️","Esperá a recuperar una vida para jugar.");return;}
+  detenerPartidaAnterior();
+  esPartidaDiaria=false;eventoDiarioUI=false;vinoDeJugarOnline=false;
+  destino=null;pasoActual=null;fSiguientePaso=null;modoVelocidadElegido=false;
+  eventoCiudadPartida={dia:Math.floor(Date.now()/86400000),cual:MUNDO[eventoCiudadDeHoyIdx()].id};
+  // Reservar el intento antes de jugar: salir o recargar cuenta como derrota.
+  guardarEventoCiudad({...eventoCiudadPartida,estado:"perdido",premioEntregado:false});
+  esEventoCiudad=true;eventoCiudadResultado=false;
+  modo="bot";miJug=0;rondasElegidas=3;arranca=0;
+  ["setup","eventos","mundo","pantDurazno"].forEach(id=>$(id).style.display="none");
+  $("fondoMundo").classList.remove("ver");$("juego").style.display="block";
+  const rival=rivalOnlineFalso();
+  armarTeclado();iniciarPartida(perfil.nombre,rival.n,undefined,perfil.avatar,rival.a,frameEquipado||null,null);
+}
+function finalizarEventoCiudad(ganado,detalle,abandonado){
+  if(!esEventoCiudad||!eventoCiudadPartida||eventoCiudadResultado)return;
+  const intento=eventoCiudadPartida,r=leerEventoCiudad();
+  let premio="";
+  if(r&&r.dia===intento.dia&&!r.premioEntregado){
+    guardarEventoCiudad({...r,estado:ganado?"ganado":"perdido",premioEntregado:ganado});
+    if(ganado){
+      coleccionMeta[intento.cual].sobres++;guardarColeccionMeta();
+      sumarMonedas(200);recuperarVida();objSumar("victorias",1);
+      intento.sobrePendiente=true;
+      premio=" +200 🪙, +1 ❤️ y un sobre de "+COLECCIONES[intento.cual].nombre+". Abrí tu sobre al continuar.";
+    }else{gastarVida();premio=" -1 ❤️. Volvé mañana.";}
+  }
+  eventoCiudadResultado=true;
+  detenerPartidaAnterior();S.finalPendiente=null;
+  publicar("Evento terminado.");mundoActualizarHud();colActualizarBloqueDurazno();
+  mostrarFin(ganado?"¡Evento completado!":abandonado?"Partida abandonada":"Perdiste el evento",detalle+premio);
+  $("fCopa").textContent=ganado?"🏆":"😤";
+  $("fMapa").style.display="block";$("fMapa").textContent="Volver a Eventos";
+  $("fSalir").style.display="none";$("fBoton").style.display="none";
+  $("fVolverMapaPaso").style.display="none";
+}
 function eventoCiudadFichaDeHoyId(){
   const disp=FICHAS_SKIN.filter(f=>f.id);
   return disp[Math.floor(Date.now()/86400000)%disp.length].id;
@@ -3788,13 +3837,7 @@ function jgActualizarSobre(){
 function sumarRondaColeccion(cual){
   // Solo cuenta en Mundo Uruguay -> ciudad con colección -> jugador solo (evita ventajas/duplicados en multijugador).
   if(modo!=="bot"||destino===null||!MUNDO[destino]||MUNDO[destino].id!==cual)return;
-  if(esEventoCiudad){
-    esEventoCiudad=false;
-    sumarMonedas(200);recuperarVida();mundoActualizarHud();
-    const extra=otorgarPremioRotativo(eventoPremioDeHoy(2));
-    setTimeout(()=>mostrarToast("🎉","¡Evento conseguido! +200 🪙 +1 ❤️ + "+extra),300);
-    return;
-  }
+
   const cm=coleccionMeta[cual];if(!cm)return;
   cm.sobres++;
   guardarColeccionMeta();colActualizarBloqueDurazno();
@@ -4669,6 +4712,7 @@ $("bVolverDeArgentina").onclick=()=>{
 };
 
 function empezarDestino(i,paso){
+  esEventoCiudad=false;eventoCiudadPartida=null;eventoCiudadResultado=false;
   if(!gastarVida())return;
   // Evita que un cartel de sobre/colección que quedó pendiente de una partida anterior
   // quede flotando encima de la partida nueva que arranca acá.
@@ -4755,6 +4799,7 @@ function perfilActualizarSpotlight(){
   tutMostrarSpotlight($("perfilContinuar"),"¡Listo! Tocá para continuar.");
 }
 function abrirPerfil(callback){
+  $("eventos").style.display="none";
   perfilCallback=callback||null;
   $("perfilNombre").value=perfil.nombre||$("miNombre").value.trim()||"";
   avatarElegido=perfil.avatar||null;
@@ -4835,6 +4880,7 @@ function rivalOnlineFalso(){
 }
 let modoVelocidadElegido=false,vinoDeJugarOnline=false;
 function jugarOnlineFalso(velocidad){
+  esEventoCiudad=false;eventoCiudadPartida=null;eventoCiudadResultado=false;
   if(!perfilExiste()){abrirPerfil(()=>jugarOnlineFalso(velocidad));return;}
   detenerPartidaAnterior();
   const token=matchToken;
@@ -5609,6 +5655,7 @@ function finalizarPartidaPendiente(bonusGanado){
   if(!f)return;
   const detalle=detalleResultado(f.g);
   const bonusTxt=bonusGanado===true?" · Ronda Bonus: +$"+BONUS_PREMIO+".":bonusGanado===false?" · Ronda Bonus sin premio.":"";
+  if(esEventoCiudad){finalizarEventoCiudad(true,detalle+bonusTxt);return;}
   let pdTxt="";
   if(esPartidaDiaria){esPartidaDiaria=false;pdGuardarEstado("jugada");objActualizarBadge();
     recuperarVida();sumarMonedas(100);mundoActualizarHud();
@@ -5627,6 +5674,7 @@ function finalizarPartidaPendiente(bonusGanado){
 }
 function terminarPorAbandono(idx){
   if(!S||S.fase==="fin")return;
+  if(esEventoCiudad){finalizarEventoCiudad(false,"Abandonaste el evento.",true);return;}
   const eraPartidaDiaria=esPartidaDiaria;
   if(esPartidaDiaria){esPartidaDiaria=false;pdGuardarEstado("jugada");objActualizarBadge();}
   S.finYa=true;S.fase="fin";pararReloj();limpiarBonus();
@@ -6091,6 +6139,11 @@ function finDelJuego(){
   const g=calcularGanador();
   const detalle=detalleResultado(g);
   let tit,extra="";
+  if(esEventoCiudad){
+    if(g===0)iniciarBonus(g,{g,tit:"¡Evento completado!",extra:""});
+    else finalizarEventoCiudad(false,detalle+(g<0?" El empate consume el intento diario.":""));
+    return;
+  }
   if(modo==="bot"&&pasoActual!==null){
     const d=MUNDO[destino];
     let selloImg;
@@ -6179,6 +6232,7 @@ function finDelJuego(){
   iniciarBonus(g,{g,tit,extra});
 }
 function revancha(){
+  if(esEventoCiudad||eventoCiudadResultado)return;
   if(modo==="bot"&&destino!==null&&!gastarVida()){
     matchToken++;botPausado=0;
     $("modalFin").classList.remove("ver");
@@ -6613,17 +6667,23 @@ function revelarEvento(id){
 }
 function abrirEventos(){
   detenerPartidaAnterior();
+  eventoCiudadPartida=null;eventoCiudadResultado=false;
   esPartidaDiaria=false;eventoDiarioUI=false;esEventoCiudad=false;
   $("fondoMundo").classList.remove("ver");
   $("juego").style.display="none";
   const ciudad=MUNDO[eventoCiudadDeHoyIdx()];
   $("evCiudadTit").textContent="Evento en "+ciudad.n;
   $("evVisual1").innerHTML=premioVisualHTML(eventoPremioDeHoy(0));
-  $("evVisual2").innerHTML=premioVisualHTML(eventoPremioDeHoy(2));
+  $("evVisual2").innerHTML='<img class="evento-card-img" src="'+COLECCIONES[ciudad.id].sobreCerrado+'" alt="Sobre de la localidad">';
   const t=eventoTiempoRestanteTxt();
   $("evTiempo1").textContent=t;$("evTiempo2").textContent=t;
   // Cada tarjeta permanece revelada hasta la siguiente rotación diaria.
   ["evBanner1","evBanner2"].forEach(id=>$(id).classList.toggle("cerrado",!eventoEstaRevelado(id)));
+  const estado=estadoEventoCiudad(),bloqueado=estado!=="pendiente";
+  $("evBanner2").disabled=bloqueado;$("evBanner2").classList.toggle("bloqueado",bloqueado);
+  if(bloqueado)$("evBanner2").classList.remove("cerrado");
+  $("evCiudadEstado").textContent=estado==="ganado"?"✓ Completado · Volvé mañana":bloqueado?
+    "Perdiste · Volvé mañana":"3 rondas · Un intento por día · Ganá un sobre";
   document.querySelectorAll(".capa.ver").forEach(c=>c.classList.remove("ver"));
   $("setup").style.display="none";$("mundo").style.display="none";$("pantDurazno").style.display="none";
   $("eventos").style.display="block";
@@ -6637,8 +6697,7 @@ $("evBanner1").onclick=()=>{
 };
 $("evBanner2").onclick=()=>{
   if($("evBanner2").classList.contains("cerrado")){revelarEvento("evBanner2");return;}
-  regenerarVidas();if(meta.vidas<=0){mundoActualizarHud();return;}
-  esEventoCiudad=true;empezarDestino(eventoCiudadDeHoyIdx());
+  iniciarEventoCiudad();
 };
 function tnRenderRuedas(contId,soloBasicos){
   const cont=$(contId||"ruedaGrid");if(!cont)return;cont.innerHTML="";
@@ -7383,7 +7442,18 @@ $("bCompartirJuego").onclick=async()=>{
     location.origin+location.pathname;
   await csCompartirImagen(generarCanvasCompartirJuego,"gira-y-adivina.png",texto,texto,$("bCompartirJuego"));
 };
-$("fMapa").onclick=()=>{detenerPartidaAnterior();esPartidaDiaria=false;eventoDiarioUI=false;esEventoCiudad=false;$("modalFin").classList.remove("ver");
+$("fMapa").onclick=()=>{
+  if(eventoCiudadResultado){
+    $("modalFin").classList.remove("ver");
+    if(eventoCiudadPartida&&eventoCiudadPartida.sobrePendiente){
+      eventoCiudadPartida.sobrePendiente=false;
+      accionTrasSobre=abrirEventos;
+      colMostrarSobreConseguido(eventoCiudadPartida.cual);
+      $("sobreConseguidoTxt").textContent="¡Ganaste el evento!";
+    }else abrirEventos();
+    return;
+  }
+  detenerPartidaAnterior();esPartidaDiaria=false;eventoDiarioUI=false;esEventoCiudad=false;$("modalFin").classList.remove("ver");
   const continuar=()=>{
     if(fSiguientePaso!==null){const p=fSiguientePaso;fSiguientePaso=null;
       const dd=MUNDO[destino];
