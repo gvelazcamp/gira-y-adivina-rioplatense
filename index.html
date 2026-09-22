@@ -742,6 +742,9 @@ html.puntero-prueba-activo .aguja{top:-30px;width:60px;height:90px;border:0;
 .acciones button.girar{background:var(--magenta);border-color:var(--magenta)}
 .acciones button.resolver{background:var(--agua);color:var(--tinta);border-color:var(--agua)}
 .acciones button.pista{border-color:#F5B30166;color:var(--oro)}
+#juego.prueba-spin .acciones{grid-template-columns:1fr}
+#juego.prueba-spin #bVocal,#juego.prueba-spin #bResolver,#juego.prueba-spin #bPista,
+#juego.prueba-spin #teclado,#juego.prueba-spin #poderesFila,#juego.prueba-spin #reacciones{display:none!important}
 .poderes{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:8px 0}
 .poder-btn{background:#2A1A3C;border:1px solid #FFFFFF1F;border-radius:10px;padding:4px 2px 3px;
  display:flex;flex-direction:column;align-items:center;gap:1px;min-width:0;min-height:44px;position:relative}
@@ -3823,7 +3826,7 @@ const PUNTEROS_PRUEBA=[
   {id:"ambar-fosil",nombre:"Ámbar fósil"}
 ];
 let punteroPruebaEquipado=(()=>{try{return localStorage.getItem("gya_puntero_prueba")||"";}catch(e){return"";}})();
-let enPruebaPunteros=false,punteroSelectorIdx=0;
+let enPruebaPunteros=false,punteroSelectorIdx=0,girosPruebaPunteros=0;
 function aplicarPunteroPrueba(){
   const valido=PUNTEROS_PRUEBA.some(p=>p.id===punteroPruebaEquipado);
   if(!valido)punteroPruebaEquipado="";
@@ -3854,21 +3857,23 @@ $("punteroNext").onclick=()=>{
 };
 function iniciarPruebaPunteros(){
   if(!esGonzalo())return;
-  enPruebaPunteros=true;esPartidaDiaria=false;eventoDiarioUI=false;esEventoCiudad=false;eventoCiudadResultado=false;
+  enPruebaPunteros=true;girosPruebaPunteros=0;esPartidaDiaria=false;eventoDiarioUI=false;esEventoCiudad=false;eventoCiudadResultado=false;
   destino=null;pasoActual=null;fSiguientePaso=null;modo="bot";miJug=0;vinoDeJugarOnline=false;modoVelocidadElegido=false;
   rondasElegidas=3;arranca=0;
   $("capaMas").classList.remove("ver");$("setup").style.display="none";$("eventos").style.display="none";
   $("mundo").style.display="none";$("pantDurazno").style.display="none";$("fondoMundo").classList.remove("ver");
-  $("juego").style.display="block";
+  $("juego").style.display="block";$("juego").classList.add("prueba-spin");
   armarTeclado();
-  iniciarPartida(perfil.nombre||"Gonzalo","Probador",undefined,perfil.avatar||null,"avatar-01",frameEquipado||null,null);
+  iniciarPartida(perfil.nombre||"Gonzalo","Máquina (en pausa)",undefined,perfil.avatar||null,"avatar-01",frameEquipado||null,null);
+  S.cat="Sesión Spin · punteros";
+  publicar("<b>Modo Spin</b> — girá todas las veces que quieras. La máquina queda visible, pero no juega.");
   $("punteroSelector").style.display="flex";aplicarPunteroSelector();
   $("fBoton").textContent="Jugar otra";
 }
 function salirPruebaPunteros(){
   detenerPartidaAnterior();enPruebaPunteros=false;
   $("confirmAbandonar").style.display="none";$("modalFin").classList.remove("ver");
-  $("punteroSelector").style.display="none";$("juego").style.display="none";$("setup").style.display="block";
+  $("punteroSelector").style.display="none";$("juego").classList.remove("prueba-spin");$("juego").style.display="none";$("setup").style.display="block";
   modo="local";sala="";S=null;$("fBoton").textContent="Revancha";sincronizarMusica();
 }
 function actualizarAccesoPruebas(){
@@ -5021,7 +5026,7 @@ function letraHumana(solo){
 }
 function programarBot(){
   clearTimeout(botT);
-  if(modo!=="bot"||!S||S.turno!==1||S.fase==="fin"||animando||botPausado>0)return;
+  if(enPruebaPunteros||modo!=="bot"||!S||S.turno!==1||S.fase==="fin"||animando||botPausado>0)return;
   botT=setTimeout(jugarBot,1200+Math.random()*1400);
 }
 function jugarBot(){
@@ -5815,7 +5820,7 @@ function publicar(txt,fx,mantenerReloj){
   const esToss=S.fase==="tossup",esBonusReloj=S.fase==="bonus_resolver";
   /* "lodo" también cuenta como fase viva: el reloj arranca apenas es el turno del jugador
      embarrado y sigue corriendo mientras limpia, para que sienta la presión del tiempo. */
-  const vivo=(S.fase==="girar"||S.fase==="consonante"||S.fase==="vocal"||S.fase==="lodo")&&!animando&&!enTutorial;
+  const vivo=(S.fase==="girar"||S.fase==="consonante"||S.fase==="vocal"||S.fase==="lodo")&&!animando&&!enTutorial&&!enPruebaPunteros;
   if(vivo){if(!mantenerReloj)arrancarReloj();}else pararReloj();
   const tossMs=esToss?(S.tossPausado?Math.max(0,(S.tossRespuestaFin||Date.now())-Date.now()):Math.max(0,S.tossFin-Date.now())):0;
   V.seg=esToss?Math.max(1,Math.ceil(tossMs/1000)):
@@ -5826,7 +5831,7 @@ function publicar(txt,fx,mantenerReloj){
   pintarTodo();
 }
 function hostGirar(){
-  if(S.fase!=="girar"||animando||consRestantes()===0)return;
+  if(S.fase!=="girar"||animando||(!enPruebaPunteros&&consRestantes()===0))return;
   if(!enPruebaPunteros&&(modo!=="bot"||S.turno===miJug))objSumar("giros",1);
   pararReloj();
   const paso=360/SEG.length;
@@ -5840,6 +5845,12 @@ function hostGirar(){
   S.pierdeSeguidas=s.t==="PIERDE"?(S.pierdeSeguidas||0)+1:0;
   if(modo!=="local"&&modo!=="bot")enviar({tipo:"giro",destino});
   animarRueda(destino,()=>{
+    if(enPruebaPunteros){
+      girosPruebaPunteros++;S.turno=miJug;S.fase="girar";S.valor=0;S.doble=false;
+      const resultado=s.t?ETI[s.t]:"$"+s.v;
+      publicar("<b>Giro de prueba "+girosPruebaPunteros+"</b> — salió <b>"+resultado+"</b>. Podés volver a girar.");
+      return;
+    }
     if(s.t==="QUIEBRA"){bip(120,.5,"sawtooth",.09);S.jug[S.turno].ronda=0;
       publicar("<b>QUIEBRA</b> — "+S.jug[S.turno].n+" pierde la plata de la ronda.","quiebra");
       setTimeout(tk(cambiarTurno),1800);return;}
@@ -6210,6 +6221,7 @@ function cambiarTurno(){
      timer atrasado llega a dispararse durante una Toss-Up (u otra fase que
      no pasa turno así), no tiene que pisar esa fase. */
   if(!S||S.fase==="tossup"||S.fase==="toss_fin"||S.fase==="bonus_elegir"||S.fase==="bonus_resolver")return;
+  if(enPruebaPunteros){S.turno=miJug;S.fase="girar";S.valor=0;S.doble=false;publicar("<b>Modo Spin</b> — seguí girando sin límite.");return;}
   S.turno=(S.turno+1)%S.jug.length;S.fase="girar";S.valor=0;S.doble=false;
   S.jug[S.turno].poderUsadoTurno=false;
   if(S.jug[S.turno].lodo){
