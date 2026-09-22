@@ -1448,6 +1448,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
 
 <div class="capa" id="capaRanking"><div class="caja rk-caja">
   <h2>🥇 Ranking de amigos</h2>
+  <p class="sub" style="margin:2px 0 12px">Se ordena por las monedas que cada jugador tiene disponibles. Comprar y gastar también cambia las posiciones.</p>
   <div id="rkSetup">
     <p class="sub" style="margin:6px 0 14px">Elegí un apodo para aparecer en el ranking junto a todos los que jueguen.</p>
     <div class="campo"><span>Tu apodo</span><input id="rkApodo" placeholder="ej: Fede" maxlength="14" autocomplete="off"></div>
@@ -2091,7 +2092,12 @@ function cargarMeta(){
   return m;
 }
 let meta=cargarMeta();
-const guardarMeta=()=>{try{localStorage.setItem(METAK,JSON.stringify(meta));}catch(e){}};
+let rankingSyncTimer=null;
+function programarRankingSync(){
+  clearTimeout(rankingSyncTimer);
+  rankingSyncTimer=setTimeout(()=>{rankingSyncTimer=null;empujarRanking();},1500);
+}
+const guardarMeta=()=>{try{localStorage.setItem(METAK,JSON.stringify(meta));}catch(e){}programarRankingSync();};
 function regenerarVidas(){
   if(meta.vidas>=VIDAS_MAX){if(meta.proxima){meta.proxima=0;guardarMeta();}return;}
   const ahora=Date.now();let cambio=false;
@@ -3104,7 +3110,8 @@ async function empujarRanking(){
   try{
     await supa.from("gya_ranking").upsert({
       grupo:RK_GRUPO,apodo:rkPerfil.apodo,
-      monedas_totales:meta.monedasGanadasTotal||0,
+      // El ranking representa poder de compra actual: ganar suma y gastar resta.
+      monedas_totales:Math.max(0,meta.monedas||0),
       ciudades_ganadas:ganados.size,
       mejor_racha:meta.mejorRachaVictorias||0,
       logros:logrosGanados.size,
@@ -3166,7 +3173,7 @@ async function rkCargarTabla(){
       (f.avatar?'<img class="rk-avatar" src="assets/avatars/'+rkEsc(f.avatar)+'.webp" alt="">':'')+
       '<div class="rk-info"><b>'+rkEsc(f.apodo)+(f.apodo===rkPerfil.apodo?" (vos)":"")+'</b>'+
       '<span>🗺️ '+f.ciudades_ganadas+'/9 · 🏆 racha '+f.mejor_racha+' · 🏅 '+f.logros+'</span></div>'+
-      '<div class="rk-monedas">🪙 '+f.monedas_totales+'</div>';
+      '<div class="rk-monedas" title="Monedas disponibles">🪙 '+f.monedas_totales+'<small style="display:block;font-size:.62rem;color:#C9B8DE">disponibles</small></div>';
     d.onclick=()=>{
       $("seccionTiendaTitulo").textContent=f.apodo+(f.apodo===rkPerfil.apodo?" (vos)":"");
       const tarjetas=(ids,lista,armarPreview)=>(Array.isArray(ids)?ids:[]).filter(Boolean).map(id=>{
