@@ -5822,7 +5822,7 @@ function hostResolverBonus(txt){
        Ronda Bonus ahí mismo (mismo trato que quedarte sin tiempo). */
     bip(140,.35,"square",.07);
     limpiarBonus();abrirTodoBonus();S.fase="bonus_fin";
-    publicar("«"+txt.toUpperCase()+"» no era. Perdiste la Ronda Bonus — la frase era <b>"+S.frase+"</b>.","error");
+    publicar("«"+txt.toUpperCase()+"» no era. El desafío principal ya está ganado; esta Ronda Bonus queda sin premio extra. La frase era <b>"+S.frase+"</b>.","error");
     setTimeout(tk(()=>finalizarPartidaPendiente(false)),3600);
   }
 }
@@ -5830,7 +5830,7 @@ function finBonusTiempo(){
   if(!S||S.fase!=="bonus_resolver")return;
   limpiarBonus();abrirTodoBonus();S.fase="bonus_fin";
   $("modalResolver").classList.remove("ver");
-  publicar("Se terminó el tiempo de la Ronda Bonus. La respuesta era <b>"+S.frase+"</b>.","error");
+  publicar("Se terminó el tiempo. El desafío principal ya está ganado; esta Ronda Bonus queda sin premio extra. La respuesta era <b>"+S.frase+"</b>.","error");
   setTimeout(tk(()=>finalizarPartidaPendiente(false)),3600);
 }
 function calcularGanador(){
@@ -5850,7 +5850,13 @@ function finalizarPartidaPendiente(bonusGanado){
   const f=S.finalPendiente;
   if(!f)return;
   const detalle=detalleResultado(f.g);
-  const bonusTxt=bonusGanado===true?" · Ronda Bonus: +$"+BONUS_PREMIO+".":bonusGanado===false?" · Ronda Bonus sin premio.":"";
+  const bonusTxt=bonusGanado===true
+    ?" · Bonus final ganado: +$"+BONUS_PREMIO+"."
+    :bonusGanado===false
+      ?(modo==="bot"&&destino!==null
+        ?" · Desafío ganado. El Bonus final no dio premio extra."
+        :" · Ganaste la partida; el Bonus final no dio premio extra.")
+      :"";
   if(esEventoCiudad){finalizarEventoCiudad(true,detalle+bonusTxt);return;}
   let pdTxt="";
   if(esPartidaDiaria){esPartidaDiaria=false;pdGuardarEstado("jugada");objActualizarBadge();
@@ -5867,6 +5873,9 @@ function finalizarPartidaPendiente(bonusGanado){
   $("fSalir").style.display=(modo==="tvhost"||(modo==="bot"&&destino!==null))?"none":"block";
   $("fMapa").textContent=(destino!==null)?"Volver al mapa":"Elegir modalidad";
   mostrarFin(f.tit,detalle+f.extra+bonusTxt+pdTxt,f.selloImg);
+  /* Una ciudad ya conquistada no ofrece revancha: el Bonus es sólo
+     una oportunidad de premio extra y nunca cambia el triunfo principal. */
+  if(modo==="bot"&&destino!==null)$("fBoton").style.display="none";
 }
 function terminarPorAbandono(idx){
   if(!S||S.fase==="fin")return;
