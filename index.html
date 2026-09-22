@@ -1367,10 +1367,11 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
 
 <div class="capa" id="capaPromoTienda"><div class="caja" style="max-width:380px">
   <h2>¡Mirá lo que tenemos!</h2>
-  <div class="pt-video-wrap">
-    <video id="ptVideo" src="assets/social/avatar-toxico-promo.mp4" muted loop playsinline style="display:none"></video>
-    <canvas id="ptCanvas" width="320" height="320"></canvas>
+  <div class="pt-video-wrap" style="position:relative;width:100%;max-width:320px;aspect-ratio:1;margin:auto">
+    <video id="ptVideo" src="assets/social/avatar-toxico-promo.mp4" poster="assets/avatars/avatar-27.webp" muted loop playsinline preload="metadata" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain"></video>
+    <canvas id="ptCanvas" width="320" height="320" style="position:relative;width:100%;display:none;pointer-events:none"></canvas>
   </div>
+  <button class="no" id="ptReintentar" style="display:none;width:100%">▶ Reproducir video</button>
   <p>Avatares, marcos, tableros y sobres de colección te esperan en la Tienda.</p>
   <button class="btn-grande cta-jugar" id="ptIrTienda" style="margin-bottom:10px">
     <span class="cta-play">🛍️</span>
@@ -2267,7 +2268,7 @@ $("objLista").addEventListener("click",e=>{
 });
 $("pdVamos").onclick=()=>{$("capaPartidaDiaria").classList.remove("ver");iniciarPartidaDiaria();};
 $("pdMasTarde").onclick=()=>{$("capaPartidaDiaria").classList.remove("ver");pdGuardarEstado("pospuesto");objActualizarBadge();ptChequearAutoPopup();};
-$("ptIrTienda").onclick=()=>{$("capaPromoTienda").classList.remove("ver");ptDetenerChromaKey();$("bTienda").click();};
+$("ptIrTienda").onclick=()=>{$("capaPromoTienda").classList.remove("ver");ptDetenerChromaKey();ptGuardarEstado("vista");$("bTienda").click();};
 $("ptMasTarde").onclick=()=>{$("capaPromoTienda").classList.remove("ver");ptDetenerChromaKey();ptGuardarEstado("vista");};
 $("bienvenidaTutorial").onclick=()=>{$("capaBienvenida").classList.remove("ver");iniciarTutorial();};
 $("bienvenidaCerrar").onclick=()=>{$("capaBienvenida").classList.remove("ver");pdChequearAutoPopup();empujarRanking();};
@@ -6598,6 +6599,18 @@ function detenerPartidaAnterior(){
   ["capaRueda","capaBuscando","modalResolver","modalFin","modalSobreConseguido"].forEach(id=>$(id).classList.remove("ver"));
   $("confirmAbandonar").style.display="none";
 }
+// Usa la misma fecha UTC que la rotación de ciudades y premios.
+let eventosRevelados=(()=>{try{return JSON.parse(localStorage.getItem("gya_eventos_revelados"))||{};}catch(e){return {};}})();
+function eventoEstaRevelado(id){
+  return eventosRevelados.dia===Math.floor(Date.now()/86400000)&&!!eventosRevelados[id];
+}
+function revelarEvento(id){
+  const dia=Math.floor(Date.now()/86400000);
+  if(eventosRevelados.dia!==dia)eventosRevelados={dia};
+  eventosRevelados[id]=true;
+  try{localStorage.setItem("gya_eventos_revelados",JSON.stringify(eventosRevelados));}catch(e){}
+  $(id).classList.remove("cerrado");
+}
 function abrirEventos(){
   detenerPartidaAnterior();
   esPartidaDiaria=false;eventoDiarioUI=false;esEventoCiudad=false;
@@ -6609,10 +6622,8 @@ function abrirEventos(){
   $("evVisual2").innerHTML=premioVisualHTML(eventoPremioDeHoy(2));
   const t=eventoTiempoRestanteTxt();
   $("evTiempo1").textContent=t;$("evTiempo2").textContent=t;
-  /* Cada vez que se entra a Eventos, las dos tarjetas arrancan tapadas
-     — "¡NUEVO EVENTO!" — y recién se revela cuál es al tocarlas. */
-  $("evBanner1").classList.add("cerrado");
-  $("evBanner2").classList.add("cerrado");
+  // Cada tarjeta permanece revelada hasta la siguiente rotación diaria.
+  ["evBanner1","evBanner2"].forEach(id=>$(id).classList.toggle("cerrado",!eventoEstaRevelado(id)));
   document.querySelectorAll(".capa.ver").forEach(c=>c.classList.remove("ver"));
   $("setup").style.display="none";$("mundo").style.display="none";$("pantDurazno").style.display="none";
   $("eventos").style.display="block";
@@ -6621,11 +6632,11 @@ function cerrarEventos(){$("eventos").style.display="none";$("setup").style.disp
 $("bMenuEventosPrueba").onclick=abrirEventos;
 $("evCerrar").onclick=cerrarEventos;
 $("evBanner1").onclick=()=>{
-  if($("evBanner1").classList.contains("cerrado")){$("evBanner1").classList.remove("cerrado");return;}
+  if($("evBanner1").classList.contains("cerrado")){revelarEvento("evBanner1");return;}
   eventoDiarioUI=true;iniciarPartidaDiaria();
 };
 $("evBanner2").onclick=()=>{
-  if($("evBanner2").classList.contains("cerrado")){$("evBanner2").classList.remove("cerrado");return;}
+  if($("evBanner2").classList.contains("cerrado")){revelarEvento("evBanner2");return;}
   regenerarVidas();if(meta.vidas<=0){mundoActualizarHud();return;}
   esEventoCiudad=true;empezarDestino(eventoCiudadDeHoyIdx());
 };
@@ -7460,15 +7471,29 @@ function pdChequearAutoPopup(){
      Arranca todo lo demás con normalidad desde el día siguiente. */
   if(esMismoDiaDeAlta())return;
   if(pdEstadoHoy()==="pendiente")setTimeout(()=>{pdActualizarTimer();$("capaPartidaDiaria").classList.add("ver");},900);
-  else ptChequearAutoPopup();
+  ptChequearAutoPopup();
 }
+let ptPopupTimer=null;
 function ptChequearAutoPopup(){
-  if(ptEstadoHoy()==="pendiente"&&!esMismoDiaDeAlta())setTimeout(()=>{$("capaPromoTienda").classList.add("ver");ptIniciarChromaKey();},2800);
+  if(ptPopupTimer!==null||ptEstadoHoy()!=="pendiente"||esMismoDiaDeAlta())return;
+  const intentar=()=>{
+    ptPopupTimer=null;
+    if(ptEstadoHoy()!=="pendiente"||esMismoDiaDeAlta())return;
+    // Espera el regreso al inicio: nunca interrumpe una partida ni otro menú.
+    if(document.hidden||$("setup").style.display==="none"||document.querySelector(".capa.ver")){
+      ptPopupTimer=setTimeout(intentar,1500);return;
+    }
+    $("capaPromoTienda").classList.add("ver");ptIniciarChromaKey();
+  };
+  ptPopupTimer=setTimeout(intentar,2800);
 }
-let ptRafId=null;
+let ptRafId=null,ptFrameTimer=null,ptActivo=false,ptSesion=0;
 function ptDibujarFrameChroma(){
+  ptRafId=null;
+  if(!ptActivo)return;
+  if(!$("capaPromoTienda").classList.contains("ver")){ptDetenerChromaKey();return;}
   const video=$("ptVideo"),canvas=$("ptCanvas");
-  if(video&&canvas&&video.readyState>=2){
+  try{if(video&&canvas&&video.readyState>=2){
     const ctx=canvas.getContext("2d");
     ctx.drawImage(video,0,0,canvas.width,canvas.height);
     const frame=ctx.getImageData(0,0,canvas.width,canvas.height);
@@ -7484,7 +7509,10 @@ function ptDibujarFrameChroma(){
        Se fuerza transparente directamente por posición, no por color. */
     for(let x=0;x<canvas.width;x++)d[(x*4)+3]=0;
     ctx.putImageData(frame,0,0);
-  }
+    clearTimeout(ptFrameTimer);ptFrameTimer=null;
+    canvas.style.display="block";video.style.opacity="0";
+    $("ptReintentar").style.display="none";
+  }}catch(e){ptMostrarVideoDirecto();return;}
   ptProgramarSiguienteFrame();
 }
 /* requestAnimationFrame dispara ~60 veces por segundo sin importar si el
@@ -7494,6 +7522,7 @@ function ptDibujarFrameChroma(){
    (cuando está disponible) redibuja justo cuando hay un frame nuevo del
    video, ni más ni menos. */
 function ptProgramarSiguienteFrame(){
+  if(!ptActivo)return;
   const video=$("ptVideo");
   if(video&&typeof video.requestVideoFrameCallback==="function"){
     ptRafId=video.requestVideoFrameCallback(ptDibujarFrameChroma);
@@ -7501,22 +7530,45 @@ function ptProgramarSiguienteFrame(){
     ptRafId=requestAnimationFrame(ptDibujarFrameChroma);
   }
 }
+function ptMostrarVideoDirecto(){
+  ptDetenerChromaKey();
+  const video=$("ptVideo");
+  video.style.opacity="1";video.controls=true;
+  $("ptCanvas").style.display="none";
+  $("ptReintentar").style.display="block";
+}
 function ptIniciarChromaKey(){
+  ptDetenerChromaKey();
   const video=$("ptVideo");
   if(!video)return;
-  video.currentTime=0;
-  video.play().catch(()=>{});
-  if(!ptRafId)ptDibujarFrameChroma();
+  const sesion=ptSesion;
+  ptActivo=true;video.muted=true;video.controls=false;video.style.opacity="1";
+  $("ptCanvas").style.display="none";$("ptReintentar").style.display="none";
+  try{video.currentTime=0;}catch(e){}
+  ptFrameTimer=setTimeout(()=>{if(ptActivo&&sesion===ptSesion)ptMostrarVideoDirecto();},6000);
+  try{
+    const reproduccion=video.play();
+    if(reproduccion)reproduccion.catch(()=>{if(ptActivo&&sesion===ptSesion)ptMostrarVideoDirecto();});
+    ptDibujarFrameChroma();
+  }catch(e){ptMostrarVideoDirecto();}
 }
 function ptDetenerChromaKey(){
+  ptActivo=false;ptSesion++;
+  clearTimeout(ptFrameTimer);ptFrameTimer=null;
   const video=$("ptVideo");
-  if(ptRafId){
+  if(ptRafId!==null){
     if(video&&typeof video.cancelVideoFrameCallback==="function")video.cancelVideoFrameCallback(ptRafId);
     else cancelAnimationFrame(ptRafId);
   }
   ptRafId=null;
   if(video)video.pause();
 }
+$("ptReintentar").onclick=()=>{
+  const video=$("ptVideo");
+  if(video.error)video.load();
+  ptIniciarChromaKey();
+};
+$("ptVideo").addEventListener("error",()=>{if(ptActivo)ptMostrarVideoDirecto();});
 
 /* ---- Mostrar el cartel de instalación a los de iPhone la primera vez, sin que
    tengan que encontrar el botón "Instalar" solos ---- */
