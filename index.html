@@ -1562,7 +1562,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
 <button id="xGlobalCerrar" aria-label="Cerrar">✕</button>
 <div class="logro-toast" id="logroToast">
   <span class="logro-toast-icono" id="logroToastIcono"></span>
-  <div><b>¡Logro desbloqueado!</b><span id="logroToastNombre"></span></div>
+  <div><b id="logroToastTitulo">Aviso</b><span id="logroToastNombre"></span></div>
 </div>
 <section id="lobby">
   <h1 class="titulo" style="font-size:2.2rem">SALA</h1>
@@ -3072,7 +3072,7 @@ function cargarLogros(){
 let logrosGanados=cargarLogros();
 const guardarLogros=()=>{try{localStorage.setItem("gya_logros",JSON.stringify([...logrosGanados]));}catch(e){}};
 let logroToastTimer=null;
-function logroToast(l){mostrarToast(l.icono,l.nombre+" +"+l.premio+" 🪙");}
+function logroToast(l){mostrarToast(l.icono,l.nombre+" +"+l.premio+" 🪙","¡Logro desbloqueado!");}
 function logroDesbloquear(id){
   if(logrosGanados.has(id))return;
   logrosGanados.add(id);guardarLogros();
@@ -3783,8 +3783,9 @@ function colEncontrados(cual){
   const tenidos=new Set(cm.coleccionables);
   return c.items.filter(it=>tenidos.has(it.id)).length;
 }
-function mostrarToast(icono,texto){
+function mostrarToast(icono,texto,titulo="Aviso"){
   $("logroToastIcono").textContent=icono;
+  $("logroToastTitulo").textContent=titulo;
   $("logroToastNombre").textContent=texto;
   $("logroToast").classList.add("ver");
   bip(700,.2,"sine",.08);
@@ -5898,7 +5899,7 @@ function abandonarPartidaPropia(){
   /* Abandonar es una salida definitiva: después de registrar la derrota
      vuelve al inicio en el mismo toque, sin encadenar ciudad y mapa. */
   $("fSalir").click();
-  mostrarToast("🚪","Partida abandonada"+(pierdeVida?" · -1 ❤️":""));
+  mostrarToast("🚪",pierdeVida?"Perdiste 1 ❤️.":"Volviste al inicio.","Partida abandonada");
 }
 const mask=()=>[...S.frase].map((c,i)=>c===" "?" ":(S.fase==="tossup"&&S.tossPos?S.tossPos.has(i)?c:"_":(S.abiertas.has(c)||(S.pistaPos&&S.pistaPos.has(i)))?c:"_")).join("");
 const consRestantes=()=>[...new Set(S.frase.replace(/ /g,""))].filter(c=>!VOCALES.includes(c)&&!S.abiertas.has(c)).length;
