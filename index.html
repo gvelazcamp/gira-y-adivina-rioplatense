@@ -723,18 +723,6 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 html.puntero-prueba-activo .aguja{top:-30px;width:60px;height:90px;border:0;
  background:var(--puntero-prueba-img) center/contain no-repeat;transform-origin:50% 33%;
  filter:drop-shadow(0 3px 5px #000C)}
-.punteros-prueba-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
-.puntero-prueba-card{background:#00000033;border:1px solid #FFFFFF24;border-radius:14px;padding:10px 8px;
- color:var(--crema);display:flex;flex-direction:column;align-items:center;gap:7px;font-weight:800;min-width:0}
-.puntero-prueba-card .puntero-prueba-preview{height:118px;width:100%;position:relative;display:grid;place-items:start center;
- overflow:hidden;border-radius:10px;background:radial-gradient(circle at 50% 92%,#7B3FE455 0 31%,transparent 32%),#160B24}
-.puntero-prueba-card img{width:68px;height:102px;object-fit:contain;filter:drop-shadow(0 3px 4px #000A)}
-.puntero-prueba-card.clasico .puntero-prueba-preview:before{content:"";margin-top:24px;width:0;height:0;
- border-left:19px solid transparent;border-right:19px solid transparent;border-top:38px solid var(--oro);
- filter:drop-shadow(0 3px 4px #000)}
-.puntero-prueba-card.equipado{border-color:#1DBF5F;box-shadow:0 0 14px #1DBF5F66;background:#1DBF5F20}
-.puntero-prueba-card small{font-size:.67rem;color:#B49FCE;min-height:1em}
-.puntero-prueba-card.equipado small{color:#8FF0B4}
 .aro{width:100%;line-height:0;border-radius:50%;
  box-shadow:0 0 0 8px #2A1A3C,0 0 0 11px var(--oro),0 18px 40px #00000080}
 #rueda{width:100%;max-width:none;height:auto;border-radius:50%;will-change:transform;
@@ -1424,13 +1412,6 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="no" id="masCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
 </div></div>
 
-<div class="capa" id="capaPruebas"><div class="caja tn-caja">
-  <h2>🧪 Pruebas de Gonzalo</h2>
-  <p class="sub" style="margin:4px 0 0">Elegí un puntero para verlo en las ruletas del juego.</p>
-  <div class="punteros-prueba-grid" id="punterosPruebaGrid"></div>
-  <button class="no" id="pruebasCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:12px">Cerrar</button>
-</div></div>
-
 <div class="capa" id="capaTutorial"><div class="caja rk-caja">
   <h2>❓ Cómo jugar</h2>
   <div class="tuto-lista">
@@ -1661,6 +1642,11 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <button id="ruedaPrev" type="button" title="Ruleta anterior">‹</button>
     <span id="ruedaNombreSel">Clásica</span>
     <button id="ruedaNext" type="button" title="Ruleta siguiente">›</button>
+  </div>
+  <div class="marco-selector" id="punteroSelector" style="display:none">
+    <button id="punteroPrev" type="button" title="Puntero anterior">‹</button>
+    <span id="punteroNombre">Sin puntero especial</span>
+    <button id="punteroNext" type="button" title="Puntero siguiente">›</button>
   </div>
   <div class="tablero" id="tablero"><div class="categoria" id="cat"></div><div class="frase" id="frase"></div></div>
   <div class="zona">
@@ -3836,6 +3822,7 @@ const PUNTEROS_PRUEBA=[
   {id:"ambar-fosil",nombre:"Ámbar fósil"}
 ];
 let punteroPruebaEquipado=(()=>{try{return localStorage.getItem("gya_puntero_prueba")||"";}catch(e){return"";}})();
+let enPruebaPunteros=false,punteroSelectorIdx=0;
 function aplicarPunteroPrueba(){
   const valido=PUNTEROS_PRUEBA.some(p=>p.id===punteroPruebaEquipado);
   if(!valido)punteroPruebaEquipado="";
@@ -3848,18 +3835,40 @@ function equiparPunteroPrueba(id){
   if(!esGonzalo())return;
   punteroPruebaEquipado=PUNTEROS_PRUEBA.some(p=>p.id===id)?id:"";
   try{localStorage.setItem("gya_puntero_prueba",punteroPruebaEquipado);}catch(e){}
-  aplicarPunteroPrueba();renderPunterosPrueba();
+  aplicarPunteroPrueba();aplicarPunteroSelector();
 }
-function renderPunterosPrueba(){
-  const cont=$("punterosPruebaGrid");if(!cont)return;cont.innerHTML="";
-  PUNTEROS_PRUEBA.forEach(p=>{
-    const equipado=p.id===punteroPruebaEquipado;
-    const b=document.createElement("button");
-    b.type="button";b.className="puntero-prueba-card"+(p.id?"":" clasico")+(equipado?" equipado":"");
-    b.innerHTML='<span class="puntero-prueba-preview">'+(p.id?'<img src="assets/punteros/puntero-'+p.id+'.webp" alt="">':'')+
-      '</span><span>'+p.nombre+'</span><small>'+(equipado?'EN USO ✓':'Tocar para probar')+'</small>';
-    b.onclick=()=>equiparPunteroPrueba(p.id);cont.appendChild(b);
-  });
+function aplicarPunteroSelector(){
+  let idx=PUNTEROS_PRUEBA.findIndex(p=>p.id===punteroPruebaEquipado);
+  if(idx<0)idx=0;
+  punteroSelectorIdx=idx;
+  if($("punteroNombre"))$("punteroNombre").textContent=idx?"Puntero: "+PUNTEROS_PRUEBA[idx].nombre:"Sin puntero especial";
+}
+$("punteroPrev").onclick=()=>{
+  punteroSelectorIdx=(punteroSelectorIdx-1+PUNTEROS_PRUEBA.length)%PUNTEROS_PRUEBA.length;
+  equiparPunteroPrueba(PUNTEROS_PRUEBA[punteroSelectorIdx].id);
+};
+$("punteroNext").onclick=()=>{
+  punteroSelectorIdx=(punteroSelectorIdx+1)%PUNTEROS_PRUEBA.length;
+  equiparPunteroPrueba(PUNTEROS_PRUEBA[punteroSelectorIdx].id);
+};
+function iniciarPruebaPunteros(){
+  if(!esGonzalo())return;
+  enPruebaPunteros=true;esPartidaDiaria=false;eventoDiarioUI=false;esEventoCiudad=false;eventoCiudadResultado=false;
+  destino=null;pasoActual=null;fSiguientePaso=null;modo="bot";miJug=0;vinoDeJugarOnline=false;modoVelocidadElegido=false;
+  rondasElegidas=3;arranca=0;
+  $("capaMas").classList.remove("ver");$("setup").style.display="none";$("eventos").style.display="none";
+  $("mundo").style.display="none";$("pantDurazno").style.display="none";$("fondoMundo").classList.remove("ver");
+  $("juego").style.display="block";
+  armarTeclado();
+  iniciarPartida(perfil.nombre||"Gonzalo","Probador",undefined,perfil.avatar||null,"avatar-01",frameEquipado||null,null);
+  $("punteroSelector").style.display="flex";aplicarPunteroSelector();
+  $("fBoton").textContent="Jugar otra";
+}
+function salirPruebaPunteros(){
+  detenerPartidaAnterior();enPruebaPunteros=false;
+  $("confirmAbandonar").style.display="none";$("modalFin").classList.remove("ver");
+  $("punteroSelector").style.display="none";$("juego").style.display="none";$("setup").style.display="block";
+  modo="local";sala="";S=null;$("fBoton").textContent="Revancha";sincronizarMusica();
 }
 function actualizarAccesoPruebas(){
   const permitido=esGonzalo();
@@ -3869,11 +3878,9 @@ function actualizarAccesoPruebas(){
 const MENUS_CON_X={capaRuleta:"rwCerrar",capaTienda:"tnCerrar",capaLogros:"lgCerrar",
   capaObjetivos:"objCerrar",capaRecords:"recCerrar",capaRanking:"rkCerrar",capaMas:"masCerrar",
   capaTutorial:"tutoCerrar",capaSalaTVMenu:"salaTVMenuCerrar",capaJugarOnlineMenu:"jugarOnlineMenuCerrar",
-  capaModoOnline:"modoOnlineCerrar",capaSeccionTienda:"seccionTiendaCerrar",capaUsuarios:"usrCerrar",
-  capaPruebas:"pruebasCerrar"};
+  capaModoOnline:"modoOnlineCerrar",capaSeccionTienda:"seccionTiendaCerrar",capaUsuarios:"usrCerrar"};
 $("bMasOpciones").onclick=()=>{actualizarAccesoPruebas();$("capaMas").classList.add("ver");};
-$("bPruebas").onclick=()=>{if(!esGonzalo())return;renderPunterosPrueba();$("capaPruebas").classList.add("ver");};
-$("pruebasCerrar").onclick=()=>$("capaPruebas").classList.remove("ver");
+$("bPruebas").onclick=iniciarPruebaPunteros;
 $("bTutorial").onclick=()=>$("capaTutorial").classList.add("ver");
 $("tutoCerrar").onclick=()=>$("capaTutorial").classList.remove("ver");
 $("masCerrar").onclick=()=>$("capaMas").classList.remove("ver");
@@ -5494,7 +5501,7 @@ function nuevaRonda(){
     S.normalesDesdeToss=0;
     if(!S.mazo.length)S.mazo=nuevoMazo(S.cats);
     const fToss=S.mazo.pop();
-    vistas.add(fToss.t);guardarVistas();
+    if(!enPruebaPunteros){vistas.add(fToss.t);guardarVistas();}
     S.frase=fToss.t;S.catRaw=fToss.c;
     S.abiertas=new Set();S.usadas=new Set();S.pistaPos=new Set();S.poderRondaId=(S.poderRondaId||0)+1;
     S.jug.forEach(j=>{j.ronda=0;j.comodin=false;j.hielo={};j.lodo=false;j.escudo=false;j.poderesRonda=[];j.poderUsadoTurno=false;});S.valor=0;S.doble=false;S.pistaUsada=false;
@@ -5509,7 +5516,7 @@ function nuevaRonda(){
   }
   if(!S.mazo.length)S.mazo=nuevoMazo(S.cats);
   const f=S.mazo.pop();
-  vistas.add(f.t);guardarVistas();
+  if(!enPruebaPunteros){vistas.add(f.t);guardarVistas();}
   S.frase=f.t;S.catRaw=f.c;
   S.abiertas=new Set();S.usadas=new Set();S.pistaPos=new Set();S.poderRondaId=(S.poderRondaId||0)+1;
   S.jug.forEach(j=>{j.ronda=0;j.comodin=false;j.hielo={};j.lodo=false;j.escudo=false;j.poderesRonda=[];j.poderUsadoTurno=false;});S.valor=0;S.doble=false;
@@ -5775,6 +5782,7 @@ function terminarPorAbandono(idx){
   $("fBoton").style.display=eraPartidaDiaria?"none":"";
 }
 function abandonarPartidaPropia(){
+  if(enPruebaPunteros){salirPruebaPunteros();return;}
   if(modo==="guest"){enviar({a:"abandonar"});return;}
   terminarPorAbandono(miJug);
 }
@@ -5818,7 +5826,7 @@ function publicar(txt,fx,mantenerReloj){
 }
 function hostGirar(){
   if(S.fase!=="girar"||animando||consRestantes()===0)return;
-  if(modo!=="bot"||S.turno===miJug)objSumar("giros",1);
+  if(!enPruebaPunteros&&(modo!=="bot"||S.turno===miJug))objSumar("giros",1);
   pararReloj();
   const paso=360/SEG.length;
   let destino,s,intentos=0;
@@ -5881,7 +5889,7 @@ function puedeUsarPoder(jugIdx,id){
 }
 function aplicarPoderEnHost(jugIdx,id){
   if(!puedeUsarPoder(jugIdx,id))return;
-  if(modo!=="bot"||jugIdx===miJug)objSumar("poderes",1);
+  if(!enPruebaPunteros&&(modo!=="bot"||jugIdx===miJug))objSumar("poderes",1);
   const j=S.jug[jugIdx];
   j.poderUsadoTurno=true;j.poderesRonda=(j.poderesRonda||[]).concat([id]);
   if(id==="pista"){
@@ -6117,7 +6125,7 @@ document.querySelectorAll("#tvcPoderes .poder-btn").forEach(b=>{b.onclick=()=>pe
 })();
 function hostVocal(){
   if(S.fase!=="girar"||animando||S.jug[S.turno].ronda<250)return;
-  if(modo!=="bot"||S.turno===miJug)objSumar("vocales",1);
+  if(!enPruebaPunteros&&(modo!=="bot"||S.turno===miJug))objSumar("vocales",1);
   S.jug[S.turno].ronda-=250;S.fase="vocal";
   publicar("Vocal comprada por $250. "+S.jug[S.turno].n+" elige cuál.");
 }
@@ -6217,6 +6225,13 @@ function finDelJuego(){
   const g=calcularGanador();
   const detalle=detalleResultado(g);
   let tit,extra="";
+  if(enPruebaPunteros){
+    tit=g<0?"Prueba terminada":g===miJug?"¡Ganaste la prueba!":"Terminó la prueba";
+    S.fase="fin";pararReloj();limpiarBonus();publicar("Prueba de punteros terminada.");
+    $("fMapa").style.display="none";$("fSalir").style.display="block";$("fBoton").style.display="";
+    mostrarFin(tit,detalle+" Esta partida no modifica vidas, monedas, objetivos ni progreso.");
+    $("fCompartir").style.display="none";return;
+  }
   if(esEventoCiudad){
     if(g===0)iniciarBonus(g,{g,tit:"¡Evento completado!",extra:""});
     else finalizarEventoCiudad(false,detalle+(g<0?" El empate consume el intento diario.":""));
@@ -6335,7 +6350,7 @@ function revancha(){
   else continuar2();
 }
 function mostrarFin(tit,txt,selloImg){
-  if(!tit.startsWith("Partida abandonada"))objSumar("partidas",1);
+  if(!enPruebaPunteros&&!tit.startsWith("Partida abandonada"))objSumar("partidas",1);
   $("fBoton").style.display="";
   $("capaResuelto").classList.remove("ver");
   $("capaResuelto").querySelectorAll(".papel").forEach(x=>x.remove());
@@ -6369,6 +6384,7 @@ function armarTeclado(){
   $("marcoSelector").style.display="none";
   $("fichaSelector").style.display="none";
   $("ruedaSelector").style.display="none";
+  $("punteroSelector").style.display="none";
   $("tablero").classList.remove("con-marco");
   $("tablero").style.backgroundImage="";
 }
@@ -7171,6 +7187,7 @@ $("confirmar").onclick=()=>{
   tossRespondedor=null;
 };
 $("fSalir").onclick=()=>{
+  if(enPruebaPunteros){salirPruebaPunteros();return;}
   detenerPartidaAnterior();
   esPartidaDiaria=false;eventoDiarioUI=false;esEventoCiudad=false;
   $("eventos").style.display="none";$("fondoMundo").classList.remove("ver");
@@ -7189,6 +7206,9 @@ $("fSalir").onclick=()=>{
 };
 $("bAbandonarPartida").onclick=()=>{
   if(!S||S.fase==="fin")return;
+  $("confirmAbandonar").querySelector("p").textContent=enPruebaPunteros?
+    "¿Salir de la partida de prueba? No afecta vidas, monedas ni progreso.":
+    "¿Seguro que querés abandonar la partida? Se cuenta como partida perdida.";
   $("confirmAbandonar").style.display="flex";
 };
 $("confirmAbandonarNo").onclick=()=>{$("confirmAbandonar").style.display="none";};
