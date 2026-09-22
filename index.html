@@ -403,6 +403,12 @@ html.puntero-prueba-activo .rw-aguja{top:-28px;width:56px;height:84px;border:0;
 .tn-card-info span{font-size:.66rem;color:#B49FCE}
 .tn-card .tn-comprar,.tn-card .tn-comprar-real{width:100%;margin-top:auto}
 .tn-card .tn-precios{width:100%;margin-top:auto}
+.tn-card-infinita{position:relative;border:2px solid #FF6E96AA;background:linear-gradient(160deg,#E5197C2E,#7B3FE444);
+ box-shadow:0 0 20px #E5197C2C,inset 0 1px 0 #FFFFFF24}
+.tn-card-infinita::before{content:"30 MIN";position:absolute;top:8px;left:8px;z-index:2;background:#E5197C;
+ color:#fff;border:1px solid #FFB4D2;border-radius:999px;padding:3px 8px;font-size:.62rem;font-weight:900;
+ box-shadow:0 2px 8px #0008;letter-spacing:.04em}
+.tn-card-infinita .tn-card-img{filter:drop-shadow(0 0 12px #FF6E96AA)}
 
 /* Logros */
 .lg-caja{max-width:440px;max-height:82vh;overflow-y:auto}
@@ -1157,6 +1163,11 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <div class="tn-card-img" style="background-image:url('assets/shop/ruleta.webp')"></div>
   <div class="tn-card-info"><b>Giro extra</b><span>Otra vuelta de la ruleta ahora</span></div>
   <button class="tn-comprar" data-tipo="ruleta" data-precio="200">🪙 200</button>
+  </div>
+  <div class="tn-item tn-card tn-card-infinita">
+  <div class="tn-card-img" style="background-image:url('assets/shop/vida-infinita.webp')"></div>
+  <div class="tn-card-info"><b>Vidas infinitas</b><span>Jugá sin gastar vidas durante 30 minutos</span></div>
+  <button class="tn-comprar" data-tipo="vida_infinita_30" data-precio="3200" data-nombre="Vidas infinitas por 30 minutos">🪙 3200</button>
   </div>
   </div>
   <h3 class="tn-subtitulo" data-fijo="1">🎁 Packs</h3>
@@ -2110,6 +2121,7 @@ function cargarMeta(){
   if(typeof m.mejorRachaDias!=="number")m.mejorRachaDias=0;
   if(typeof m.mejorRachaVictorias!=="number")m.mejorRachaVictorias=0;
   if(typeof m.pistasGratis!=="number")m.pistasGratis=0;
+  if(typeof m.vidasInfinitasHasta!=="number")m.vidasInfinitasHasta=0;
   return m;
 }
 let meta=cargarMeta();
@@ -2119,6 +2131,13 @@ function programarRankingSync(){
   rankingSyncTimer=setTimeout(()=>{rankingSyncTimer=null;empujarRanking();},1500);
 }
 const guardarMeta=()=>{try{localStorage.setItem(METAK,JSON.stringify(meta));}catch(e){}programarRankingSync();};
+const vidasInfinitasActivas=()=>meta.vidasInfinitasHasta>Date.now();
+const tieneVidas=()=>vidasInfinitasActivas()||meta.vidas>0;
+function textoVidasInfinitas(){
+  if(!vidasInfinitasActivas())return"";
+  const rest=Math.max(0,meta.vidasInfinitasHasta-Date.now()),mm=Math.floor(rest/60000),ss=Math.floor(rest%60000/1000);
+  return mm+":"+String(ss).padStart(2,"0");
+}
 function regenerarVidas(){
   if(meta.vidas>=VIDAS_MAX){if(meta.proxima){meta.proxima=0;guardarMeta();}return;}
   const ahora=Date.now();let cambio=false;
@@ -2127,13 +2146,14 @@ function regenerarVidas(){
   if(meta.vidas>=VIDAS_MAX){meta.proxima=0;cambio=true;}
   if(cambio)guardarMeta();
 }
-function gastarVida(){regenerarVidas();if(meta.vidas<=0)return false;
+function gastarVida(){regenerarVidas();if(vidasInfinitasActivas())return true;if(meta.vidas<=0)return false;
   meta.vidas--;if(!meta.proxima)meta.proxima=Date.now()+VIDA_MS;guardarMeta();return true;}
 function recuperarVida(){meta.vidas=Math.min(VIDAS_MAX,meta.vidas+1);
   if(meta.vidas>=VIDAS_MAX)meta.proxima=0;guardarMeta();}
 function sumarMonedas(n){meta.monedas+=n;if(n>0)meta.monedasGanadasTotal=(meta.monedasGanadasTotal||0)+n;
   guardarMeta();if(meta.monedas>=1000)logroDesbloquear("monedas1000");}
 function textoProxima(){
+  if(vidasInfinitasActivas())return"Vidas infinitas · "+textoVidasInfinitas();
   if(meta.vidas>=VIDAS_MAX||!meta.proxima)return"";
   const rest=Math.max(0,meta.proxima-Date.now());
   const mm=Math.floor(rest/60000),ss=Math.floor(rest%60000/1000);
@@ -2303,10 +2323,11 @@ $("bienvenidaCerrar").onclick=()=>{$("capaBienvenida").classList.remove("ver");p
 $("bienvenidaCerrarX").onclick=()=>$("bienvenidaCerrar").click();
 function mundoActualizarHud(){
   regenerarVidas();
-  if($("mhVidas"))$("mhVidas").textContent="❤️ "+meta.vidas;
+  const vidasTxt=vidasInfinitasActivas()?"❤️ ∞":"❤️ "+meta.vidas;
+  if($("mhVidas"))$("mhVidas").textContent=vidasTxt;
   if($("mhMonedas"))$("mhMonedas").textContent="🪙 "+meta.monedas+" monedas";
   if($("jgMonedas"))$("jgMonedas").textContent="🪙 "+meta.monedas+" monedas";
-  if($("setupVidas"))$("setupVidas").innerHTML="❤️ <b>"+meta.vidas+"</b>";
+  if($("setupVidas")){$("setupVidas").innerHTML=vidasInfinitasActivas()?"❤️ <b>∞</b>":"❤️ <b>"+meta.vidas+"</b>";$("setupVidas").title=vidasInfinitasActivas()?"Vidas infinitas · "+textoVidasInfinitas():"";}
   if($("setupMonedas"))$("setupMonedas").innerHTML="🪙 <b>"+meta.monedas+"</b> monedas";
   if($("setupRacha"))$("setupRacha").innerHTML="🔥 <b>"+meta.diaRacha+"</b>";
 }
@@ -2466,7 +2487,7 @@ function estadoEventoCiudad(){
 function iniciarEventoCiudad(){
   if(estadoEventoCiudad()!=="pendiente")return;
   if(!perfilExiste()){abrirPerfil(iniciarEventoCiudad);return;}
-  regenerarVidas();if(meta.vidas<=0){mostrarToast("❤️","Esperá a recuperar una vida para jugar.");return;}
+  regenerarVidas();if(!tieneVidas()){mostrarToast("❤️","Esperá a recuperar una vida para jugar.");return;}
   detenerPartidaAnterior();
   esPartidaDiaria=false;eventoDiarioUI=false;vinoDeJugarOnline=false;
   destino=null;pasoActual=null;fSiguientePaso=null;modoVelocidadElegido=false;
@@ -2491,7 +2512,7 @@ function finalizarEventoCiudad(ganado,detalle,abandonado){
       sumarMonedas(200);recuperarVida();objSumar("victorias",1);
       intento.sobrePendiente=true;
       premio=" +200 🪙, +1 ❤️ y un sobre de "+COLECCIONES[intento.cual].nombre+". Abrí tu sobre al continuar.";
-    }else{gastarVida();premio=" -1 ❤️. Volvé mañana.";}
+    }else{const infinita=vidasInfinitasActivas();gastarVida();premio=infinita?" ❤️∞ activo: no gastaste vida. Volvé mañana.":" -1 ❤️. Volvé mañana.";}
   }
   eventoCiudadResultado=true;
   detenerPartidaAnterior();S.finalPendiente=null;
@@ -2725,6 +2746,7 @@ function gratisDiariaTextoEspera(){
 }
 function tnPuedeComprar(tipo){
   if(tipo==="vida"||tipo==="recarga")return meta.vidas<VIDAS_MAX;
+  if(tipo==="vida_infinita_30")return!vidasInfinitasActivas();
   if(tipo==="ruleta")return!rwPuedeGirar();
   if(tipo.indexOf("sobre_")===0)return sobrePuedeComprar(tipo.slice(6));
   if(tipo==="oferta_gratis")return gratisDiariaPuedeReclamar();
@@ -2735,6 +2757,7 @@ function tnPuedeComprar(tipo){
 }
 function tnRazonBloqueo(tipo){
   if(tipo==="vida"||tipo==="recarga")return"❤️ Vidas llenas";
+  if(tipo==="vida_infinita_30")return"❤️∞ "+textoVidasInfinitas()+" restantes";
   if(tipo==="ruleta")return"✅ Ya disponible";
   if(tipo.indexOf("sobre_")===0)return sobreTextoEspera(tipo.slice(6));
   if(tipo==="oferta_gratis")return gratisDiariaTextoEspera();
@@ -2932,6 +2955,7 @@ function tnEjecutarCompra(tipo,precio){
   meta.monedas-=precio;
   if(tipo==="vida")recuperarVida();
   else if(tipo==="recarga"){meta.vidas=VIDAS_MAX;meta.proxima=0;}
+  else if(tipo==="vida_infinita_30")meta.vidasInfinitasHasta=Date.now()+30*60*1000;
   else if(tipo==="ruleta")meta.ultimaRuleta=0;
   else if(tipo.indexOf("sobre_")===0){
     const ciudadId=tipo.slice(6);
@@ -4549,7 +4573,7 @@ function dzRenderNodos(){
     b.className="dz-nodo "+estado+(i===4?" rival":"");
     b.style.left=n.x+"%";b.style.top=n.y+"%";
     b.textContent=label;
-    if((estado==="ahora"||estado==="listo")&&meta.vidas>0)b.onclick=()=>empezarDestino(dzCiudadIdx,i<4?i:undefined);
+    if((estado==="ahora"||estado==="listo")&&tieneVidas())b.onclick=()=>empezarDestino(dzCiudadIdx,i<4?i:undefined);
     else b.disabled=true;
     cont.appendChild(b);
   });
@@ -4561,7 +4585,7 @@ function dzProgresoTxt(){
 }
 function dzActualizarHud(){
   regenerarVidas();
-  $("dzVidas").textContent="❤️ "+meta.vidas;
+  $("dzVidas").textContent=vidasInfinitasActivas()?"❤️ ∞":"❤️ "+meta.vidas;
   $("dzMonedasNum").textContent="🪙 "+meta.monedas;
   $("dzProxima").textContent=textoProxima();
   const jug=$("dzJugador");
@@ -4584,7 +4608,7 @@ function dzActualizarBoton(){
     return;
   }
   const rival=dzHechos()>=4;
-  if(meta.vidas<=0){
+  if(!tieneVidas()){
     b.textContent="⏳ "+(textoProxima()||"Sin vidas");b.disabled=true;b.onclick=null;
   }else{
     b.textContent=(rival?"DESAFIAR":"JUGAR")+" ❤️ 1";
@@ -4767,7 +4791,7 @@ function verMundo(){
       pb.style.left=pp[0]+"%";
       pb.style.top=((i*100+pp[1])/(N*100)*100)+"%";
       pb.textContent=k<hp?"✓":(k+1);
-      if(abierto0&&k<=hp&&!ganados.has(d.id)&&meta.vidas>0)pb.onclick=()=>empezarDestino(i,k);
+      if(abierto0&&k<=hp&&!ganados.has(d.id)&&tieneVidas())pb.onclick=()=>empezarDestino(i,k);
       else pb.disabled=true;
       tira.appendChild(pb);
     });
@@ -4791,7 +4815,7 @@ function verMundo(){
     b.style.top=(pts[i].y/(N*100)*100)+"%";
     b.innerHTML='<span class="bola">'+(ganado?"★":abierto?(i+1):"🔒")+'</span>'+
       '<span class="rot">'+d.n+'</span>';
-    if(abierto&&meta.vidas>0)b.onclick=()=>empezarDestino(i);else b.disabled=true;
+    if(abierto&&tieneVidas())b.onclick=()=>empezarDestino(i);else b.disabled=true;
     tira.appendChild(b);
   });
 
@@ -5836,7 +5860,7 @@ function terminarPorAbandono(idx){
      volver) — tiene que costar vida en cualquier modo bot (Mundo, Jugar
      online y Partida Diaria incluida), si no es un atajo gratis para
      escaparse de una partida que se está por perder. */
-  if(idx===miJug&&modo==="bot"){gastarVida();txt+=" -1 ❤️.";}
+  if(idx===miJug&&modo==="bot"){const infinita=vidasInfinitasActivas();gastarVida();txt+=infinita?" ❤️∞ activo: no gastaste vida.":" -1 ❤️.";}
   publicar(txt,"error");
   if(modo!=="local"&&modo!=="bot")enviar({tipo:"fin",txt,tit});
   fSiguientePaso=null;
@@ -5848,7 +5872,7 @@ function terminarPorAbandono(idx){
 }
 function abandonarPartidaPropia(){
   if(enPruebaPunteros){salirPruebaPunteros();return;}
-  const pierdeVida=modo==="bot";
+  const pierdeVida=modo==="bot"&&!vidasInfinitasActivas();
   if(modo==="guest")enviar({a:"abandonar"});
   else terminarPorAbandono(miJug);
   /* Abandonar es una salida definitiva: después de registrar la derrota
@@ -6370,7 +6394,7 @@ function finDelJuego(){
       /* Jugar la Partida Diaria es opcional (está el botón "Jugar más
          tarde" para saltearla) — pero si decidís jugarla, perder cuesta
          vida igual que en cualquier otro modo bot. */
-      if(vinoDeJugarOnline){gastarVida();extra+=" -1 ❤️.";}
+      if(vinoDeJugarOnline){const infinita=vidasInfinitasActivas();gastarVida();extra+=infinita?" ❤️∞ activo: no gastaste vida.":" -1 ❤️.";}
     }
     if(bonusJugado>0)extra+=" +"+bonusJugado+" 🪙 por lo jugado.";
     if(esPartidaDiaria){esPartidaDiaria=false;pdGuardarEstado("jugada");objActualizarBadge();
@@ -7635,7 +7659,7 @@ $("fMapa").onclick=()=>{
   const continuar=()=>{
     if(fSiguientePaso!==null){const p=fSiguientePaso;fSiguientePaso=null;
       const dd=MUNDO[destino];
-      if(meta.vidas>0){
+      if(tieneVidas()){
         if(dd&&p>=dd.pasos.length)empezarDestino(destino);
         else empezarDestino(destino,p);
         return;
