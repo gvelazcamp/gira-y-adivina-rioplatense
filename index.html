@@ -336,10 +336,6 @@ html.puntero-prueba-activo .rw-aguja{top:-28px;width:56px;height:84px;border:0;
  font-size:.62rem;font-weight:800;padding:3px 10px;border-radius:0 0 8px 8px;box-shadow:0 2px 0 #B3860099}
 .tn-pack-img{padding:0;border:none;box-shadow:none;background-size:cover;background-position:center;
  aspect-ratio:1000/333;overflow:hidden;position:relative;border-radius:16px}
-/* Los packs Mutante y OVNI venden un marco visual: en celular el marco
-   quedaba demasiado chico. Una tarjeta un poco más alta amplía la
-   ilustración y hace que el marco sea protagonista sin deformarla. */
-.tn-pack-img.tn-pack-con-marco{aspect-ratio:1000/410;background-size:cover}
 .tn-pack-img .tn-comprar{position:absolute;inset:0;width:100%;height:100%;margin:0;border-radius:16px;
  background:transparent;color:transparent;box-shadow:none;border:none;font-size:1rem;font-weight:800;
  display:flex;align-items:center;justify-content:center;padding:0}
@@ -1199,11 +1195,11 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <div class="tn-item tn-pack-img" style="background-image:url('assets/shop/pack-racha.webp')">
   <button class="tn-comprar" data-tipo="pack_racha" data-precio="4500" data-real-agregado="1" data-nombre="el Pack Racha">🪙 4500</button>
   </div>
-  <div class="tn-item tn-pack-img tn-pack-con-marco" style="background-image:url('assets/shop/pack-mutante.webp')">
+  <div class="tn-item tn-pack-img" style="background-image:url('assets/shop/pack-mutante.webp')">
   <button class="tn-comprar" data-tipo="pack_mutante" data-precio="13000" data-real-agregado="1" data-nombre="el Pack Mutante">🪙 13000</button>
   <span class="tn-pack-precio-fijo" id="tnPrecioFijoMutante">🪙 13000</span>
   </div>
-  <div class="tn-item tn-pack-img tn-pack-con-marco" style="background-image:url('assets/shop/pack-ovni.webp')">
+  <div class="tn-item tn-pack-img" style="background-image:url('assets/shop/pack-ovni.webp')">
   <button class="tn-comprar" data-tipo="pack_ovni" data-precio="13000" data-real-agregado="1" data-nombre="el Pack OVNI">🪙 13000</button>
   <span class="tn-pack-precio-fijo" id="tnPrecioFijoOvni">🪙 13000</span>
   </div>
