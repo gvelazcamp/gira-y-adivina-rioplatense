@@ -265,6 +265,9 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 .rw-aguja{position:absolute;top:-6px;left:50%;transform:translateX(-50%);z-index:3;width:0;height:0;
  border-left:11px solid transparent;border-right:11px solid transparent;border-top:22px solid var(--oro);
  filter:drop-shadow(0 2px 3px #000)}
+html.puntero-prueba-activo .rw-aguja{top:-28px;width:56px;height:84px;border:0;
+ background:var(--puntero-prueba-img) center/contain no-repeat;transform-origin:50% 33%;
+ filter:drop-shadow(0 3px 4px #000A)}
 .rw-aro{width:100%;line-height:0;border-radius:50%;box-shadow:0 0 0 7px #2A1A3C,0 0 0 10px var(--oro),0 14px 32px #00000080}
 #rwCanvas{width:100%;height:auto;border-radius:50%;will-change:transform;backface-visibility:hidden;transform:translateZ(0)}
 .rw-centro{position:absolute;width:16%;aspect-ratio:1;border-radius:50%;background:var(--oro);border:4px solid #2A1A3C;z-index:2}
@@ -717,6 +720,21 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 .aguja{position:absolute;top:-6px;left:50%;transform:translateX(-50%);z-index:3;width:0;height:0;
  border-left:13px solid transparent;border-right:13px solid transparent;border-top:26px solid var(--oro);
  filter:drop-shadow(0 2px 3px #000)}
+html.puntero-prueba-activo .aguja{top:-30px;width:60px;height:90px;border:0;
+ background:var(--puntero-prueba-img) center/contain no-repeat;transform-origin:50% 33%;
+ filter:drop-shadow(0 3px 5px #000C)}
+.punteros-prueba-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+.puntero-prueba-card{background:#00000033;border:1px solid #FFFFFF24;border-radius:14px;padding:10px 8px;
+ color:var(--crema);display:flex;flex-direction:column;align-items:center;gap:7px;font-weight:800;min-width:0}
+.puntero-prueba-card .puntero-prueba-preview{height:118px;width:100%;position:relative;display:grid;place-items:start center;
+ overflow:hidden;border-radius:10px;background:radial-gradient(circle at 50% 92%,#7B3FE455 0 31%,transparent 32%),#160B24}
+.puntero-prueba-card img{width:68px;height:102px;object-fit:contain;filter:drop-shadow(0 3px 4px #000A)}
+.puntero-prueba-card.clasico .puntero-prueba-preview:before{content:"";margin-top:24px;width:0;height:0;
+ border-left:19px solid transparent;border-right:19px solid transparent;border-top:38px solid var(--oro);
+ filter:drop-shadow(0 3px 4px #000)}
+.puntero-prueba-card.equipado{border-color:#1DBF5F;box-shadow:0 0 14px #1DBF5F66;background:#1DBF5F20}
+.puntero-prueba-card small{font-size:.67rem;color:#B49FCE;min-height:1em}
+.puntero-prueba-card.equipado small{color:#8FF0B4}
 .aro{width:100%;line-height:0;border-radius:50%;
  box-shadow:0 0 0 8px #2A1A3C,0 0 0 11px var(--oro),0 18px 40px #00000080}
 #rueda{width:100%;max-width:none;height:auto;border-radius:50%;will-change:transform;
@@ -1400,9 +1418,17 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <div class="setup-menu" style="margin-top:14px">
     <button class="btn-grande sec" id="bRecords"><span class="btn-ico">🏆</span><span class="btn-txt">Mis récords</span></button>
     <button class="btn-grande sec" id="bCompartirJuego"><span class="btn-ico">📤</span><span class="btn-txt">Compartir el juego</span></button>
+    <button class="btn-grande sec" id="bPruebas" style="display:none"><span class="btn-ico">🧪</span><span class="btn-txt">Pruebas</span></button>
     <button class="btn-grande" id="bInstalar" style="display:none"><span class="btn-ico">📲</span><span class="btn-txt">Instalar app en el celular</span></button>
   </div>
   <button class="no" id="masCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
+</div></div>
+
+<div class="capa" id="capaPruebas"><div class="caja tn-caja">
+  <h2>🧪 Pruebas de Gonzalo</h2>
+  <p class="sub" style="margin:4px 0 0">Elegí un puntero para verlo en las ruletas del juego.</p>
+  <div class="punteros-prueba-grid" id="punterosPruebaGrid"></div>
+  <button class="no" id="pruebasCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:12px">Cerrar</button>
 </div></div>
 
 <div class="capa" id="capaTutorial"><div class="caja rk-caja">
@@ -3798,11 +3824,56 @@ function mostrarPackItems(items,callback){
   $("packItemCaja").onclick=siguiente;
   siguiente();
 }
+const PUNTEROS_PRUEBA=[
+  {id:"",nombre:"Clásico"},
+  {id:"candombe",nombre:"Candombe"},
+  {id:"tormenta",nombre:"Tormenta eléctrica"},
+  {id:"abismo",nombre:"Abismo marino"},
+  {id:"alquimista",nombre:"Alquimista"},
+  {id:"relojero",nombre:"Relojero"},
+  {id:"polilla-lunar",nombre:"Polilla lunar"},
+  {id:"samurai",nombre:"Samurái"},
+  {id:"ambar-fosil",nombre:"Ámbar fósil"}
+];
+let punteroPruebaEquipado=(()=>{try{return localStorage.getItem("gya_puntero_prueba")||"";}catch(e){return"";}})();
+function aplicarPunteroPrueba(){
+  const valido=PUNTEROS_PRUEBA.some(p=>p.id===punteroPruebaEquipado);
+  if(!valido)punteroPruebaEquipado="";
+  const activo=esGonzalo()&&!!punteroPruebaEquipado;
+  document.documentElement.classList.toggle("puntero-prueba-activo",activo);
+  document.documentElement.style.setProperty("--puntero-prueba-img",activo?
+    "url('assets/punteros/puntero-"+punteroPruebaEquipado+".webp')":"none");
+}
+function equiparPunteroPrueba(id){
+  if(!esGonzalo())return;
+  punteroPruebaEquipado=PUNTEROS_PRUEBA.some(p=>p.id===id)?id:"";
+  try{localStorage.setItem("gya_puntero_prueba",punteroPruebaEquipado);}catch(e){}
+  aplicarPunteroPrueba();renderPunterosPrueba();
+}
+function renderPunterosPrueba(){
+  const cont=$("punterosPruebaGrid");if(!cont)return;cont.innerHTML="";
+  PUNTEROS_PRUEBA.forEach(p=>{
+    const equipado=p.id===punteroPruebaEquipado;
+    const b=document.createElement("button");
+    b.type="button";b.className="puntero-prueba-card"+(p.id?"":" clasico")+(equipado?" equipado":"");
+    b.innerHTML='<span class="puntero-prueba-preview">'+(p.id?'<img src="assets/punteros/puntero-'+p.id+'.webp" alt="">':'')+
+      '</span><span>'+p.nombre+'</span><small>'+(equipado?'EN USO ✓':'Tocar para probar')+'</small>';
+    b.onclick=()=>equiparPunteroPrueba(p.id);cont.appendChild(b);
+  });
+}
+function actualizarAccesoPruebas(){
+  const permitido=esGonzalo();
+  if($("bPruebas"))$("bPruebas").style.display=permitido?"":"none";
+  aplicarPunteroPrueba();
+}
 const MENUS_CON_X={capaRuleta:"rwCerrar",capaTienda:"tnCerrar",capaLogros:"lgCerrar",
   capaObjetivos:"objCerrar",capaRecords:"recCerrar",capaRanking:"rkCerrar",capaMas:"masCerrar",
   capaTutorial:"tutoCerrar",capaSalaTVMenu:"salaTVMenuCerrar",capaJugarOnlineMenu:"jugarOnlineMenuCerrar",
-  capaModoOnline:"modoOnlineCerrar",capaSeccionTienda:"seccionTiendaCerrar",capaUsuarios:"usrCerrar"};
-$("bMasOpciones").onclick=()=>$("capaMas").classList.add("ver");
+  capaModoOnline:"modoOnlineCerrar",capaSeccionTienda:"seccionTiendaCerrar",capaUsuarios:"usrCerrar",
+  capaPruebas:"pruebasCerrar"};
+$("bMasOpciones").onclick=()=>{actualizarAccesoPruebas();$("capaMas").classList.add("ver");};
+$("bPruebas").onclick=()=>{if(!esGonzalo())return;renderPunterosPrueba();$("capaPruebas").classList.add("ver");};
+$("pruebasCerrar").onclick=()=>$("capaPruebas").classList.remove("ver");
 $("bTutorial").onclick=()=>$("capaTutorial").classList.add("ver");
 $("tutoCerrar").onclick=()=>$("capaTutorial").classList.remove("ver");
 $("masCerrar").onclick=()=>$("capaMas").classList.remove("ver");
@@ -4756,6 +4827,7 @@ function actualizarChipPerfil(){
     pintarMiMarco("perfilFrameImg");
   }else chip.style.display="none";
   if($("campoNombre"))$("campoNombre").style.display=perfilExiste()?"none":"";
+  actualizarAccesoPruebas();
 }
 function guardarPerfil(nombre,avatar){
   perfil={nombre,avatar};
