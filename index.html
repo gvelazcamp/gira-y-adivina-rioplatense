@@ -750,6 +750,10 @@ html.puntero-prueba-activo .aguja{top:-30px;width:60px;height:90px;border:0;
 .centro{position:absolute;width:16%;aspect-ratio:1;border-radius:50%;background:var(--oro);border:4px solid #2A1A3C;z-index:2}
 html.rueda-prueba-premium .centro{background:radial-gradient(circle at 36% 30%,#F9FFFF 0 7%,#34D9EB 10% 45%,#12395B 48% 57%,#F5B301 60% 72%,#140A31 75%);
  border-color:#FFE89A;box-shadow:0 0 0 5px #160B24,0 0 18px #34D9EBAA,0 0 28px #F5B30199}
+html.rueda-prueba-candy .centro{background:radial-gradient(circle at 35% 30%,#FFF 0 9%,#FF75B9 12% 42%,#5ADBD1 45% 57%,#FFE06A 60% 71%,#71337E 74%);
+ border-color:#FFF5FB;box-shadow:0 0 0 5px #71337E,0 0 20px #FF75B9CC,0 0 30px #5ADBD199}
+html.rueda-prueba-3d .centro{background:radial-gradient(circle at 34% 28%,#FFF 0 7%,#37D6E0 10% 35%,#244A78 39% 55%,#F6BA32 59% 72%,#090F20 76%);
+ border-color:#FFD767;box-shadow:0 7px 0 #050A14,0 0 0 5px #9DE7FF,0 0 24px #37D6E099}
 
 .panel{display:flex;flex-direction:column;gap:12px}
 .aviso{background:#0C0616E6;border-left:3px solid var(--agua);border-radius:10px;padding:11px 14px;
@@ -1428,7 +1432,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <h2>🧪 Pruebas de Gonzalo</h2>
   <p class="sub" style="margin:6px 0 14px">Elegí qué recorrido querés probar.</p>
   <div class="setup-menu">
-    <button class="btn-grande sec" id="bPruebaPunteros"><span class="btn-ico">🎯</span><span class="btn-txt">Ruleta Gran Premio · 8 punteros</span></button>
+    <button class="btn-grande sec" id="bPruebaPunteros"><span class="btn-ico">🎯</span><span class="btn-txt">Ruletas de prueba · 8 punteros</span></button>
     <button class="btn-grande sec" id="bPruebaAltaPerfil"><span class="btn-ico">👤</span><span class="btn-txt">Alta de usuario nuevo</span></button>
   </div>
   <button class="no" id="pruebasCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
@@ -1983,7 +1987,7 @@ let ruedaSkinEquipada=cargarRuedaSkinEquipada();
    el juego dice que ganó SIEMPRE es el que está dibujado bajo la
    flecha. */
 const RUEDAS_PAUSADAS=false;
-const RUEDA_TEXTO_HORNEADO=new Set(["rueda-fuego","rueda-hielo","rueda-oro","rueda-neon","rueda-candy","rueda-espacio","rueda-selva","rueda-circo","rueda-sheriff","rueda-desierto","rueda-forajido","rueda-pepitas","rueda-locomotora","rueda-rodeo","rueda-casino","rueda-ovni","rueda-abduccion","rueda-gran-premio"]);
+const RUEDA_TEXTO_HORNEADO=new Set(["rueda-fuego","rueda-hielo","rueda-oro","rueda-neon","rueda-candy","rueda-espacio","rueda-selva","rueda-circo","rueda-sheriff","rueda-desierto","rueda-forajido","rueda-pepitas","rueda-locomotora","rueda-rodeo","rueda-casino","rueda-ovni","rueda-abduccion","rueda-gran-premio","rueda-candy-deluxe-prueba","rueda-3d-prueba"]);
 function dibujarRuedaJuego(){
   const CENTRO=300,paso=Math.PI*2/SEG.length,conSkin=!RUEDAS_PAUSADAS&&!!ruedaSkinEquipada;
   cx.clearRect(0,0,600,600);
@@ -3872,6 +3876,11 @@ const PUNTEROS_TIENDA=[
   {id:"ambar-fosil",nombre:"Ámbar fósil",precio:1500}
 ];
 const PUNTEROS_PRUEBA=[{id:"",nombre:"Clásico"},...PUNTEROS_TIENDA.map(p=>({id:p.id,nombre:p.nombre}))];
+const RULETAS_PRUEBA=[
+  {id:"rueda-gran-premio",nombre:"Gran Premio",clase:"rueda-prueba-premium"},
+  {id:"rueda-candy-deluxe-prueba",nombre:"Candy Deluxe",clase:"rueda-prueba-candy"},
+  {id:"rueda-3d-prueba",nombre:"Rueda 3D",clase:"rueda-prueba-3d"}
+];
 function cargarPunterosComprados(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_punteros_owned")||"[]"));}catch(e){return new Set();}
 }
@@ -3880,16 +3889,23 @@ const guardarPunterosComprados=()=>{try{localStorage.setItem("gya_punteros_owned
 let punteroEquipado=(()=>{try{return localStorage.getItem("gya_puntero_equipado")||"";}catch(e){return"";}})();
 let seccionTiendaEsPunteros=false;
 let punteroPruebaEquipado=(()=>{try{return localStorage.getItem("gya_puntero_prueba")||"";}catch(e){return"";}})();
+let ruedaPruebaId=(()=>{try{const id=localStorage.getItem("gya_rueda_prueba");return RULETAS_PRUEBA.some(r=>r.id===id)?id:RULETAS_PRUEBA[0].id;}catch(e){return RULETAS_PRUEBA[0].id;}})();
 let enPruebaPunteros=false,punteroSelectorIdx=0,girosPruebaPunteros=0,ruedaPruebaAnterior=null;
+function aplicarRuedaPruebaSeleccionada(){
+  const r=RULETAS_PRUEBA.find(x=>x.id===ruedaPruebaId)||RULETAS_PRUEBA[0];
+  ruedaPruebaId=r.id;ruedaSkinEquipada=r.id;
+  ["rueda-prueba-premium","rueda-prueba-candy","rueda-prueba-3d"].forEach(c=>document.documentElement.classList.remove(c));
+  document.documentElement.classList.add(r.clase);
+  aplicarRuedaSkin();
+  if($("ruedaNombreSel"))$("ruedaNombreSel").textContent="Ruleta: "+r.nombre;
+}
 function activarRuedaPruebaPremium(){
   if(ruedaPruebaAnterior===null)ruedaPruebaAnterior=ruedaSkinEquipada;
-  ruedaSkinEquipada="rueda-gran-premio";
-  document.documentElement.classList.add("rueda-prueba-premium");
-  aplicarRuedaSkin();
+  aplicarRuedaPruebaSeleccionada();
 }
 function restaurarRuedaTrasPrueba(){
   if(ruedaPruebaAnterior!==null){ruedaSkinEquipada=ruedaPruebaAnterior;ruedaPruebaAnterior=null;}
-  document.documentElement.classList.remove("rueda-prueba-premium");
+  ["rueda-prueba-premium","rueda-prueba-candy","rueda-prueba-3d"].forEach(c=>document.documentElement.classList.remove(c));
   aplicarRuedaSkin();
 }
 function aplicarPunteroPrueba(){
@@ -3966,8 +3982,10 @@ function iniciarPruebaPunteros(){
   $("juego").style.display="block";$("juego").classList.add("prueba-spin");
   armarTeclado();
   iniciarPartida(perfil.nombre||"Gonzalo","Máquina (en pausa)",undefined,perfil.avatar||null,"avatar-01",frameEquipado||null,null);
-  S.cat="Ruleta Gran Premio · punteros";
-  publicar("<b>Ruleta Gran Premio</b> — probá los 8 punteros y girá todas las veces que quieras. La máquina queda visible, pero no juega.");
+  const ruedaActual=RULETAS_PRUEBA.find(r=>r.id===ruedaPruebaId)||RULETAS_PRUEBA[0];
+  S.cat="Prueba "+ruedaActual.nombre+" · punteros";
+  publicar("<b>"+ruedaActual.nombre+"</b> — cambiá la ruleta y los 8 punteros mientras girás todas las veces que quieras. La máquina queda visible, pero no juega.");
+  $("ruedaSelector").style.display="flex";aplicarRuedaSelector();
   $("punteroSelector").style.display="flex";aplicarPunteroSelector();
   $("fBoton").textContent="Jugar otra";
 }
@@ -3975,7 +3993,7 @@ function salirPruebaPunteros(){
   detenerPartidaAnterior();enPruebaPunteros=false;
   aplicarPunteroPrueba();restaurarRuedaTrasPrueba();
   $("confirmAbandonar").style.display="none";$("modalFin").classList.remove("ver");
-  $("punteroSelector").style.display="none";$("juego").classList.remove("prueba-spin");$("juego").style.display="none";$("setup").style.display="block";
+  $("ruedaSelector").style.display="none";$("punteroSelector").style.display="none";$("juego").classList.remove("prueba-spin");$("juego").style.display="none";$("setup").style.display="block";
   modo="local";sala="";S=null;$("fBoton").textContent="Revancha";sincronizarMusica();
 }
 function actualizarAccesoPruebas(){
@@ -6863,23 +6881,34 @@ let seccionTiendaEsRuedas=false;
 const ruedasDisponibles=()=>RUEDAS_SKIN;
 let ruedaSelectorIdx=0;
 function aplicarRuedaSelector(){
-  const disp=ruedasDisponibles();
-  let idx=disp.findIndex(m=>(m.id||"")===(ruedaSkinEquipada||""));
+  const disp=enPruebaPunteros?RULETAS_PRUEBA:ruedasDisponibles();
+  const idActual=enPruebaPunteros?ruedaPruebaId:(ruedaSkinEquipada||"");
+  let idx=disp.findIndex(m=>(m.id||"")===idActual);
   if(idx<0)idx=0;
   ruedaSelectorIdx=idx;
-  $("ruedaNombreSel").textContent=disp[idx].nombre;
+  $("ruedaNombreSel").textContent=(enPruebaPunteros?"Ruleta: ":"")+disp[idx].nombre;
 }
 $("ruedaPrev").onclick=()=>{
-  const disp=ruedasDisponibles();
+  const disp=enPruebaPunteros?RULETAS_PRUEBA:ruedasDisponibles();
   ruedaSelectorIdx=(ruedaSelectorIdx-1+disp.length)%disp.length;
-  equiparRuedaSkin(disp[ruedaSelectorIdx].id);
-  $("ruedaNombreSel").textContent=disp[ruedaSelectorIdx].nombre;
+  if(enPruebaPunteros){
+    ruedaPruebaId=disp[ruedaSelectorIdx].id;
+    try{localStorage.setItem("gya_rueda_prueba",ruedaPruebaId);}catch(e){}
+    aplicarRuedaPruebaSeleccionada();
+    if(S){S.cat="Prueba "+disp[ruedaSelectorIdx].nombre+" · punteros";publicar("<b>"+disp[ruedaSelectorIdx].nombre+"</b> lista. Seguí girando sin límite.");}
+  }else equiparRuedaSkin(disp[ruedaSelectorIdx].id);
+  $("ruedaNombreSel").textContent=(enPruebaPunteros?"Ruleta: ":"")+disp[ruedaSelectorIdx].nombre;
 };
 $("ruedaNext").onclick=()=>{
-  const disp=ruedasDisponibles();
+  const disp=enPruebaPunteros?RULETAS_PRUEBA:ruedasDisponibles();
   ruedaSelectorIdx=(ruedaSelectorIdx+1)%disp.length;
-  equiparRuedaSkin(disp[ruedaSelectorIdx].id);
-  $("ruedaNombreSel").textContent=disp[ruedaSelectorIdx].nombre;
+  if(enPruebaPunteros){
+    ruedaPruebaId=disp[ruedaSelectorIdx].id;
+    try{localStorage.setItem("gya_rueda_prueba",ruedaPruebaId);}catch(e){}
+    aplicarRuedaPruebaSeleccionada();
+    if(S){S.cat="Prueba "+disp[ruedaSelectorIdx].nombre+" · punteros";publicar("<b>"+disp[ruedaSelectorIdx].nombre+"</b> lista. Seguí girando sin límite.");}
+  }else equiparRuedaSkin(disp[ruedaSelectorIdx].id);
+  $("ruedaNombreSel").textContent=(enPruebaPunteros?"Ruleta: ":"")+disp[ruedaSelectorIdx].nombre;
 };
 /* Sección "Eventos" (ver IDEAS.md). Evento 1 = la Partida Diaria de
    siempre, con otro marco visual. Evento 2 = la ciudad del día
