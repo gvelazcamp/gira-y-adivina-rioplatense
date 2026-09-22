@@ -2388,16 +2388,16 @@ function tutorialTick(){
     setTimeout(()=>{if(enTutorial&&tutPasoActual===idx){tutPasoActual++;pintar();}},paso.auto);
   }
 }
-let tutRecienTerminado=false;
+let tutRecienTerminado=false,tutorialUsuarioNuevo=false;
 function iniciarTutorial(){
-  if(!perfilExiste()){abrirPerfil(()=>iniciarTutorial());return;}
+  tutorialUsuarioNuevo=!perfilExiste();
   $("capaBienvenida").classList.remove("ver");
   ptGuardarEstado("vista");
   destino=null;pasoActual=null;modo="bot";miJug=0;vinoDeJugarOnline=false;esPartidaDiaria=false;
   rondasElegidas=1;
   $("setup").style.display="none";$("juego").style.display="block";
   armarTeclado();
-  iniciarPartida(perfil.nombre||"Vos","Profe Rueda",undefined,perfil.avatar||null,"avatar-01",frameEquipado||null,null);
+  iniciarPartida(perfil.nombre||"Vos","Profe Rueda",undefined,perfil.avatar||"avatar-01","avatar-01",frameEquipado||null,null);
   S.frase=TUT_FRASE;S.catRaw="Tutorial";S.cat="Tutorial";
   S.abiertas=new Set();S.usadas=new Set();
   enTutorial=true;tutPasoActual=0;
@@ -2406,9 +2406,9 @@ function iniciarTutorial(){
 function finalizarTutorial(){
   enTutorial=false;tutPasoActual=0;tutOcultarSpotlight();tutRecienTerminado=true;
   pararReloj();
-  sumarMonedas(150);mundoActualizarHud();
+  if(tutorialUsuarioNuevo)logroDesbloquear("tutorial");
   $("fMapa").style.display="none";$("fSalir").style.display="block";
-  mostrarFin("🎉 ¡Aprendiste a jugar!","Ya sabés girar, comprar vocales, pedir pistas y resolver. +150 🪙 de regalo para arrancar.");
+  mostrarFin("🎉 ¡Aprendiste a jugar!","Ya sabés girar, comprar vocales, pedir pistas y resolver. Desbloqueaste el logro Primer tutorial: +150 🪙.");
   $("fBoton").style.display="none";
   $("fCompartir").style.display="none";
 }
@@ -2990,7 +2990,8 @@ document.querySelectorAll(".tn-comprar").forEach(b=>{
 
 /* ---- Logros ---- */
 const LOGROS=[
-  {id:"avatar",nombre:"Con identidad",desc:"Elegí tu nombre y tu avatar",icono:"🧑",premio:30},
+  {id:"tutorial",nombre:"Primer tutorial",desc:"Completá el tutorial al comenzar",icono:"🎓",premio:150},
+  {id:"avatar",nombre:"Con identidad",desc:"Elegí tu nombre y tu avatar",icono:"🧑",premio:100},
   {id:"paso1",nombre:"Primeros pasos",desc:"Superá el Paso 1 de Durazno",icono:"🥾",premio:50},
   {id:"paso4",nombre:"Casi campeón",desc:"Superá los 4 pasos de Durazno",icono:"🏁",premio:75},
   {id:"durazno100",nombre:"Conquistador de Durazno",desc:"Derrotá a El Tío del Asado",icono:"👑",premio:150},
@@ -7200,7 +7201,9 @@ $("fSalir").onclick=()=>{
      Partida Diaria — ese día solo tiene que ver el tutorial. Desde el
      día siguiente ya arranca todo con normalidad. */
   if(tutRecienTerminado){
-    tutRecienTerminado=false;
+    const pedirPerfil=tutorialUsuarioNuevo&&!perfilExiste();
+    tutRecienTerminado=false;tutorialUsuarioNuevo=false;
+    if(pedirPerfil){abrirPerfil(()=>{$("setup").style.display="block";});return;}
     if(!esMismoDiaDeAlta()&&pdEstadoHoy()==="pendiente")setTimeout(()=>{pdActualizarTimer();$("capaPartidaDiaria").classList.add("ver");},600);
   }
 };
