@@ -571,6 +571,7 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
  background:#0E4864E6;border:1px solid #37D6C055}
 .setup-topbar .perfil-chip{margin:0;flex:1;min-width:130px;justify-content:flex-start}
 .setup-topbar #perfilNombreTxt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:110px;font-weight:800;color:var(--crema);font-size:1.05rem}
+#campoNombre{display:none!important}
 #cambiarPerfil{font-size:1.05rem;text-decoration:none!important;background:#FFFFFF14!important;
  width:32px;height:32px;border-radius:50%;display:inline-grid;place-items:center;padding:0!important;flex:0 0 auto}
 .setup-stats{display:flex;gap:8px;flex:0 0 auto}
@@ -1408,6 +1409,16 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <button class="btn-grande" id="bInstalar" style="display:none"><span class="btn-ico">📲</span><span class="btn-txt">Instalar app en el celular</span></button>
   </div>
   <button class="no" id="masCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
+</div></div>
+
+<div class="capa" id="capaPruebas"><div class="caja rk-caja">
+  <h2>🧪 Pruebas de Gonzalo</h2>
+  <p class="sub" style="margin:6px 0 14px">Elegí qué recorrido querés probar.</p>
+  <div class="setup-menu">
+    <button class="btn-grande sec" id="bPruebaPunteros"><span class="btn-ico">📍</span><span class="btn-txt">Modo Spin · punteros</span></button>
+    <button class="btn-grande sec" id="bPruebaAltaPerfil"><span class="btn-ico">👤</span><span class="btn-txt">Alta de usuario nuevo</span></button>
+  </div>
+  <button class="no" id="pruebasCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
 </div></div>
 
 <div class="capa" id="capaTutorial"><div class="caja rk-caja">
@@ -2296,7 +2307,15 @@ $("pdMasTarde").onclick=()=>{$("capaPartidaDiaria").classList.remove("ver");pdGu
 $("ptIrTienda").onclick=()=>{$("capaPromoTienda").classList.remove("ver");ptDetenerChromaKey();ptGuardarEstado("vista");$("bTienda").click();};
 $("ptMasTarde").onclick=()=>{$("capaPromoTienda").classList.remove("ver");ptDetenerChromaKey();ptGuardarEstado("vista");};
 $("bienvenidaTutorial").onclick=()=>{$("capaBienvenida").classList.remove("ver");iniciarTutorial();};
-$("bienvenidaCerrar").onclick=()=>{$("capaBienvenida").classList.remove("ver");pdChequearAutoPopup();empujarRanking();};
+function bienvenidaContinuarSinTutorial(){
+  $("capaBienvenida").classList.remove("ver");
+  if(!perfilExiste()){
+    abrirPerfil(()=>{$("setup").style.display="block";pdChequearAutoPopup();empujarRanking();},true);
+    return;
+  }
+  pdChequearAutoPopup();empujarRanking();
+}
+$("bienvenidaCerrar").onclick=bienvenidaContinuarSinTutorial;
 $("bienvenidaCerrarX").onclick=()=>$("bienvenidaCerrar").click();
 function mundoActualizarHud(){
   regenerarVidas();
@@ -2434,6 +2453,13 @@ function tutChequearBienvenida(){
   if(tutEsPrimeraVez()){
     tutMarcarBienvenidaVista();
     setTimeout(()=>{$("capaBienvenida").classList.add("ver");},900);
+    return;
+  }
+  /* Si cerró el tutorial con "Más tarde" o abandonó el alta y volvió a
+     cargar, retomamos directamente nombre + avatar. Nunca queda varado
+     en el inicio con el campo viejo de nombre y sin avatar. */
+  if(!perfilExiste()){
+    abrirPerfil(()=>{$("setup").style.display="block";pdChequearAutoPopup();empujarRanking();},true);
     return;
   }
   pdChequearAutoPopup();empujarRanking();
@@ -3897,7 +3923,7 @@ function iniciarPruebaPunteros(){
   aplicarPunteroPrueba();
   destino=null;pasoActual=null;fSiguientePaso=null;modo="bot";miJug=0;vinoDeJugarOnline=false;modoVelocidadElegido=false;
   rondasElegidas=3;arranca=0;
-  $("capaMas").classList.remove("ver");$("setup").style.display="none";$("eventos").style.display="none";
+  $("capaMas").classList.remove("ver");$("capaPruebas").classList.remove("ver");$("setup").style.display="none";$("eventos").style.display="none";
   $("mundo").style.display="none";$("pantDurazno").style.display="none";$("fondoMundo").classList.remove("ver");
   $("juego").style.display="block";$("juego").classList.add("prueba-spin");
   armarTeclado();
@@ -3921,10 +3947,14 @@ function actualizarAccesoPruebas(){
 }
 const MENUS_CON_X={capaRuleta:"rwCerrar",capaTienda:"tnCerrar",capaLogros:"lgCerrar",
   capaObjetivos:"objCerrar",capaRecords:"recCerrar",capaRanking:"rkCerrar",capaMas:"masCerrar",
+  capaPruebas:"pruebasCerrar",
   capaTutorial:"tutoCerrar",capaSalaTVMenu:"salaTVMenuCerrar",capaJugarOnlineMenu:"jugarOnlineMenuCerrar",
   capaModoOnline:"modoOnlineCerrar",capaSeccionTienda:"seccionTiendaCerrar",capaUsuarios:"usrCerrar"};
 $("bMasOpciones").onclick=()=>{actualizarAccesoPruebas();$("capaMas").classList.add("ver");};
-$("bPruebas").onclick=iniciarPruebaPunteros;
+$("bPruebas").onclick=()=>{$("capaPruebas").classList.add("ver");};
+$("bPruebaPunteros").onclick=iniciarPruebaPunteros;
+$("bPruebaAltaPerfil").onclick=()=>{$("capaPruebas").classList.remove("ver");$("capaMas").classList.remove("ver");previsualizarPerfilVacio();};
+$("pruebasCerrar").onclick=()=>$("capaPruebas").classList.remove("ver");
 $("bTutorial").onclick=()=>$("capaTutorial").classList.add("ver");
 $("tutoCerrar").onclick=()=>$("capaTutorial").classList.remove("ver");
 $("masCerrar").onclick=()=>$("capaMas").classList.remove("ver");
@@ -4892,7 +4922,7 @@ function guardarPerfil(nombre,avatar){
   logroDesbloquear("avatar");
   empujarUsuario();
 }
-let avatarElegido=null,perfilCallback=null,previsualizandoPerfil=false;
+let avatarElegido=null,perfilCallback=null,previsualizandoPerfil=false,perfilObligatorio=false;
 function listaAvataresDisponibles(){
   return AVATARES;
 }
@@ -4927,32 +4957,39 @@ function perfilActualizarSpotlight(){
   if(!avatarElegido){tutMostrarSpotlight($("avatarTitulo"),"Ahora elegí tu avatar.",true);return;}
   tutMostrarSpotlight($("perfilContinuar"),"¡Listo! Tocá para continuar.");
 }
-function abrirPerfil(callback){
+function abrirPerfil(callback,obligatorio=false){
   $("eventos").style.display="none";
-  perfilCallback=callback||null;
+  perfilCallback=callback||null;perfilObligatorio=!!obligatorio;
   $("perfilNombre").value=perfil.nombre||$("miNombre").value.trim()||"";
   avatarElegido=perfil.avatar||null;
   $("setup").style.display="none";$("mundo").style.display="none";$("pantDurazno").style.display="none";
   $("pantPerfil").style.display="block";
+  $("perfilCerrar").style.display=perfilObligatorio?"none":"";
   /* El foquito (perfilActualizarSpotlight, dentro de actualizarBotonPerfil)
      necesita que la pantalla ya esté con display:block para poder medir
      dónde está el campo — por eso esto va DESPUÉS de mostrarla. */
   renderAvatarGrid();actualizarBotonPerfil();
 }
 function previsualizarPerfilVacio(){
-  previsualizandoPerfil=true;perfilCallback=null;
+  previsualizandoPerfil=true;perfilCallback=null;perfilObligatorio=true;
   $("perfilNombre").value="";avatarElegido=null;
   $("setup").style.display="none";$("mundo").style.display="none";$("pantDurazno").style.display="none";
   $("pantPerfil").style.display="block";
+  $("perfilCerrar").style.display="none";
   renderAvatarGrid();actualizarBotonPerfil();
 }
 $("perfilNombre").addEventListener("input",()=>{renderAvatarGrid();actualizarBotonPerfil();});
 $("perfilContinuar").onclick=()=>{
-  if(previsualizandoPerfil){previsualizandoPerfil=false;tutOcultarSpotlight();$("pantPerfil").style.display="none";$("setup").style.display="block";return;}
+  if(previsualizandoPerfil){
+    previsualizandoPerfil=false;perfilObligatorio=false;tutOcultarSpotlight();
+    $("pantPerfil").style.display="none";$("perfilCerrar").style.display="";$("setup").style.display="block";
+    mostrarToast("✅","Prueba terminada: el usuario ya podría entrar con su perfil.");return;
+  }
   const n=$("perfilNombre").value.trim().slice(0,12);
   if(!n||!avatarElegido)return;
   if(avatarElegido===AVATAR_EXCLUSIVO.id&&n.toLowerCase()!==AVATAR_EXCLUSIVO.nombre)return;
   guardarPerfil(n,avatarElegido);
+  perfilObligatorio=false;$("perfilCerrar").style.display="";
   tutOcultarSpotlight();
   $("pantPerfil").style.display="none";
   if(perfilCallback){const cb=perfilCallback;perfilCallback=null;cb();}
@@ -4960,6 +4997,7 @@ $("perfilContinuar").onclick=()=>{
 };
 $("cambiarPerfil").onclick=()=>abrirPerfil(null);
 $("perfilCerrar").onclick=()=>{
+  if(perfilObligatorio)return;
   perfilCallback=null;previsualizandoPerfil=false;
   tutOcultarSpotlight();
   $("pantPerfil").style.display="none";
@@ -7258,7 +7296,7 @@ $("fSalir").onclick=()=>{
   if(tutRecienTerminado){
     const pedirPerfil=tutorialUsuarioNuevo&&!perfilExiste();
     tutRecienTerminado=false;tutorialUsuarioNuevo=false;
-    if(pedirPerfil){abrirPerfil(()=>{$("setup").style.display="block";});return;}
+    if(pedirPerfil){abrirPerfil(()=>{$("setup").style.display="block";},true);return;}
     if(!esMismoDiaDeAlta()&&pdEstadoHoy()==="pendiente")setTimeout(()=>{pdActualizarTimer();$("capaPartidaDiaria").classList.add("ver");},600);
   }
 };
