@@ -283,6 +283,8 @@ html.puntero-prueba-activo .rw-aguja{top:-28px;width:56px;height:84px;border:0;
  border:2px solid var(--oro);border-radius:999px;box-shadow:0 3px 0 #00000055,0 0 14px #E5197C55;
  -webkit-text-stroke:.6px #2A0E1F;text-shadow:0 2px 0 #00000060}
 .tn-subtitulo:not([data-fijo]){cursor:pointer;user-select:none}
+.tn-subtitulo.tn-abre-lista{cursor:pointer;user-select:none;transition:transform .12s,filter .12s}
+.tn-subtitulo.tn-abre-lista:active{transform:translateY(2px) scale(.985);filter:brightness(1.2)}
 .tn-seccion-contenido{animation:tnDesplegar .18s ease}
 @keyframes tnDesplegar{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 .frame-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
@@ -1195,15 +1197,15 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="tn-comprar" id="ofertaSobreBtn" data-tipo="sobre_durazno" data-precio="1000">🪙 1000</button>
   </div>
   </div>
-  <h3 class="tn-subtitulo" data-fijo="1" id="tituloAvatares">🧑‍🎤 Avatares premium</h3>
+  <h3 class="tn-subtitulo tn-abre-lista" data-fijo="1" id="tituloAvatares">🧑‍🎤 Avatares premium 🔻</h3>
   <div class="frame-grid" id="avatarPremiumGrid"></div>
-  <h3 class="tn-subtitulo" data-fijo="1" id="tituloTableros">🎲 Tableros</h3>
+  <h3 class="tn-subtitulo tn-abre-lista" data-fijo="1" id="tituloTableros">🎲 Tableros 🔻</h3>
   <div class="frame-grid" id="tableroGrid"></div>
-  <h3 class="tn-subtitulo" data-fijo="1" id="tituloCuadrosTablero">🖼️ Marcos de tablero</h3>
+  <h3 class="tn-subtitulo tn-abre-lista" data-fijo="1" id="tituloCuadrosTablero">🖼️ Marcos de tablero 🔻</h3>
   <div class="frame-grid" id="cuadroTableroGrid"></div>
-  <h3 class="tn-subtitulo" data-fijo="1" id="tituloRuedas">🎡 Marcos de ruleta</h3>
+  <h3 class="tn-subtitulo tn-abre-lista" data-fijo="1" id="tituloRuedas">🎡 Marcos de ruleta 🔻</h3>
   <div class="frame-grid" id="ruedaGrid"></div>
-  <h3 class="tn-subtitulo" data-fijo="1" id="tituloSobres">✉️ Sobres de colección</h3>
+  <h3 class="tn-subtitulo tn-abre-lista" data-fijo="1" id="tituloSobres">✉️ Sobres de colección 🔻</h3>
   <div class="tn-grid" id="sobresGrid">
   <div class="tn-item tn-card sobre-basico">
   <div class="tn-card-img" style="background-image:url('assets/collectibles/durazno/sobre-durazno.webp')"></div>
@@ -1311,9 +1313,9 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="tn-comprar" data-tipo="sobre_treinta-y-tres" data-precio="3000">🪙 3000</button>
   </div>
   </div>
-  <h3 class="tn-subtitulo" data-fijo="1" id="tituloPunteros">🔻 Punteros</h3>
+  <h3 class="tn-subtitulo tn-abre-lista" data-fijo="1" id="tituloPunteros">📍 Punteros 🔻</h3>
   <div class="frame-grid" id="punteroTiendaGrid"></div>
-  <h3 class="tn-subtitulo" data-fijo="1" id="tituloMarcos">🖼️ Marcos de avatar</h3>
+  <h3 class="tn-subtitulo tn-abre-lista" data-fijo="1" id="tituloMarcos">🖼️ Marcos de avatar 🔻</h3>
   <div class="frame-grid" id="frameGrid"></div>
   <h3 class="tn-subtitulo" data-fijo="1" id="tituloDineroReal">💳 Paquetes con dinero real</h3>
   <p class="tn-proximamente">Disponibles cuando el juego esté en la Play Store</p>
