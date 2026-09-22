@@ -1750,7 +1750,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
       <span class="evento-card-cuerpo">
         <span class="evento-card-ico">🎁</span>
         <span class="evento-card-info"><b id="evCiudadTit">Evento de ciudad</b>
-          <small id="evCiudadEstado">3 rondas · Un intento por día · Ganá un sobre</small></span>
+          <small id="evCiudadEstado">3 rondas · Reintentá hasta ganar · Cada derrota cuesta 1 vida</small></span>
         <span class="evento-card-premios">
           <span class="evento-card-premio-emoji">🪙</span>
           <span class="evento-card-premio-emoji">❤️</span>
@@ -2482,8 +2482,9 @@ let esPartidaDiaria=false;
    diciendo "Partida Diaria" como siempre — misma mecánica en los dos
    casos (esPartidaDiaria), esto es solo texto. */
 let eventoDiarioUI=false;
-/* Evento 2: partida independiente con un intento diario. El sobre ganado
-   comparte la colección de la localidad, pero nunca avanza el mapa. */
+/* Evento 2: partida independiente que se puede reintentar hasta ganarla.
+   Cada derrota cuesta una vida. El sobre ganado comparte la colección
+   de la localidad, pero nunca avanza el mapa. */
 let esEventoCiudad=false,eventoCiudadPartida=null,eventoCiudadResultado=false;
 let eventoCiudadRegistro=(()=>{try{return JSON.parse(localStorage.getItem("gya_evento_ciudad"));}catch(e){return null;}})();
 function leerEventoCiudad(){
@@ -2494,20 +2495,28 @@ function guardarEventoCiudad(registro){
   eventoCiudadRegistro=registro;
   try{localStorage.setItem("gya_evento_ciudad",JSON.stringify(registro));}catch(e){}
 }
+function cobrarEventoInterrumpido(){
+  const r=leerEventoCiudad(),dia=Math.floor(Date.now()/86400000);
+  if(!r||r.dia!==dia||r.estado!=="jugando")return;
+  const infinita=vidasInfinitasActivas();gastarVida();
+  guardarEventoCiudad({...r,estado:"pendiente",premioEntregado:false});
+  mostrarToast("🚪",infinita?"La partida anterior quedó abandonada. ❤️∞ activo: no gastaste vida.":"La partida anterior quedó abandonada: -1 ❤️.","Evento abandonado");
+}
 function estadoEventoCiudad(){
   const r=leerEventoCiudad();
-  return r&&r.dia===Math.floor(Date.now()/86400000)?r.estado:"pendiente";
+  return r&&r.dia===Math.floor(Date.now()/86400000)&&r.estado==="ganado"?"ganado":"pendiente";
 }
 function iniciarEventoCiudad(){
-  if(estadoEventoCiudad()!=="pendiente")return;
+  if(estadoEventoCiudad()==="ganado")return;
   if(!perfilExiste()){abrirPerfil(iniciarEventoCiudad);return;}
   regenerarVidas();if(!tieneVidas()){mostrarToast("❤️","Esperá a recuperar una vida para jugar.");return;}
   detenerPartidaAnterior();
   esPartidaDiaria=false;eventoDiarioUI=false;vinoDeJugarOnline=false;
   destino=null;pasoActual=null;fSiguientePaso=null;modoVelocidadElegido=false;
-  eventoCiudadPartida={dia:Math.floor(Date.now()/86400000),cual:MUNDO[eventoCiudadDeHoyIdx()].id};
-  // Reservar el intento antes de jugar: salir o recargar cuenta como derrota.
-  guardarEventoCiudad({...eventoCiudadPartida,estado:"perdido",premioEntregado:false});
+  const anterior=leerEventoCiudad(),dia=Math.floor(Date.now()/86400000);
+  eventoCiudadPartida={dia,cual:MUNDO[eventoCiudadDeHoyIdx()].id,
+    intentos:anterior&&anterior.dia===dia?(anterior.intentos||0)+1:1};
+  guardarEventoCiudad({...eventoCiudadPartida,estado:"jugando",premioEntregado:false});
   esEventoCiudad=true;eventoCiudadResultado=false;
   modo="bot";miJug=0;rondasElegidas=3;arranca=0;
   ["setup","eventos","mundo","pantDurazno"].forEach(id=>$(id).style.display="none");
@@ -2520,13 +2529,13 @@ function finalizarEventoCiudad(ganado,detalle,abandonado){
   const intento=eventoCiudadPartida,r=leerEventoCiudad();
   let premio="";
   if(r&&r.dia===intento.dia&&!r.premioEntregado){
-    guardarEventoCiudad({...r,estado:ganado?"ganado":"perdido",premioEntregado:ganado});
+    guardarEventoCiudad({...r,estado:ganado?"ganado":"pendiente",premioEntregado:ganado});
     if(ganado){
       coleccionMeta[intento.cual].sobres++;guardarColeccionMeta();
       sumarMonedas(200);recuperarVida();objSumar("victorias",1);
       intento.sobrePendiente=true;
       premio=" +200 🪙, +1 ❤️ y un sobre de "+COLECCIONES[intento.cual].nombre+". Abrí tu sobre al continuar.";
-    }else{const infinita=vidasInfinitasActivas();gastarVida();premio=infinita?" ❤️∞ activo: no gastaste vida. Volvé mañana.":" -1 ❤️. Volvé mañana.";}
+    }else{const infinita=vidasInfinitasActivas();gastarVida();premio=infinita?" ❤️∞ activo: no gastaste vida. Podés volver a intentarlo.":" -1 ❤️. Podés volver a intentarlo.";}
   }
   eventoCiudadResultado=true;
   detenerPartidaAnterior();S.finalPendiente=null;
@@ -6365,7 +6374,7 @@ function finDelJuego(){
   }
   if(esEventoCiudad){
     if(g===0)iniciarBonus(g,{g,tit:"¡Evento completado!",extra:""});
-    else finalizarEventoCiudad(false,detalle+(g<0?" El empate consume el intento diario.":""));
+    else finalizarEventoCiudad(false,detalle+(g<0?" El empate cuenta como derrota.":""));
     return;
   }
   if(modo==="bot"&&pasoActual!==null){
@@ -6492,7 +6501,7 @@ function mostrarFin(tit,txt,selloImg){
     $("fCopa").style.display="none";
   }else{fSello.classList.remove("ver");$("fCopa").style.display="";
     $("fCopa").textContent=tit.startsWith("¡Empate")?"🤝":tit.startsWith("¡Victoria")?"🏆":
-      (tit.startsWith("Te ganó")||tit.startsWith("No pudiste"))?"😤":tit.startsWith("¡Paso")?"✅":
+      (tit.startsWith("Te ganó")||tit.startsWith("No pudiste")||tit.startsWith("Perdiste"))?"😤":tit.startsWith("¡Paso")?"✅":
       tit.startsWith("Partida abandonada")?"🚪":"🏅";}
   $("fTitulo").textContent=tit;$("fTexto").textContent=txt;
   $("fSalir").textContent=tit.startsWith("Partida abandonada")?"Volver al inicio":"Salir";
@@ -6893,6 +6902,7 @@ function revelarEvento(id){
 }
 function abrirEventos(){
   detenerPartidaAnterior();
+  cobrarEventoInterrumpido();
   eventoCiudadPartida=null;eventoCiudadResultado=false;
   esPartidaDiaria=false;eventoDiarioUI=false;esEventoCiudad=false;
   $("fondoMundo").classList.remove("ver");
@@ -6905,11 +6915,11 @@ function abrirEventos(){
   $("evTiempo1").textContent=t;$("evTiempo2").textContent=t;
   // Cada tarjeta permanece revelada hasta la siguiente rotación diaria.
   ["evBanner1","evBanner2"].forEach(id=>$(id).classList.toggle("cerrado",!eventoEstaRevelado(id)));
-  const estado=estadoEventoCiudad(),bloqueado=estado!=="pendiente";
+  const estado=estadoEventoCiudad(),bloqueado=estado==="ganado";
   $("evBanner2").disabled=bloqueado;$("evBanner2").classList.toggle("bloqueado",bloqueado);
   if(bloqueado)$("evBanner2").classList.remove("cerrado");
-  $("evCiudadEstado").textContent=estado==="ganado"?"✓ Completado · Volvé mañana":bloqueado?
-    "Perdiste · Volvé mañana":"3 rondas · Un intento por día · Ganá un sobre";
+  $("evCiudadEstado").textContent=estado==="ganado"?"✓ Completado · Volvé mañana":
+    "3 rondas · Reintentá hasta ganar · Cada derrota cuesta 1 vida";
   document.querySelectorAll(".capa.ver").forEach(c=>c.classList.remove("ver"));
   $("setup").style.display="none";$("mundo").style.display="none";$("pantDurazno").style.display="none";
   $("eventos").style.display="block";
