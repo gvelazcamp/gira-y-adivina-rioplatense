@@ -1991,7 +1991,7 @@ let ruedaSkinEquipada=cargarRuedaSkinEquipada();
    el juego dice que ganó SIEMPRE es el que está dibujado bajo la
    flecha. */
 const RUEDAS_PAUSADAS=false;
-const RUEDA_TEXTO_HORNEADO=new Set(["rueda-fuego","rueda-hielo","rueda-oro","rueda-neon","rueda-candy","rueda-espacio","rueda-selva","rueda-circo","rueda-sheriff","rueda-desierto","rueda-forajido","rueda-pepitas","rueda-locomotora","rueda-rodeo","rueda-casino","rueda-ovni","rueda-abduccion","rueda-gran-premio","rueda-3d"]);
+const RUEDA_TEXTO_HORNEADO=new Set(["rueda-fuego","rueda-hielo","rueda-oro","rueda-neon","rueda-candy","rueda-candy-deluxe","rueda-espacio","rueda-selva","rueda-circo","rueda-sheriff","rueda-desierto","rueda-forajido","rueda-pepitas","rueda-locomotora","rueda-rodeo","rueda-casino","rueda-ovni","rueda-abduccion","rueda-gran-premio","rueda-3d"]);
 function dibujarRuedaJuego(){
   const CENTRO=300,paso=Math.PI*2/SEG.length,conSkin=!RUEDAS_PAUSADAS&&!!ruedaSkinEquipada;
   cx.clearRect(0,0,600,600);
@@ -3882,7 +3882,7 @@ const PUNTEROS_TIENDA=[
 const PUNTEROS_PRUEBA=[{id:"",nombre:"Clásico"},...PUNTEROS_TIENDA.map(p=>({id:p.id,nombre:p.nombre}))];
 const RULETAS_PRUEBA=[
   {id:"rueda-gran-premio",nombre:"Gran Premio",clase:"rueda-prueba-premium"},
-  {id:"rueda-candy",nombre:"Candy Deluxe",clase:"rueda-prueba-candy"},
+  {id:"rueda-candy-deluxe",nombre:"Candy Deluxe",clase:"rueda-prueba-candy"},
   {id:"rueda-3d",nombre:"Rueda 3D",clase:"rueda-prueba-3d"}
 ];
 function cargarPunterosComprados(){
@@ -6821,9 +6821,10 @@ const RUEDAS_SKIN=[
   {id:null,nombre:"Clásica",precio:0,basico:true},
   {id:"rueda-fuego",nombre:"Rueda de Fuego",precio:12000,basico:true},
   {id:"rueda-hielo",nombre:"Rueda de Hielo",precio:12000,basico:true},
-  {id:"rueda-candy",nombre:"Candy Deluxe",precio:13500,basico:true,nuevo:true},
+  {id:"rueda-candy-deluxe",nombre:"Candy Deluxe",precio:13500,basico:true,nuevo:true},
   {id:"rueda-oro",nombre:"Rueda Real",precio:12000,basico:true},
   {id:"rueda-neon",nombre:"Rueda Neón",precio:12000,basico:true},
+  {id:"rueda-candy",nombre:"Rueda Candy",precio:12000,basico:true},
   {id:"rueda-espacio",nombre:"Rueda Galáctica",precio:12000,nuevo:true},
   {id:"rueda-selva",nombre:"Rueda Tiki",precio:12000,nuevo:true},
   {id:"rueda-circo",nombre:"Rueda de Circo",precio:12000,nuevo:true},
