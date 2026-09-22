@@ -2817,10 +2817,10 @@ function tnEjecutarCompra(tipo,precio){
        (no garantizados): cada uno puede tocar coleccionable o la sorpresa
        de monedas/vida, como cualquier sobre normal — no hace falta un
        +monedas aparte pegado al pack. */
-    const cual1=otorgarSobreSorpresa();otorgarSobreSorpresa();
+    const sobres=[otorgarSobreSorpresa(),otorgarSobreSorpresa()];
     mostrarPackItems([
       {icono:"❤️",texto:"Vidas llenas"},{icono:"🎁",texto:"+2 sobres"}
-    ],()=>colMostrarSobreConseguido(cual1,true));
+    ],()=>mostrarSobresPack(sobres));
   }else if(tipo==="pack_mutante"){
     avataresComprados.add("avatar-27");guardarAvataresComprados();equiparAvatarPremium("avatar-27");
     tablerosComprados.add("fondo-lab-toxico");guardarTablerosComprados();equiparTablero("fondo-lab-toxico");
@@ -3761,6 +3761,18 @@ function sumarRondaColeccion(cual){
 }
 let colSobreCualActual=null,colVolverAModal=false;
 let sobrePendienteCual=null,accionTrasSobre=null;
+// Presenta cada sobre acreditado, incluso si los dos son de la misma ciudad.
+function mostrarSobresPack(sobres){
+  let indice=0;
+  const siguiente=()=>{
+    if(indice>=sobres.length)return;
+    const cual=sobres[indice++];
+    accionTrasSobre=indice<sobres.length?siguiente:null;
+    colMostrarSobreConseguido(cual,true);
+    $("sobreConseguidoTxt").textContent="Pack Racha · Sobre "+indice+" de "+sobres.length;
+  };
+  siguiente();
+}
 function continuarTrasSobre(){
   const f=accionTrasSobre;accionTrasSobre=null;
   if(f)f();
@@ -4616,7 +4628,7 @@ function empezarDestino(i,paso){
   $("setup").style.display="none";$("eventos").style.display="none";
   destino=i;pasoActual=(paso===undefined?null:paso);const d=MUNDO[i];
   if(d.bg){$("fondoMundo").style.backgroundImage="url('"+d.bg+"')";$("fondoMundo").classList.add("ver");}
-  modo="bot";miJug=0;rondasElegidas=(pasoActual===null?d.rondas:1);
+  modo="bot";miJug=0;rondasElegidas=(pasoActual===null?d.rondas:3);
   $("mundo").style.display="none";$("pantDurazno").style.display="none";$("juego").style.display="block";
   armarTeclado();iniciarPartida($("miNombre").value.trim()||"Vos",
     pasoActual===null?d.r:"Máquina",categoriasAlAzar(pasoActual===null?2:1),perfil.avatar||null,null,frameEquipado||null,null);
@@ -6432,23 +6444,23 @@ function tnRenderCuadrosTablero(contId,soloBasicos){
    (el juego le pone rotate() encima), así que la imagen gira con él. */
 const RUEDAS_SKIN=[
   {id:null,nombre:"Clásica",precio:0,basico:true},
-  {id:"rueda-fuego",nombre:"Rueda de Fuego",precio:9500,basico:true},
-  {id:"rueda-hielo",nombre:"Rueda de Hielo",precio:9500,basico:true},
-  {id:"rueda-oro",nombre:"Rueda Real",precio:9500,basico:true},
-  {id:"rueda-neon",nombre:"Rueda Neón",precio:9500,basico:true},
-  {id:"rueda-candy",nombre:"Rueda Candy",precio:9500,basico:true},
-  {id:"rueda-espacio",nombre:"Rueda Galáctica",precio:9500,nuevo:true},
-  {id:"rueda-selva",nombre:"Rueda Tiki",precio:9500,nuevo:true},
-  {id:"rueda-circo",nombre:"Rueda de Circo",precio:9500,nuevo:true},
-  {id:"rueda-sheriff",nombre:"Rueda Sheriff",precio:9500,nuevo:true},
-  {id:"rueda-desierto",nombre:"Rueda del Desierto",precio:9500,nuevo:true},
-  {id:"rueda-forajido",nombre:"Rueda Forajido",precio:9500,nuevo:true},
-  {id:"rueda-pepitas",nombre:"Rueda de Oro Salvaje",precio:9500,nuevo:true},
-  {id:"rueda-locomotora",nombre:"Rueda Locomotora",precio:9500,nuevo:true},
-  {id:"rueda-rodeo",nombre:"Rueda Rodeo",precio:9500,nuevo:true},
-  {id:"rueda-casino",nombre:"Rueda Casino",precio:9500,nuevo:true},
-  {id:"rueda-ovni",nombre:"Rueda OVNI",precio:9500,nuevo:true},
-  {id:"rueda-abduccion",nombre:"Rueda Abducción",precio:9500,nuevo:true}
+  {id:"rueda-fuego",nombre:"Rueda de Fuego",precio:12000,basico:true},
+  {id:"rueda-hielo",nombre:"Rueda de Hielo",precio:12000,basico:true},
+  {id:"rueda-oro",nombre:"Rueda Real",precio:12000,basico:true},
+  {id:"rueda-neon",nombre:"Rueda Neón",precio:12000,basico:true},
+  {id:"rueda-candy",nombre:"Rueda Candy",precio:12000,basico:true},
+  {id:"rueda-espacio",nombre:"Rueda Galáctica",precio:12000,nuevo:true},
+  {id:"rueda-selva",nombre:"Rueda Tiki",precio:12000,nuevo:true},
+  {id:"rueda-circo",nombre:"Rueda de Circo",precio:12000,nuevo:true},
+  {id:"rueda-sheriff",nombre:"Rueda Sheriff",precio:12000,nuevo:true},
+  {id:"rueda-desierto",nombre:"Rueda del Desierto",precio:12000,nuevo:true},
+  {id:"rueda-forajido",nombre:"Rueda Forajido",precio:12000,nuevo:true},
+  {id:"rueda-pepitas",nombre:"Rueda de Oro Salvaje",precio:12000,nuevo:true},
+  {id:"rueda-locomotora",nombre:"Rueda Locomotora",precio:12000,nuevo:true},
+  {id:"rueda-rodeo",nombre:"Rueda Rodeo",precio:12000,nuevo:true},
+  {id:"rueda-casino",nombre:"Rueda Casino",precio:12000,nuevo:true},
+  {id:"rueda-ovni",nombre:"Rueda OVNI",precio:12000,nuevo:true},
+  {id:"rueda-abduccion",nombre:"Rueda Abducción",precio:12000,nuevo:true}
 ];
 function cargarRuedasComprados(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_ruedas_owned")||"[]"));}catch(e){return new Set();}
@@ -7353,7 +7365,7 @@ $("fBoton").onclick=()=>{
   else revancha();
 };
 (function splash(){
-  const MIN_ESPERA=400;
+  const MIN_ESPERA=1200;
   const barra=$("splashBarra").firstElementChild,cap=$("splash");
   const urls=["assets/splash.webp?v=3"].concat(MUNDO.map(d=>d.bg).filter(Boolean));
   let hechas=0,yaCerrado=false;const t0=performance.now();
