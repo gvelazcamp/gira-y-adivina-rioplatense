@@ -529,6 +529,12 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 .perfil-chip img{width:38px;height:38px;border-radius:50%;object-fit:cover;border:1px solid #FFFFFF33}
 .perfil-chip button{background:none;border:none;color:var(--agua);text-decoration:underline;font-weight:700;font-size:.9rem;padding:4px}
 #pantPerfil{display:none;max-width:480px;margin:5vh auto;text-align:center}
+.perfil-nombre-campo{padding-right:8px}
+.perfil-nombre-campo input{min-width:0}
+#perfilNombreOk{flex:0 0 42px;width:42px;height:42px;border-radius:50%;padding:0;background:var(--agua);
+ color:var(--tinta);font-size:1.25rem;font-weight:900;box-shadow:0 3px 0 #16796D}
+#perfilNombreOk:disabled{opacity:.35;box-shadow:none}
+#perfilCambiarNombre{background:none;color:var(--agua);font-weight:700;padding:4px 8px;margin:-2px 0 12px}
 .avatar-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:0 0 22px}
 .avatar-opcion{position:relative;border-radius:50%;padding:0;border:3px solid transparent;background:none;aspect-ratio:1;overflow:hidden}
 .avatar-opcion img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
@@ -1016,11 +1022,16 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
 </div></div>
 
 <section id="pantPerfil">
-  <h1 class="titulo" style="font-size:2.1rem">ELEGÍ TU JUGADOR</h1>
-  <div class="campo"><span>Nombre</span><input id="perfilNombre" placeholder="escribí tu nombre" maxlength="12" autocomplete="off"></div>
-  <p class="sub" id="avatarTitulo" style="margin:18px 0 10px">Elegí tu avatar</p>
-  <div class="avatar-grid" id="avatarGrid"></div>
-  <button class="btn-grande" id="perfilContinuar" disabled>CONTINUAR</button>
+  <h1 class="titulo" id="perfilTitulo" style="font-size:2.1rem">ELEGÍ TU NOMBRE</h1>
+  <div id="perfilPasoNombre">
+    <div class="campo perfil-nombre-campo"><span>Nombre</span><input id="perfilNombre" placeholder="escribí tu nombre" maxlength="12" autocomplete="off"><button id="perfilNombreOk" type="button" aria-label="Confirmar nombre" disabled>✓</button></div>
+  </div>
+  <div id="perfilPasoAvatar" style="display:none">
+    <p class="sub" id="avatarTitulo" style="margin:8px 0 4px">Ahora elegí tu avatar</p>
+    <button id="perfilCambiarNombre" type="button">← Cambiar nombre</button>
+    <div class="avatar-grid" id="avatarGrid"></div>
+    <button class="btn-grande" id="perfilContinuar" disabled>CONTINUAR</button>
+  </div>
   <button class="btn-grande sec" id="perfilCerrar" style="margin-top:10px">Cerrar</button>
 </section>
 
@@ -4935,7 +4946,7 @@ function guardarPerfil(nombre,avatar){
   logroDesbloquear("avatar");
   empujarUsuario();
 }
-let avatarElegido=null,perfilCallback=null,previsualizandoPerfil=false,perfilObligatorio=false;
+let avatarElegido=null,perfilCallback=null,previsualizandoPerfil=false,perfilObligatorio=false,perfilPasoActual="nombre";
 function listaAvataresDisponibles(){
   return AVATARES;
 }
@@ -4953,22 +4964,18 @@ function renderAvatarGrid(){
   });
 }
 function actualizarBotonPerfil(){
-  $("perfilContinuar").disabled=!($("perfilNombre").value.trim()&&avatarElegido);
-  perfilActualizarSpotlight();
+  const nombre=nombrePerfilPersonal($("perfilNombre").value.slice(0,12));
+  $("perfilNombreOk").disabled=!nombre;
+  $("perfilContinuar").disabled=!(nombre&&avatarElegido);
 }
-/* Reutiliza el mismo sistema de foquito oscurecido del tutorial (aunque
-   ya haya terminado) para guiar a quien todavía no tiene perfil: primero
-   señala el nombre, después el avatar, y por último el botón. */
-function perfilActualizarSpotlight(){
-  if($("pantPerfil").style.display!=="block")return;
-  if(!$("perfilNombre").value.trim()){tutMostrarSpotlight($("perfilNombre").closest(".campo")||$("perfilNombre"),"Escribí tu nombre para poder jugar.");return;}
-  /* El avatar es libre elección — no hace falta oscurecer y forzar la
-     mirada a uno en particular, solo un aviso sin oscurecer. */
-  /* Apunta al título, no a toda la grilla de 21 avatares: la grilla es
-     mucho más alta que la pantalla, así que calcular "arriba/abajo" en
-     base a su rectángulo entero terminaba tapando la primera fila. */
-  if(!avatarElegido){tutMostrarSpotlight($("avatarTitulo"),"Ahora elegí tu avatar.",true);return;}
-  tutMostrarSpotlight($("perfilContinuar"),"¡Listo! Tocá para continuar.");
+function perfilMostrarPaso(paso){
+  perfilPasoActual=paso==="avatar"?"avatar":"nombre";
+  tutOcultarSpotlight();
+  $("perfilPasoNombre").style.display=perfilPasoActual==="nombre"?"":"none";
+  $("perfilPasoAvatar").style.display=perfilPasoActual==="avatar"?"":"none";
+  $("perfilTitulo").textContent=perfilPasoActual==="nombre"?"ELEGÍ TU NOMBRE":"ELEGÍ TU AVATAR";
+  window.scrollTo({top:0,behavior:"auto"});
+  if(perfilPasoActual==="nombre")setTimeout(()=>$("perfilNombre").focus(),0);
 }
 function abrirPerfil(callback,obligatorio=false){
   $("eventos").style.display="none";
@@ -4978,10 +4985,7 @@ function abrirPerfil(callback,obligatorio=false){
   $("setup").style.display="none";$("mundo").style.display="none";$("pantDurazno").style.display="none";
   $("pantPerfil").style.display="block";
   $("perfilCerrar").style.display=perfilObligatorio?"none":"";
-  /* El foquito (perfilActualizarSpotlight, dentro de actualizarBotonPerfil)
-     necesita que la pantalla ya esté con display:block para poder medir
-     dónde está el campo — por eso esto va DESPUÉS de mostrarla. */
-  renderAvatarGrid();actualizarBotonPerfil();
+  renderAvatarGrid();actualizarBotonPerfil();perfilMostrarPaso("nombre");
 }
 function previsualizarPerfilVacio(){
   previsualizandoPerfil=true;perfilCallback=null;perfilObligatorio=true;
@@ -4989,9 +4993,18 @@ function previsualizarPerfilVacio(){
   $("setup").style.display="none";$("mundo").style.display="none";$("pantDurazno").style.display="none";
   $("pantPerfil").style.display="block";
   $("perfilCerrar").style.display="none";
-  renderAvatarGrid();actualizarBotonPerfil();
+  renderAvatarGrid();actualizarBotonPerfil();perfilMostrarPaso("nombre");
 }
-$("perfilNombre").addEventListener("input",()=>{renderAvatarGrid();actualizarBotonPerfil();});
+$("perfilNombre").addEventListener("input",actualizarBotonPerfil);
+$("perfilNombre").addEventListener("keydown",e=>{if(e.key==="Enter"&&!$("perfilNombreOk").disabled)$("perfilNombreOk").click();});
+$("perfilNombreOk").onclick=()=>{
+  const n=$("perfilNombre").value.trim().slice(0,12);
+  if(!n)return;
+  if(nombrePerfilAutomatico(n)){mostrarToast("👤","Elegí un nombre propio, distinto de "+n+".");return;}
+  $("perfilNombre").value=n;
+  perfilMostrarPaso("avatar");actualizarBotonPerfil();
+};
+$("perfilCambiarNombre").onclick=()=>perfilMostrarPaso("nombre");
 $("perfilContinuar").onclick=()=>{
   if(previsualizandoPerfil){
     previsualizandoPerfil=false;perfilObligatorio=false;tutOcultarSpotlight();
@@ -5013,6 +5026,7 @@ $("cambiarPerfil").onclick=()=>abrirPerfil(null);
 $("perfilCerrar").onclick=()=>{
   if(perfilObligatorio)return;
   perfilCallback=null;previsualizandoPerfil=false;
+  perfilPasoActual="nombre";
   tutOcultarSpotlight();
   $("pantPerfil").style.display="none";
   $("setup").style.display="block";
