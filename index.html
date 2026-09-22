@@ -299,6 +299,9 @@ html.puntero-prueba-activo .rw-aguja{top:-28px;width:56px;height:84px;border:0;
  background-position:center;background-color:#00000055;margin:0 auto 10px}
 .ficha-skin-preview-vacio{display:flex;align-items:center;justify-content:center;font-size:.72rem;
  color:#B49FCE;border:1px dashed #FFFFFF33}
+.puntero-tienda-preview{display:grid;place-items:center;width:100%;height:116px;margin:0 auto 8px;
+ background:radial-gradient(circle,#7B3FE433 0,#00000033 68%);border-radius:12px;overflow:hidden}
+.puntero-tienda-preview img{display:block;width:78px;height:108px;object-fit:contain;filter:drop-shadow(0 5px 7px #000A)}
 .frame-preview .avatar-img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
 .frame-preview .avatar-frame{transform:scale(1.45)}
 .frame-card b{font-size:.86rem;min-height:2.3em;display:flex;align-items:center;justify-content:center}
@@ -1308,6 +1311,8 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="tn-comprar" data-tipo="sobre_treinta-y-tres" data-precio="3000">🪙 3000</button>
   </div>
   </div>
+  <h3 class="tn-subtitulo" data-fijo="1" id="tituloPunteros">🔻 Punteros</h3>
+  <div class="frame-grid" id="punteroTiendaGrid"></div>
   <h3 class="tn-subtitulo" data-fijo="1" id="tituloMarcos">🖼️ Marcos de avatar</h3>
   <div class="frame-grid" id="frameGrid"></div>
   <h3 class="tn-subtitulo" data-fijo="1" id="tituloDineroReal">💳 Paquetes con dinero real</h3>
@@ -2491,8 +2496,8 @@ function finalizarEventoCiudad(ganado,detalle,abandonado){
   publicar("Evento terminado.");mundoActualizarHud();colActualizarBloqueDurazno();
   mostrarFin(ganado?"¡Evento completado!":abandonado?"Partida abandonada":"Perdiste el evento",detalle+premio);
   $("fCopa").textContent=ganado?"🏆":"😤";
-  $("fMapa").style.display="block";$("fMapa").textContent="Volver a Eventos";
-  $("fSalir").style.display="none";$("fBoton").style.display="none";
+  $("fMapa").style.display=abandonado?"none":"block";$("fMapa").textContent="Volver a Eventos";
+  $("fSalir").style.display=abandonado?"block":"none";$("fBoton").style.display="none";
   $("fVolverMapaPaso").style.display="none";
 }
 function eventoCiudadFichaDeHoyId(){
@@ -2506,7 +2511,7 @@ function eventoCiudadFichaDeHoyId(){
 const EVENTO_PREMIOS_ROTAN=[
   {tipo:"marco",nombre:"Marco de avatar"},
   {tipo:"ficha",nombre:"Marco de tablero"},
-  {tipo:"pista",nombre:"Pista gratis"},
+  {tipo:"ficha",nombre:"Marco de tablero"},
   {tipo:"coleccionable",nombre:"Coleccionable"}
 ];
 function eventoPremioDeHoy(offset){
@@ -2803,7 +2808,7 @@ function armarSeccionesColapsablesTienda(){
   });
 }
 armarSeccionesColapsablesTienda();
-$("bTienda").onclick=()=>{actualizarOfertasDiarias();tnActualizar();tnRenderFrames("frameGrid",true);tnRenderAvataresPremium("avatarPremiumGrid",true);tnRenderTableros("tableroGrid",true);tnRenderCuadrosTablero("cuadroTableroGrid",true);tnRenderRuedas("ruedaGrid",true);$("capaTienda").classList.add("ver");};
+$("bTienda").onclick=()=>{actualizarOfertasDiarias();tnActualizar();tnRenderFrames("frameGrid",true);tnRenderAvataresPremium("avatarPremiumGrid",true);tnRenderTableros("tableroGrid",true);tnRenderCuadrosTablero("cuadroTableroGrid",true);tnRenderRuedas("ruedaGrid",true);tnRenderPunteros("punteroTiendaGrid",true);$("capaTienda").classList.add("ver");};
 $("tituloMarcos").onclick=()=>{
   seccionTiendaEsFrames=true;
   $("seccionTiendaTitulo").textContent=$("tituloMarcos").textContent;
@@ -2843,6 +2848,14 @@ $("tituloRuedas").onclick=()=>{
   seccionTiendaEsRuedas=true;
   $("seccionTiendaTitulo").textContent=$("tituloRuedas").textContent;
   tnRenderRuedas("seccionTiendaContenido",false);
+  $("capaSeccionTienda").classList.add("ver");
+};
+/* "Punteros" muestra cuatro diseños en la Tienda; tocar el título abre
+   los ocho para comprar, equipar y comparar. */
+$("tituloPunteros").onclick=()=>{
+  seccionTiendaEsPunteros=true;
+  $("seccionTiendaTitulo").textContent=$("tituloPunteros").textContent;
+  tnRenderPunteros("seccionTiendaContenido",false);
   $("capaSeccionTienda").classList.add("ver");
 };
 /* "Sobres de colección" muestra ahí abajo solo 6 (marcados con la clase
@@ -2904,6 +2917,7 @@ $("seccionTiendaCerrar").onclick=()=>{
   seccionTiendaEsFichas=false;
   seccionTiendaEsRuedas=false;
   seccionTiendaEsAvatares=false;
+  seccionTiendaEsPunteros=false;
   $("capaSeccionTienda").classList.remove("ver");
 };
 function tnNombreItem(b){
@@ -3814,26 +3828,68 @@ function mostrarPackItems(items,callback){
   $("packItemCaja").onclick=siguiente;
   siguiente();
 }
-const PUNTEROS_PRUEBA=[
-  {id:"",nombre:"Clásico"},
-  {id:"candombe",nombre:"Candombe"},
-  {id:"tormenta",nombre:"Tormenta eléctrica"},
-  {id:"abismo",nombre:"Abismo marino"},
-  {id:"alquimista",nombre:"Alquimista"},
-  {id:"relojero",nombre:"Relojero"},
-  {id:"polilla-lunar",nombre:"Polilla lunar"},
-  {id:"samurai",nombre:"Samurái"},
-  {id:"ambar-fosil",nombre:"Ámbar fósil"}
+const PUNTEROS_TIENDA=[
+  {id:"candombe",nombre:"Candombe",precio:3500,basico:true},
+  {id:"tormenta",nombre:"Tormenta eléctrica",precio:4000,basico:true},
+  {id:"abismo",nombre:"Abismo marino",precio:4500,basico:true},
+  {id:"alquimista",nombre:"Alquimista",precio:5000,basico:true},
+  {id:"relojero",nombre:"Relojero",precio:5500},
+  {id:"polilla-lunar",nombre:"Polilla lunar",precio:6000},
+  {id:"samurai",nombre:"Samurái",precio:6500},
+  {id:"ambar-fosil",nombre:"Ámbar fósil",precio:7000}
 ];
+const PUNTEROS_PRUEBA=[{id:"",nombre:"Clásico"},...PUNTEROS_TIENDA.map(p=>({id:p.id,nombre:p.nombre}))];
+function cargarPunterosComprados(){
+  try{return new Set(JSON.parse(localStorage.getItem("gya_punteros_owned")||"[]"));}catch(e){return new Set();}
+}
+let punterosComprados=cargarPunterosComprados();
+const guardarPunterosComprados=()=>{try{localStorage.setItem("gya_punteros_owned",JSON.stringify([...punterosComprados]));}catch(e){}};
+let punteroEquipado=(()=>{try{return localStorage.getItem("gya_puntero_equipado")||"";}catch(e){return"";}})();
+let seccionTiendaEsPunteros=false;
 let punteroPruebaEquipado=(()=>{try{return localStorage.getItem("gya_puntero_prueba")||"";}catch(e){return"";}})();
 let enPruebaPunteros=false,punteroSelectorIdx=0,girosPruebaPunteros=0;
 function aplicarPunteroPrueba(){
-  const valido=PUNTEROS_PRUEBA.some(p=>p.id===punteroPruebaEquipado);
-  if(!valido)punteroPruebaEquipado="";
-  const activo=esGonzalo()&&!!punteroPruebaEquipado;
+  if(punteroEquipado&&!punterosComprados.has(punteroEquipado))punteroEquipado="";
+  const idActivo=enPruebaPunteros&&esGonzalo()?punteroPruebaEquipado:punteroEquipado;
+  const activo=PUNTEROS_TIENDA.some(p=>p.id===idActivo);
   document.documentElement.classList.toggle("puntero-prueba-activo",activo);
   document.documentElement.style.setProperty("--puntero-prueba-img",activo?
-    "url('assets/punteros/puntero-"+punteroPruebaEquipado+".webp')":"none");
+    "url('assets/punteros/puntero-"+idActivo+".webp')":"none");
+}
+function equiparPunteroTienda(id){
+  if(!punterosComprados.has(id))return;
+  punteroEquipado=id;
+  try{localStorage.setItem("gya_puntero_equipado",id);}catch(e){}
+  aplicarPunteroPrueba();
+  tnRenderPunteros("punteroTiendaGrid",true);
+  if(seccionTiendaEsPunteros)tnRenderPunteros("seccionTiendaContenido",false);
+}
+function tnRenderPunteros(contId,soloBasicos){
+  const cont=$(contId||"punteroTiendaGrid");if(!cont)return;cont.innerHTML="";
+  const lista=soloBasicos?PUNTEROS_TIENDA.filter(p=>p.basico):PUNTEROS_TIENDA;
+  lista.forEach(p=>{
+    const poseido=punterosComprados.has(p.id),equipado=punteroEquipado===p.id;
+    const card=document.createElement("div");card.className="frame-card";
+    card.innerHTML='<span class="puntero-tienda-preview"><img src="assets/punteros/puntero-'+p.id+'.webp" alt="Puntero '+p.nombre+'"></span>'+
+      '<b>'+p.nombre+'</b><span class="frame-desc">Indicador especial para tus ruletas.</span>'+
+      '<button class="frame-btn'+(equipado?' equipado':poseido?' propio':'')+'">'+
+      (equipado?'EQUIPADO ✓':poseido?'EQUIPAR':'COMPRAR 🪙 '+p.precio)+'</button>';
+    const btn=card.querySelector(".frame-btn");
+    if(equipado)btn.disabled=true;
+    else if(poseido)btn.onclick=()=>equiparPunteroTienda(p.id);
+    else{
+      btn.disabled=meta.monedas<p.precio;
+      btn.onclick=()=>{
+        if(meta.monedas<p.precio){alert("No tenés suficientes monedas.");return;}
+        tnConfirmarCompraFrame(p.nombre,p.precio,()=>{
+          meta.monedas-=p.precio;guardarMeta();punterosComprados.add(p.id);guardarPunterosComprados();
+          mundoActualizarHud();equiparPunteroTienda(p.id);bip(190,.16,"triangle",.07);logroDesbloquear("tienda");
+        });
+      };
+      tnAgregarBotonReal(btn,p.precio);
+    }
+    cont.appendChild(card);
+  });
 }
 function equiparPunteroPrueba(id){
   if(!esGonzalo())return;
@@ -3858,6 +3914,7 @@ $("punteroNext").onclick=()=>{
 function iniciarPruebaPunteros(){
   if(!esGonzalo())return;
   enPruebaPunteros=true;girosPruebaPunteros=0;esPartidaDiaria=false;eventoDiarioUI=false;esEventoCiudad=false;eventoCiudadResultado=false;
+  aplicarPunteroPrueba();
   destino=null;pasoActual=null;fSiguientePaso=null;modo="bot";miJug=0;vinoDeJugarOnline=false;modoVelocidadElegido=false;
   rondasElegidas=3;arranca=0;
   $("capaMas").classList.remove("ver");$("setup").style.display="none";$("eventos").style.display="none";
@@ -3872,6 +3929,7 @@ function iniciarPruebaPunteros(){
 }
 function salirPruebaPunteros(){
   detenerPartidaAnterior();enPruebaPunteros=false;
+  aplicarPunteroPrueba();
   $("confirmAbandonar").style.display="none";$("modalFin").classList.remove("ver");
   $("punteroSelector").style.display="none";$("juego").classList.remove("prueba-spin");$("juego").style.display="none";$("setup").style.display="block";
   modo="local";sala="";S=null;$("fBoton").textContent="Revancha";sincronizarMusica();
@@ -5780,17 +5838,21 @@ function terminarPorAbandono(idx){
   publicar(txt,"error");
   if(modo!=="local"&&modo!=="bot")enviar({tipo:"fin",txt,tit});
   fSiguientePaso=null;
-  const enMapa=(modo==="bot"&&destino!==null);
-  $("fMapa").style.display=enMapa?"block":"none";
-  $("fSalir").style.display=enMapa?"none":"block";
-  if(enMapa)$("fMapa").textContent="Volver al mapa";
+  $("fMapa").style.display="none";
+  $("fSalir").style.display="block";
+  $("fSalir").textContent="Volver al inicio";
   mostrarFin(tit,txt);
   $("fBoton").style.display=eraPartidaDiaria?"none":"";
 }
 function abandonarPartidaPropia(){
   if(enPruebaPunteros){salirPruebaPunteros();return;}
-  if(modo==="guest"){enviar({a:"abandonar"});return;}
-  terminarPorAbandono(miJug);
+  const pierdeVida=modo==="bot";
+  if(modo==="guest")enviar({a:"abandonar"});
+  else terminarPorAbandono(miJug);
+  /* Abandonar es una salida definitiva: después de registrar la derrota
+     vuelve al inicio en el mismo toque, sin encadenar ciudad y mapa. */
+  $("fSalir").click();
+  mostrarToast("🚪","Partida abandonada"+(pierdeVida?" · -1 ❤️":""));
 }
 const mask=()=>[...S.frase].map((c,i)=>c===" "?" ":(S.fase==="tossup"&&S.tossPos?S.tossPos.has(i)?c:"_":(S.abiertas.has(c)||(S.pistaPos&&S.pistaPos.has(i)))?c:"_")).join("");
 const consRestantes=()=>[...new Set(S.frase.replace(/ /g,""))].filter(c=>!VOCALES.includes(c)&&!S.abiertas.has(c)).length;
@@ -6377,6 +6439,7 @@ function mostrarFin(tit,txt,selloImg){
       (tit.startsWith("Te ganó")||tit.startsWith("No pudiste"))?"😤":tit.startsWith("¡Paso")?"✅":
       tit.startsWith("Partida abandonada")?"🚪":"🏅";}
   $("fTitulo").textContent=tit;$("fTexto").textContent=txt;
+  $("fSalir").textContent=tit.startsWith("Partida abandonada")?"Volver al inicio":"Salir";
   const juegoCompleto=mapaUltimaConquista&&ganados.size===MUNDO.length;
   const ciudadCompleta=mapaUltimaConquista&&ciudadUltima100&&!juegoCompleto;
   $("fCompartir").style.display=(mapaUltimaConquista||tit.startsWith("Partida abandonada"))?"none":"block";
