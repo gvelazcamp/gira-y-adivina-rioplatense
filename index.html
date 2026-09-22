@@ -1983,7 +1983,7 @@ let ruedaSkinEquipada=cargarRuedaSkinEquipada();
    el juego dice que ganó SIEMPRE es el que está dibujado bajo la
    flecha. */
 const RUEDAS_PAUSADAS=false;
-const RUEDA_TEXTO_HORNEADO=new Set(["rueda-fuego","rueda-hielo","rueda-oro","rueda-neon","rueda-candy","rueda-espacio","rueda-selva","rueda-circo","rueda-sheriff","rueda-desierto","rueda-forajido","rueda-pepitas","rueda-locomotora","rueda-rodeo","rueda-casino","rueda-ovni","rueda-abduccion"]);
+const RUEDA_TEXTO_HORNEADO=new Set(["rueda-fuego","rueda-hielo","rueda-oro","rueda-neon","rueda-candy","rueda-espacio","rueda-selva","rueda-circo","rueda-sheriff","rueda-desierto","rueda-forajido","rueda-pepitas","rueda-locomotora","rueda-rodeo","rueda-casino","rueda-ovni","rueda-abduccion","rueda-gran-premio"]);
 function dibujarRuedaJuego(){
   const CENTRO=300,paso=Math.PI*2/SEG.length,conSkin=!RUEDAS_PAUSADAS&&!!ruedaSkinEquipada;
   cx.clearRect(0,0,600,600);
@@ -3883,7 +3883,7 @@ let punteroPruebaEquipado=(()=>{try{return localStorage.getItem("gya_puntero_pru
 let enPruebaPunteros=false,punteroSelectorIdx=0,girosPruebaPunteros=0,ruedaPruebaAnterior=null;
 function activarRuedaPruebaPremium(){
   if(ruedaPruebaAnterior===null)ruedaPruebaAnterior=ruedaSkinEquipada;
-  ruedaSkinEquipada="rueda-gran-premio-prueba";
+  ruedaSkinEquipada="rueda-gran-premio";
   document.documentElement.classList.add("rueda-prueba-premium");
   aplicarRuedaSkin();
 }
@@ -6813,7 +6813,8 @@ const RUEDAS_SKIN=[
   {id:"rueda-rodeo",nombre:"Rueda Rodeo",precio:12000,nuevo:true},
   {id:"rueda-casino",nombre:"Rueda Casino",precio:12000,nuevo:true},
   {id:"rueda-ovni",nombre:"Rueda OVNI",precio:12000,nuevo:true},
-  {id:"rueda-abduccion",nombre:"Rueda Abducción",precio:12000,nuevo:true}
+  {id:"rueda-abduccion",nombre:"Rueda Abducción",precio:12000,nuevo:true},
+  {id:"rueda-gran-premio",nombre:"Rueda Gran Premio",precio:13500,nuevo:true}
 ];
 function cargarRuedasComprados(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_ruedas_owned")||"[]"));}catch(e){return new Set();}
