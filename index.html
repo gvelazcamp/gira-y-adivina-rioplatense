@@ -3214,7 +3214,10 @@ async function rkCargarTabla(){
   let data,error;
   try{
     const r=await supa.from("gya_ranking").select("*").eq("grupo",RK_GRUPO).order("monedas_totales",{ascending:false});
-    data=(r.data||[]).filter(f=>!RK_APODOS_OCULTOS.includes(String(f.apodo||"").trim().toLowerCase()));
+    data=(r.data||[]).filter(f=>{
+      const apodo=String(f.apodo||"").trim();
+      return !RK_APODOS_OCULTOS.includes(apodo.toLowerCase())&&!nombrePerfilAutomatico(apodo);
+    });
     error=r.error;
   }catch(e){error=e;}
   if(error){$("rkEstado").textContent="No se pudo cargar. Revisá tu conexión.";return;}
@@ -3294,7 +3297,7 @@ async function usrCargarLista(){
     const vistos=new Set();
     data=(r.data||[]).filter(f=>{
       const clave=String(f.apodo||"").trim().toLowerCase();
-      if(!clave||RK_APODOS_OCULTOS.includes(clave)||vistos.has(clave))return false;
+      if(!clave||nombrePerfilAutomatico(clave)||RK_APODOS_OCULTOS.includes(clave)||vistos.has(clave))return false;
       vistos.add(clave);return true;
     });
     error=r.error;
@@ -3334,6 +3337,7 @@ $("rkCerrar").onclick=()=>$("capaRanking").classList.remove("ver");
 $("rkCrear").onclick=async()=>{
   const apodo=$("rkApodo").value.trim().slice(0,14);
   if(!apodo){$("rkApodo").focus();return;}
+  if(nombrePerfilAutomatico(apodo)){mostrarToast("👤","Elegí un apodo propio para el ranking.");$("rkApodo").focus();return;}
   const anterior=cargarRkPerfil(),supa=obtenerSupa();
   if(supa&&anterior&&anterior.apodo&&anterior.apodo!==apodo){
     try{await supa.from("gya_ranking").update({apodo}).eq("grupo",RK_GRUPO).eq("apodo",anterior.apodo);}catch(e){}
@@ -4898,7 +4902,16 @@ function cargarPerfil(){
   return{nombre,avatar};
 }
 let perfil=cargarPerfil();
-const perfilExiste=()=>!!(perfil.nombre&&perfil.avatar);
+/* Versiones viejas podían dejar nombres de respaldo como "Explorer 1"
+   o "Jugador 2" cuando el alta quedaba incompleta. No cuentan como una
+   identidad elegida: al volver, el usuario debe definir nombre y avatar. */
+function nombrePerfilAutomatico(nombre){
+  return /^(?:(?:new|nuevo)\s+)?(?:explorer|player|jugador)(?:\s*[-#]?\s*\d+)?$/i.test(String(nombre||"").trim());
+}
+function nombrePerfilPersonal(nombre){
+  const limpio=String(nombre||"").trim();return limpio&&!nombrePerfilAutomatico(limpio)?limpio:"";
+}
+const perfilExiste=()=>!!(nombrePerfilPersonal(perfil.nombre)&&perfil.avatar);
 function actualizarChipPerfil(){
   const chip=$("perfilChip");if(!chip)return;
   if(perfilExiste()){
@@ -4960,7 +4973,7 @@ function perfilActualizarSpotlight(){
 function abrirPerfil(callback,obligatorio=false){
   $("eventos").style.display="none";
   perfilCallback=callback||null;perfilObligatorio=!!obligatorio;
-  $("perfilNombre").value=perfil.nombre||$("miNombre").value.trim()||"";
+  $("perfilNombre").value=nombrePerfilPersonal(perfil.nombre)||nombrePerfilPersonal($("miNombre").value)||"";
   avatarElegido=perfil.avatar||null;
   $("setup").style.display="none";$("mundo").style.display="none";$("pantDurazno").style.display="none";
   $("pantPerfil").style.display="block";
@@ -4987,6 +5000,7 @@ $("perfilContinuar").onclick=()=>{
   }
   const n=$("perfilNombre").value.trim().slice(0,12);
   if(!n||!avatarElegido)return;
+  if(nombrePerfilAutomatico(n)){mostrarToast("👤","Elegí un nombre propio, distinto de "+n+".");return;}
   if(avatarElegido===AVATAR_EXCLUSIVO.id&&n.toLowerCase()!==AVATAR_EXCLUSIVO.nombre)return;
   guardarPerfil(n,avatarElegido);
   perfilObligatorio=false;$("perfilCerrar").style.display="";
