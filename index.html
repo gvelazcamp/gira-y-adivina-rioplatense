@@ -2121,7 +2121,43 @@ const OBJETIVOS=[
   {id:"rachaPartidas",nombre:"Ganá 4 partidas seguidas",icono:"🔥",meta:4,premio:100},
   {id:"rankingTop",nombre:"Entrá al Top 3 del ranking de amigos",icono:"🥉",meta:1,premio:150}
 ];
+const OBJETIVOS_DIARIOS=OBJETIVOS.filter(d=>d.id!=="rankingUnirse"&&d.id!=="rankingTop");
 const OBJ_PREMIO_TODOS=200;
+// Estos dos objetivos no se reinician a medianoche. Migramos el progreso
+// anterior, incluso si pertenecía a otro día, para no volver a pagar premios.
+let objetivosRanking=(()=>{
+  try{
+    const guardado=JSON.parse(localStorage.getItem("gya_objetivos_ranking"));
+    if(guardado)return guardado;
+  }catch(e){}
+  let anterior={},perfilRanking=null;
+  try{anterior=JSON.parse(localStorage.getItem("gya_objetivos"))||{};}catch(e){}
+  try{perfilRanking=JSON.parse(localStorage.getItem("gya_ranking_perfil"));}catch(e){}
+  const reclamados=anterior.reclamados||[];
+  const unido=!!(perfilRanking&&perfilRanking.apodo)||!!anterior.rankingUnirse;
+  const topLogrado=!!anterior.rankingTop||reclamados.includes("rankingTop");
+  return {unido,unionReclamada:unido,topDentro:topLogrado?true:null,
+    topPendiente:topLogrado&&!reclamados.includes("rankingTop"),
+    topReclamado:reclamados.includes("rankingTop"),
+    topBaseExistente:!!(perfilRanking&&perfilRanking.apodo)};
+})();
+function guardarObjetivosRanking(){try{localStorage.setItem("gya_objetivos_ranking",JSON.stringify(objetivosRanking));}catch(e){}}
+guardarObjetivosRanking();
+function objActualizarRanking(miPos){
+  // Una fila ausente no prueba que el jugador perdió su puesto.
+  if(miPos<0)return;
+  const dentro=miPos<3,r=objetivosRanking;
+  if(dentro&&r.topDentro!==true){
+    if(r.topDentro===null&&r.topBaseExistente){
+      // Primera lectura tras actualizar: conservar como terminado si ya estaba arriba.
+      r.topReclamado=true;
+    }else{r.topPendiente=true;r.topReclamado=false;}
+  }
+  if(!dentro&&!r.topPendiente)r.topReclamado=false;
+  r.topDentro=dentro;r.topBaseExistente=false;
+  guardarObjetivosRanking();objActualizarBadge();
+  if($("capaObjetivos")&&$("capaObjetivos").classList.contains("ver"))objRender();
+}
 function objVacio(){return{fecha:fechaHoy(),partidas:0,giros:0,vocales:0,poderes:0,victorias:0,reclamados:[]};}
 let objetivosMeta=(()=>{
   try{const g=JSON.parse(localStorage.getItem("gya_objetivos"));if(g&&g.fecha===fechaHoy())return g;}catch(e){}
@@ -2130,6 +2166,12 @@ let objetivosMeta=(()=>{
 const guardarObjetivos=()=>{try{localStorage.setItem("gya_objetivos",JSON.stringify(objetivosMeta));}catch(e){}};
 function objObtenerHoy(){
   if(objetivosMeta.fecha!==fechaHoy()){objetivosMeta=objVacio();guardarObjetivos();}
+  const r=objetivosRanking;
+  objetivosMeta.rankingUnirse=r.unido?1:0;
+  objetivosMeta.rankingTop=(r.topPendiente||r.topReclamado)?1:0;
+  objetivosMeta.reclamados=objetivosMeta.reclamados.filter(id=>id!=="rankingUnirse"&&id!=="rankingTop");
+  if(r.unionReclamada)objetivosMeta.reclamados.push("rankingUnirse");
+  if(r.topReclamado)objetivosMeta.reclamados.push("rankingTop");
   return objetivosMeta;
 }
 function objSumar(id,n){
@@ -2138,20 +2180,25 @@ function objSumar(id,n){
   objActualizarBadge();
 }
 function objMax(id,val){
+  if(id==="rankingUnirse"){
+    objetivosRanking.unido=true;guardarObjetivosRanking();
+  }
   const o=objObtenerHoy();o[id]=Math.max(o[id]||0,val);guardarObjetivos();
   if($("capaObjetivos")&&$("capaObjetivos").classList.contains("ver"))objRender();
   objActualizarBadge();
 }
 function objReclamar(id){
   const o=objObtenerHoy(),def=OBJETIVOS.find(x=>x.id===id);
-  if(!def||o[id]<def.meta||o.reclamados.includes(id))return;
+  if(!def||(o[id]||0)<def.meta||o.reclamados.includes(id))return;
+  if(id==="rankingUnirse"){objetivosRanking.unionReclamada=true;guardarObjetivosRanking();}
+  if(id==="rankingTop"){objetivosRanking.topPendiente=false;objetivosRanking.topReclamado=true;guardarObjetivosRanking();}
   o.reclamados.push(id);guardarObjetivos();
   sumarMonedas(def.premio);mundoActualizarHud();
   objRender();objActualizarBadge();
 }
 function objReclamarTodos(){
   const o=objObtenerHoy();
-  if(o.reclamados.includes("todos")||!OBJETIVOS.every(d=>o.reclamados.includes(d.id)))return;
+  if(o.reclamados.includes("todos")||!OBJETIVOS_DIARIOS.every(d=>o.reclamados.includes(d.id)))return;
   o.reclamados.push("todos");guardarObjetivos();
   sumarMonedas(OBJ_PREMIO_TODOS);mundoActualizarHud();
   objRender();objActualizarBadge();
@@ -2164,7 +2211,7 @@ function objActualizarBadge(){
   const b=$("objBotonEstado");if(!b)return;
   const o=objObtenerHoy();
   let pendientes=OBJETIVOS.filter(d=>(o[d.id]||0)>=d.meta&&!o.reclamados.includes(d.id)).length;
-  if(OBJETIVOS.every(d=>o.reclamados.includes(d.id))&&!o.reclamados.includes("todos"))pendientes++;
+  if(OBJETIVOS_DIARIOS.every(d=>o.reclamados.includes(d.id))&&!o.reclamados.includes("todos"))pendientes++;
   if(pdEstadoHoy()==="pospuesto")pendientes++;
   b.textContent=pendientes>0?pendientes:"";
 }
@@ -2173,7 +2220,7 @@ function objRender(){
   const medianoche=new Date();medianoche.setHours(24,0,0,0);
   const rest=Math.max(0,medianoche-Date.now());
   const hh=Math.floor(rest/3600000),mm=Math.floor(rest%3600000/60000);
-  $("objReinicio").textContent="Se reinician en "+hh+"h "+mm+"min";
+  $("objReinicio").textContent="Los objetivos diarios se reinician en "+hh+"h "+mm+"min";
   const cont=$("objLista");cont.innerHTML="";
   if(pdEstadoHoy()==="pospuesto"){
     const dPD=document.createElement("div");
@@ -2183,13 +2230,13 @@ function objRender(){
       '<button class="obj-reclamar listo" data-id="partida_diaria">Vamos</button>';
     cont.appendChild(dPD);
   }
-  const todosListos=OBJETIVOS.every(d=>o.reclamados.includes(d.id));
+  const todosListos=OBJETIVOS_DIARIOS.every(d=>o.reclamados.includes(d.id));
   const dTodos=document.createElement("div");
   dTodos.className="lg-item destacado";
   const yaTodos=o.reclamados.includes("todos");
-  dTodos.innerHTML='<div class="lg-icono">🏅</div><div class="lg-info"><b>Completá los '+(OBJETIVOS.length+1)+' objetivos</b>'+
-    '<span>'+OBJETIVOS.filter(d=>o.reclamados.includes(d.id)).length+' / '+OBJETIVOS.length+'</span>'+
-    '<div class="dz-barra"><i style="width:'+Math.round(OBJETIVOS.filter(d=>o.reclamados.includes(d.id)).length/OBJETIVOS.length*100)+'%"></i></div></div>'+
+  dTodos.innerHTML='<div class="lg-icono">🏅</div><div class="lg-info"><b>Completá los '+OBJETIVOS_DIARIOS.length+' objetivos diarios</b>'+
+    '<span>'+OBJETIVOS_DIARIOS.filter(d=>o.reclamados.includes(d.id)).length+' / '+OBJETIVOS_DIARIOS.length+'</span>'+
+    '<div class="dz-barra"><i style="width:'+Math.round(OBJETIVOS_DIARIOS.filter(d=>o.reclamados.includes(d.id)).length/OBJETIVOS_DIARIOS.length*100)+'%"></i></div></div>'+
     '<button class="obj-reclamar '+(yaTodos?"hecho":(todosListos?"listo":""))+'" data-id="todos" '+(yaTodos||!todosListos?"disabled":"")+'>'+
     (yaTodos?"✓ Listo":"🪙 "+OBJ_PREMIO_TODOS)+'</button>';
   cont.appendChild(dTodos);
@@ -2198,7 +2245,10 @@ function objRender(){
     const el=document.createElement("div");
     el.className="lg-item";
     el.innerHTML='<div class="lg-icono">'+d.icono+'</div><div class="lg-info"><b>'+d.nombre+'</b>'+
-      '<span>'+val+' / '+d.meta+'</span>'+
+      '<span>'+(d.id==="rankingUnirse"?"Se completa una sola vez":d.id==="rankingTop"?
+        (objetivosRanking.topPendiente?"Premio pendiente por entrar al Top 3":objetivosRanking.topDentro===true?
+          "Completado · Volvé a ganar al salir y reingresar al Top 3":"Volvé a entrar al Top 3 para ganar el premio"):
+        val+' / '+d.meta)+'</span>'+
       '<div class="dz-barra"><i style="width:'+Math.round(val/d.meta*100)+'%"></i></div></div>'+
       '<button class="obj-reclamar '+(hecho?"hecho":(lista?"listo":""))+'" data-id="'+d.id+'" '+(hecho||!lista?"disabled":"")+'>'+
       (hecho?"✓ Listo":"🪙 "+d.premio)+'</button>';
@@ -3054,7 +3104,7 @@ async function rkCargarTabla(){
   }catch(e){error=e;}
   if(error){$("rkEstado").textContent="No se pudo cargar. Revisá tu conexión.";return;}
   const miPos=(data||[]).findIndex(f=>f.apodo===rkPerfil.apodo);
-  if(miPos>=0&&miPos<3&&!(objObtenerHoy().rankingTop||0))objSumar("rankingTop",1);
+  objActualizarRanking(miPos);
   /* Logro (no objetivo diario): se paga una sola vez, para siempre — si
      fuera diario, alguien constante en el 1er puesto cobraría de nuevo
      cada día solo por seguir ahí arriba. */
