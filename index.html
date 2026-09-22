@@ -1772,8 +1772,9 @@ function tk(fn){
   const t=matchToken;
   botPausado++;
   return function(){
+    if(t!==matchToken)return;
     botPausado=Math.max(0,botPausado-1);
-    if(t===matchToken)fn.apply(null,arguments);
+    fn.apply(null,arguments);
   };
 }
 const norm=s=>s.toUpperCase().normalize("NFD").replace(/[\u0300-\u0304\u0306-\u036f]/g,"").replace(/\s+/g," ").trim();
@@ -1978,6 +1979,7 @@ function segmentoDe(g){
   return SEG[Math.floor(local/paso)%SEG.length];
 }
 function animarRueda(destino,alFinal){
+  const token=matchToken;
   animando=true;pintar();
   $("salioGiro").textContent="Girando…";
   $("capaRueda").classList.add("ver");
@@ -1987,6 +1989,7 @@ function animarRueda(destino,alFinal){
   const ag=document.querySelector(".aguja");
   let ult=-1,tAnt=t0,gAnt=ini;
   requestAnimationFrame(function frame(t){
+    if(token!==matchToken)return;
     const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3.2);
     giroActual=ini+(destino-ini)*e;
     cv.style.transform="rotate("+giroActual.toFixed(2)+"deg) translateZ(0)";
@@ -2004,7 +2007,7 @@ function animarRueda(destino,alFinal){
     else{ag.style.transform="translateX(-50%)";bip(190,.16,"triangle",.07);
       const sg=segmentoDe(destino);
       $("salioGiro").textContent=sg.t?ETI[sg.t]:"$"+sg.v;
-      setTimeout(()=>{$("capaRueda").classList.remove("ver");
+      setTimeout(()=>{if(token!==matchToken)return;$("capaRueda").classList.remove("ver");
         animando=false;duckMusica(false);pintar();if(alFinal)alFinal();},1100);}
   });
 }
@@ -4609,6 +4612,8 @@ function empezarDestino(i,paso){
   $("modalSobreConseguido").classList.remove("ver");
   $("capaAbrirSobre").classList.remove("ver");
   $("capaColeccion").classList.remove("ver");
+  detenerPartidaAnterior();
+  $("setup").style.display="none";$("eventos").style.display="none";
   destino=i;pasoActual=(paso===undefined?null:paso);const d=MUNDO[i];
   if(d.bg){$("fondoMundo").style.backgroundImage="url('"+d.bg+"')";$("fondoMundo").classList.add("ver");}
   modo="bot";miJug=0;rondasElegidas=(pasoActual===null?d.rondas:1);
@@ -4768,18 +4773,23 @@ function rivalOnlineFalso(){
 let modoVelocidadElegido=false,vinoDeJugarOnline=false;
 function jugarOnlineFalso(velocidad){
   if(!perfilExiste()){abrirPerfil(()=>jugarOnlineFalso(velocidad));return;}
+  detenerPartidaAnterior();
+  const token=matchToken;
+  $("eventos").style.display="none";
   modoVelocidadElegido=!!velocidad;
   const rival=rivalOnlineFalso();
   $("buscandoTit").textContent="🌐 Buscando rival…";
   $("buscandoTxt").textContent="Conectando con jugadores online";
   $("capaBuscando").classList.add("ver");
   setTimeout(()=>{
+    if(token!==matchToken)return;
     $("buscandoTit").textContent="✅ ¡Encontramos a "+rival.n+"!";
     $("buscandoTxt").textContent="Arrancando la partida…";
     setTimeout(()=>{
+      if(token!==matchToken)return;
       $("capaBuscando").classList.remove("ver");
       destino=null;pasoActual=null;modo="bot";miJug=0;vinoDeJugarOnline=true;
-      $("setup").style.display="none";$("juego").style.display="block";
+      $("setup").style.display="none";$("eventos").style.display="none";$("mundo").style.display="none";$("pantDurazno").style.display="none";$("fondoMundo").classList.remove("ver");$("juego").style.display="block";
       armarTeclado();
       iniciarPartida(perfil.nombre||"Vos",rival.n,undefined,perfil.avatar||null,rival.a,frameEquipado||null,null);
     },900);
@@ -4941,7 +4951,7 @@ function recibirTVGuest(d){
   if(d.tipo==="reaccion")volar(d.e);
 }
 function iniciarPartidaJugadores(jugadores,cats){
-  matchToken++;botPausado=0;
+  detenerPartidaAnterior();
   const js=jugadores.map((j,i)=>({id:j.id||null,n:(j.n||("Jugador "+(i+1))).slice(0,30),av:j.av||null,frame:j.frame||null,tab:j.tab||null,tot:0,ronda:0,rg:0,
     escudo:false,hielo:{},lodo:false,comodin:false,poderesRonda:[],poderUsadoTurno:false}));
   arranca=((arranca%js.length)+js.length)%js.length;
@@ -6515,7 +6525,22 @@ function eventoTiempoRestanteTxt(){
   const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000);
   return "⏳ Termina en "+h+"h "+m+"min";
 }
+// Invalida callbacks de la partida anterior y detiene sus temporizadores.
+function detenerPartidaAnterior(){
+  matchToken++;botPausado=0;
+  clearTimeout(botT);botT=null;
+  limpiarToss();limpiarBonus();pararReloj();
+  animando=false;duckMusica(false);
+  if(S){S.fase="fin";S.finYa=true;}
+  accionTrasSobre=null;
+  ["capaRueda","capaBuscando","modalResolver","modalFin","modalSobreConseguido"].forEach(id=>$(id).classList.remove("ver"));
+  $("confirmAbandonar").style.display="none";
+}
 function abrirEventos(){
+  detenerPartidaAnterior();
+  esPartidaDiaria=false;eventoDiarioUI=false;esEventoCiudad=false;
+  $("fondoMundo").classList.remove("ver");
+  $("juego").style.display="none";
   const ciudad=MUNDO[eventoCiudadDeHoyIdx()];
   $("evCiudadTit").textContent="Evento en "+ciudad.n;
   $("evVisual1").innerHTML=premioVisualHTML(eventoPremioDeHoy(0));
@@ -6535,11 +6560,12 @@ $("bMenuEventosPrueba").onclick=abrirEventos;
 $("evCerrar").onclick=cerrarEventos;
 $("evBanner1").onclick=()=>{
   if($("evBanner1").classList.contains("cerrado")){$("evBanner1").classList.remove("cerrado");return;}
-  cerrarEventos();eventoDiarioUI=true;iniciarPartidaDiaria();
+  eventoDiarioUI=true;iniciarPartidaDiaria();
 };
 $("evBanner2").onclick=()=>{
   if($("evBanner2").classList.contains("cerrado")){$("evBanner2").classList.remove("cerrado");return;}
-  cerrarEventos();esEventoCiudad=true;empezarDestino(eventoCiudadDeHoyIdx());
+  regenerarVidas();if(meta.vidas<=0){mundoActualizarHud();return;}
+  esEventoCiudad=true;empezarDestino(eventoCiudadDeHoyIdx());
 };
 function tnRenderRuedas(contId,soloBasicos){
   const cont=$(contId||"ruedaGrid");if(!cont)return;cont.innerHTML="";
@@ -6935,6 +6961,9 @@ $("confirmar").onclick=()=>{
   tossRespondedor=null;
 };
 $("fSalir").onclick=()=>{
+  detenerPartidaAnterior();
+  esPartidaDiaria=false;eventoDiarioUI=false;esEventoCiudad=false;
+  $("eventos").style.display="none";$("fondoMundo").classList.remove("ver");
   $("modalFin").classList.remove("ver");
   if(mq){try{mq.end(true);}catch(e){}mq=null;}
   modo="local";sala="";S=null;
@@ -7281,7 +7310,7 @@ $("bCompartirJuego").onclick=async()=>{
     location.origin+location.pathname;
   await csCompartirImagen(generarCanvasCompartirJuego,"gira-y-adivina.png",texto,texto,$("bCompartirJuego"));
 };
-$("fMapa").onclick=()=>{matchToken++;botPausado=0;$("modalFin").classList.remove("ver");
+$("fMapa").onclick=()=>{detenerPartidaAnterior();esPartidaDiaria=false;eventoDiarioUI=false;esEventoCiudad=false;$("modalFin").classList.remove("ver");
   const continuar=()=>{
     if(fSiguientePaso!==null){const p=fSiguientePaso;fSiguientePaso=null;
       const dd=MUNDO[destino];
@@ -7302,7 +7331,7 @@ $("fMapa").onclick=()=>{matchToken++;botPausado=0;$("modalFin").classList.remove
   else continuar();
 };
 $("fVolverMapaPaso").onclick=()=>{
-  matchToken++;botPausado=0;fSiguientePaso=null;$("modalFin").classList.remove("ver");
+  detenerPartidaAnterior();fSiguientePaso=null;$("modalFin").classList.remove("ver");
   const irAlMapa=()=>verMundo();
   if(sobrePendienteCual){const c=sobrePendienteCual;sobrePendienteCual=null;accionTrasSobre=irAlMapa;colMostrarSobreConseguido(c);}
   else irAlMapa();
