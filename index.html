@@ -1238,12 +1238,12 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <div class="tn-card-info"><b>Sobre de Punta del Este</b><span>Un sobre para tu colección — 1 por día</span></div>
   <button class="tn-comprar" data-tipo="sobre_punta" data-precio="3000">🪙 3000</button>
   </div>
-  <div class="tn-item tn-card sobre-basico">
+  <div class="tn-item tn-card">
   <div class="tn-card-img" style="background-image:url('assets/collectibles/salto/sobre-salto.webp')"></div>
   <div class="tn-card-info"><b>Sobre de Salto</b><span>Un sobre para tu colección — 1 por día</span></div>
   <button class="tn-comprar" data-tipo="sobre_salto" data-precio="3000">🪙 3000</button>
   </div>
-  <div class="tn-item tn-card sobre-basico">
+  <div class="tn-item tn-card">
   <div class="tn-card-img" style="background-image:url('assets/collectibles/colonia/sobre-colonia.webp')"></div>
   <div class="tn-card-info"><b>Sobre de Colonia</b><span>Un sobre para tu colección — 1 por día</span></div>
   <button class="tn-comprar" data-tipo="sobre_colonia" data-precio="3000">🪙 3000</button>
@@ -2883,7 +2883,7 @@ $("tituloPunteros").onclick=()=>{
   tnRenderPunteros("seccionTiendaContenido",false);
   $("capaSeccionTienda").classList.add("ver");
 };
-/* "Sobres de colección" muestra ahí abajo solo 6 (marcados con la clase
+/* "Sobres de colección" muestra ahí abajo solo 4 (marcados con la clase
    sobre-basico en el HTML); tocar el título los mueve a todos (21) a la
    pantalla aparte, y al cerrarla vuelven a su lugar de siempre. */
 $("tituloSobres").onclick=()=>{
@@ -3390,7 +3390,7 @@ function tnRenderFrames(contId,soloBasicos){
   const cont=$(contId||"frameGrid");if(!cont)return;cont.innerHTML="";
   const miAvatar="assets/avatars/avatar-01.webp";
   const sinMarco={id:"",nombre:"Sin marco",desc:"Tu avatar tal cual, sin marco.",precio:0};
-  const opciones=soloBasicos?FRAMES.filter(f=>f.basico):[sinMarco].concat(FRAMES);
+  const opciones=soloBasicos?FRAMES.filter(f=>f.basico).slice(0,4):[sinMarco].concat(FRAMES);
   opciones.forEach(f=>{
     const poseido=f.precio===0||framesComprados.has(f.id);
     const equipado=frameEquipado===f.id;
@@ -3449,7 +3449,7 @@ function equiparAvatarPremium(id){
 }
 function tnRenderAvataresPremium(contId,soloBasicos){
   const cont=$(contId||"avatarPremiumGrid");if(!cont)return;cont.innerHTML="";
-  const lista=soloBasicos?AVATARES_PREMIUM.filter(a=>a.basico):AVATARES_PREMIUM;
+  const lista=soloBasicos?AVATARES_PREMIUM.filter(a=>a.basico).slice(0,4):AVATARES_PREMIUM;
   lista.forEach(a=>{
     const poseido=avataresComprados.has(a.id);
     const equipado=perfil.avatar===a.id;
@@ -3892,7 +3892,7 @@ function equiparPunteroTienda(id){
 }
 function tnRenderPunteros(contId,soloBasicos){
   const cont=$(contId||"punteroTiendaGrid");if(!cont)return;cont.innerHTML="";
-  const lista=soloBasicos?PUNTEROS_TIENDA.filter(p=>p.basico):PUNTEROS_TIENDA;
+  const lista=soloBasicos?PUNTEROS_TIENDA.filter(p=>p.basico).slice(0,4):PUNTEROS_TIENDA;
   lista.forEach(p=>{
     const poseido=punterosComprados.has(p.id),equipado=punteroEquipado===p.id;
     const card=document.createElement("div");card.className="frame-card";
@@ -6674,7 +6674,7 @@ function equiparTablero(id){
 }
 function tnRenderTableros(contId,soloBasicos){
   const cont=$(contId||"tableroGrid");if(!cont)return;cont.innerHTML="";
-  const lista=soloBasicos?MARCOS_TABLERO.filter(m=>m.basico):
+  const lista=soloBasicos?MARCOS_TABLERO.filter(m=>m.basico).slice(0,4):
     MARCOS_TABLERO.filter(m=>m.precio>0).concat(MARCOS_TABLERO.filter(m=>!m.precio));
   lista.forEach(m=>{
     const poseido=marcoTableroPoseido(m);
@@ -6708,7 +6708,7 @@ function tnRenderTableros(contId,soloBasicos){
 }
 function tnRenderCuadrosTablero(contId,soloBasicos){
   const cont=$(contId||"cuadroTableroGrid");if(!cont)return;cont.innerHTML="";
-  const lista=soloBasicos?FICHAS_SKIN.filter(m=>m.basico):
+  const lista=soloBasicos?FICHAS_SKIN.filter(m=>m.basico).slice(0,4):
     FICHAS_SKIN.filter(m=>m.precio>0).concat(FICHAS_SKIN.filter(m=>!m.precio));
   lista.forEach(m=>{
     const poseido=fichaSkinPoseida(m);
@@ -6897,7 +6897,7 @@ $("evBanner2").onclick=()=>{
 };
 function tnRenderRuedas(contId,soloBasicos){
   const cont=$(contId||"ruedaGrid");if(!cont)return;cont.innerHTML="";
-  const lista=soloBasicos?RUEDAS_SKIN.filter(m=>m.basico):
+  const lista=soloBasicos?RUEDAS_SKIN.filter(m=>m.basico).slice(0,4):
     RUEDAS_SKIN.filter(m=>m.precio>0).concat(RUEDAS_SKIN.filter(m=>!m.precio));
   lista.forEach(m=>{
     const poseido=ruedaSkinPoseida(m);
