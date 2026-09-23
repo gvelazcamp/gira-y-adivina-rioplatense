@@ -5074,7 +5074,7 @@ function guardarPerfil(nombre,avatar){
   logroDesbloquear("avatar");
   empujarUsuario();
 }
-let avatarElegido=null,perfilCallback=null,previsualizandoPerfil=false,perfilObligatorio=false,perfilPasoActual="nombre";
+let avatarElegido=null,perfilCallback=null,previsualizandoPerfil=false,perfilObligatorio=false,perfilEdicionDirecta=false,perfilPasoActual="nombre";
 function listaAvataresDisponibles(){
   return AVATARES;
 }
@@ -5097,26 +5097,30 @@ function actualizarBotonPerfil(){
   $("perfilContinuar").disabled=!(nombre&&avatarElegido);
 }
 function perfilMostrarPaso(paso){
-  perfilPasoActual=paso==="avatar"?"avatar":"nombre";
+  perfilPasoActual=paso==="todo"?"todo":paso==="avatar"?"avatar":"nombre";
   tutOcultarSpotlight();
-  $("perfilPasoNombre").style.display=perfilPasoActual==="nombre"?"":"none";
-  $("perfilPasoAvatar").style.display=perfilPasoActual==="avatar"?"":"none";
-  $("perfilTitulo").textContent=perfilPasoActual==="nombre"?"ELEGÍ TU NOMBRE":"ELEGÍ TU AVATAR";
+  $("perfilPasoNombre").style.display=(perfilPasoActual==="nombre"||perfilPasoActual==="todo")?"":"none";
+  $("perfilPasoAvatar").style.display=(perfilPasoActual==="avatar"||perfilPasoActual==="todo")?"":"none";
+  $("perfilNombreOk").style.display=perfilPasoActual==="todo"?"none":"";
+  $("perfilCambiarNombre").style.display=perfilPasoActual==="todo"?"none":"";
+  $("perfilContinuar").textContent=perfilPasoActual==="todo"?"GUARDAR CAMBIOS":"CONTINUAR";
+  $("avatarTitulo").textContent=perfilPasoActual==="todo"?"Elegí tu avatar":"Ahora elegí tu avatar";
+  $("perfilTitulo").textContent=perfilPasoActual==="todo"?"EDITAR PERFIL":perfilPasoActual==="nombre"?"ELEGÍ TU NOMBRE":"ELEGÍ TU AVATAR";
   window.scrollTo({top:0,behavior:"auto"});
   if(perfilPasoActual==="nombre")setTimeout(()=>$("perfilNombre").focus(),0);
 }
 function abrirPerfil(callback,obligatorio=false){
   $("eventos").style.display="none";
-  perfilCallback=callback||null;perfilObligatorio=!!obligatorio;
+  perfilCallback=callback||null;perfilObligatorio=!!obligatorio;perfilEdicionDirecta=!perfilObligatorio&&!perfilCallback&&perfilExiste();
   $("perfilNombre").value=nombrePerfilPersonal(perfil.nombre)||nombrePerfilPersonal($("miNombre").value)||"";
   avatarElegido=perfil.avatar||null;
   $("setup").style.display="none";$("mundo").style.display="none";$("pantDurazno").style.display="none";
   $("pantPerfil").style.display="block";
   $("perfilCerrar").style.display=perfilObligatorio?"none":"";
-  renderAvatarGrid();actualizarBotonPerfil();perfilMostrarPaso("nombre");
+  renderAvatarGrid();actualizarBotonPerfil();perfilMostrarPaso(perfilEdicionDirecta?"todo":"nombre");
 }
 function previsualizarPerfilVacio(){
-  previsualizandoPerfil=true;perfilCallback=null;perfilObligatorio=true;
+  previsualizandoPerfil=true;perfilCallback=null;perfilObligatorio=true;perfilEdicionDirecta=false;
   $("perfilNombre").value="";avatarElegido=null;
   $("setup").style.display="none";$("mundo").style.display="none";$("pantDurazno").style.display="none";
   $("pantPerfil").style.display="block";
@@ -5153,7 +5157,7 @@ $("perfilContinuar").onclick=()=>{
 $("cambiarPerfil").onclick=()=>abrirPerfil(null);
 $("perfilCerrar").onclick=()=>{
   if(perfilObligatorio)return;
-  perfilCallback=null;previsualizandoPerfil=false;
+  perfilCallback=null;previsualizandoPerfil=false;perfilEdicionDirecta=false;
   perfilPasoActual="nombre";
   tutOcultarSpotlight();
   $("pantPerfil").style.display="none";
