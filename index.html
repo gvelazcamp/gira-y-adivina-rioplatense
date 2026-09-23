@@ -2648,7 +2648,7 @@ function resolverPremioRotativo(premio,cual){
     {tipo:"monedas",valor:150,nombre:"150 monedas extra"};
 }
 function premioConcretoVisualHTML(premio){
-  if(premio.tipo==="marco")return '<span class="avatar-wrap frame-preview evento-card-marco" aria-label="Marco de avatar '+premio.nombre+'" title="Marco de avatar '+premio.nombre+'"><img class="avatar-img" src="assets/avatars/'+(perfil.avatar||"avatar-01")+'.webp" alt=""><img class="avatar-frame ver" src="assets/frames/frame-'+premio.id+'.png" style="transform:none" alt=""></span>';
+  if(premio.tipo==="marco")return '<span class="avatar-wrap frame-preview evento-card-marco" aria-label="Marco de avatar '+premio.nombre+'" title="Marco de avatar '+premio.nombre+'"><img class="avatar-img" src="'+avatarSrc(perfil.avatar||"avatar-01")+'" alt=""><img class="avatar-frame ver" src="assets/frames/frame-'+premio.id+'.png" style="transform:none" alt=""></span>';
   if(premio.tipo==="ficha")return '<span class="ficha-skin-preview evento-card-marco" aria-label="Marco de tablero '+premio.nombre+'" title="Marco de tablero '+premio.nombre+'" style="background-image:url(\'assets/fichas/'+premio.id+'.webp\')"></span>';
   if(premio.tipo==="puntero")return '<img class="evento-card-img" src="assets/punteros/puntero-'+premio.id+'.webp" alt="Puntero '+premio.nombre+'">';
   if(premio.tipo==="coleccionable")return '<img class="evento-card-img" src="'+premio.img+'" alt="Coleccionable '+premio.nombre+'">';
@@ -3329,7 +3329,7 @@ async function rkCargarTabla(){
     const d=document.createElement("div");
     d.className="rk-fila"+(f.apodo===rkPerfil.apodo?" yo":"");
     d.innerHTML='<div class="rk-puesto">'+(i+1)+'</div>'+
-      (f.avatar?'<img class="rk-avatar" src="assets/avatars/'+rkEsc(f.avatar)+'.webp" alt="">':'')+
+      (f.avatar?'<img class="rk-avatar" src="'+avatarSrc(rkEsc(f.avatar))+'" alt="">':'')+
       '<div class="rk-info"><b>'+rkEsc(f.apodo)+(f.apodo===rkPerfil.apodo?" (vos)":"")+'</b>'+
       '<span>🗺️ '+f.ciudades_ganadas+'/9 · 🏆 racha '+f.mejor_racha+' · 🏅 '+f.logros+'</span></div>'+
       '<div class="rk-monedas">🪙 '+f.monedas_totales+'</div>';
@@ -3345,7 +3345,7 @@ async function rkCargarTabla(){
         tarjetas(f.marcos_todos,FICHAS_SKIN,id=>
           '<span class="ficha-skin-preview" style="background-image:url(\'assets/fichas/'+rkEsc(id)+'.webp\')"></span>')+
         tarjetas(f.avatares_todos,AVATARES_PREMIUM,id=>
-          '<span class="avatar-wrap frame-preview"><img class="avatar-img" src="assets/avatars/'+rkEsc(id)+'.webp" alt=""></span>');
+          '<span class="avatar-wrap frame-preview"><img class="avatar-img" src="'+avatarSrc(rkEsc(id))+'" alt=""></span>');
       $("seccionTiendaContenido").innerHTML=html||'<p class="sub" style="grid-column:1/-1">Todavía no compró nada.</p>';
       $("capaSeccionTienda").classList.add("ver");
     };
@@ -3412,7 +3412,7 @@ async function usrCargarLista(){
     const soyYo=misClaves.includes(normApodo(f.apodo));
     const d=document.createElement("div");
     d.className="rk-fila";
-    d.innerHTML=(f.avatar?'<span class="rk-avatar-wrap"><img class="rk-avatar" src="assets/avatars/'+rkEsc(f.avatar)+'.webp" alt="">'+(online?'<span class="rk-online-dot"></span>':'')+'</span>':'')+
+    d.innerHTML=(f.avatar?'<span class="rk-avatar-wrap"><img class="rk-avatar" src="'+avatarSrc(rkEsc(f.avatar))+'" alt="">'+(online?'<span class="rk-online-dot"></span>':'')+'</span>':'')+
       '<div class="rk-info"><b>'+rkEsc(f.apodo)+(soyYo?" (vos)":"")+'</b>'+
       '<span>🗺️ '+f.ciudades_ganadas+'/9 · 🏆 racha '+f.mejor_racha+' · 🏅 '+f.logros+'</span></div>';
     if(!soyYo){
@@ -3528,11 +3528,21 @@ function tnRenderFrames(contId,soloBasicos){
 }
 
 /* ---- Avatares premium ---- */
+const AVATARES_SVG_NUEVOS=new Set(["avatar-34","avatar-35","avatar-36","avatar-37","avatar-38","avatar-39","avatar-40","avatar-41"]);
+function avatarSrc(id){return AVATARES_SVG_NUEVOS.has(id)?"assets/avatars/"+id+".svg":"assets/avatars/"+id+".webp";}
 const AVATARES_PREMIUM=[
-  {id:"avatar-27",nombre:"Tóxico",precio:7500,basico:true},
-  {id:"avatar-23",nombre:"Fantasma Verde",precio:6200,basico:true},
-  {id:"avatar-24",nombre:"Diablita Neón",precio:6200,basico:true},
-  {id:"avatar-25",nombre:"Hielo Ártico",precio:7000,basico:true},
+  {id:"avatar-34",nombre:"Morocho Crack",precio:8500,basico:true},
+  {id:"avatar-35",nombre:"Rockera Neón",precio:8500,basico:true},
+  {id:"avatar-36",nombre:"Guerrero Oriental",precio:9000,basico:true},
+  {id:"avatar-37",nombre:"Roquero Punk",precio:8800,basico:true},
+  {id:"avatar-38",nombre:"Morocho Elegante",precio:8600},
+  {id:"avatar-39",nombre:"Guerrera Solar",precio:9200},
+  {id:"avatar-40",nombre:"Baterista Rebelde",precio:8700},
+  {id:"avatar-41",nombre:"Gladiadora Rioplatense",precio:9300},
+  {id:"avatar-27",nombre:"Tóxico",precio:7500},
+  {id:"avatar-23",nombre:"Fantasma Verde",precio:6200},
+  {id:"avatar-24",nombre:"Diablita Neón",precio:6200},
+  {id:"avatar-25",nombre:"Hielo Ártico",precio:7000},
   {id:"avatar-26",nombre:"Gatita Lunar",precio:7000},
   {id:"avatar-28",nombre:"Arácnida",precio:7500},
   {id:"avatar-29",nombre:"Calabaza",precio:8000},
@@ -3560,7 +3570,7 @@ function tnRenderAvataresPremium(contId,soloBasicos){
     const equipado=perfil.avatar===a.id;
     const card=document.createElement("div");card.className="frame-card";
     card.innerHTML='<span class="avatar-wrap frame-preview">'+
-      '<img class="avatar-img" src="assets/avatars/'+a.id+'.webp" alt="">'+
+      '<img class="avatar-img" src="'+avatarSrc(a.id)+'" alt="">'+
       '</span><b>'+a.nombre+'</b><span class="frame-desc">Avatar exclusivo de la tienda.</span>'+
       '<button class="frame-btn'+(equipado?' equipado':poseido?' propio':'')+'">'+
       (equipado?"EQUIPADO ✓":poseido?"EQUIPAR":"COMPRAR 🪙 "+a.precio)+'</button>';
@@ -3905,14 +3915,14 @@ $("packRecibidoOk").onclick=()=>{
    pack de cosméticos — mismo estilo que usan sus pantallas normales
    de la Tienda/Ranking, para que se vea de verdad lo que se ganó. */
 function packPreviewAvatar(id){
-  return '<img src="assets/avatars/'+id+'.webp" style="width:110px;height:110px;border-radius:50%;object-fit:cover;display:block;margin:0 auto">';
+  return '<img src="'+avatarSrc(id)+'" style="width:110px;height:110px;border-radius:50%;object-fit:cover;display:block;margin:0 auto">';
 }
 function packPreviewMarco(idMarco,idAvatar){
   /* frame-preview trae un transform:scale(1.45) pensado para las tarjetas
      chicas de 64px de la tienda — acá, más grande, hace que el marco se
      salga de su caja y tape el texto de abajo. Se anula con transform:none. */
   return '<span class="avatar-wrap frame-preview" style="width:110px;height:110px;margin:0 auto;display:inline-block">'+
-    '<img class="avatar-img" src="assets/avatars/'+idAvatar+'.webp">'+
+    '<img class="avatar-img" src="'+avatarSrc(idAvatar)+'">'+
     '<img class="avatar-frame ver" src="assets/frames/frame-'+idMarco+'.png" style="transform:none"></span>';
 }
 function packPreviewFicha(id){
@@ -4708,7 +4718,7 @@ function dzActualizarHud(){
   const jug=$("dzJugador");
   if(perfilExiste()){
     jug.style.visibility="visible";
-    $("dzJugadorAvatar").src="assets/avatars/"+perfil.avatar+".webp";
+    $("dzJugadorAvatar").src=avatarSrc(perfil.avatar);
     $("dzJugadorNombre").textContent=perfil.nombre;
     pintarMiMarco("dzJugadorFrameImg");
   }else jug.style.visibility="hidden";
@@ -5045,7 +5055,7 @@ function actualizarChipPerfil(){
   const chip=$("perfilChip");if(!chip)return;
   if(perfilExiste()){
     chip.style.display="flex";
-    $("perfilAvatarImg").src="assets/avatars/"+perfil.avatar+".webp";
+    $("perfilAvatarImg").src=avatarSrc(perfil.avatar);
     $("perfilNombreTxt").textContent=perfil.nombre;
     pintarMiMarco("perfilFrameImg");
   }else chip.style.display="none";
@@ -5302,7 +5312,7 @@ function renderTVLobby(){
   $("tvLink").textContent=link;
   const lista=$("tvLista");lista.innerHTML="";
   familiaJugadores.forEach((j,i)=>{const d=document.createElement("div");d.className="tv-persona";
-    d.innerHTML=(j.av?'<span class="avatar-wrap"><img class="av ver" src="assets/avatars/'+j.av+'.webp" alt="">'+
+    d.innerHTML=(j.av?'<span class="avatar-wrap"><img class="av ver" src="'+avatarSrc(j.av)+'" alt="">'+
       (j.frame?'<img class="avatar-frame ver" src="assets/frames/frame-'+j.frame+'.png" alt="">':"")+'</span>':"")+(i+1)+". "+j.n;
     lista.appendChild(d);});
   $("tvEstado").textContent=tvPartidaIniciada?"Partida en curso":(familiaJugadores.length+" jugador"+(familiaJugadores.length===1?"":"es")+" conectado"+(familiaJugadores.length===1?"":"s")+" · mínimo 2, máximo 6");
@@ -7341,7 +7351,7 @@ function pintar(){
     e.classList.toggle("maquina",modo==="bot"&&i===1);
     e.querySelector(".n").textContent=j.n;
     const av=e.querySelector(".av");
-    if(j.av){av.src="assets/avatars/"+j.av+".webp";av.classList.add("ver");}
+    if(j.av){av.src=avatarSrc(j.av);av.classList.add("ver");}
     else av.classList.remove("ver");
     const fr=e.querySelector(".avatar-frame");
     if(j.frame){fr.src="assets/frames/frame-"+j.frame+".png";fr.classList.add("ver");}
@@ -7582,7 +7592,7 @@ async function generarCanvasCompartir(){
   if(S&&S.frase){csDibujarFrase(cx,S.frase,px1,py1,pw1,pbh1,fichaImg);}
   if(perfil.avatar){
     try{
-      const av=await csCargarImg("assets/avatars/"+perfil.avatar+".webp");
+      const av=await csCargarImg(avatarSrc(perfil.avatar));
       const r=68,acx=175,acy=1216;
       cx.save();cx.beginPath();cx.arc(acx,acy,r,0,Math.PI*2);cx.clip();
       cx.drawImage(av,acx-r,acy-r,r*2,r*2);cx.restore();
@@ -7662,7 +7672,7 @@ async function generarCanvasCompartirColeccionable(){
   }
   if(perfil.avatar){
     try{
-      const av=await csCargarImg("assets/avatars/"+perfil.avatar+".webp");
+      const av=await csCargarImg(avatarSrc(perfil.avatar));
       const r=68,acx=175,acy=1216;
       cx.save();cx.beginPath();cx.arc(acx,acy,r,0,Math.PI*2);cx.clip();
       cx.drawImage(av,acx-r,acy-r,r*2,r*2);cx.restore();
@@ -7698,7 +7708,7 @@ async function generarCanvasCompartirConquista(){
   }
   if(perfil.avatar){
     try{
-      const av=await csCargarImg("assets/avatars/"+perfil.avatar+".webp");
+      const av=await csCargarImg(avatarSrc(perfil.avatar));
       const r=68,acx=175,acy=1216;
       cx.save();cx.beginPath();cx.arc(acx,acy,r,0,Math.PI*2);cx.clip();
       cx.drawImage(av,acx-r,acy-r,r*2,r*2);cx.restore();
@@ -7752,7 +7762,7 @@ async function generarCanvasCompartirCiudad100(){
   }
   if(perfil.avatar){
     try{
-      const av=await csCargarImg("assets/avatars/"+perfil.avatar+".webp");
+      const av=await csCargarImg(avatarSrc(perfil.avatar));
       const r=78,acx=175,acy=1240;
       cx.save();cx.beginPath();cx.arc(acx,acy,r,0,Math.PI*2);cx.clip();
       cx.drawImage(av,acx-r,acy-r,r*2,r*2);cx.restore();
@@ -7795,7 +7805,7 @@ async function generarCanvasCompartir100(){
   }
   if(perfil.avatar){
     try{
-      const av=await csCargarImg("assets/avatars/"+perfil.avatar+".webp");
+      const av=await csCargarImg(avatarSrc(perfil.avatar));
       const r=82,acx=175,acy=1277;
       cx.save();cx.beginPath();cx.arc(acx,acy,r,0,Math.PI*2);cx.clip();
       cx.drawImage(av,acx-r,acy-r,r*2,r*2);cx.restore();
