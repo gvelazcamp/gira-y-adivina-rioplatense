@@ -5313,11 +5313,19 @@ function jugarBotToss(){
   const totalPos=[...S.frase].filter(c=>c!==" ").length;
   const reveladas=S.tossPos?S.tossPos.size:0;
   const r=totalPos?reveladas/totalPos:0;
-  const chance=r>=.95?1:Math.pow(Math.max(0,(r-.55)/.40),1.5)*.4;
+
+  /* En un Toss-Up real la máquina no debería resolver perfecto por porcentaje.
+     Espera más letras, tiene una probabilidad gradual y puede apurarse. */
+  if(reveladas<Math.min(12,Math.ceil(totalPos*.62))){programarBotToss();return;}
+  const base=Math.max(0,(r-.62)/.35);
+  let chance=Math.min(.42,Math.pow(base,1.9)*.24);
+  if(r>=.88)chance=Math.max(chance,.22);
+  if(r>=.96)chance=Math.max(chance,.38);
   if(Math.random()<chance&&pausarToss(1)){
+    const precision=Math.min(.82,.28+(r-.62)*1.15);
     setTimeout(()=>{
-      if(S&&S.fase==="tossup"&&S.tossRespondedor===1)hostResolverToss(S.frase,1);
-    },700+Math.random()*1300);
+      if(S&&S.fase==="tossup"&&S.tossRespondedor===1)hostResolverToss(Math.random()<precision?S.frase:"",1);
+    },950+Math.random()*1800);
     return;
   }
   programarBotToss();
@@ -5885,7 +5893,7 @@ function abrirTodoToss(){[...S.frase].forEach(c=>{if(c!==" ")S.abiertas.add(c);}
 function finTossTiempo(){
   if(!S||S.fase!=="tossup")return;
   limpiarToss();abrirTodoToss();
-  if(modo==="bot"){S.jug[1].rg++;S.fase="toss_fin";publicar("Se terminó el tiempo. <b>"+S.jug[1].n+"</b> se lleva la ronda.","error");}
+  if(modo==="bot"){S.fase="toss_fin";publicar("Se terminó el tiempo. Nadie resolvió la Prueba de Velocidad.","error");}
   else{S.fase="toss_fin";publicar("Se terminó el tiempo. Nadie resolvió la Prueba de Velocidad.","error");}
   setTimeout(tk(nuevaRonda),3600);
 }
@@ -5905,7 +5913,8 @@ function hostResolverToss(txt,jugador){
   }else{
     bip(140,.35,"square",.07);
     if(modo==="bot"){
-      reanudarToss("«"+txt.toUpperCase()+"» no era. La prueba continúa y podés volver a intentar.");
+      const msg=(jugador===1)?"<b>"+S.jug[jugador].n+"</b> se apuró y no acertó. La prueba continúa.":"«"+txt.toUpperCase()+"» no era. La prueba continúa y podés volver a intentar.";
+      reanudarToss(msg);
       return;
     }
     S.tossBloq[jugador]=true;
