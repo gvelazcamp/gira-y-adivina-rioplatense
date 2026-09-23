@@ -119,6 +119,12 @@ para que el premio de pista se pueda gastar de verdad en `hostPista()`.
       preparado en el código pero sin el arte subido a
       `assets/frames/` todavía — falta generar/subir esas 20 imágenes
       y activarlos.
+- [ ] **Pack Pescera / Acuario**: guardar como estilo futuro para un
+      pack cosmético completo. Referencia visual: marco cuadrado con
+      vidrio azul, centro crema limpio, peces, burbujas, algas, corales,
+      estrella de mar y brillo acuático. Puede convertirse más adelante
+      en pack con marco de tablero, fondo de tablero, avatar, puntero y
+      ruleta del mismo universo visual.
 
 ---
 
