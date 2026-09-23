@@ -5255,10 +5255,18 @@ function letraHumana(solo){
   const FREQ=solo==="voc"?"EAOIU":"SRNLDCTMPBGVYQHFJZXKWÑ";
   const libres=FREQ.split("").filter(c=>!S.usadas.has(c));
   if(!libres.length)return null;
-  if(Math.random()<.14&&libres.length>4)
+  const suave=botSuavePrimerDurazno();
+  if(Math.random()<(suave?.errorLetra||.14)&&libres.length>4)
     return libres[4+Math.floor(Math.random()*(libres.length-4))];
-  const top=libres.slice(0,solo==="voc"?2:4);
+  const top=libres.slice(0,solo==="voc"?2:(suave?3:4));
   return top[Math.floor(Math.random()*top.length)];
+}
+function botSuavePrimerDurazno(){
+  if(modo!=="bot"||destino===null||!MUNDO[destino]||MUNDO[destino].id!=="durazno")return null;
+  const hechos=typeof dzHechos==="function"?dzHechos():0;
+  if(hechos===0)return{minResolver:.72,chanceMult:.34,errorLetra:.28,compraVocal:.55};
+  if(hechos===1)return{minResolver:.66,chanceMult:.55,errorLetra:.22,compraVocal:.42};
+  return null;
 }
 function programarBot(){
   clearTimeout(botT);
@@ -5274,10 +5282,15 @@ function jugarBot(){
   const letras=[...S.frase].filter(c=>c!==" ");
   const r=letras.filter(c=>S.abiertas.has(c)).length/letras.length;
   const plata=S.jug[1].ronda;
+  const suave=botSuavePrimerDurazno();
   let chance=Math.pow(Math.max(0,(r-.5)/.5),1.7)*.8;
   if(plata>=800)chance*=1.35;
   if(plata===0)chance*=.45;
-  if(r>.5&&Math.random()<chance){
+  if(suave){
+    chance*=suave.chanceMult;
+    if(plata>=250&&r<suave.minResolver&&Math.random()<suave.compraVocal){hostVocal();return;}
+  }
+  if(r>(suave?.minResolver||.5)&&Math.random()<chance){
     const c=candidatos();
     if(c.length){hostResolver(c[Math.floor(Math.random()*c.length)].t);return;}
   }
