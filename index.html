@@ -6662,14 +6662,14 @@ const MARCOS_TABLERO=[
   {id:"fondo-tatuaje",nombre:"Tatuaje Old School",precio:7000,nuevo:true},
   {id:"fondo-synthwave",nombre:"Synthwave 80s",precio:7500,nuevo:true},
   {id:"fondo-tiki",nombre:"Templo Tiki",precio:7500,nuevo:true},
-  {id:"fondo-candy-1",nombre:"Piruletas Dulces",precio:5750,nuevo:true},
-  {id:"fondo-candy-2",nombre:"Nube de Azúcar",precio:5750,nuevo:true},
-  {id:"fondo-candy-3",nombre:"Paletas Heladas",precio:6000,nuevo:true},
+  {id:"fondo-candy-1",nombre:"Piruletas Dulces",precio:5750,nuevo:true,catalogo:false},
+  {id:"fondo-candy-2",nombre:"Nube de Azúcar",precio:5750,nuevo:true,catalogo:false},
+  {id:"fondo-candy-3",nombre:"Paletas Heladas",precio:6000,nuevo:true,catalogo:false},
   {id:"fondo-candy-4",nombre:"Joya de Caramelo",precio:6500,nuevo:true},
-  {id:"fondo-candy-5",nombre:"Gomitas Felices",precio:6000,nuevo:true},
-  {id:"fondo-candy-6",nombre:"Galaxia Dulce",precio:7000,nuevo:true},
-  {id:"fondo-candy-7",nombre:"Corona de Merengue",precio:7250,nuevo:true},
-  {id:"fondo-candy-8",nombre:"Fiesta de Macarons",precio:7250,nuevo:true},
+  {id:"fondo-candy-5",nombre:"Gomitas Felices",precio:6000,nuevo:true,catalogo:false},
+  {id:"fondo-candy-6",nombre:"Galaxia Dulce",precio:7000,nuevo:true,catalogo:false},
+  {id:"fondo-candy-7",nombre:"Corona de Merengue",precio:7250,nuevo:true,catalogo:false},
+  {id:"fondo-candy-8",nombre:"Fiesta de Macarons",precio:7250,nuevo:true,catalogo:false},
   {id:"fondo-ovni",nombre:"Círculos en el Campo",precio:7500,nuevo:true}
 ];
 /* Marcos de tablero: NO son fondos de tablero — son un skin para cada
@@ -6821,8 +6821,9 @@ function equiparTablero(id){
 }
 function tnRenderTableros(contId,soloBasicos){
   const cont=$(contId||"tableroGrid");if(!cont)return;cont.innerHTML="";
-  const lista=soloBasicos?MARCOS_TABLERO.filter(m=>m.basico).slice(0,4):
-    MARCOS_TABLERO.filter(m=>m.precio>0).concat(MARCOS_TABLERO.filter(m=>!m.precio));
+  const catalogo=MARCOS_TABLERO.filter(m=>m.catalogo!==false);
+  const lista=soloBasicos?catalogo.filter(m=>m.basico).slice(0,4):
+    catalogo.filter(m=>m.precio>0).concat(catalogo.filter(m=>!m.precio));
   lista.forEach(m=>{
     const poseido=marcoTableroPoseido(m);
     const equipado=(tableroEquipado||null)===m.id;
@@ -6908,7 +6909,7 @@ const RUEDAS_SKIN=[
   {id:"rueda-locomotora",nombre:"Rueda Locomotora",precio:12000,nuevo:true},
   {id:"rueda-rodeo",nombre:"Rueda Rodeo",precio:12000,nuevo:true},
   {id:"rueda-casino",nombre:"Rueda Casino",precio:12000,nuevo:true},
-  {id:"rueda-ovni",nombre:"Rueda OVNI",precio:12000,nuevo:true},
+  {id:"rueda-ovni",nombre:"Rueda OVNI",precio:12000,nuevo:true,catalogo:false},
   {id:"rueda-abduccion",nombre:"Rueda Abducción",precio:12000,nuevo:true},
   {id:"rueda-gran-premio",nombre:"Rueda Gran Premio",precio:13500,nuevo:true},
   {id:"rueda-3d",nombre:"Rueda 3D",precio:13500,nuevo:true},
@@ -6970,7 +6971,7 @@ let seccionTiendaEsRuedas=false;
 /* Selector de Marcos de ruleta en "Jugar online": deja ir probando en
    vivo, sobre la ruleta real, TODOS los diseños (comprados o no) —
    es para diseño/preview, no cambia lo que está comprado de verdad. */
-const ruedasDisponibles=()=>RUEDAS_SKIN;
+const ruedasDisponibles=()=>RUEDAS_SKIN.filter(m=>m.catalogo!==false||ruedaSkinPoseida(m));
 let ruedaSelectorIdx=0;
 function aplicarRuedaSelector(){
   const disp=enPruebaPunteros?RULETAS_PRUEBA:ruedasDisponibles();
@@ -7075,8 +7076,9 @@ $("evBanner2").onclick=()=>{
 };
 function tnRenderRuedas(contId,soloBasicos){
   const cont=$(contId||"ruedaGrid");if(!cont)return;cont.innerHTML="";
-  const lista=soloBasicos?RUEDAS_SKIN.filter(m=>m.basico).slice(0,4):
-    RUEDAS_SKIN.filter(m=>m.precio>0).concat(RUEDAS_SKIN.filter(m=>!m.precio));
+  const catalogo=RUEDAS_SKIN.filter(m=>m.catalogo!==false);
+  const lista=soloBasicos?catalogo.filter(m=>m.basico).slice(0,4):
+    catalogo.filter(m=>m.precio>0).concat(catalogo.filter(m=>!m.precio));
   lista.forEach(m=>{
     const poseido=ruedaSkinPoseida(m);
     const equipado=(ruedaSkinEquipada||null)===m.id;
