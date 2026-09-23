@@ -291,7 +291,12 @@ html.puntero-prueba-activo .rw-aguja{top:-28px;width:56px;height:84px;border:0;
 @media(max-width:380px){.frame-card{padding:8px}.frame-preview{width:52px;height:52px;margin:10px auto 12px}
  .frame-card b{font-size:.76rem}.frame-desc{font-size:.62rem}.frame-btn{font-size:.68rem;padding:7px 4px}}
 .frame-card{background:#00000033;border:1px solid #FFFFFF1F;border-radius:14px;padding:12px;
- display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;min-width:0}
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;min-width:0;position:relative}
+.tn-item{position:relative}
+.tn-admin-x{display:none;position:absolute;top:7px;right:7px;z-index:3;width:28px;height:28px;border-radius:50%;
+ border:1px solid #FFFFFF66;background:#FF2E72;color:#fff;font-weight:900;box-shadow:0 3px 0 #8D0D3D,0 6px 12px #0008;
+ cursor:pointer;line-height:1}
+body.gonzalo-admin .frame-card .tn-admin-x,body.gonzalo-admin .tn-item .tn-admin-x{display:grid;place-items:center}
 .frame-preview{width:64px;height:64px;margin:14px auto 16px}
 .tablero-preview{display:block;width:100%;aspect-ratio:1400/788;border-radius:10px;background-size:cover;
  background-position:center;background-color:#00000055;margin-bottom:10px}
@@ -2934,7 +2939,7 @@ function armarSeccionesColapsablesTienda(){
   });
 }
 armarSeccionesColapsablesTienda();
-$("bTienda").onclick=()=>{tnActualizar();tnRenderFrames("frameGrid",true);tnRenderAvataresPremium("avatarPremiumGrid",true);tnRenderTableros("tableroGrid",true);tnRenderCuadrosTablero("cuadroTableroGrid",true);tnRenderRuedas("ruedaGrid",true);tnRenderPunteros("punteroTiendaGrid",true);$("capaTienda").classList.add("ver");};
+$("bTienda").onclick=()=>{tnActualizar();tnRenderFrames("frameGrid",true);tnRenderAvataresPremium("avatarPremiumGrid",true);tnRenderTableros("tableroGrid",true);tnRenderCuadrosTablero("cuadroTableroGrid",true);tnRenderRuedas("ruedaGrid",true);tnRenderPunteros("punteroTiendaGrid",true);tiendaAdminPrepararItemsFijos();$("capaTienda").classList.add("ver");};
 $("tituloMarcos").onclick=()=>{
   seccionTiendaEsFrames=true;
   $("seccionTiendaTitulo").textContent=$("tituloMarcos").textContent;
@@ -2992,6 +2997,7 @@ $("tituloSobres").onclick=()=>{
   $("seccionTiendaTitulo").textContent=$("tituloSobres").textContent;
   const cont=$("seccionTiendaContenido");cont.innerHTML="";
   [...$("sobresGrid").children].forEach(el=>{el.style.display="";cont.appendChild(el);});
+  tiendaAdminPrepararItemsFijos();
   $("capaSeccionTienda").classList.add("ver");
 };
 document.querySelectorAll(".tn-comprar-real").forEach(b=>{
@@ -3378,6 +3384,49 @@ $("bRanking").onclick=rkAbrir;
    tabla gya_ranking, ya usada por el Ranking, pero mostrada como listado
    simple de jugadores en vez de tabla de puntajes). */
 function esGonzalo(){try{return(perfil&&perfil.nombre||"").trim().toLowerCase()==="gonzalo";}catch(e){return false;}}
+function actualizarModoAdminGonzalo(){try{document.body.classList.toggle("gonzalo-admin",esGonzalo());}catch(e){}}
+const TIENDA_REMOVIDOS_PUBLICADOS=new Set([
+  /* Cuando Gonzalo decide sacar algo definitivamente, se agrega acá y se sube a Git.
+     Formato: "tipo:id", por ejemplo "avatar:avatar-34" o "rueda:rueda-candy". */
+]);
+function cargarTiendaRemovidosPendientes(){
+  try{return new Set(JSON.parse(localStorage.getItem("gya_admin_tienda_removidos_pendientes")||"[]"));}catch(e){return new Set();}
+}
+let tiendaRemovidosPendientes=cargarTiendaRemovidosPendientes();
+function guardarTiendaRemovidosPendientes(){
+  try{localStorage.setItem("gya_admin_tienda_removidos_pendientes",JSON.stringify([...tiendaRemovidosPendientes]));}catch(e){}
+}
+function tiendaClave(tipo,id){return tipo+":"+id;}
+function tiendaItemOculto(tipo,id){
+  if(!id)return false;
+  const k=tiendaClave(tipo,id);
+  return TIENDA_REMOVIDOS_PUBLICADOS.has(k)||(esGonzalo()&&tiendaRemovidosPendientes.has(k));
+}
+function tiendaFiltrar(tipo,lista){return lista.filter(x=>!tiendaItemOculto(tipo,x.id));}
+function tiendaAdminAgregarX(card,tipo,id,nombre,rerender){
+  if(!card||!id||!esGonzalo()||tiendaItemOculto(tipo,id))return;
+  const x=document.createElement("button");
+  x.type="button";x.className="tn-admin-x";x.textContent="×";x.title="Sacar del juego: "+(nombre||id);
+  x.onclick=ev=>{
+    ev.preventDefault();ev.stopPropagation();
+    if(!confirm("¿Sacar de la tienda «"+(nombre||id)+"»? Queda anotado para subirlo a Git y oculto en tu prueba."))return;
+    tiendaRemovidosPendientes.add(tiendaClave(tipo,id));guardarTiendaRemovidosPendientes();
+    mostrarToast("🧹","Anotado para sacar: "+(nombre||id));
+    if(typeof rerender==="function")rerender();else card.remove();
+  };
+  card.appendChild(x);
+}
+function tiendaAdminPrepararItemsFijos(){
+  actualizarModoAdminGonzalo();
+  document.querySelectorAll("#capaTienda .tn-item,#capaSeccionTienda .tn-item").forEach(item=>{
+    const btn=item.querySelector(".tn-comprar[data-tipo]");
+    if(!btn)return;
+    const id=btn.dataset.tipo;
+    if(tiendaItemOculto("item",id)){item.style.display="none";return;}
+    item.style.display="";
+    if(!item.querySelector(".tn-admin-x"))tiendaAdminAgregarX(item,"item",id,btn.dataset.nombre||id,()=>tiendaAdminPrepararItemsFijos());
+  });
+}
 $("bSocial").onclick=()=>{
   $("socialContinuar").style.display=esGonzalo()?"block":"none";
   $("capaSocial").classList.add("ver");
@@ -3495,7 +3544,8 @@ function tnRenderFrames(contId,soloBasicos){
   const cont=$(contId||"frameGrid");if(!cont)return;cont.innerHTML="";
   const miAvatar="assets/avatars/avatar-01.webp";
   const sinMarco={id:"",nombre:"Sin marco",desc:"Tu avatar tal cual, sin marco.",precio:0};
-  const opciones=soloBasicos?FRAMES.filter(f=>f.basico).slice(0,4):[sinMarco].concat(FRAMES);
+  const opciones=soloBasicos?tiendaFiltrar("marco-avatar",FRAMES.filter(f=>f.basico)).slice(0,4):
+    [sinMarco].concat(tiendaFiltrar("marco-avatar",FRAMES));
   opciones.forEach(f=>{
     const poseido=f.precio===0||framesComprados.has(f.id);
     const equipado=frameEquipado===f.id;
@@ -3523,6 +3573,7 @@ function tnRenderFrames(contId,soloBasicos){
       };
       tnAgregarBotonReal(btn,f.precio);
     }
+    tiendaAdminAgregarX(card,"marco-avatar",f.id,f.nombre,()=>tnRenderFrames(contId,soloBasicos));
     cont.appendChild(card);
   });
 }
@@ -3562,7 +3613,8 @@ function equiparAvatarPremium(id){
 }
 function tnRenderAvataresPremium(contId,soloBasicos){
   const cont=$(contId||"avatarPremiumGrid");if(!cont)return;cont.innerHTML="";
-  const lista=soloBasicos?AVATARES_PREMIUM.filter(a=>a.basico).slice(0,4):AVATARES_PREMIUM;
+  const lista=soloBasicos?tiendaFiltrar("avatar",AVATARES_PREMIUM.filter(a=>a.basico)).slice(0,4):
+    tiendaFiltrar("avatar",AVATARES_PREMIUM);
   lista.forEach(a=>{
     const poseido=avataresComprados.has(a.id);
     const equipado=perfil.avatar===a.id;
@@ -3590,6 +3642,7 @@ function tnRenderAvataresPremium(contId,soloBasicos){
       };
       tnAgregarBotonReal(btn,a.precio);
     }
+    tiendaAdminAgregarX(card,"avatar",a.id,a.nombre,()=>tnRenderAvataresPremium(contId,soloBasicos));
     cont.appendChild(card);
   });
 }
@@ -4010,7 +4063,8 @@ function equiparPunteroTienda(id){
 }
 function tnRenderPunteros(contId,soloBasicos){
   const cont=$(contId||"punteroTiendaGrid");if(!cont)return;cont.innerHTML="";
-  const lista=soloBasicos?PUNTEROS_TIENDA.filter(p=>p.basico).slice(0,4):PUNTEROS_TIENDA;
+  const catalogo=tiendaFiltrar("puntero",PUNTEROS_TIENDA);
+  const lista=soloBasicos?catalogo.filter(p=>p.basico).slice(0,4):catalogo;
   lista.forEach(p=>{
     const poseido=punterosComprados.has(p.id),equipado=punteroEquipado===p.id;
     const card=document.createElement("div");card.className="frame-card";
@@ -4032,6 +4086,7 @@ function tnRenderPunteros(contId,soloBasicos){
       };
       tnAgregarBotonReal(btn,p.precio);
     }
+    tiendaAdminAgregarX(card,"puntero",p.id,p.nombre,()=>tnRenderPunteros(contId,soloBasicos));
     cont.appendChild(card);
   });
 }
@@ -5050,6 +5105,7 @@ function nombrePerfilPersonal(nombre){
 }
 const perfilExiste=()=>!!(nombrePerfilPersonal(perfil.nombre)&&perfil.avatar);
 function actualizarChipPerfil(){
+  actualizarModoAdminGonzalo();
   const chip=$("perfilChip");if(!chip)return;
   if(perfilExiste()){
     chip.style.display="flex";
@@ -6855,7 +6911,7 @@ function equiparTablero(id){
 }
 function tnRenderTableros(contId,soloBasicos){
   const cont=$(contId||"tableroGrid");if(!cont)return;cont.innerHTML="";
-  const catalogo=MARCOS_TABLERO.filter(m=>m.catalogo!==false);
+  const catalogo=tiendaFiltrar("tablero",MARCOS_TABLERO.filter(m=>m.catalogo!==false));
   const lista=soloBasicos?catalogo.filter(m=>m.basico).slice(0,4):
     catalogo.filter(m=>m.precio>0).concat(catalogo.filter(m=>!m.precio));
   lista.forEach(m=>{
@@ -6885,13 +6941,15 @@ function tnRenderTableros(contId,soloBasicos){
       };
       tnAgregarBotonReal(btn,m.precio);
     }
+    tiendaAdminAgregarX(card,"tablero",m.id,m.nombre,()=>tnRenderTableros(contId,soloBasicos));
     cont.appendChild(card);
   });
 }
 function tnRenderCuadrosTablero(contId,soloBasicos){
   const cont=$(contId||"cuadroTableroGrid");if(!cont)return;cont.innerHTML="";
-  const lista=soloBasicos?FICHAS_SKIN.filter(m=>m.basico).slice(0,4):
-    FICHAS_SKIN.filter(m=>m.precio>0).concat(FICHAS_SKIN.filter(m=>!m.precio));
+  const fichasCatalogo=tiendaFiltrar("marco-tablero",FICHAS_SKIN);
+  const lista=soloBasicos?fichasCatalogo.filter(m=>m.basico).slice(0,4):
+    fichasCatalogo.filter(m=>m.precio>0).concat(fichasCatalogo.filter(m=>!m.precio));
   lista.forEach(m=>{
     const poseido=fichaSkinPoseida(m);
     const equipado=(fichaSkinEquipada||null)===m.id;
@@ -6919,6 +6977,7 @@ function tnRenderCuadrosTablero(contId,soloBasicos){
       };
       tnAgregarBotonReal(btn,m.precio);
     }
+    tiendaAdminAgregarX(card,"marco-tablero",m.id,m.nombre,()=>tnRenderCuadrosTablero(contId,soloBasicos));
     cont.appendChild(card);
   });
 }
@@ -7110,7 +7169,7 @@ $("evBanner2").onclick=()=>{
 };
 function tnRenderRuedas(contId,soloBasicos){
   const cont=$(contId||"ruedaGrid");if(!cont)return;cont.innerHTML="";
-  const catalogo=RUEDAS_SKIN.filter(m=>m.catalogo!==false);
+  const catalogo=tiendaFiltrar("rueda",RUEDAS_SKIN.filter(m=>m.catalogo!==false));
   const lista=soloBasicos?catalogo.filter(m=>m.basico).slice(0,4):
     catalogo.filter(m=>m.precio>0).concat(catalogo.filter(m=>!m.precio));
   lista.forEach(m=>{
@@ -7140,6 +7199,7 @@ function tnRenderRuedas(contId,soloBasicos){
       };
       tnAgregarBotonReal(btn,m.precio);
     }
+    tiendaAdminAgregarX(card,"rueda",m.id,m.nombre,()=>tnRenderRuedas(contId,soloBasicos));
     cont.appendChild(card);
   });
 }
