@@ -349,11 +349,25 @@ html.puntero-prueba-activo .rw-aguja{top:-28px;width:56px;height:84px;border:0;
  padding:14px 16px;margin-bottom:14px;border:2px solid #F5B30166;
  background:linear-gradient(160deg,var(--noche2),var(--noche));
  box-shadow:0 4px 0 #00000060,inset 0 1px 0 #FFFFFF1A;cursor:pointer}
+.evento-card-diario{border-color:#FFB21F88;
+ background:radial-gradient(circle at 92% 15%,#E5197C33,transparent 34%),linear-gradient(145deg,#34133F,#1B0B2B)}
+.evento-card-ciudad{border-color:#37D6C099;
+ background:radial-gradient(circle at 90% 12%,#37D6C033,transparent 38%),linear-gradient(145deg,#102F46,#160C31)}
+.evento-card-diario .evento-card-tiempo{border-color:#FFB21F66;color:#FFD86B}
+.evento-card-ciudad .evento-card-tiempo{border-color:#37D6C077;color:#72F1DF}
+.evento-card-ico{width:48px;height:48px;display:grid;place-items:center;border-radius:15px}
+.evento-card-diario .evento-card-ico{background:linear-gradient(145deg,#E5197C,#FF9C28)}
+.evento-card-ciudad .evento-card-ico{background:linear-gradient(145deg,#159DB7,#6750D8)}
+.evento-card-tipo{display:block;font-size:.58rem;font-weight:900;letter-spacing:.8px;margin-bottom:4px}
+.evento-card-diario .evento-card-tipo{color:#FFD86B}
+.evento-card-ciudad .evento-card-tipo{color:#72F1DF}
 .evento-card.bloqueado{filter:grayscale(1);opacity:.65;cursor:default}
 .evento-card .ev-abierto{display:block}
 .evento-card .ev-cerrado{display:none}
 .evento-card.cerrado{text-align:center;padding:26px 16px;border-color:#FFE49A;
  background:linear-gradient(160deg,#FFD65C,var(--oro))}
+.evento-card-ciudad.cerrado{border-color:#8AF7EA;
+ background:linear-gradient(145deg,#56E5D3,#209DBD)}
 .evento-card.cerrado .ev-abierto{display:none}
 .evento-card.cerrado .ev-cerrado{display:block;color:var(--tinta);font-size:1.3rem;
  font-weight:900;letter-spacing:.5px;text-shadow:0 1px 0 #FFFFFF55}
@@ -370,8 +384,17 @@ html.puntero-prueba-activo .rw-aguja{top:-28px;width:56px;height:84px;border:0;
 .evento-card-info b{display:block;color:var(--crema);font-size:1.05rem;margin-bottom:3px}
 .evento-card-info small{display:block;color:#C9B8DE;font-size:.8rem;line-height:1.3}
 .evento-card-premios{display:flex;align-items:center;gap:10px;margin-left:auto;flex:0 0 auto;padding-left:10px}
+.evento-card-premios{position:relative;padding-top:14px}
+.evento-card-premios::before{position:absolute;top:-4px;right:0;white-space:nowrap;font-size:.48rem;
+ font-weight:900;letter-spacing:.55px;color:#BFAFD1}
+.evento-card-diario .evento-card-premios::before{content:"PUEDE TOCARTE"}
+.evento-card-ciudad .evento-card-premios::before{content:"PREMIO AL GANAR";color:#72F1DF}
 .evento-card-premio-emoji{font-size:1.9rem;line-height:1;filter:drop-shadow(0 2px 2px #00000055)}
 .evento-card-premio-visual{display:inline-flex;align-items:center;flex:0 0 auto}
+@media(max-width:390px){
+ .evento-card{padding:13px 12px}.evento-card-cuerpo{gap:10px}.evento-card-ico{width:42px;height:42px;font-size:1.8rem}
+ .evento-card-premios{gap:6px;padding-left:4px}.evento-card-premio-emoji{font-size:1.55rem}.evento-card-img{width:45px;height:45px}
+}
 .tn-comprar{background:var(--oro);color:var(--tinta);font-weight:800;border-radius:10px;padding:10px 14px;
  flex-shrink:0;font-size:.85rem;white-space:nowrap;box-shadow:0 3px 0 #B3860099;border:1px solid #FFE49A66}
 .tn-item.tn-real{border-color:#37D6C077;background:linear-gradient(135deg,#37D6C01A,#7B3FE41A);border-width:2px}
@@ -1745,14 +1768,14 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
 <section id="eventos">
   <h1 class="titulo" style="font-size:2.2rem">EVENTOS</h1>
   <p class="sub">Volvé cada día por algo nuevo</p>
-  <button type="button" class="evento-card cerrado" id="evBanner1">
-    <span class="ev-cerrado">¡NUEVO EVENTO!</span>
+  <button type="button" class="evento-card evento-card-diario cerrado" id="evBanner1">
+    <span class="ev-cerrado">🎁 ¡NUEVO PREMIO DIARIO!</span>
     <span class="ev-abierto">
       <span class="evento-card-tiempo" id="evTiempo1">⏳</span>
       <span class="evento-card-cuerpo">
         <span class="evento-card-ico">🎁</span>
-        <span class="evento-card-info"><b>Evento diario</b>
-          <small>3 rondas contra la máquina</small></span>
+        <span class="evento-card-info"><span class="evento-card-tipo">PREMIO SORPRESA</span><b>Evento diario</b>
+          <small>3 rondas contra la máquina · 1 intento</small></span>
         <span class="evento-card-premios">
           <span class="evento-card-premio-emoji">❤️</span>
           <span class="evento-card-premio-emoji">🪙</span>
@@ -1761,17 +1784,15 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
       </span>
     </span>
   </button>
-  <button type="button" class="evento-card cerrado" id="evBanner2">
-    <span class="ev-cerrado">¡NUEVO EVENTO!</span>
+  <button type="button" class="evento-card evento-card-ciudad cerrado" id="evBanner2">
+    <span class="ev-cerrado">🏆 ¡NUEVO DESAFÍO!</span>
     <span class="ev-abierto">
       <span class="evento-card-tiempo" id="evTiempo2">⏳</span>
       <span class="evento-card-cuerpo">
-        <span class="evento-card-ico">🎁</span>
-        <span class="evento-card-info"><b id="evCiudadTit">Evento de ciudad</b>
+        <span class="evento-card-ico">🏆</span>
+        <span class="evento-card-info"><span class="evento-card-tipo">DESAFÍO DE LOCALIDAD</span><b id="evCiudadTit">Evento de ciudad</b>
           <small id="evCiudadEstado">3 rondas · Reintentá hasta ganar · Cada derrota cuesta 1 vida</small></span>
         <span class="evento-card-premios">
-          <span class="evento-card-premio-emoji">🪙</span>
-          <span class="evento-card-premio-emoji">❤️</span>
           <span class="evento-card-premio-visual" id="evVisual2"></span>
         </span>
       </span>
