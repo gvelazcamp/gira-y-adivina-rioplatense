@@ -792,6 +792,14 @@ html.rueda-prueba-candy .centro{background:radial-gradient(circle at 35% 30%,#FF
  border-color:#FFF5FB;box-shadow:0 0 0 5px #71337E,0 0 20px #FF75B9CC,0 0 30px #5ADBD199}
 html.rueda-prueba-3d .centro{background:radial-gradient(circle at 34% 28%,#FFF 0 7%,#37D6E0 10% 35%,#244A78 39% 55%,#F6BA32 59% 72%,#090F20 76%);
  border-color:#FFD767;box-shadow:0 7px 0 #050A14,0 0 0 5px #9DE7FF,0 0 24px #37D6E099}
+html.rueda-prueba-esmeralda .centro{background:radial-gradient(circle at 38% 30%,#DFFFF0 0 7%,#31E6C9 10% 35%,#07534F 39% 62%,#061A20 66%);
+ border-color:#75FF7B;box-shadow:0 0 0 5px #061A20,0 0 24px #75FF7BCC}
+html.rueda-prueba-violeta .centro{background:radial-gradient(circle at 38% 30%,#FFF 0 7%,#44E4FF 10% 34%,#8C25C7 38% 62%,#18072F 66%);
+ border-color:#D75BFF;box-shadow:0 0 0 5px #18072F,0 0 24px #D75BFFCC}
+html.rueda-prueba-area51 .centro{background:radial-gradient(circle at 38% 30%,#F5FFD7 0 7%,#B8FF3F 10% 34%,#3D571D 38% 62%,#101914 66%);
+ border-color:#D6FF36;box-shadow:0 0 0 5px #101914,0 0 24px #D6FF36BB}
+html.rueda-prueba-boreal .centro{background:radial-gradient(circle at 38% 30%,#E8FFFF 0 7%,#54F2FF 10% 34%,#126D83 38% 62%,#071631 66%);
+ border-color:#55F2FF;box-shadow:0 0 0 5px #071631,0 0 24px #55F2FFCC}
 
 .panel{display:flex;flex-direction:column;gap:12px}
 .aviso{background:#0C0616E6;border-left:3px solid var(--agua);border-radius:10px;padding:11px 14px;
@@ -2019,14 +2027,14 @@ function cargarRuedaSkinEquipada(){
   try{return localStorage.getItem("gya_rueda_skin_equipada")||"";}catch(e){return"";}
 }
 let ruedaSkinEquipada=cargarRuedaSkinEquipada();
-/* Las 15 imágenes de assets/ruedas/ están dibujadas por código (no por
-   IA) con exactamente los mismos 24 gajos, en el mismo orden y el
+/* Las imágenes de assets/ruedas/ están dibujadas con exactamente los
+   mismos 24 gajos, en el mismo orden y el
    mismo ángulo que usa segmentoDe() para calcular el resultado — por
    eso ninguna necesita corrección de rotación ni offset: el gajo que
    el juego dice que ganó SIEMPRE es el que está dibujado bajo la
    flecha. */
 const RUEDAS_PAUSADAS=false;
-const RUEDA_TEXTO_HORNEADO=new Set(["rueda-fuego","rueda-hielo","rueda-oro","rueda-neon","rueda-candy","rueda-candy-deluxe","rueda-espacio","rueda-selva","rueda-circo","rueda-sheriff","rueda-desierto","rueda-forajido","rueda-pepitas","rueda-locomotora","rueda-rodeo","rueda-casino","rueda-ovni","rueda-abduccion","rueda-gran-premio","rueda-3d"]);
+const RUEDA_TEXTO_HORNEADO=new Set(["rueda-fuego","rueda-hielo","rueda-oro","rueda-neon","rueda-candy","rueda-candy-deluxe","rueda-espacio","rueda-selva","rueda-circo","rueda-sheriff","rueda-desierto","rueda-forajido","rueda-pepitas","rueda-locomotora","rueda-rodeo","rueda-casino","rueda-ovni","rueda-abduccion","rueda-gran-premio","rueda-3d","rueda-haz-esmeralda","rueda-portal-violeta","rueda-area-51","rueda-abduccion-boreal"]);
 function dibujarRuedaJuego(){
   const CENTRO=300,paso=Math.PI*2/SEG.length,conSkin=!RUEDAS_PAUSADAS&&!!ruedaSkinEquipada;
   cx.clearRect(0,0,600,600);
@@ -3943,7 +3951,11 @@ const PUNTEROS_PRUEBA=[{id:"",nombre:"Clásico"},...PUNTEROS_TIENDA.map(p=>({id:
 const RULETAS_PRUEBA=[
   {id:"rueda-gran-premio",nombre:"Gran Premio",clase:"rueda-prueba-premium"},
   {id:"rueda-candy-deluxe",nombre:"Candy Deluxe",clase:"rueda-prueba-candy"},
-  {id:"rueda-3d",nombre:"Rueda 3D",clase:"rueda-prueba-3d"}
+  {id:"rueda-3d",nombre:"Rueda 3D",clase:"rueda-prueba-3d"},
+  {id:"rueda-haz-esmeralda",nombre:"Haz Esmeralda",clase:"rueda-prueba-esmeralda"},
+  {id:"rueda-portal-violeta",nombre:"Portal Violeta",clase:"rueda-prueba-violeta"},
+  {id:"rueda-area-51",nombre:"Área 51",clase:"rueda-prueba-area51"},
+  {id:"rueda-abduccion-boreal",nombre:"Abducción Boreal",clase:"rueda-prueba-boreal"}
 ];
 function cargarPunterosComprados(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_punteros_owned")||"[]"));}catch(e){return new Set();}
@@ -3958,7 +3970,7 @@ let enPruebaPunteros=false,punteroSelectorIdx=0,girosPruebaPunteros=0,ruedaPrueb
 function aplicarRuedaPruebaSeleccionada(){
   const r=RULETAS_PRUEBA.find(x=>x.id===ruedaPruebaId)||RULETAS_PRUEBA[0];
   ruedaPruebaId=r.id;ruedaSkinEquipada=r.id;
-  ["rueda-prueba-premium","rueda-prueba-candy","rueda-prueba-3d"].forEach(c=>document.documentElement.classList.remove(c));
+  [...new Set(RULETAS_PRUEBA.map(x=>x.clase))].forEach(c=>document.documentElement.classList.remove(c));
   document.documentElement.classList.add(r.clase);
   aplicarRuedaSkin();
   if($("ruedaNombreSel"))$("ruedaNombreSel").textContent="Ruleta: "+r.nombre;
@@ -3969,7 +3981,7 @@ function activarRuedaPruebaPremium(){
 }
 function restaurarRuedaTrasPrueba(){
   if(ruedaPruebaAnterior!==null){ruedaSkinEquipada=ruedaPruebaAnterior;ruedaPruebaAnterior=null;}
-  ["rueda-prueba-premium","rueda-prueba-candy","rueda-prueba-3d"].forEach(c=>document.documentElement.classList.remove(c));
+  [...new Set(RULETAS_PRUEBA.map(x=>x.clase))].forEach(c=>document.documentElement.classList.remove(c));
   aplicarRuedaSkin();
 }
 function aplicarPunteroPrueba(){
@@ -6899,7 +6911,11 @@ const RUEDAS_SKIN=[
   {id:"rueda-ovni",nombre:"Rueda OVNI",precio:12000,nuevo:true},
   {id:"rueda-abduccion",nombre:"Rueda Abducción",precio:12000,nuevo:true},
   {id:"rueda-gran-premio",nombre:"Rueda Gran Premio",precio:13500,nuevo:true},
-  {id:"rueda-3d",nombre:"Rueda 3D",precio:13500,nuevo:true}
+  {id:"rueda-3d",nombre:"Rueda 3D",precio:13500,nuevo:true},
+  {id:"rueda-haz-esmeralda",nombre:"Haz Esmeralda",precio:13500,nuevo:true},
+  {id:"rueda-portal-violeta",nombre:"Portal Violeta",precio:13500,nuevo:true},
+  {id:"rueda-area-51",nombre:"Área 51",precio:13500,nuevo:true},
+  {id:"rueda-abduccion-boreal",nombre:"Abducción Boreal",precio:13500,nuevo:true}
 ];
 function cargarRuedasComprados(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_ruedas_owned")||"[]"));}catch(e){return new Set();}
@@ -6931,10 +6947,19 @@ if(!localStorage.getItem("gya_ruedas_prueba_limpiada_v2")){
 }
 const ruedaSkinPoseida=m=>!m.precio||ruedasComprados.has(m.id);
 const guardarRuedaSkinEquipada=()=>{try{localStorage.setItem("gya_rueda_skin_equipada",ruedaSkinEquipada||"");}catch(e){}};
+const RUEDA_CENTRO_TEMA={
+  "rueda-haz-esmeralda":"rueda-prueba-esmeralda",
+  "rueda-portal-violeta":"rueda-prueba-violeta",
+  "rueda-area-51":"rueda-prueba-area51",
+  "rueda-abduccion-boreal":"rueda-prueba-boreal"
+};
 function aplicarRuedaSkin(){
+  Object.values(RUEDA_CENTRO_TEMA).forEach(c=>document.documentElement.classList.remove(c));
+  if(RUEDA_CENTRO_TEMA[ruedaSkinEquipada])document.documentElement.classList.add(RUEDA_CENTRO_TEMA[ruedaSkinEquipada]);
   cv.style.backgroundImage=(!RUEDAS_PAUSADAS&&ruedaSkinEquipada)?"url('assets/ruedas/"+ruedaSkinEquipada+".webp')":"none";
   dibujarRuedaJuego();
 }
+aplicarRuedaSkin();
 function equiparRuedaSkin(id){
   ruedaSkinEquipada=id||"";guardarRuedaSkinEquipada();
   aplicarRuedaSkin();
