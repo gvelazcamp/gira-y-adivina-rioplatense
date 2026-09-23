@@ -6779,7 +6779,15 @@ const FICHAS_SKIN=[
   {id:"ficha-oro",nombre:"Joya Real",precio:2250,nuevo:true},
   {id:"ficha-alien",nombre:"Nave Alien",precio:1875,nuevo:true},
   {id:"ficha-rayo",nombre:"Tormenta Eléctrica",precio:1750,nuevo:true},
-  {id:"ficha-ovni",nombre:"Abducción",precio:2250,nuevo:true}
+  {id:"ficha-ovni",nombre:"Abducción",precio:2250,nuevo:true},
+  {id:"ficha-mate-cosmico",nombre:"Mate Cósmico",precio:2500,nuevo:true},
+  {id:"ficha-parrilla-brava",nombre:"Parrilla Brava",precio:2500,nuevo:true},
+  {id:"ficha-carnaval-dorado",nombre:"Carnaval Dorado",precio:2750,nuevo:true},
+  {id:"ficha-costa-magica",nombre:"Costa Mágica",precio:2500,nuevo:true},
+  {id:"ficha-tormenta-violeta",nombre:"Tormenta Violeta",precio:2500,nuevo:true},
+  {id:"ficha-graffiti-urbano",nombre:"Graffiti Urbano",precio:2500,nuevo:true},
+  {id:"ficha-bosque-encantado",nombre:"Bosque Encantado",precio:2500,nuevo:true},
+  {id:"ficha-retro-arcade",nombre:"Retro Arcade",precio:2500,nuevo:true}
 ];
 function cargarFichasComprados(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_fichas_owned")||"[]"));}catch(e){return new Set();}
