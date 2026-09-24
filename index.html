@@ -1076,6 +1076,12 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   </div>
 </div>
 
+<div class="capa" id="capaTorneos"><div class="caja rk-caja" style="text-align:center">
+  <h2>🏆 Torneos</h2>
+  <p class="sub" style="margin:6px 0 18px">Competí contra otros jugadores — muy pronto en Girá y Adiviná.</p>
+  <button class="no" id="torneosCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700">Cerrar</button>
+</div></div>
+
 <div class="capa" id="capaUsuarios"><div class="caja rk-caja">
   <h2>👥 Usuarios</h2>
   <p class="sub" style="margin:6px 0 14px">Todos los que jugaron, se hayan anotado al ranking o no.</p>
@@ -3714,7 +3720,8 @@ $("bSocial").onclick=()=>{
   $("socialContinuar").style.display=esGonzalo()?"block":"none";
   $("capaSocial").classList.add("ver");
 };
-$("bTorneos").onclick=()=>mostrarToast("🏆","Próximamente");
+$("bTorneos").onclick=()=>$("capaTorneos").classList.add("ver");
+$("torneosCerrar").onclick=()=>$("capaTorneos").classList.remove("ver");
 $("socialCerrar").onclick=()=>$("capaSocial").classList.remove("ver");
 $("socialContinuar").onclick=()=>{$("capaSocial").classList.remove("ver");usrAbrir();};
 async function usrCargarLista(){
@@ -4428,7 +4435,8 @@ const MENUS_CON_X={capaRuleta:"rwCerrar",capaTienda:"tnCerrar",capaLogros:"lgCer
   capaObjetivos:"objCerrar",capaRecords:"recCerrar",capaRanking:"rkCerrar",capaMas:"masCerrar",
   capaPruebas:"pruebasCerrar",
   capaTutorial:"tutoCerrar",capaSalaTVMenu:"salaTVMenuCerrar",capaJugarOnlineMenu:"jugarOnlineMenuCerrar",
-  capaModoOnline:"modoOnlineCerrar",capaSeccionTienda:"seccionTiendaCerrar",capaUsuarios:"usrCerrar"};
+  capaModoOnline:"modoOnlineCerrar",capaSeccionTienda:"seccionTiendaCerrar",capaUsuarios:"usrCerrar",
+  capaTorneos:"torneosCerrar"};
 $("bMasOpciones").onclick=()=>{actualizarAccesoPruebas();$("capaMas").classList.add("ver");};
 $("bPruebas").onclick=()=>{$("capaPruebas").classList.add("ver");};
 $("bPruebaPunteros").onclick=iniciarPruebaPunteros;
