@@ -408,7 +408,8 @@ body.gonzalo-admin .frame-card .tn-admin-x,body.gonzalo-admin .tn-item .tn-admin
 .tn-precios{display:flex;flex-direction:column;gap:5px;align-items:stretch;flex-shrink:0}
 .tn-comprar-mini{background:transparent;color:var(--agua);font-weight:700;border:1px solid #37D6C066;
  border-radius:8px;padding:5px 10px;font-size:.7rem;white-space:nowrap}
-.tn-comprar:disabled{opacity:1;background:#4A3D5C;color:#C9B8DE;cursor:not-allowed;box-shadow:none}
+.tn-comprar:disabled,.tn-comprar-real:disabled{opacity:1;background:#4A3D5C;color:#C9B8DE;cursor:not-allowed;box-shadow:none}
+.tn-precio-tachado{font-size:.68rem;color:#8A7A9E;text-decoration:line-through;margin-top:-2px}
 .tn-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}
 /* Los paquetes de "Paquetes con dinero real" (.tn-item.tn-real) ya están
    conectados a Google Play Billing. Los botoncitos "💳 $X.XX" que aparecen
@@ -1391,8 +1392,10 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="tn-comprar-real" data-producto="monedas_3500">$4.99</button>
   </div>
   <div class="tn-item tn-card tn-real">
+  <div class="tn-card-contenido"><span>-33%</span></div>
   <div class="tn-card-img" style="background-image:url('assets/shop/monedas-4.webp')"></div>
   <div class="tn-card-info"><b>8.500 monedas</b><span>7.000 + 1.500 de regalo</span></div>
+  <span class="tn-precio-tachado">$14.99</span>
   <button class="tn-comprar-real" data-producto="monedas_8500">$9.99</button>
   </div>
   <div class="tn-item tn-card tn-real">
@@ -1404,6 +1407,11 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <div class="tn-card-img" style="background-image:url('assets/shop/vida-infinita.webp')"></div>
   <div class="tn-card-info"><b>Vidas infinitas 24hs</b><span>Jugá sin límite por un día</span></div>
   <button class="tn-comprar-real" data-producto="vidas_infinitas_24h">$1.99</button>
+  </div>
+  <div class="tn-item tn-card tn-real">
+  <div class="tn-card-img">🚫📺</div>
+  <div class="tn-card-info"><b>Sin publicidad</b><span>Sacá los anuncios para siempre</span></div>
+  <button class="tn-comprar-real" data-producto="sin_publicidad">$2.99</button>
   </div>
   </div>
   <button class="no" id="tnCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
@@ -2177,6 +2185,7 @@ function cargarMeta(){
   if(typeof m.mejorRachaVictorias!=="number")m.mejorRachaVictorias=0;
   if(typeof m.pistasGratis!=="number")m.pistasGratis=0;
   if(typeof m.vidasInfinitasHasta!=="number")m.vidasInfinitasHasta=0;
+  if(typeof m.sinAnuncios!=="boolean")m.sinAnuncios=false;
   return m;
 }
 let meta=cargarMeta();
@@ -3008,7 +3017,8 @@ const TN_PRODUCTOS_REALES={
   monedas_3500:{monedas:3500},
   monedas_8500:{monedas:8500},
   vidas_llenas:{vidasLlenas:true},
-  vidas_infinitas_24h:{vidasInfinitas24hs:true}
+  vidas_infinitas_24h:{vidasInfinitas24hs:true},
+  sin_publicidad:{sinPublicidad:true,noConsumible:true}
 };
 let tnDigitalGoods=null;
 async function tnInicializarBilling(){
@@ -3016,6 +3026,7 @@ async function tnInicializarBilling(){
   try{
     tnDigitalGoods=await window.getDigitalGoodsService("https://play.google.com/billing");
     tnActualizarPreciosReales();
+    tnRestaurarCompras();
   }catch(e){tnDigitalGoods=null;}
 }
 async function tnActualizarPreciosReales(){
@@ -3024,20 +3035,38 @@ async function tnActualizarPreciosReales(){
     const detalles=await tnDigitalGoods.getDetails(Object.keys(TN_PRODUCTOS_REALES));
     detalles.forEach(d=>{
       const btn=document.querySelector('.tn-comprar-real[data-producto="'+d.itemId+'"]');
-      if(btn)try{btn.textContent=new Intl.NumberFormat(navigator.language,{style:"currency",currency:d.price.currency}).format(d.price.value);}catch(e){}
+      if(btn&&!btn.disabled)try{btn.textContent=new Intl.NumberFormat(navigator.language,{style:"currency",currency:d.price.currency}).format(d.price.value);}catch(e){}
     });
   }catch(e){}
 }
+/* "Sin publicidad" no se consume: si el jugador reinstala la app o
+   cambia de celular, Play Store sabe que ya lo compró — esto lo
+   restaura sin volver a cobrarle. */
+async function tnRestaurarCompras(){
+  if(!tnDigitalGoods||!tnDigitalGoods.listPurchases)return;
+  try{
+    const compras=await tnDigitalGoods.listPurchases();
+    compras.forEach(c=>{if(c.itemId==="sin_publicidad"){meta.sinAnuncios=true;guardarMeta();}});
+    tnActualizarBotonesNoConsumibles();
+  }catch(e){}
+}
+function tnActualizarBotonesNoConsumibles(){
+  const btn=document.querySelector('.tn-comprar-real[data-producto="sin_publicidad"]');
+  if(btn&&meta.sinAnuncios){btn.disabled=true;btn.textContent="✅ Comprado";}
+}
 tnInicializarBilling();
+tnActualizarBotonesNoConsumibles();
 function tnOtorgarProductoReal(id){
   const p=TN_PRODUCTOS_REALES[id];if(!p)return;
   if(p.monedas){sumarMonedas(p.monedas);mundoActualizarHud();mostrarToast("🪙","+"+p.monedas+" monedas");}
   else if(p.vidasLlenas){meta.vidas=VIDAS_MAX;meta.proxima=0;guardarMeta();mundoActualizarHud();mostrarToast("❤️","Vidas llenas");}
   else if(p.vidasInfinitas24hs){meta.vidasInfinitasHasta=Date.now()+24*60*60*1000;guardarMeta();mundoActualizarHud();mostrarToast("❤️","Vidas infinitas por 24hs");}
+  else if(p.sinPublicidad){meta.sinAnuncios=true;guardarMeta();mostrarToast("🚫📺","Listo, sin anuncios para siempre");tnActualizarBotonesNoConsumibles();}
   tnActualizar();
 }
 async function tnComprarReal(id){
   if(!tnDigitalGoods){mostrarToast("🚧","Disponible solo en la app instalada desde Google Play");return;}
+  const p=TN_PRODUCTOS_REALES[id];
   try{
     const detalles=await tnDigitalGoods.getDetails([id]);
     const item=detalles&&detalles[0];
@@ -3048,7 +3077,7 @@ async function tnComprarReal(id){
     const response=await request.show();
     const token=response.details.token||response.details.purchaseToken;
     await response.complete("success");
-    if(token&&tnDigitalGoods.consume)await tnDigitalGoods.consume(token);
+    if(token&&tnDigitalGoods.consume&&!(p&&p.noConsumible))await tnDigitalGoods.consume(token);
     tnOtorgarProductoReal(id);
   }catch(e){
     if(e&&e.name==="AbortError")return;
