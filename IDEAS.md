@@ -119,3 +119,756 @@ para que el premio de pista se pueda gastar de verdad en `hostPista()`.
       preparado en el código pero sin el arte subido a
       `assets/frames/` todavía — falta generar/subir esas 20 imágenes
       y activarlos.
+- [ ] **Pack Pescera / Acuario**: guardar como estilo futuro para un
+      pack cosmético completo. Referencia visual: marco cuadrado con
+      vidrio azul, centro crema limpio, peces, burbujas, algas, corales,
+      estrella de mar y brillo acuático. Puede convertirse más adelante
+      en pack con marco de tablero, fondo de tablero, avatar, puntero y
+      ruleta del mismo universo visual.
+
+---
+
+## Segunda app independiente: universo Girá y Adiviná
+
+> Plan guardado para el futuro. No implementar hasta que Gonzalo lo pida explícitamente.
+
+#### Estado de este documento
+
+Este archivo es un **plan para futuro**.
+
+NO implementar nada de esto todavía salvo que Gonzalo lo pida explícitamente.
+
+La idea es que, cuando llegue el momento, Codex pueda usar este documento como guía para crear una **segunda app/juego independiente**, conectada conceptualmente con **Girá y Adiviná Rioplatense**, pero sin convertir el juego actual en una app llena de modos distintos.
+
+---
+
+### Idea principal
+
+Mantener:
+
+**Girá y Adiviná Rioplatense**
+
+como juego independiente centrado en:
+
+- ruleta
+- frases
+- rondas
+- eventos
+- tienda
+- colecciones
+- juego online
+- Sala TV
+- progresión actual
+
+Y crear en el futuro una **segunda aplicación distinta**, aprovechando todo lo aprendido y reutilizando las mejores partes técnicas y visuales del proyecto actual.
+
+Nombre provisional:
+
+**Desafío Rioplatense**
+
+El nombre NO es definitivo.
+
+Puede cambiarse más adelante.
+
+---
+
+### Regla fundamental
+
+La segunda app:
+
+- NO debe reemplazar a Girá y Adiviná
+- NO debe mezclarse dentro del mismo juego como un conjunto gigante de minijuegos
+- NO debe romper ni transformar la identidad actual de Girá y Adiviná
+- debe ser un producto independiente
+- puede compartir identidad visual, universo y filosofía
+- debe poder enlazarse con Girá y Adiviná
+
+Pensarlo como:
+
+```text
+Girá y Adiviná Rioplatense
+            ↕
+      universo compartido
+            ↕
+     Desafío Rioplatense
+```
+
+---
+
+### Objetivo de la segunda app
+
+Crear un juego fácil de entender, rápido de jugar y con alta variedad.
+
+Debe buscar:
+
+- partidas cortas
+- rejugabilidad
+- desafíos diarios
+- competencia
+- juego con amigos
+- contenido compartible
+- eventos
+- coleccionables
+- progresión
+- razones para volver todos los días
+
+---
+
+### Concepto general
+
+La segunda app puede funcionar como una colección de desafíos rápidos.
+
+Ejemplos de tipos de prueba:
+
+- trivia
+- verdadero o falso
+- adivinar imágenes
+- reconocer lugares
+- cultura rioplatense
+- fútbol
+- música
+- ordenar respuestas
+- completar palabras
+- contrarreloj
+- duelo 1 vs 1
+- preguntas visuales
+- desafíos de ciudades
+- pruebas especiales de eventos
+
+No es obligatorio usar todos.
+
+La app debe empezar con pocos modos bien hechos y crecer después.
+
+---
+
+### Posibles módulos
+
+#### 1. Reto del día
+
+Todos reciben el mismo desafío diario.
+
+Puede incluir varias pruebas.
+
+Ejemplo:
+
+```text
+RETO DEL DÍA
+
+1. Trivia
+2. Imagen
+3. Lugar
+4. Contrarreloj
+5. Pregunta final
+```
+
+Al terminar:
+
+- resultado
+- tiempo
+- racha
+- recompensa
+- posibilidad de compartir
+
+Ejemplo de resultado:
+
+```text
+4/5
+01:37
+🔥 Racha: 6 días
+```
+
+---
+
+#### 2. Trivia rápida
+
+Partidas cortas de preguntas.
+
+Categorías posibles:
+
+- Uruguay
+- Argentina
+- Río de la Plata
+- fútbol
+- música
+- televisión
+- comida
+- historia
+- lugares
+- cultura popular
+- curiosidades
+
+---
+
+#### 3. Adiviná la imagen
+
+Mostrar una imagen parcialmente oculta, ampliada o progresivamente revelada.
+
+El jugador debe reconocer:
+
+- ciudad
+- lugar
+- comida
+- objeto
+- deportista
+- monumento
+- bandera
+- escudo
+- elemento cultural
+
+---
+
+#### 4. Conquistá Uruguay / Río de la Plata
+
+Reutilizar la experiencia aprendida con el mapa de Girá y Adiviná.
+
+Cada ciudad puede tener desafíos propios.
+
+Ejemplo:
+
+```text
+Montevideo
+├── Trivia
+├── Imagen
+├── Lugar
+└── Desafío final
+```
+
+Después se podría expandir a:
+
+- Argentina
+- Brasil
+- otros países
+- Latinoamérica
+- mundo
+
+---
+
+#### 5. Duelo 1 vs 1
+
+Partida rápida contra otro jugador.
+
+Ejemplo:
+
+```text
+Ronda 1 → Trivia
+Ronda 2 → Imagen
+Ronda 3 → Contrarreloj
+Ronda 4 → Lugar
+Ronda 5 → Final
+```
+
+Gana quien consigue más puntos.
+
+---
+
+#### 6. Sala TV
+
+Mantener la idea que ya existe en Girá y Adiviná:
+
+- TV como pantalla principal
+- celulares como controles
+- código de sala
+- amigos o familia jugando juntos
+
+La nueva app puede tener pruebas especialmente pensadas para grupo.
+
+---
+
+### Qué reutilizar conceptualmente de Girá y Adiviná
+
+No copiar código a ciegas.
+
+Primero revisar qué partes conviene convertir en módulos reutilizables.
+
+Áreas potencialmente reutilizables:
+
+- perfil
+- nombre de jugador
+- avatar
+- monedas
+- vidas
+- tienda
+- cosméticos
+- colecciones
+- eventos
+- objetivos diarios
+- ranking
+- amigos
+- recompensas
+- sonidos
+- música
+- modales
+- sistema de navegación
+- Sala TV
+- juego online
+- almacenamiento local
+- conexión con backend/ranking
+- PWA
+- instalación Android
+- service worker
+- estructura de assets
+
+---
+
+### Arquitectura futura recomendada
+
+Antes de desarrollar la segunda app, evaluar separar la arquitectura de Girá y Adiviná en componentes reutilizables.
+
+Ejemplo conceptual:
+
+```text
+/shared
+  perfil.js
+  economia.js
+  tienda.js
+  colecciones.js
+  eventos.js
+  ranking.js
+  audio.js
+  online.js
+  storage.js
+  ui.js
+
+/gira-y-adivina
+  juego-ruleta.js
+  frases.js
+  mundo.js
+
+/desafio-rioplatense
+  trivia.js
+  imagenes.js
+  reto-diario.js
+  duelos.js
+  mapa.js
+```
+
+Esto es solamente una referencia.
+
+Codex deberá analizar la arquitectura real del repositorio antes de decidir cómo hacerlo.
+
+---
+
+### MUY IMPORTANTE: no refactorizar Girá y Adiviná sin permiso
+
+Cuando se empiece este proyecto:
+
+NO hacer una refactorización gigante del juego actual automáticamente.
+
+Primero:
+
+1. analizar el repo
+2. identificar qué puede reutilizarse
+3. proponer una estrategia
+4. crear la segunda app de forma segura
+5. tocar Girá y Adiviná solamente cuando sea necesario y con autorización explícita
+
+Regla:
+
+**No romper lo que ya funciona para conseguir reutilización técnica.**
+
+---
+
+### Relación entre las dos apps
+
+Las apps deben estar conectadas visualmente y mediante enlaces.
+
+#### En Girá y Adiviná
+
+Agregar en el futuro una sección tipo:
+
+```text
+🌎 MÁS JUEGOS
+
+Desafío Rioplatense
+Probá un nuevo desafío
+```
+
+Al tocar:
+
+- si la segunda app está instalada → abrirla
+- si no está instalada → llevar a su página correspondiente
+
+---
+
+#### En la segunda app
+
+Agregar:
+
+```text
+🎡 GIRÁ Y ADIVINÁ
+
+Jugá al clásico de la ruleta
+```
+
+Al tocar:
+
+- abrir Girá y Adiviná si está instalado
+- o llevar a su página de instalación
+
+---
+
+### Deep links / App Links
+
+Para conectar ambas aplicaciones, evaluar:
+
+- Android App Links
+- deep links
+- enlaces web/PWA
+- fallback a Play Store o página web
+
+No implementar hasta conocer:
+
+- dominio definitivo
+- package names
+- URLs finales
+- forma de distribución
+
+---
+
+### Identidad compartida
+
+Las apps pueden sentirse parte del mismo universo.
+
+Compartir conceptos como:
+
+- azul nocturno
+- violeta oscuro
+- dorado
+- rosa/magenta
+- celeste
+- estética rioplatense
+- ilustración 3D premium
+- personajes/avatares
+- lenguaje visual
+
+Pero la segunda app debe tener personalidad propia.
+
+No hacer una copia visual exacta.
+
+---
+
+### Posible ecosistema futuro
+
+La idea puede crecer a varias apps:
+
+```text
+UNIVERSO RIoplatense
+
+├── Girá y Adiviná
+├── Desafío Rioplatense
+├── futuro juego 3
+└── futuro juego 4
+```
+
+Cada juego independiente.
+
+Todos pueden promocionarse entre sí.
+
+---
+
+### Posible cuenta compartida
+
+Más adelante se puede evaluar una cuenta común para todas las apps.
+
+Podría compartir:
+
+- nombre
+- avatar
+- amigos
+- logros globales
+- identidad del jugador
+
+Pero NO asumir desde el principio que:
+
+- monedas
+- vidas
+- compras
+- inventarios
+
+deben ser compartidos.
+
+Eso requiere una decisión de diseño y economía.
+
+---
+
+### Recompensas cruzadas
+
+Posible función futura:
+
+```text
+Jugá Desafío Rioplatense
+y desbloqueá un cosmético
+en Girá y Adiviná.
+```
+
+O al revés.
+
+Ejemplos:
+
+- avatar exclusivo
+- marco
+- título
+- ficha
+- fondo
+- insignia
+
+Usar con moderación.
+
+No obligar al jugador a instalar otra app para poder disfrutar normalmente del juego principal.
+
+---
+
+### Objetivo de atracción y retención
+
+La nueva app debe buscar tres cosas:
+
+#### 1. Entenderse rápido
+
+El jugador debe comprender qué hacer en pocos segundos.
+
+#### 2. Partidas cortas
+
+Idealmente permitir jugar aunque alguien tenga solamente unos minutos.
+
+#### 3. Motivo para volver
+
+Ejemplos:
+
+- reto diario
+- eventos
+- rachas
+- ranking
+- nuevas ciudades
+- colecciones
+- recompensas
+- desafíos semanales
+
+---
+
+### Compartir resultados
+
+Priorizar resultados fáciles de compartir.
+
+Ejemplo:
+
+```text
+DESAFÍO RIOPLATENSE
+
+🧠 4/5
+⏱️ 01:37
+🔥 Racha 6
+
+¿Me ganás?
+```
+
+El contenido compartido NO debe revelar automáticamente las respuestas.
+
+---
+
+### Tienda
+
+La segunda app puede reutilizar la filosofía de tienda de Girá y Adiviná.
+
+Posibles cosméticos:
+
+- avatares
+- marcos
+- fondos
+- tarjetas de perfil
+- efectos de victoria
+- animaciones
+- títulos
+- emotes
+- estilos de respuesta
+- temas visuales
+
+Evitar que las compras den una ventaja injusta en partidas competitivas.
+
+Priorizar cosméticos.
+
+---
+
+### Eventos
+
+La estructura de Eventos de Girá y Adiviná puede servir de inspiración.
+
+Ejemplos futuros:
+
+- Evento Montevideo
+- Evento Carnaval
+- Evento Fútbol
+- Evento Clásicos
+- Evento Verano
+- Evento Halloween
+- Evento Mundial
+- Evento Argentina
+- Evento especial de fin de semana
+
+Cada evento puede cambiar:
+
+- desafíos
+- recompensas
+- estética
+- coleccionables
+
+---
+
+### Desarrollo por fases
+
+#### Fase 0 — No hacer todavía
+
+Guardar este documento.
+
+Seguir desarrollando Girá y Adiviná normalmente.
+
+---
+
+#### Fase 1 — Definición
+
+Cuando Gonzalo decida empezar:
+
+- definir nombre
+- definir icono
+- definir mecánica principal
+- definir 2 o 3 módulos iniciales
+- definir estética
+- decidir si será PWA + Android como Girá y Adiviná
+
+---
+
+#### Fase 2 — Base técnica
+
+Crear un proyecto nuevo.
+
+No desarrollar dentro del mismo `index.html` de Girá y Adiviná.
+
+Preparar:
+
+- estructura de carpetas
+- navegación
+- perfil
+- almacenamiento
+- HUD
+- audio
+- sistema de pantallas
+
+---
+
+#### Fase 3 — Primer modo
+
+Construir solamente un modo completo.
+
+Recomendación inicial:
+
+**Reto del Día**
+
+porque permite probar:
+
+- preguntas
+- puntuación
+- resultado
+- racha
+- recompensa
+- compartir
+- retorno diario
+
+---
+
+#### Fase 4 — Segundo modo
+
+Agregar:
+
+**Trivia rápida**
+
+o:
+
+**Duelo 1 vs 1**
+
+según el comportamiento de los primeros jugadores.
+
+---
+
+#### Fase 5 — Mundo / ciudades
+
+Agregar progresión geográfica solamente después de tener estable el núcleo de juego.
+
+---
+
+#### Fase 6 — Conectar ambas apps
+
+Agregar enlaces cruzados entre:
+
+- Girá y Adiviná
+- nueva app
+
+Después evaluar:
+
+- deep links
+- recompensas cruzadas
+- perfil compartido
+
+---
+
+### Principios para Codex
+
+Cuando este proyecto se active:
+
+1. Leer primero el repositorio completo de Girá y Adiviná.
+2. No modificar nada automáticamente.
+3. Identificar patrones reutilizables.
+4. Separar claramente código reutilizable de código específico de la ruleta.
+5. Crear la segunda app como proyecto independiente.
+6. No copiar bugs o deuda técnica innecesaria.
+7. Mantener compatibilidad móvil desde el comienzo.
+8. Diseñar primero para celular.
+9. Mantener posibilidad de PC/TV cuando corresponda.
+10. Priorizar rendimiento.
+11. Evitar dependencias innecesarias.
+12. Mantener código fácil de continuar con Codex en futuras sesiones.
+
+---
+
+### Regla de seguridad del proyecto
+
+**NO ROMPER LO QUE FUNCIONA.**
+
+Si una modificación necesaria para la segunda app implica tocar Girá y Adiviná:
+
+- explicar primero qué se necesita tocar
+- explicar por qué
+- aislar el cambio
+- mantener compatibilidad
+- no borrar funciones existentes sin una razón concreta
+
+---
+
+### Resumen ejecutivo
+
+La estrategia futura es:
+
+**NO transformar Girá y Adiviná en un mega juego con todos los modos.**
+
+Crear una segunda app independiente, provisionalmente llamada:
+
+**Desafío Rioplatense**
+
+que reutilice lo aprendido con Girá y Adiviná y pueda incorporar:
+
+- Reto del Día
+- Trivia
+- Imágenes
+- Ciudades
+- Duelos
+- Sala TV
+- Eventos
+- Ranking
+- Colecciones
+- Tienda
+
+Ambas aplicaciones estarán conectadas mediante una sección tipo:
+
+**“Más juegos”**
+
+y podrán formar parte de un mismo universo de juegos rioplatenses.
+
+La segunda app debe diseñarse desde el principio para crecer sin tener que reconstruir nuevamente toda la infraestructura.
