@@ -410,6 +410,8 @@ body.gonzalo-admin .frame-card .tn-admin-x,body.gonzalo-admin .tn-item .tn-admin
 .evento-card-ciudad .evento-card-premios::before{content:"PREMIOS AL GANAR";color:#72F1DF}
 .evento-card-finde .evento-card-premios::before{content:"PREMIOS AL GANAR";color:#FF9CC4}
 .evento-card-premio-emoji{font-size:1.9rem;line-height:1;filter:drop-shadow(0 2px 2px #00000055)}
+.evento-card-premio-item{position:relative;display:inline-flex}
+.evento-card-premio-badge{position:absolute;bottom:-3px;right:-8px;background:var(--agua);color:var(--tinta);font-size:.5rem;font-weight:900;border-radius:6px;padding:1px 3px;line-height:1;white-space:nowrap;box-shadow:0 1px 2px #00000055}
 .evento-card-premio-visual{display:inline-flex;align-items:center;flex:0 0 auto}
 @media(max-width:390px){
  .evento-card{padding:13px 12px}.evento-card-cuerpo{gap:10px}.evento-card-ico{width:42px;height:42px;font-size:1.8rem}
@@ -1871,7 +1873,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
           <small id="evFindeEstado">5 rondas · Reintentá hasta ganar · Cada derrota cuesta 1 vida</small></span>
         <span class="evento-card-premios">
           <span class="evento-card-premio-emoji">🪙</span>
-          <span class="evento-card-premio-emoji">❤️</span>
+          <span class="evento-card-premio-item"><span class="evento-card-premio-emoji">❤️</span><span class="evento-card-premio-badge">30m</span></span>
           <span class="evento-card-premio-emoji">🎡</span>
         </span>
       </span>
