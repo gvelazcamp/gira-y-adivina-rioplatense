@@ -3661,8 +3661,12 @@ async function empujarRanking(){
   if(!apodoRestaurar)return;
   (async()=>{
     try{
-      const supa=obtenerSupa();
-      if(!supa){alert("Supabase no disponible");return;}
+      let supa=null;
+      for(let i=0;i<50&&!supa;i++){
+        supa=obtenerSupa();
+        if(!supa)await new Promise(res=>setTimeout(res,200));
+      }
+      if(!supa){alert("Supabase no disponible (no cargó a tiempo)");return;}
       const r=await supa.from("gya_ranking").select("*").eq("apodo",apodoRestaurar);
       const rows=r.data||[];
       if(!rows.length){alert("No se encontró perfil para "+apodoRestaurar);return;}
