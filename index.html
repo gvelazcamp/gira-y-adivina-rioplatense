@@ -1460,14 +1460,6 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="no" id="ptMasTarde" style="width:100%;border-radius:12px;padding:12px;font-weight:700">Más tarde</button>
 </div></div>
 
-<div class="capa" id="capaMonedasGratis"><div class="caja" style="max-width:380px;text-align:center" role="dialog" aria-modal="true" aria-labelledby="gratisTitulo">
-  <img src="assets/shop/regalo.webp" alt="" style="width:140px;height:140px;object-fit:contain">
-  <h2 id="gratisTitulo">¡80 monedas de regalo!</h2>
-  <p id="gratisMensaje" aria-live="polite">Tu regalo diario te está esperando.</p>
-  <button class="btn-grande" id="gratisRecoger">Recoger</button>
-  <button class="no" id="gratisCerrar" style="width:100%;margin-top:12px;padding:12px;border-radius:12px">Más tarde</button>
-</div></div>
-
 <div class="capa" id="capaBienvenida"><div class="caja" style="max-width:380px;padding:0;background:transparent;border:none;border-radius:20px;overflow:hidden;position:relative">
   <img src="assets/tutorial/bienvenida.webp" alt="Aprendé en 30 segundos: girás la ruleta, elegís una letra, adivinás y ganás" style="width:100%;display:block">
   <button id="bienvenidaCerrarX" aria-label="Cerrar" style="position:absolute;left:86.5%;top:3%;width:11%;aspect-ratio:1;background:transparent;border:none;padding:0"></button>
@@ -2424,8 +2416,8 @@ $("objLista").addEventListener("click",e=>{
 $("pdVamos").onclick=()=>{$("capaPartidaDiaria").classList.remove("ver");iniciarPartidaDiaria();};
 $("pdMasTarde").onclick=()=>{$("capaPartidaDiaria").classList.remove("ver");pdGuardarEstado("pospuesto");objActualizarBadge();ptChequearAutoPopup();};
 let ptVistaPrueba=false;
-$("ptIrTienda").onclick=()=>{$("capaPromoTienda").classList.remove("ver","pt-vista-prueba");ptDetenerChromaKey();if(!ptVistaPrueba){ptGuardarEstado("vista");programarMonedasGratis();}ptVistaPrueba=false;$("bTienda").click();};
-$("ptMasTarde").onclick=()=>{$("capaPromoTienda").classList.remove("ver","pt-vista-prueba");ptDetenerChromaKey();if(!ptVistaPrueba){ptGuardarEstado("vista");programarMonedasGratis();}ptVistaPrueba=false;};
+$("ptIrTienda").onclick=()=>{$("capaPromoTienda").classList.remove("ver","pt-vista-prueba");ptDetenerChromaKey();if(!ptVistaPrueba){ptGuardarEstado("vista");}ptVistaPrueba=false;$("bTienda").click();};
+$("ptMasTarde").onclick=()=>{$("capaPromoTienda").classList.remove("ver","pt-vista-prueba");ptDetenerChromaKey();if(!ptVistaPrueba){ptGuardarEstado("vista");}ptVistaPrueba=false;};
 $("bienvenidaTutorial").onclick=()=>{$("capaBienvenida").classList.remove("ver");iniciarTutorial();};
 function bienvenidaContinuarSinTutorial(){
   $("capaBienvenida").classList.remove("ver");
@@ -2661,7 +2653,21 @@ function finalizarEventoCiudad(ganado,detalle,abandonado){
    rondas en vez de 3, premio más grande, y solo disponible sábado y
    domingo. Usa un offset de premio rotativo distinto (1) para que
    nunca coincida de categoría con los otros dos eventos del día. */
-function esFinDeSemana(){const d=new Date().getDay();return d===0||d===6;}
+// Misma hora local para disponibilidad y contador: sábado 00:00 a lunes 00:00.
+function eventoFindeHorario(ahora=new Date()){
+  const dia=ahora.getDay(),activo=dia===0||dia===6;
+  const limite=new Date(ahora);
+  limite.setHours(0,0,0,0);
+  limite.setDate(limite.getDate()+(activo?(dia===6?2:1):(6-dia)));
+  return {activo,limite};
+}
+function esFinDeSemana(){return eventoFindeHorario().activo;}
+function eventoFindeTiempoTxt(ahora=new Date()){
+  const {activo,limite}=eventoFindeHorario(ahora);
+  const minutos=Math.max(0,Math.ceil((limite-ahora)/60000));
+  const dias=Math.floor(minutos/1440),horas=Math.floor(minutos%1440/60),min=minutos%60;
+  return "⏳ "+(activo?"Termina en ":"Empieza en ")+(dias?dias+"d ":"")+horas+"h "+min+"min";
+}
 let esEventoFinde=false,eventoFindePartida=null,eventoFindeResultado=false;
 function leerEventoFinde(){
   try{eventoFindeRegistro=JSON.parse(localStorage.getItem("gya_evento_finde"))||eventoFindeRegistro;}catch(e){}
@@ -3059,54 +3065,15 @@ function gratisDiariaTextoEspera(){
   const hh=Math.floor(rest/3600000),mm=Math.floor(rest%3600000/60000);
   return"⏳ "+hh+"h "+mm+"m";
 }
-let gratisReclamando=false,gratisPopupTimer=null,gratisPopupVisto=false;
-// Integración de anuncio: asignar window.gyaAnuncioMonedasGratis a una función
-// async que resuelva true SOLO al completar el anuncio. Sin proveedor, modo prueba.
-async function anuncioMonedasGratis(){
-  if(typeof window.gyaAnuncioMonedasGratis==="function")return await window.gyaAnuncioMonedasGratis()===true;
-  return true;
-}
-function abrirMonedasGratis(){
+function recogerMonedasGratis(){
   if(!gratisDiariaPuedeReclamar())return;
-  gratisPopupVisto=true;
-  $("gratisMensaje").textContent="Tu regalo diario te está esperando.";
-  $("gratisRecoger").disabled=gratisReclamando;
-  $("gratisRecoger").textContent="Recoger";
-  $("capaMonedasGratis").classList.add("ver");
+  const guardado=cargarMeta();
+  meta.ultimaGratisDiaria=Math.max(meta.ultimaGratisDiaria,guardado.ultimaGratisDiaria);
+  if(!gratisDiariaPuedeReclamar())return;
+  meta.ultimaGratisDiaria=Date.now();sumarMonedas(80);guardarMeta();
+  tnActualizar();mundoActualizarHud();
+  mostrarPackItems([{icono:"🪙",texto:"+80 monedas · regalo diario"}]);
 }
-function programarMonedasGratis(){
-  if(gratisPopupTimer!==null||gratisPopupVisto||!gratisDiariaPuedeReclamar())return;
-  const intentar=()=>{
-    gratisPopupTimer=null;
-    if(gratisPopupVisto||!gratisDiariaPuedeReclamar())return;
-    if(document.hidden||$("setup").style.display==="none"||document.querySelector(".capa.ver")){
-      gratisPopupTimer=setTimeout(intentar,1000);return;
-    }
-    abrirMonedasGratis();
-  };
-  gratisPopupTimer=setTimeout(intentar,500);
-}
-async function recogerMonedasGratis(){
-  if(gratisReclamando||!gratisDiariaPuedeReclamar())return;
-  gratisReclamando=true;$("gratisRecoger").disabled=true;
-  try{
-    if(!await anuncioMonedasGratis()){$("gratisMensaje").textContent="Completá el anuncio para recibir las monedas.";return;}
-    const acreditar=()=>{
-      // Releer solo esta marca por si otra pestaña ya reclamó durante el anuncio.
-      const guardado=cargarMeta();
-      meta.ultimaGratisDiaria=Math.max(meta.ultimaGratisDiaria,guardado.ultimaGratisDiaria);
-      if(!gratisDiariaPuedeReclamar())return false;
-      meta.ultimaGratisDiaria=Date.now();sumarMonedas(80);guardarMeta();return true;
-    };
-    const premio=navigator.locks?await navigator.locks.request("gya-regalo-diario",acreditar):acreditar();
-    $("capaMonedasGratis").classList.remove("ver");
-    tnActualizar();mundoActualizarHud();
-    if(premio)mostrarPackItems([{icono:"🪙",texto:"+80 monedas · regalo diario"}]);
-  }catch(e){$("gratisMensaje").textContent="No pudimos completar el regalo. Probá de nuevo.";}
-  finally{gratisReclamando=false;$("gratisRecoger").disabled=false;}
-}
-$("gratisRecoger").onclick=recogerMonedasGratis;
-$("gratisCerrar").onclick=()=>{if(!gratisReclamando)$("capaMonedasGratis").classList.remove("ver");};
 function tnPuedeComprar(tipo){
   if(tipo==="vida"||tipo==="recarga")return meta.vidas<VIDAS_MAX;
   if(tipo==="vida_infinita_30")return!vidasInfinitasActivas();
@@ -3393,7 +3360,7 @@ function tnNombreItem(b){
   return bEl?bEl.textContent:"esto";
 }
 function tnEjecutarCompra(tipo,precio){
-  if(tipo==="oferta_gratis"){abrirMonedasGratis();return;}
+  if(tipo==="oferta_gratis"){recogerMonedasGratis();return;}
   meta.monedas-=precio;
   if(tipo==="vida")recuperarVida();
   else if(tipo==="recarga"){meta.vidas=VIDAS_MAX;meta.proxima=0;}
@@ -3456,7 +3423,7 @@ function tnEjecutarCompra(tipo,precio){
 document.querySelectorAll(".tn-comprar").forEach(b=>{
   b.onclick=()=>{
     const tipo=b.dataset.tipo,precio=+b.dataset.precio;
-    if(tipo==="oferta_gratis"){abrirMonedasGratis();return;}
+    if(tipo==="oferta_gratis"){recogerMonedasGratis();return;}
     if(tipo==="ruleta"){
       $("confirmCompraTxt").textContent="¿Querés ir a tu giro diario?";
       $("confirmCompraSi").textContent="Sí";
@@ -7499,6 +7466,30 @@ function revelarEvento(id){
   try{localStorage.setItem("gya_eventos_revelados",JSON.stringify(eventosRevelados));}catch(e){}
   $(id).classList.remove("cerrado");
 }
+function actualizarEventoFindeUI(){
+  $("evTiempo3").textContent=eventoFindeTiempoTxt();
+  const finde=esFinDeSemana();
+  $("evBanner3").classList.toggle("fuera-de-fecha",!finde);
+  $("evBanner3").disabled=!finde;
+  if(!finde){
+    $("evBanner3").classList.remove("cerrado","bloqueado");
+    $("evFindeEstado").textContent="Disponible sábados y domingos · 5 rondas";
+  }else{
+    $("evBanner3").classList.toggle("cerrado",!eventoEstaRevelado("evBanner3"));
+    const estadoFinde=estadoEventoFinde(),bloqueadoFinde=estadoFinde==="ganado";
+    $("evBanner3").disabled=bloqueadoFinde;
+    $("evBanner3").classList.toggle("bloqueado",bloqueadoFinde);
+    if(bloqueadoFinde)$("evBanner3").classList.remove("cerrado");
+    $("evFindeEstado").textContent=estadoFinde==="ganado"?"✓ Completado · Volvé el próximo fin de semana":
+      "5 rondas · Reintentá hasta ganar · Cada derrota cuesta 1 vida";
+  }
+}
+setInterval(()=>{
+  if($("eventos").style.display!=="block")return;
+  const t=eventoTiempoRestanteTxt();
+  $("evTiempo1").textContent=t;$("evTiempo2").textContent=t;
+  actualizarEventoFindeUI();
+},1000);
 function abrirEventos(){
   detenerPartidaAnterior();
   cobrarEventoInterrumpido();
@@ -7521,7 +7512,7 @@ function abrirEventos(){
     registroFinde.premio:resolverPremioRotativo(eventoPremioDeHoy(1),ciudad.id);
   $("evVisual3").innerHTML=premioConcretoVisualHTML(premioFinde);
   const t=eventoTiempoRestanteTxt();
-  $("evTiempo1").textContent=t;$("evTiempo2").textContent=t;$("evTiempo3").textContent=t;
+  $("evTiempo1").textContent=t;$("evTiempo2").textContent=t;
   // Cada tarjeta permanece revelada hasta la siguiente rotación diaria.
   ["evBanner1","evBanner2"].forEach(id=>$(id).classList.toggle("cerrado",!eventoEstaRevelado(id)));
   const estado=estadoEventoCiudad(),bloqueado=estado==="ganado";
@@ -7529,21 +7520,7 @@ function abrirEventos(){
   if(bloqueado)$("evBanner2").classList.remove("cerrado");
   $("evCiudadEstado").textContent=estado==="ganado"?"✓ Completado · Volvé mañana":
     "3 rondas · Reintentá hasta ganar · Cada derrota cuesta 1 vida";
-  const finde=esFinDeSemana();
-  $("evBanner3").classList.toggle("fuera-de-fecha",!finde);
-  $("evBanner3").disabled=!finde;
-  if(!finde){
-    $("evBanner3").classList.remove("cerrado","bloqueado");
-    $("evFindeEstado").textContent="Disponible sábados y domingos · 5 rondas";
-  }else{
-    $("evBanner3").classList.toggle("cerrado",!eventoEstaRevelado("evBanner3"));
-    const estadoFinde=estadoEventoFinde(),bloqueadoFinde=estadoFinde==="ganado";
-    $("evBanner3").disabled=bloqueadoFinde;
-    $("evBanner3").classList.toggle("bloqueado",bloqueadoFinde);
-    if(bloqueadoFinde)$("evBanner3").classList.remove("cerrado");
-    $("evFindeEstado").textContent=estadoFinde==="ganado"?"✓ Completado · Volvé el próximo fin de semana":
-      "5 rondas · Reintentá hasta ganar · Cada derrota cuesta 1 vida";
-  }
+  actualizarEventoFindeUI();
   const mejorToss=entrenamientoMejor("toss"),mejorBonus=entrenamientoMejor("bonus");
   $("evEntrenoTossEstado").textContent="4 rondas · Ganá más de la mitad para superarlo"+(mejorToss?" · Mejor: "+mejorToss+"/4":"");
   $("evEntrenoBonusEstado").textContent="4 rondas · Ganá más de la mitad para superarlo"+(mejorBonus?" · Mejor: "+mejorBonus+"/4":"");
