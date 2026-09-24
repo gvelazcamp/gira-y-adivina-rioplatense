@@ -128,6 +128,15 @@ que ya existe (la de moneda gratis / marco dorado / vida / sobre
 relámpago), porque no puede haber dos secciones con el mismo nombre.
 No hacer este cambio todavía — recién cuando Gonzalo lo pida.
 
+## Idea pendiente: evento temático/estacional
+
+Un evento especial ligado a fechas puntuales (25 de agosto, carnaval,
+etc.) con arte propio y tiempo limitado, para generar urgencia real
+("solo esta semana"). Distinto del Evento de fin de semana (que es
+genérico y se repite todos los sábados/domingos): este tendría fecha
+fija y arte específico para cada ocasión. Dejarlo para más adelante —
+no hacer todavía.
+
 ## Otras cosas ya con base preparada pero sin terminar
 
 - [ ] **Marcos exclusivos por ciudad**: cada ciudad en `COLECCIONES` ya
