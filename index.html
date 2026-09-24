@@ -1236,22 +1236,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <div class="tn-item tn-card">
   <div class="tn-card-img" style="background-image:url('assets/shop/regalo.webp')"></div>
   <div class="tn-card-info"><b>Monedas gratis</b><span>+80 monedas — 1 por día</span></div>
-  <button class="tn-comprar" data-tipo="oferta_gratis" data-precio="0" data-nombre="las monedas">🎁 Gratis</button>
-  </div>
-  <div class="tn-item tn-card">
-  <div class="tn-card-img" style="background-image:url('assets/shop/vida-1.webp')"></div>
-  <div class="tn-card-info"><b>Vida instantánea</b><span>+1 vida al toque</span></div>
-  <button class="tn-comprar" data-tipo="vida" data-precio="150">🪙 150</button>
-  </div>
-  <div class="tn-item tn-card">
-  <div class="tn-card-img" style="background-image:url('assets/shop/ruleta.webp')"></div>
-  <div class="tn-card-info"><b>Giro extra</b><span>Otra vuelta de la ruleta ahora</span></div>
-  <button class="tn-comprar" data-tipo="ruleta" data-precio="200">🪙 200</button>
-  </div>
-  <div class="tn-item tn-card tn-card-infinita">
-  <div class="tn-card-img" style="background-image:url('assets/shop/vida-infinita.webp')"></div>
-  <div class="tn-card-info"><b>Vidas infinitas</b><span>Jugá sin gastar vidas durante 30 minutos</span></div>
-  <button class="tn-comprar" data-tipo="vida_infinita_30" data-precio="3200" data-nombre="Vidas infinitas por 30 minutos">🪙 3200</button>
+  <button class="tn-comprar" data-tipo="oferta_gratis" data-precio="0" data-nombre="las monedas">Recoger</button>
   </div>
   </div>
   <h3 class="tn-subtitulo" data-fijo="1">🎁 Packs</h3>
@@ -1389,7 +1374,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <div class="frame-grid" id="punteroTiendaGrid"></div>
   <h3 class="tn-subtitulo tn-abre-lista" data-fijo="1" id="tituloMarcos">🖼️ Marcos de avatar 🔻</h3>
   <div class="frame-grid" id="frameGrid"></div>
-  <h3 class="tn-subtitulo" data-fijo="1" id="tituloDineroReal">💳 Paquetes con dinero real</h3>
+  <h3 class="tn-subtitulo" data-fijo="1" id="tituloDineroReal">Ofertas diarias</h3>
   <div class="tn-grid">
   <div class="tn-item tn-card tn-real">
   <div class="tn-card-img" style="background-image:url('assets/shop/monedas-1.webp')"></div>
@@ -1473,6 +1458,14 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <span class="cta-txt"><b>Ir a Tienda</b><small>Descubrí las novedades</small></span>
   </button>
   <button class="no" id="ptMasTarde" style="width:100%;border-radius:12px;padding:12px;font-weight:700">Más tarde</button>
+</div></div>
+
+<div class="capa" id="capaMonedasGratis"><div class="caja" style="max-width:380px;text-align:center" role="dialog" aria-modal="true" aria-labelledby="gratisTitulo">
+  <img src="assets/shop/regalo.webp" alt="" style="width:140px;height:140px;object-fit:contain">
+  <h2 id="gratisTitulo">¡80 monedas de regalo!</h2>
+  <p id="gratisMensaje" aria-live="polite">Tu regalo diario te está esperando.</p>
+  <button class="btn-grande" id="gratisRecoger">Recoger</button>
+  <button class="no" id="gratisCerrar" style="width:100%;margin-top:12px;padding:12px;border-radius:12px">Más tarde</button>
 </div></div>
 
 <div class="capa" id="capaBienvenida"><div class="caja" style="max-width:380px;padding:0;background:transparent;border:none;border-radius:20px;overflow:hidden;position:relative">
@@ -2226,6 +2219,7 @@ function cargarMeta(){
   if(typeof m.monedas!=="number")m.monedas=500;
   if(typeof m.proxima!=="number")m.proxima=0;
   if(typeof m.ultimaRuleta!=="number")m.ultimaRuleta=0;
+  if(!Number.isSafeInteger(m.girosExtraGratis)||m.girosExtraGratis<0)m.girosExtraGratis=0;
   if(typeof m.ultimaGratisDiaria!=="number")m.ultimaGratisDiaria=0;
   if(typeof m.monedasGanadasTotal!=="number")m.monedasGanadasTotal=m.monedas;
   if(typeof m.diaRacha!=="number")m.diaRacha=0;
@@ -2430,8 +2424,8 @@ $("objLista").addEventListener("click",e=>{
 $("pdVamos").onclick=()=>{$("capaPartidaDiaria").classList.remove("ver");iniciarPartidaDiaria();};
 $("pdMasTarde").onclick=()=>{$("capaPartidaDiaria").classList.remove("ver");pdGuardarEstado("pospuesto");objActualizarBadge();ptChequearAutoPopup();};
 let ptVistaPrueba=false;
-$("ptIrTienda").onclick=()=>{$("capaPromoTienda").classList.remove("ver","pt-vista-prueba");ptDetenerChromaKey();if(!ptVistaPrueba)ptGuardarEstado("vista");ptVistaPrueba=false;$("bTienda").click();};
-$("ptMasTarde").onclick=()=>{$("capaPromoTienda").classList.remove("ver","pt-vista-prueba");ptDetenerChromaKey();if(!ptVistaPrueba)ptGuardarEstado("vista");ptVistaPrueba=false;};
+$("ptIrTienda").onclick=()=>{$("capaPromoTienda").classList.remove("ver","pt-vista-prueba");ptDetenerChromaKey();if(!ptVistaPrueba){ptGuardarEstado("vista");programarMonedasGratis();}ptVistaPrueba=false;$("bTienda").click();};
+$("ptMasTarde").onclick=()=>{$("capaPromoTienda").classList.remove("ver","pt-vista-prueba");ptDetenerChromaKey();if(!ptVistaPrueba){ptGuardarEstado("vista");programarMonedasGratis();}ptVistaPrueba=false;};
 $("bienvenidaTutorial").onclick=()=>{$("capaBienvenida").classList.remove("ver");iniciarTutorial();};
 function bienvenidaContinuarSinTutorial(){
   $("capaBienvenida").classList.remove("ver");
@@ -2715,8 +2709,10 @@ function finalizarEventoFinde(ganado,detalle,abandonado){
       const premioConcreto=resolverPremioRotativo(eventoPremioDeHoy(1),MUNDO[eventoCiudadDeHoyIdx()].id);
       const extra=otorgarPremioConcreto(premioConcreto);
       guardarEventoFinde({...r,estado:"ganado",premioEntregado:true,premio:premioConcreto});
-      sumarMonedas(350);recuperarVida();objSumar("victorias",1);
-      premio=" +350 🪙, +1 ❤️ y "+extra+".";
+      meta.vidasInfinitasHasta=Math.max(Date.now(),meta.vidasInfinitasHasta||0)+30*60*1000;
+      meta.girosExtraGratis=(meta.girosExtraGratis||0)+1;
+      sumarMonedas(350);recuperarVida();guardarMeta();rwActualizarBadge();objSumar("victorias",1);
+      premio=" +350 🪙, 30 minutos de vidas infinitas, +1 giro gratis extra, +1 ❤️ y "+extra+".";
     }else{guardarEventoFinde({...r,estado:"pendiente",premioEntregado:false});const infinita=vidasInfinitasActivas();gastarVida();premio=infinita?" ❤️∞ activo: no gastaste vida. Podés volver a intentarlo.":" -1 ❤️. Podés volver a intentarlo.";}
   }
   eventoFindeResultado=true;
@@ -2941,7 +2937,12 @@ const RW_PREMIOS=[
   {tipo:"monedas",valor:500,peso:4,color:"#EF4D6B",label:"🪙 500"}
 ];
 const RW_MS=24*60*60*1000;
-const rwPuedeGirar=()=>Date.now()-meta.ultimaRuleta>=RW_MS;
+const rwPuedeGirar=()=>meta.girosExtraGratis>0||Date.now()-meta.ultimaRuleta>=RW_MS;
+function rwUsarGiro(){
+  if(meta.girosExtraGratis>0)meta.girosExtraGratis--;
+  else meta.ultimaRuleta=Date.now();
+  guardarMeta();
+}
 function rwTextoEspera(){
   const rest=RW_MS-(Date.now()-meta.ultimaRuleta);
   if(rest<=0)return"";
@@ -2996,7 +2997,7 @@ function rwControles(){
 function abrirRuleta(){
   rwDibujar();
   $("rwResultado").textContent="";
-  $("rwEstado").textContent=rwPuedeGirar()?"Girá una vez por día y ganá premios.":"⏳ "+rwTextoEspera();
+  $("rwEstado").textContent=meta.girosExtraGratis>0?"🎟️ Giros gratis extra: "+meta.girosExtraGratis:rwPuedeGirar()?"Girá una vez por día y ganá premios.":"⏳ "+rwTextoEspera();
   rwControles();
   $("capaRuleta").classList.add("ver");
 }
@@ -3010,7 +3011,7 @@ $("rwComprarGiro").onclick=()=>{
 };
 $("rwGirar").onclick=()=>{
   if(rwGirando||!rwPuedeGirar())return;
-  rwGirando=true;$("rwGirar").disabled=true;$("rwResultado").textContent="";
+  rwGirando=true;rwUsarGiro();$("rwGirar").disabled=true;$("rwResultado").textContent="";
   const idx=rwElegirPremio(),lim=rwLimites()[idx],ancho=lim.fin-lim.ini;
   const jitter=(Math.random()-.5)*ancho*.6;
   const localDeseado=((lim.ini+lim.fin)/2+jitter+360)%360;
@@ -3025,14 +3026,13 @@ $("rwGirar").onclick=()=>{
     cvv.style.transform="rotate("+rwAngulo.toFixed(2)+"deg)";
     if(p<1){requestAnimationFrame(frame);return;}
     const premio=RW_PREMIOS[idx];
-    meta.ultimaRuleta=Date.now();guardarMeta();
     if(premio.tipo==="monedas")sumarMonedas(premio.valor);
     else if(premio.tipo==="vida")recuperarVida();
     const esJackpot=premio.valor===500&&premio.tipo==="monedas";
     const esNada=premio.tipo==="nada";
     $("rwResultado").textContent=esNada?"😅 ¡Sin premio esta vez! Seguí participando mañana, o comprá un giro extra.":
       (esJackpot?"🎉 ¡JACKPOT! ":"¡Ganaste ")+premio.label+"!";
-    $("rwEstado").textContent="⏳ "+rwTextoEspera();
+    $("rwEstado").textContent=rwPuedeGirar()?"🎡 Tenés otro giro disponible":"⏳ "+rwTextoEspera();
     mundoActualizarHud();rwActualizarBadge();
     rwGirando=false;rwControles();bip(esNada?260:190,.16,"triangle",.07);
     logroDesbloquear("ruleta");
@@ -3059,6 +3059,54 @@ function gratisDiariaTextoEspera(){
   const hh=Math.floor(rest/3600000),mm=Math.floor(rest%3600000/60000);
   return"⏳ "+hh+"h "+mm+"m";
 }
+let gratisReclamando=false,gratisPopupTimer=null,gratisPopupVisto=false;
+// Integración de anuncio: asignar window.gyaAnuncioMonedasGratis a una función
+// async que resuelva true SOLO al completar el anuncio. Sin proveedor, modo prueba.
+async function anuncioMonedasGratis(){
+  if(typeof window.gyaAnuncioMonedasGratis==="function")return await window.gyaAnuncioMonedasGratis()===true;
+  return true;
+}
+function abrirMonedasGratis(){
+  if(!gratisDiariaPuedeReclamar())return;
+  gratisPopupVisto=true;
+  $("gratisMensaje").textContent="Tu regalo diario te está esperando.";
+  $("gratisRecoger").disabled=gratisReclamando;
+  $("gratisRecoger").textContent="Recoger";
+  $("capaMonedasGratis").classList.add("ver");
+}
+function programarMonedasGratis(){
+  if(gratisPopupTimer!==null||gratisPopupVisto||!gratisDiariaPuedeReclamar())return;
+  const intentar=()=>{
+    gratisPopupTimer=null;
+    if(gratisPopupVisto||!gratisDiariaPuedeReclamar())return;
+    if(document.hidden||$("setup").style.display==="none"||document.querySelector(".capa.ver")){
+      gratisPopupTimer=setTimeout(intentar,1000);return;
+    }
+    abrirMonedasGratis();
+  };
+  gratisPopupTimer=setTimeout(intentar,500);
+}
+async function recogerMonedasGratis(){
+  if(gratisReclamando||!gratisDiariaPuedeReclamar())return;
+  gratisReclamando=true;$("gratisRecoger").disabled=true;
+  try{
+    if(!await anuncioMonedasGratis()){$("gratisMensaje").textContent="Completá el anuncio para recibir las monedas.";return;}
+    const acreditar=()=>{
+      // Releer solo esta marca por si otra pestaña ya reclamó durante el anuncio.
+      const guardado=cargarMeta();
+      meta.ultimaGratisDiaria=Math.max(meta.ultimaGratisDiaria,guardado.ultimaGratisDiaria);
+      if(!gratisDiariaPuedeReclamar())return false;
+      meta.ultimaGratisDiaria=Date.now();sumarMonedas(80);guardarMeta();return true;
+    };
+    const premio=navigator.locks?await navigator.locks.request("gya-regalo-diario",acreditar):acreditar();
+    $("capaMonedasGratis").classList.remove("ver");
+    tnActualizar();mundoActualizarHud();
+    if(premio)mostrarPackItems([{icono:"🪙",texto:"+80 monedas · regalo diario"}]);
+  }catch(e){$("gratisMensaje").textContent="No pudimos completar el regalo. Probá de nuevo.";}
+  finally{gratisReclamando=false;$("gratisRecoger").disabled=false;}
+}
+$("gratisRecoger").onclick=recogerMonedasGratis;
+$("gratisCerrar").onclick=()=>{if(!gratisReclamando)$("capaMonedasGratis").classList.remove("ver");};
 function tnPuedeComprar(tipo){
   if(tipo==="vida"||tipo==="recarga")return meta.vidas<VIDAS_MAX;
   if(tipo==="vida_infinita_30")return!vidasInfinitasActivas();
@@ -3110,7 +3158,7 @@ function tnActualizar(){
     }
     b.disabled=!alcanza||!puede;
     if(!puede){b.textContent=tnRazonBloqueo(tipo);b.title="";}
-    else if(tipo==="oferta_gratis"){b.textContent="🎁 Gratis";b.title="";}
+    else if(tipo==="oferta_gratis"){b.textContent="Recoger";b.title="";}
     else{b.textContent="🪙 "+precio;b.title=alcanza?"":"Te faltan "+(precio-meta.monedas)+" monedas";}
     const fijo=b.parentElement.querySelector(".tn-pack-precio-fijo");
     if(fijo)fijo.textContent=b.textContent;
@@ -3345,6 +3393,7 @@ function tnNombreItem(b){
   return bEl?bEl.textContent:"esto";
 }
 function tnEjecutarCompra(tipo,precio){
+  if(tipo==="oferta_gratis"){abrirMonedasGratis();return;}
   meta.monedas-=precio;
   if(tipo==="vida")recuperarVida();
   else if(tipo==="recarga"){meta.vidas=VIDAS_MAX;meta.proxima=0;}
@@ -3392,8 +3441,7 @@ function tnEjecutarCompra(tipo,precio){
       {texto:"Avatar",html:packPreviewAvatar("avatar-31")},
       {texto:"Tablero",html:packPreviewTablero("fondo-ovni")}
     ]);
-  }else if(tipo==="oferta_gratis"){
-    meta.ultimaGratisDiaria=Date.now();sumarMonedas(80);
+
   }else if(tipo.indexOf("marco_")===0){
     const idMarco=tipo.slice(6);
     framesComprados.add(idMarco);guardarFramesComprados();
@@ -3408,6 +3456,7 @@ function tnEjecutarCompra(tipo,precio){
 document.querySelectorAll(".tn-comprar").forEach(b=>{
   b.onclick=()=>{
     const tipo=b.dataset.tipo,precio=+b.dataset.precio;
+    if(tipo==="oferta_gratis"){abrirMonedasGratis();return;}
     if(tipo==="ruleta"){
       $("confirmCompraTxt").textContent="¿Querés ir a tu giro diario?";
       $("confirmCompraSi").textContent="Sí";
