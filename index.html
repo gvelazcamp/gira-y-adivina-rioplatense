@@ -1866,9 +1866,8 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
           <small id="evFindeEstado">5 rondas · Reintentá hasta ganar · Cada derrota cuesta 1 vida</small></span>
         <span class="evento-card-premios">
           <span class="evento-card-premio-emoji">🪙</span>
-          <span class="evento-card-premio-emoji">❤️∞</span>
+          <span class="evento-card-premio-emoji">❤️</span>
           <span class="evento-card-premio-emoji">🎡</span>
-          <span class="evento-card-premio-visual" id="evVisual3"></span>
         </span>
       </span>
     </span>
@@ -3135,11 +3134,9 @@ function actualizarBotonVidaAmigo(){
 }
 $("svPedirAmigo").onclick=async()=>{
   if(!vidaAmigoPuedeReclamar())return;
-  const texto="¡Jugá conmigo a Girá y Adiviná Rioplatense! "+location.origin+location.pathname;
-  try{
-    if(navigator.share)await navigator.share({text:texto});
-    else window.open("https://wa.me/?text="+encodeURIComponent(texto),"_blank");
-  }catch(e){if(e&&e.name==="AbortError")return;}
+  const texto="🎡 Girá y Adiviná Rioplatense — girá la ruleta y adiviná la frase. ¡Jugá conmigo!: "+
+    location.origin+location.pathname;
+  await csCompartirImagen(generarCanvasCompartirJuego,"gira-y-adivina.png",texto,texto,$("svPedirAmigo"));
   meta.ultimaVidaAmigo=Date.now();recuperarVida();guardarMeta();mundoActualizarHud();
   actualizarBotonVidaAmigo();
   mostrarToast("❤️","+1 vida por compartir el juego");
@@ -7575,10 +7572,6 @@ function abrirEventos(){
   const premioCiudad=registro&&registro.dia===dia&&registro.premioEntregado&&registro.premio?
     registro.premio:resolverPremioRotativo(eventoPremioDeHoy(2),ciudad.id);
   $("evVisual2").innerHTML=premioConcretoVisualHTML(premioCiudad);
-  const registroFinde=leerEventoFinde();
-  const premioFinde=registroFinde&&registroFinde.dia===dia&&registroFinde.premioEntregado&&registroFinde.premio?
-    registroFinde.premio:resolverPremioRotativo(eventoPremioDeHoy(1),ciudad.id);
-  $("evVisual3").innerHTML=premioConcretoVisualHTML(premioFinde);
   const t=eventoTiempoRestanteTxt();
   $("evTiempo1").textContent=t;$("evTiempo2").textContent=t;
   // Cada tarjeta permanece revelada hasta la siguiente rotación diaria.
