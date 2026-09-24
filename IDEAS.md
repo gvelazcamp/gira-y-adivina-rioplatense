@@ -897,3 +897,18 @@ Ambas aplicaciones estarán conectadas mediante una sección tipo:
 y podrán formar parte de un mismo universo de juegos rioplatenses.
 
 La segunda app debe diseñarse desde el principio para crecer sin tener que reconstruir nuevamente toda la infraestructura.
+
+
+## Popup de monedas gratis después de Gift de Tienda — PENDIENTE
+
+No activar en producción todavía. La tarjeta de 80 monedas con “Recoger”
+permanece en la tienda, sin agregar otro anuncio ni popup automático.
+
+Antes de implementar el popup, Gonzalo quiere definir:
+- Cada cuánto aparece y cuánto tiempo dejar entre promociones.
+- Cuántos anuncios puede recibir un jugador por sesión o por día.
+- Cómo coordinarlo con Gift de Tienda y los demás anuncios para no saturar.
+- Si el regalo requiere un anuncio y qué sucede al cancelarlo.
+
+El popup automático y su integración de anuncios quedan fuera de producción
+hasta que se acuerde esa planificación.

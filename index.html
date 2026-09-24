@@ -2210,6 +2210,7 @@ function cargarMeta(){
   if(typeof m.monedas!=="number")m.monedas=500;
   if(typeof m.proxima!=="number")m.proxima=0;
   if(typeof m.ultimaRuleta!=="number")m.ultimaRuleta=0;
+  if(!Number.isSafeInteger(m.girosExtraGratis)||m.girosExtraGratis<0)m.girosExtraGratis=0;
   if(typeof m.ultimaGratisDiaria!=="number")m.ultimaGratisDiaria=0;
   if(typeof m.monedasGanadasTotal!=="number")m.monedasGanadasTotal=m.monedas;
   if(typeof m.diaRacha!=="number")m.diaRacha=0;
@@ -2414,8 +2415,8 @@ $("objLista").addEventListener("click",e=>{
 $("pdVamos").onclick=()=>{$("capaPartidaDiaria").classList.remove("ver");iniciarPartidaDiaria();};
 $("pdMasTarde").onclick=()=>{$("capaPartidaDiaria").classList.remove("ver");pdGuardarEstado("pospuesto");objActualizarBadge();ptChequearAutoPopup();};
 let ptVistaPrueba=false;
-$("ptIrTienda").onclick=()=>{$("capaPromoTienda").classList.remove("ver","pt-vista-prueba");ptDetenerChromaKey();if(!ptVistaPrueba)ptGuardarEstado("vista");ptVistaPrueba=false;$("bTienda").click();};
-$("ptMasTarde").onclick=()=>{$("capaPromoTienda").classList.remove("ver","pt-vista-prueba");ptDetenerChromaKey();if(!ptVistaPrueba)ptGuardarEstado("vista");ptVistaPrueba=false;};
+$("ptIrTienda").onclick=()=>{$("capaPromoTienda").classList.remove("ver","pt-vista-prueba");ptDetenerChromaKey();if(!ptVistaPrueba){ptGuardarEstado("vista");}ptVistaPrueba=false;$("bTienda").click();};
+$("ptMasTarde").onclick=()=>{$("capaPromoTienda").classList.remove("ver","pt-vista-prueba");ptDetenerChromaKey();if(!ptVistaPrueba){ptGuardarEstado("vista");}ptVistaPrueba=false;};
 $("bienvenidaTutorial").onclick=()=>{$("capaBienvenida").classList.remove("ver");iniciarTutorial();};
 function bienvenidaContinuarSinTutorial(){
   $("capaBienvenida").classList.remove("ver");
@@ -2651,7 +2652,21 @@ function finalizarEventoCiudad(ganado,detalle,abandonado){
    rondas en vez de 3, premio más grande, y solo disponible sábado y
    domingo. Usa un offset de premio rotativo distinto (1) para que
    nunca coincida de categoría con los otros dos eventos del día. */
-function esFinDeSemana(){const d=new Date().getDay();return d===0||d===6;}
+// Misma hora local para disponibilidad y contador: sábado 00:00 a lunes 00:00.
+function eventoFindeHorario(ahora=new Date()){
+  const dia=ahora.getDay(),activo=dia===0||dia===6;
+  const limite=new Date(ahora);
+  limite.setHours(0,0,0,0);
+  limite.setDate(limite.getDate()+(activo?(dia===6?2:1):(6-dia)));
+  return {activo,limite};
+}
+function esFinDeSemana(){return eventoFindeHorario().activo;}
+function eventoFindeTiempoTxt(ahora=new Date()){
+  const {activo,limite}=eventoFindeHorario(ahora);
+  const minutos=Math.max(0,Math.ceil((limite-ahora)/60000));
+  const dias=Math.floor(minutos/1440),horas=Math.floor(minutos%1440/60),min=minutos%60;
+  return "⏳ "+(activo?"Termina en ":"Empieza en ")+(dias?dias+"d ":"")+horas+"h "+min+"min";
+}
 let esEventoFinde=false,eventoFindePartida=null,eventoFindeResultado=false;
 function leerEventoFinde(){
   try{eventoFindeRegistro=JSON.parse(localStorage.getItem("gya_evento_finde"))||eventoFindeRegistro;}catch(e){}
@@ -2699,9 +2714,10 @@ function finalizarEventoFinde(ganado,detalle,abandonado){
       const premioConcreto=resolverPremioRotativo(eventoPremioDeHoy(1),MUNDO[eventoCiudadDeHoyIdx()].id);
       const extra=otorgarPremioConcreto(premioConcreto);
       guardarEventoFinde({...r,estado:"ganado",premioEntregado:true,premio:premioConcreto});
-      sumarMonedas(350);recuperarVida();objSumar("victorias",1);
-      meta.vidasInfinitasHasta=Date.now()+30*60*1000;meta.ultimaRuleta=0;guardarMeta();
-      premio=" +350 🪙, +1 ❤️, 30 min de vidas infinitas ❤️∞, otro giro en la Ruleta 🎡 y "+extra+".";
+      meta.vidasInfinitasHasta=Math.max(Date.now(),meta.vidasInfinitasHasta||0)+30*60*1000;
+      meta.girosExtraGratis=(meta.girosExtraGratis||0)+1;
+      sumarMonedas(350);recuperarVida();guardarMeta();rwActualizarBadge();objSumar("victorias",1);
+      premio=" +350 🪙, 30 minutos de vidas infinitas, +1 giro gratis extra, +1 ❤️ y "+extra+".";
     }else{guardarEventoFinde({...r,estado:"pendiente",premioEntregado:false});const infinita=vidasInfinitasActivas();gastarVida();premio=infinita?" ❤️∞ activo: no gastaste vida. Podés volver a intentarlo.":" -1 ❤️. Podés volver a intentarlo.";}
   }
   eventoFindeResultado=true;
@@ -2926,7 +2942,12 @@ const RW_PREMIOS=[
   {tipo:"monedas",valor:500,peso:4,color:"#EF4D6B",label:"🪙 500"}
 ];
 const RW_MS=24*60*60*1000;
-const rwPuedeGirar=()=>Date.now()-meta.ultimaRuleta>=RW_MS;
+const rwPuedeGirar=()=>meta.girosExtraGratis>0||Date.now()-meta.ultimaRuleta>=RW_MS;
+function rwUsarGiro(){
+  if(meta.girosExtraGratis>0)meta.girosExtraGratis--;
+  else meta.ultimaRuleta=Date.now();
+  guardarMeta();
+}
 function rwTextoEspera(){
   const rest=RW_MS-(Date.now()-meta.ultimaRuleta);
   if(rest<=0)return"";
@@ -2981,7 +3002,7 @@ function rwControles(){
 function abrirRuleta(){
   rwDibujar();
   $("rwResultado").textContent="";
-  $("rwEstado").textContent=rwPuedeGirar()?"Girá una vez por día y ganá premios.":"⏳ "+rwTextoEspera();
+  $("rwEstado").textContent=meta.girosExtraGratis>0?"🎟️ Giros gratis extra: "+meta.girosExtraGratis:rwPuedeGirar()?"Girá una vez por día y ganá premios.":"⏳ "+rwTextoEspera();
   rwControles();
   $("capaRuleta").classList.add("ver");
 }
@@ -2995,7 +3016,7 @@ $("rwComprarGiro").onclick=()=>{
 };
 $("rwGirar").onclick=()=>{
   if(rwGirando||!rwPuedeGirar())return;
-  rwGirando=true;$("rwGirar").disabled=true;$("rwResultado").textContent="";
+  rwGirando=true;rwUsarGiro();$("rwGirar").disabled=true;$("rwResultado").textContent="";
   const idx=rwElegirPremio(),lim=rwLimites()[idx],ancho=lim.fin-lim.ini;
   const jitter=(Math.random()-.5)*ancho*.6;
   const localDeseado=((lim.ini+lim.fin)/2+jitter+360)%360;
@@ -3010,14 +3031,13 @@ $("rwGirar").onclick=()=>{
     cvv.style.transform="rotate("+rwAngulo.toFixed(2)+"deg)";
     if(p<1){requestAnimationFrame(frame);return;}
     const premio=RW_PREMIOS[idx];
-    meta.ultimaRuleta=Date.now();guardarMeta();
     if(premio.tipo==="monedas")sumarMonedas(premio.valor);
     else if(premio.tipo==="vida")recuperarVida();
     const esJackpot=premio.valor===500&&premio.tipo==="monedas";
     const esNada=premio.tipo==="nada";
     $("rwResultado").textContent=esNada?"😅 ¡Sin premio esta vez! Seguí participando mañana, o comprá un giro extra.":
       (esJackpot?"🎉 ¡JACKPOT! ":"¡Ganaste ")+premio.label+"!";
-    $("rwEstado").textContent="⏳ "+rwTextoEspera();
+    $("rwEstado").textContent=rwPuedeGirar()?"🎡 Tenés otro giro disponible":"⏳ "+rwTextoEspera();
     mundoActualizarHud();rwActualizarBadge();
     rwGirando=false;rwControles();bip(esNada?260:190,.16,"triangle",.07);
     logroDesbloquear("ruleta");
@@ -3043,6 +3063,15 @@ function gratisDiariaTextoEspera(){
   if(rest<=0)return"";
   const hh=Math.floor(rest/3600000),mm=Math.floor(rest%3600000/60000);
   return"⏳ "+hh+"h "+mm+"m";
+}
+function recogerMonedasGratis(){
+  if(!gratisDiariaPuedeReclamar())return;
+  const guardado=cargarMeta();
+  meta.ultimaGratisDiaria=Math.max(meta.ultimaGratisDiaria,guardado.ultimaGratisDiaria);
+  if(!gratisDiariaPuedeReclamar())return;
+  meta.ultimaGratisDiaria=Date.now();sumarMonedas(80);guardarMeta();
+  tnActualizar();mundoActualizarHud();
+  mostrarPackItems([{icono:"🪙",texto:"+80 monedas · regalo diario"}]);
 }
 function tnPuedeComprar(tipo){
   if(tipo==="recarga")return meta.vidas<VIDAS_MAX;
@@ -3325,6 +3354,7 @@ function tnNombreItem(b){
   return bEl?bEl.textContent:"esto";
 }
 function tnEjecutarCompra(tipo,precio){
+  if(tipo==="oferta_gratis"){recogerMonedasGratis();return;}
   meta.monedas-=precio;
   if(tipo==="recarga"){meta.vidas=VIDAS_MAX;meta.proxima=0;}
   else if(tipo.indexOf("sobre_")===0){
@@ -3369,8 +3399,7 @@ function tnEjecutarCompra(tipo,precio){
       {texto:"Avatar",html:packPreviewAvatar("avatar-31")},
       {texto:"Tablero",html:packPreviewTablero("fondo-ovni")}
     ]);
-  }else if(tipo==="oferta_gratis"){
-    meta.ultimaGratisDiaria=Date.now();sumarMonedas(80);
+
   }else if(tipo.indexOf("marco_")===0){
     const idMarco=tipo.slice(6);
     framesComprados.add(idMarco);guardarFramesComprados();
@@ -3387,7 +3416,7 @@ document.querySelectorAll(".tn-comprar").forEach(b=>{
     const tipo=b.dataset.tipo,precio=+b.dataset.precio;
     if(tipo==="oferta_gratis"){
       if(!tnPuedeComprar(tipo))return;
-      tnVerAnuncioRecompensado(()=>tnEjecutarCompra(tipo,precio));
+      tnVerAnuncioRecompensado(()=>recogerMonedasGratis());
       return;
     }
     if(meta.monedas<precio||!tnPuedeComprar(tipo))return;
@@ -7424,6 +7453,30 @@ function revelarEvento(id){
   try{localStorage.setItem("gya_eventos_revelados",JSON.stringify(eventosRevelados));}catch(e){}
   $(id).classList.remove("cerrado");
 }
+function actualizarEventoFindeUI(){
+  $("evTiempo3").textContent=eventoFindeTiempoTxt();
+  const finde=esFinDeSemana();
+  $("evBanner3").classList.toggle("fuera-de-fecha",!finde);
+  $("evBanner3").disabled=!finde;
+  if(!finde){
+    $("evBanner3").classList.remove("cerrado","bloqueado");
+    $("evFindeEstado").textContent="Disponible sábados y domingos · 5 rondas";
+  }else{
+    $("evBanner3").classList.toggle("cerrado",!eventoEstaRevelado("evBanner3"));
+    const estadoFinde=estadoEventoFinde(),bloqueadoFinde=estadoFinde==="ganado";
+    $("evBanner3").disabled=bloqueadoFinde;
+    $("evBanner3").classList.toggle("bloqueado",bloqueadoFinde);
+    if(bloqueadoFinde)$("evBanner3").classList.remove("cerrado");
+    $("evFindeEstado").textContent=estadoFinde==="ganado"?"✓ Completado · Volvé el próximo fin de semana":
+      "5 rondas · Reintentá hasta ganar · Cada derrota cuesta 1 vida";
+  }
+}
+setInterval(()=>{
+  if($("eventos").style.display!=="block")return;
+  const t=eventoTiempoRestanteTxt();
+  $("evTiempo1").textContent=t;$("evTiempo2").textContent=t;
+  actualizarEventoFindeUI();
+},1000);
 function abrirEventos(){
   detenerPartidaAnterior();
   cobrarEventoInterrumpido();
@@ -7446,7 +7499,7 @@ function abrirEventos(){
     registroFinde.premio:resolverPremioRotativo(eventoPremioDeHoy(1),ciudad.id);
   $("evVisual3").innerHTML=premioConcretoVisualHTML(premioFinde);
   const t=eventoTiempoRestanteTxt();
-  $("evTiempo1").textContent=t;$("evTiempo2").textContent=t;$("evTiempo3").textContent=t;
+  $("evTiempo1").textContent=t;$("evTiempo2").textContent=t;
   // Cada tarjeta permanece revelada hasta la siguiente rotación diaria.
   ["evBanner1","evBanner2"].forEach(id=>$(id).classList.toggle("cerrado",!eventoEstaRevelado(id)));
   const estado=estadoEventoCiudad(),bloqueado=estado==="ganado";
@@ -7454,21 +7507,7 @@ function abrirEventos(){
   if(bloqueado)$("evBanner2").classList.remove("cerrado");
   $("evCiudadEstado").textContent=estado==="ganado"?"✓ Completado · Volvé mañana":
     "3 rondas · Reintentá hasta ganar · Cada derrota cuesta 1 vida";
-  const finde=esFinDeSemana();
-  $("evBanner3").classList.toggle("fuera-de-fecha",!finde);
-  $("evBanner3").disabled=!finde;
-  if(!finde){
-    $("evBanner3").classList.remove("cerrado","bloqueado");
-    $("evFindeEstado").textContent="Disponible sábados y domingos · 5 rondas";
-  }else{
-    $("evBanner3").classList.toggle("cerrado",!eventoEstaRevelado("evBanner3"));
-    const estadoFinde=estadoEventoFinde(),bloqueadoFinde=estadoFinde==="ganado";
-    $("evBanner3").disabled=bloqueadoFinde;
-    $("evBanner3").classList.toggle("bloqueado",bloqueadoFinde);
-    if(bloqueadoFinde)$("evBanner3").classList.remove("cerrado");
-    $("evFindeEstado").textContent=estadoFinde==="ganado"?"✓ Completado · Volvé el próximo fin de semana":
-      "5 rondas · Reintentá hasta ganar · Cada derrota cuesta 1 vida";
-  }
+  actualizarEventoFindeUI();
   const mejorToss=entrenamientoMejor("toss"),mejorBonus=entrenamientoMejor("bonus");
   $("evEntrenoTossEstado").textContent="4 rondas · Ganá más de la mitad para superarlo"+(mejorToss?" · Mejor: "+mejorToss+"/4":"");
   $("evEntrenoBonusEstado").textContent="4 rondas · Ganá más de la mitad para superarlo"+(mejorBonus?" · Mejor: "+mejorBonus+"/4":"");
