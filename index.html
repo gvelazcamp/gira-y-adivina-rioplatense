@@ -367,18 +367,17 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 .tn-item.tn-real{border-color:#37D6C077;background:linear-gradient(135deg,#37D6C01A,#7B3FE41A);border-width:2px}
 .tn-comprar-real{background:var(--agua);color:var(--tinta);font-weight:800;border-radius:10px;padding:10px 14px;
  flex-shrink:0;font-size:.85rem;white-space:nowrap;position:relative;box-shadow:0 3px 0 #1B8A7C99;border:1px solid #A9F5E966}
-.tn-proximamente{font-size:.62rem;color:#B49FCE;text-align:center;margin:2px 0 12px}
 .tn-precios{display:flex;flex-direction:column;gap:5px;align-items:stretch;flex-shrink:0}
 .tn-comprar-mini{background:transparent;color:var(--agua);font-weight:700;border:1px solid #37D6C066;
  border-radius:8px;padding:5px 10px;font-size:.7rem;white-space:nowrap}
 .tn-comprar:disabled{opacity:1;background:#4A3D5C;color:#C9B8DE;cursor:not-allowed;box-shadow:none}
 .tn-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}
-/* PAUSA DE DINERO REAL: oculto a pedido de Gonzalo mientras el juego no
-   cobra plata de verdad (nada se borra, solo se esconde). Para reactivar
-   cuando avise, borrar este bloque entero. */
-.tn-comprar-mini,.tn-item.tn-real,
-#tituloDineroReal,#tituloDineroReal+.tn-proximamente,#tituloDineroReal+.tn-proximamente+.tn-grid{
-  display:none!important}
+/* Los paquetes de "Paquetes con dinero real" (.tn-item.tn-real) ya están
+   conectados a Google Play Billing. Los botoncitos "💳 $X.XX" que aparecen
+   al lado de CADA ítem de la tienda (.tn-comprar-mini) siguen ocultos:
+   esos no tienen un producto propio dado de alta en Play Console, solo
+   los 6 paquetes de esta sección lo tienen. */
+.tn-comprar-mini{display:none!important}
 #sobresGrid .tn-item:not(.sobre-basico){display:none}
 .tn-item.tn-card{display:flex;flex-direction:column;align-items:stretch;gap:6px;text-align:center;
  padding:10px;min-width:0;border-width:2px;border-radius:18px;box-shadow:0 4px 0 #00000060,inset 0 1px 0 #FFFFFF1A;
@@ -1301,37 +1300,36 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <h3 class="tn-subtitulo" data-fijo="1" id="tituloMarcos">🖼️ Marcos de avatar</h3>
   <div class="frame-grid" id="frameGrid"></div>
   <h3 class="tn-subtitulo" data-fijo="1" id="tituloDineroReal">💳 Paquetes con dinero real</h3>
-  <p class="tn-proximamente">Disponibles cuando el juego esté en la Play Store</p>
   <div class="tn-grid">
   <div class="tn-item tn-card tn-real">
   <div class="tn-card-img" style="background-image:url('assets/shop/monedas-1.webp')"></div>
   <div class="tn-card-info"><b>500 monedas</b><span>Paquete chico</span></div>
-  <button class="tn-comprar-real" data-real="1">$0.99</button>
+  <button class="tn-comprar-real" data-producto="monedas_500">$0.99</button>
   </div>
   <div class="tn-item tn-card tn-real">
   <div class="tn-card-img" style="background-image:url('assets/shop/monedas-2.webp')"></div>
   <div class="tn-card-info"><b>1.350 monedas</b><span>1.200 + 150 de regalo</span></div>
-  <button class="tn-comprar-real" data-real="1">$1.99</button>
+  <button class="tn-comprar-real" data-producto="monedas_1350">$1.99</button>
   </div>
   <div class="tn-item tn-card tn-real">
   <div class="tn-card-img" style="background-image:url('assets/shop/monedas-3.webp')"></div>
   <div class="tn-card-info"><b>3.500 monedas</b><span>3.000 + 500 de regalo</span></div>
-  <button class="tn-comprar-real" data-real="1">$4.99</button>
+  <button class="tn-comprar-real" data-producto="monedas_3500">$4.99</button>
   </div>
   <div class="tn-item tn-card tn-real">
   <div class="tn-card-img" style="background-image:url('assets/shop/monedas-4.webp')"></div>
   <div class="tn-card-info"><b>8.500 monedas</b><span>7.000 + 1.500 de regalo</span></div>
-  <button class="tn-comprar-real" data-real="1">$9.99</button>
+  <button class="tn-comprar-real" data-producto="monedas_8500">$9.99</button>
   </div>
   <div class="tn-item tn-card tn-real">
   <div class="tn-card-img" style="background-image:url('assets/shop/vida-5.webp')"></div>
   <div class="tn-card-info"><b>Vidas llenas al instante</b><span>Para cuando no tenés monedas</span></div>
-  <button class="tn-comprar-real" data-real="1">$0.99</button>
+  <button class="tn-comprar-real" data-producto="vidas_llenas">$0.99</button>
   </div>
   <div class="tn-item tn-card tn-real">
   <div class="tn-card-img" style="background-image:url('assets/shop/vida-infinita.webp')"></div>
   <div class="tn-card-info"><b>Vidas infinitas 24hs</b><span>Jugá sin límite por un día</span></div>
-  <button class="tn-comprar-real" data-real="1">$1.99</button>
+  <button class="tn-comprar-real" data-producto="vidas_infinitas_24h">$1.99</button>
   </div>
   </div>
   <button class="no" id="tnCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
@@ -2083,6 +2081,7 @@ function cargarMeta(){
   if(typeof m.mejorRachaDias!=="number")m.mejorRachaDias=0;
   if(typeof m.mejorRachaVictorias!=="number")m.mejorRachaVictorias=0;
   if(typeof m.pistasGratis!=="number")m.pistasGratis=0;
+  if(typeof m.vidasInfinitasHasta!=="number")m.vidasInfinitasHasta=0;
   return m;
 }
 let meta=cargarMeta();
@@ -2095,7 +2094,9 @@ function regenerarVidas(){
   if(meta.vidas>=VIDAS_MAX){meta.proxima=0;cambio=true;}
   if(cambio)guardarMeta();
 }
-function gastarVida(){regenerarVidas();if(meta.vidas<=0)return false;
+function vidasInfinitasActivas(){return meta.vidasInfinitasHasta>Date.now();}
+function gastarVida(){if(vidasInfinitasActivas())return true;
+  regenerarVidas();if(meta.vidas<=0)return false;
   meta.vidas--;if(!meta.proxima)meta.proxima=Date.now()+VIDA_MS;guardarMeta();return true;}
 function recuperarVida(){meta.vidas=Math.min(VIDAS_MAX,meta.vidas+1);
   if(meta.vidas>=VIDAS_MAX)meta.proxima=0;guardarMeta();}
@@ -2221,10 +2222,11 @@ $("bienvenidaCerrar").onclick=()=>{$("capaBienvenida").classList.remove("ver");p
 $("bienvenidaCerrarX").onclick=()=>$("bienvenidaCerrar").click();
 function mundoActualizarHud(){
   regenerarVidas();
-  if($("mhVidas"))$("mhVidas").textContent="❤️ "+meta.vidas;
+  const vidasTxt=vidasInfinitasActivas()?"∞":meta.vidas;
+  if($("mhVidas"))$("mhVidas").textContent="❤️ "+vidasTxt;
   if($("mhMonedas"))$("mhMonedas").textContent="🪙 "+meta.monedas+" monedas";
   if($("jgMonedas"))$("jgMonedas").textContent="🪙 "+meta.monedas+" monedas";
-  if($("setupVidas"))$("setupVidas").innerHTML="❤️ <b>"+meta.vidas+"</b>";
+  if($("setupVidas"))$("setupVidas").innerHTML="❤️ <b>"+vidasTxt+"</b>";
   if($("setupMonedas"))$("setupMonedas").innerHTML="🪙 <b>"+meta.monedas+"</b> monedas";
   if($("setupRacha"))$("setupRacha").innerHTML="🔥 <b>"+meta.diaRacha+"</b>";
 }
@@ -2732,8 +2734,65 @@ $("tituloSobres").onclick=()=>{
   [...$("sobresGrid").children].forEach(el=>{el.style.display="";cont.appendChild(el);});
   $("capaSeccionTienda").classList.add("ver");
 };
+/* ---- Google Play Billing (TWA / Digital Goods API) ----
+   Los 6 IDs de acá abajo son los productos ya dados de alta en Play
+   Console (Monetizar con Play > Productos > Productos únicos). Si se
+   agrega o renombra un producto ahí, hay que reflejarlo acá también. */
+const TN_PRODUCTOS_REALES={
+  monedas_500:{monedas:500},
+  monedas_1350:{monedas:1350},
+  monedas_3500:{monedas:3500},
+  monedas_8500:{monedas:8500},
+  vidas_llenas:{vidasLlenas:true},
+  vidas_infinitas_24h:{vidasInfinitas24hs:true}
+};
+let tnDigitalGoods=null;
+async function tnInicializarBilling(){
+  if(!window.getDigitalGoodsService)return;
+  try{
+    tnDigitalGoods=await window.getDigitalGoodsService("https://play.google.com/billing");
+    tnActualizarPreciosReales();
+  }catch(e){tnDigitalGoods=null;}
+}
+async function tnActualizarPreciosReales(){
+  if(!tnDigitalGoods)return;
+  try{
+    const detalles=await tnDigitalGoods.getDetails(Object.keys(TN_PRODUCTOS_REALES));
+    detalles.forEach(d=>{
+      const btn=document.querySelector('.tn-comprar-real[data-producto="'+d.itemId+'"]');
+      if(btn)try{btn.textContent=new Intl.NumberFormat(navigator.language,{style:"currency",currency:d.price.currency}).format(d.price.value);}catch(e){}
+    });
+  }catch(e){}
+}
+tnInicializarBilling();
+function tnOtorgarProductoReal(id){
+  const p=TN_PRODUCTOS_REALES[id];if(!p)return;
+  if(p.monedas){sumarMonedas(p.monedas);mundoActualizarHud();mostrarToast("🪙","+"+p.monedas+" monedas");}
+  else if(p.vidasLlenas){meta.vidas=VIDAS_MAX;meta.proxima=0;guardarMeta();mundoActualizarHud();mostrarToast("❤️","Vidas llenas");}
+  else if(p.vidasInfinitas24hs){meta.vidasInfinitasHasta=Date.now()+24*60*60*1000;guardarMeta();mundoActualizarHud();mostrarToast("❤️","Vidas infinitas por 24hs");}
+  tnActualizar();
+}
+async function tnComprarReal(id){
+  if(!tnDigitalGoods){mostrarToast("🚧","Disponible solo en la app instalada desde Google Play");return;}
+  try{
+    const detalles=await tnDigitalGoods.getDetails([id]);
+    const item=detalles&&detalles[0];
+    const paymentMethod=[{supportedMethods:"https://play.google.com/billing",data:{sku:id}}];
+    const paymentDetails={total:{label:item?item.title:id,
+      amount:{currency:item?item.price.currency:"USD",value:item?item.price.value:"0"}}};
+    const request=new PaymentRequest(paymentMethod,paymentDetails);
+    const response=await request.show();
+    const token=response.details.token||response.details.purchaseToken;
+    await response.complete("success");
+    if(token&&tnDigitalGoods.consume)await tnDigitalGoods.consume(token);
+    tnOtorgarProductoReal(id);
+  }catch(e){
+    if(e&&e.name==="AbortError")return;
+    mostrarToast("⚠️","No se pudo completar la compra");
+  }
+}
 document.querySelectorAll(".tn-comprar-real").forEach(b=>{
-  b.onclick=()=>mostrarToast("🚧","Disponible cuando el juego esté en la Play Store");
+  b.onclick=()=>tnComprarReal(b.dataset.producto);
 });
 const PRECIOS_REALES={150:"$0.49",200:"$0.59",500:"$0.99",600:"$1.29",700:"$1.49",800:"$1.79",
   900:"$1.99",1000:"$2.29",1100:"$2.49",1200:"$2.99",1500:"$3.99",2000:"$4.99"};
