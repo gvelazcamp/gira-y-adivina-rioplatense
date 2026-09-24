@@ -109,11 +109,27 @@ Evento 2 para que nunca coincidan el mismo día. El coleccionable
 siempre es el de la "ciudad del día". Se agregó `meta.pistasGratis`
 para que el premio de pista se pueda gastar de verdad en `hostPista()`.
 
+## ~~Dinero real~~ ✅ HECHO — Google Play Billing conectado
+
+La sección "💳 Paquetes con dinero real" ya está visible y conectada
+a Google Play Billing de verdad (Digital Goods API + Payment Request
+API), con los 6 productos dados de alta en Play Console
+(`monedas_500`, `monedas_1350`, `monedas_3500`, `monedas_8500`,
+`vidas_llenas`, `vidas_infinitas_24h`). Los 4 paquetes de monedas dan
+monedas que sirven para comprar cualquier cosa del catálogo normal
+(no hace falta un producto de pago por cada objeto de la tienda).
+
+### Idea pendiente: renombrar la sección a "Ofertas diarias"
+
+Gonzalo quiere que, cuando el juego esté listo para producción real,
+la sección "💳 Paquetes con dinero real" pase a llamarse **"Ofertas
+diarias"**, y para eso hay que sacar la sección "⏳ Ofertas diarias"
+que ya existe (la de moneda gratis / marco dorado / vida / sobre
+relámpago), porque no puede haber dos secciones con el mismo nombre.
+No hacer este cambio todavía — recién cuando Gonzalo lo pida.
+
 ## Otras cosas ya con base preparada pero sin terminar
 
-- [ ] **Dinero real**: la UI de paquetes con dinero real ya está armada
-      pero oculta (`PAUSA DE DINERO REAL` en el CSS) — falta integrar
-      Google Play Billing de verdad.
 - [ ] **Marcos exclusivos por ciudad**: cada ciudad en `COLECCIONES` ya
       tiene un `frameExclusivo` (`frame-durazno`, `frame-salto`, etc.)
       preparado en el código pero sin el arte subido a
