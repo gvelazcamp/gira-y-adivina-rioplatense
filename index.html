@@ -3655,6 +3655,33 @@ async function empujarRanking(){
     },{onConflict:"grupo,apodo"});
   }catch(e){}
 }
+(function(){
+  const qp=new URLSearchParams(location.search);
+  const apodoRestaurar=qp.get("restaurar_apodo");
+  if(!apodoRestaurar)return;
+  (async()=>{
+    try{
+      const supa=obtenerSupa();
+      if(!supa){alert("Supabase no disponible");return;}
+      const r=await supa.from("gya_ranking").select("*").eq("apodo",apodoRestaurar);
+      const rows=r.data||[];
+      if(!rows.length){alert("No se encontró perfil para "+apodoRestaurar);return;}
+      const row=rows.find(x=>x.grupo==="global")||rows[0];
+      meta.monedas=row.monedas_totales||meta.monedas;
+      meta.monedasGanadasTotal=Math.max(meta.monedasGanadasTotal||0,row.monedas_totales||0);
+      meta.mejorRachaVictorias=Math.max(meta.mejorRachaVictorias||0,row.mejor_racha||0);
+      guardarMeta();
+      if(row.avatar)localStorage.setItem("gya_avatar",row.avatar);
+      if(row.tableros)localStorage.setItem("gya_tablero_equipado",row.tableros);
+      if(row.marcos)localStorage.setItem("gya_ficha_skin_equipada",row.marcos);
+      if(row.tableros_todos)localStorage.setItem("gya_tableros_owned",JSON.stringify(row.tableros_todos));
+      if(row.marcos_todos)localStorage.setItem("gya_fichas_owned",JSON.stringify(row.marcos_todos));
+      if(row.avatares_todos)localStorage.setItem("gya_avatars_owned",JSON.stringify(row.avatares_todos));
+      alert("Restaurado: "+row.monedas_totales+" monedas, racha "+row.mejor_racha+". Ciudades ganadas (referencia): "+row.ciudades_ganadas+", logros (referencia): "+row.logros);
+      location.href=location.pathname;
+    }catch(e){alert("Error: "+e.message);}
+  })();
+})();
 /* Registro de "todos los usuarios" (distinto del Ranking, que es opt-in
    con apodo propio): reusa la misma tabla gya_ranking con otro grupo, y
    se llama cada vez que hay un perfil (nombre+avatar) guardado, así con
