@@ -6693,7 +6693,7 @@ function finDelJuego(){
   if(modo==="bot"){
     const d=destino!==null?MUNDO[destino]:null;
     fSiguientePaso=null;
-    const bonusJugado=Math.floor((a.tot||0)/20);
+    const bonusJugado=Math.floor((a.tot||0)/35);
     if(bonusJugado>0){sumarMonedas(bonusJugado);mundoActualizarHud();}
     if(g===0){
       objSumar("victorias",1);
