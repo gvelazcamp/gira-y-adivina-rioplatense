@@ -384,6 +384,12 @@ body.gonzalo-admin .frame-card .tn-admin-x,body.gonzalo-admin .tn-item .tn-admin
 .evento-card.cerrado .ev-cerrado{display:block;color:var(--tinta);font-size:1.3rem;
  font-weight:900;letter-spacing:.5px;text-shadow:0 1px 0 #FFFFFF55}
 .evento-card-finde.fuera-de-fecha{filter:grayscale(.7);opacity:.6;cursor:default}
+.evento-card-entrenamiento{border-color:#6750D899;
+ background:radial-gradient(circle at 90% 15%,#6750D833,transparent 38%),linear-gradient(145deg,#1D1440,#160C31);
+ margin-bottom:10px}
+.evento-card-entrenamiento .evento-card-ico{background:linear-gradient(145deg,#6750D8,#159DB7)}
+.evento-card-entrenamiento .evento-card-tipo{color:#A6B8FF}
+.evento-card-entreno-ir{margin-left:auto;flex:0 0 auto;color:#A6B8FF;font-weight:800;font-size:.85rem;white-space:nowrap}
 .evento-card-tiempo{display:inline-flex;align-items:center;gap:5px;background:#00000055;
  color:var(--oro);font-size:.7rem;font-weight:800;padding:4px 10px;border-radius:20px;
  margin-bottom:10px;border:1px solid #F5B30144}
@@ -1848,6 +1854,24 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
       </span>
     </span>
   </button>
+  <h2 class="titulo" style="font-size:1.5rem;margin:22px 0 2px">ENTRENAMIENTOS</h2>
+  <p class="sub" style="margin-top:0">Practicá las mecánicas más difíciles, sin gastar vidas ni monedas</p>
+  <button type="button" class="evento-card evento-card-entrenamiento" id="evEntrenoToss">
+    <span class="evento-card-cuerpo">
+      <span class="evento-card-ico">⚡</span>
+      <span class="evento-card-info"><span class="evento-card-tipo">ENTRENAMIENTO</span><b>Toss-Up</b>
+        <small id="evEntrenoTossEstado">4 rondas · Ganá más de la mitad para superarlo</small></span>
+      <span class="evento-card-entreno-ir">Entrenar ›</span>
+    </span>
+  </button>
+  <button type="button" class="evento-card evento-card-entrenamiento" id="evEntrenoBonus">
+    <span class="evento-card-cuerpo">
+      <span class="evento-card-ico">⭐</span>
+      <span class="evento-card-info"><span class="evento-card-tipo">ENTRENAMIENTO</span><b>Ronda Bonus</b>
+        <small id="evEntrenoBonusEstado">4 rondas · Ganá más de la mitad para superarlo</small></span>
+      <span class="evento-card-entreno-ir">Entrenar ›</span>
+    </span>
+  </button>
   <button class="btn-grande sec" id="evCerrar">Volver al inicio</button>
 </section>
 
@@ -2703,6 +2727,92 @@ function finalizarEventoFinde(ganado,detalle,abandonado){
   $("fMapa").style.display=abandonado?"none":"block";$("fMapa").textContent="Volver a Eventos";
   $("fSalir").style.display=abandonado?"block":"none";$("fBoton").style.display="none";
   $("fVolverMapaPaso").style.display="none";
+}
+/* Entrenamientos: práctica libre de las dos mecánicas más difíciles
+   (Toss-Up y Ronda Bonus). No cuestan vida ni dan monedas — el
+   objetivo es mejorar, no forman parte de la economía del juego.
+   "Superado" = ganar más de la mitad de las rondas jugadas. */
+let esEntrenamientoToss=false,esEntrenamientoBonus=false;
+let entrenamientoBonusActual=0,entrenamientoBonusGanados=0;
+const ENTRENO_RONDAS=4;
+function entrenamientoMejor(clave){
+  try{return +localStorage.getItem("gya_entreno_"+clave+"_mejor")||0;}catch(e){return 0;}
+}
+function entrenamientoGuardarMejor(clave,valor){
+  if(valor>entrenamientoMejor(clave))try{localStorage.setItem("gya_entreno_"+clave+"_mejor",String(valor));}catch(e){}
+}
+function entrenamientoLimpiarFlags(){
+  esEntrenamientoToss=false;esEntrenamientoBonus=false;
+  entrenamientoBonusActual=0;entrenamientoBonusGanados=0;
+}
+function iniciarEntrenamientoToss(){
+  if(!perfilExiste()){abrirPerfil(iniciarEntrenamientoToss);return;}
+  detenerPartidaAnterior();
+  esPartidaDiaria=false;eventoDiarioUI=false;vinoDeJugarOnline=false;
+  esEventoCiudad=false;eventoCiudadPartida=null;eventoCiudadResultado=false;
+  esEventoFinde=false;eventoFindePartida=null;eventoFindeResultado=false;
+  destino=null;pasoActual=null;fSiguientePaso=null;
+  entrenamientoLimpiarFlags();esEntrenamientoToss=true;
+  modo="bot";miJug=0;rondasElegidas=ENTRENO_RONDAS;arranca=0;modoVelocidadElegido=true;
+  ["setup","eventos","mundo","pantDurazno"].forEach(id=>$(id).style.display="none");
+  $("fondoMundo").classList.remove("ver");$("juego").style.display="block";
+  const rival=rivalOnlineFalso();
+  armarTeclado();iniciarPartida(perfil.nombre,rival.n,undefined,perfil.avatar,rival.a,frameEquipado||null,null);
+}
+function finalizarEntrenamientoToss(){
+  const ganadas=S.jug[miJug].rg,pasa=ganadas>ENTRENO_RONDAS/2;
+  esEntrenamientoToss=false;
+  entrenamientoGuardarMejor("toss",ganadas);
+  detenerPartidaAnterior();
+  mostrarFin(pasa?"¡Entrenamiento superado!":"Entrenamiento no superado",
+    "Ganaste "+ganadas+" de "+ENTRENO_RONDAS+" rondas Toss-Up."+(pasa?" ¡Buen entrenamiento!":" Practicá de nuevo cuando quieras.")+" Esta partida no modifica vidas, monedas, objetivos ni progreso.");
+  $("fCopa").textContent=pasa?"🏆":"😤";
+  $("fMapa").style.display="none";$("fSalir").style.display="block";$("fBoton").style.display="none";
+  $("fVolverMapaPaso").style.display="none";$("fCompartir").style.display="none";
+}
+function iniciarEntrenamientoBonus(){
+  if(!perfilExiste()){abrirPerfil(iniciarEntrenamientoBonus);return;}
+  detenerPartidaAnterior();
+  esPartidaDiaria=false;eventoDiarioUI=false;vinoDeJugarOnline=false;
+  esEventoCiudad=false;eventoCiudadPartida=null;eventoCiudadResultado=false;
+  esEventoFinde=false;eventoFindePartida=null;eventoFindeResultado=false;
+  destino=null;pasoActual=null;fSiguientePaso=null;modoVelocidadElegido=false;
+  entrenamientoLimpiarFlags();esEntrenamientoBonus=true;
+  entrenamientoBonusActual=1;entrenamientoBonusGanados=0;
+  modo="bot";miJug=0;arranca=0;
+  ["setup","eventos","mundo","pantDurazno"].forEach(id=>$(id).style.display="none");
+  $("fondoMundo").classList.remove("ver");$("juego").style.display="block";
+  const rival=rivalOnlineFalso();
+  const js=[{n:perfil.nombre,av:perfil.avatar||null,frame:frameEquipado||null,tab:null,tot:0,ronda:0,rg:0,
+    escudo:false,hielo:{},lodo:false,comodin:false,poderesRonda:[],poderUsadoTurno:false},
+    {n:rival.n,av:rival.a,frame:null,tab:null,tot:0,ronda:0,rg:0,
+    escudo:false,hielo:{},lodo:false,comodin:false,poderesRonda:[],poderUsadoTurno:false}];
+  S={jug:js,turno:0,rondas:1,ronda:1,cats:null,mazo:nuevoMazo(null),finYa:false,valor:0,fase:"girar",abiertas:new Set(),usadas:new Set(),pistaPos:new Set(),frase:"",cat:"",normalesDesdeToss:0,poderRondaId:0,pierdeSeguidas:0,modoVelocidad:false};
+  armarTeclado();
+  iniciarBonus(0,{entrenamiento:true});
+}
+/* hostResolverBonus/finBonusTiempo siempre llaman acá al terminar un
+   intento de Ronda Bonus (ganado o no) — acá se desvía a la lógica de
+   entrenamiento antes de que finalizarPartidaPendiente haga su
+   trámite normal (que asume que ya se ganó la partida principal). */
+function entrenamientoBonusPasoResuelto(gano){
+  if(gano)entrenamientoBonusGanados++;
+  if(entrenamientoBonusActual>=ENTRENO_RONDAS){finalizarEntrenamientoBonus();return;}
+  entrenamientoBonusActual++;
+  S.finYa=false;S.finalPendiente=null;
+  publicar("Intento "+entrenamientoBonusActual+" de "+ENTRENO_RONDAS+" — allá va la próxima Ronda Bonus.");
+  setTimeout(tk(()=>iniciarBonus(0,{entrenamiento:true})),1400);
+}
+function finalizarEntrenamientoBonus(){
+  const ganadas=entrenamientoBonusGanados,pasa=ganadas>ENTRENO_RONDAS/2;
+  entrenamientoLimpiarFlags();
+  entrenamientoGuardarMejor("bonus",ganadas);
+  S.finYa=true;detenerPartidaAnterior();
+  mostrarFin(pasa?"¡Entrenamiento superado!":"Entrenamiento no superado",
+    "Resolviste "+ganadas+" de "+ENTRENO_RONDAS+" Rondas Bonus."+(pasa?" ¡Buen entrenamiento!":" Practicá de nuevo cuando quieras.")+" Esta partida no modifica vidas, monedas, objetivos ni progreso.");
+  $("fCopa").textContent=pasa?"🏆":"😤";
+  $("fMapa").style.display="none";$("fSalir").style.display="block";$("fBoton").style.display="none";
+  $("fVolverMapaPaso").style.display="none";$("fCompartir").style.display="none";
 }
 function eventoCiudadFichaDeHoyId(){
   const disp=FICHAS_SKIN.filter(f=>f.id);
@@ -4288,7 +4398,7 @@ $("punteroNext").onclick=()=>{
 };
 function iniciarPruebaPunteros(){
   if(!esGonzalo())return;
-  enPruebaPunteros=true;girosPruebaPunteros=0;esPartidaDiaria=false;eventoDiarioUI=false;esEventoCiudad=false;eventoCiudadResultado=false;esEventoFinde=false;eventoFindeResultado=false;
+  enPruebaPunteros=true;girosPruebaPunteros=0;esPartidaDiaria=false;eventoDiarioUI=false;esEventoCiudad=false;eventoCiudadResultado=false;esEventoFinde=false;eventoFindeResultado=false;entrenamientoLimpiarFlags();
   aplicarPunteroPrueba();activarRuedaPruebaPremium();
   destino=null;pasoActual=null;fSiguientePaso=null;modo="bot";miJug=0;vinoDeJugarOnline=false;modoVelocidadElegido=false;
   rondasElegidas=3;arranca=0;
@@ -5244,6 +5354,7 @@ $("bVolverDeArgentina").onclick=()=>{
 function empezarDestino(i,paso){
   esEventoCiudad=false;eventoCiudadPartida=null;eventoCiudadResultado=false;
   esEventoFinde=false;eventoFindePartida=null;eventoFindeResultado=false;
+  entrenamientoLimpiarFlags();
   if(!gastarVida())return;
   // Evita que un cartel de sobre/colección que quedó pendiente de una partida anterior
   // quede flotando encima de la partida nueva que arranca acá.
@@ -5440,6 +5551,7 @@ let modoVelocidadElegido=false,vinoDeJugarOnline=false;
 function jugarOnlineFalso(velocidad){
   esEventoCiudad=false;eventoCiudadPartida=null;eventoCiudadResultado=false;
   esEventoFinde=false;eventoFindePartida=null;eventoFindeResultado=false;
+  entrenamientoLimpiarFlags();
   if(!perfilExiste()){abrirPerfil(()=>jugarOnlineFalso(velocidad));return;}
   detenerPartidaAnterior();
   const token=matchToken;
@@ -6234,6 +6346,7 @@ function detalleResultado(g){
 function finalizarPartidaPendiente(bonusGanado){
   const f=S.finalPendiente;
   if(!f)return;
+  if(f.entrenamiento){entrenamientoBonusPasoResuelto(bonusGanado===true);return;}
   const detalle=detalleResultado(f.g);
   const bonusTxt=bonusGanado===true
     ?" · Bonus final ganado: +$"+BONUS_PREMIO+"."
@@ -6267,6 +6380,12 @@ function terminarPorAbandono(idx){
   if(!S||S.fase==="fin")return;
   if(esEventoCiudad){finalizarEventoCiudad(false,"Abandonaste el evento.",true);return;}
   if(esEventoFinde){finalizarEventoFinde(false,"Abandonaste el evento.",true);return;}
+  if(esEntrenamientoToss||esEntrenamientoBonus){
+    entrenamientoLimpiarFlags();detenerPartidaAnterior();
+    mostrarFin("Partida abandonada","Entrenamiento cancelado. Esta partida no modifica vidas, monedas, objetivos ni progreso.");
+    $("fMapa").style.display="none";$("fSalir").style.display="block";$("fBoton").style.display="none";
+    $("fCompartir").style.display="none";return;
+  }
   const eraPartidaDiaria=esPartidaDiaria;
   if(esPartidaDiaria){esPartidaDiaria=false;pdGuardarEstado("jugada");objActualizarBadge();}
   S.finYa=true;S.fase="fin";pararReloj();limpiarBonus();
@@ -6289,7 +6408,7 @@ function terminarPorAbandono(idx){
 }
 function abandonarPartidaPropia(){
   if(enPruebaPunteros){salirPruebaPunteros();return;}
-  const pierdeVida=modo==="bot"&&!vidasInfinitasActivas();
+  const pierdeVida=modo==="bot"&&!vidasInfinitasActivas()&&!esEntrenamientoToss&&!esEntrenamientoBonus;
   if(modo==="guest")enviar({a:"abandonar"});
   else terminarPorAbandono(miJug);
   /* Abandonar es una salida definitiva: después de registrar la derrota
@@ -6750,6 +6869,7 @@ function finDelJuego(){
     mostrarFin(tit,detalle+" Esta partida no modifica vidas, monedas, objetivos ni progreso.");
     $("fCompartir").style.display="none";return;
   }
+  if(esEntrenamientoToss){finalizarEntrenamientoToss();return;}
   if(esEventoCiudad){
     if(g===0)iniciarBonus(g,{g,tit:"¡Evento completado!",extra:""});
     else finalizarEventoCiudad(false,detalle+(g<0?" El empate cuenta como derrota.":""));
@@ -6848,7 +6968,7 @@ function finDelJuego(){
   iniciarBonus(g,{g,tit,extra});
 }
 function revancha(){
-  if(esEventoCiudad||eventoCiudadResultado||esEventoFinde||eventoFindeResultado)return;
+  if(esEventoCiudad||eventoCiudadResultado||esEventoFinde||eventoFindeResultado||esEntrenamientoToss||esEntrenamientoBonus)return;
   if(modo==="bot"&&destino!==null&&!gastarVida()){
     matchToken++;botPausado=0;
     $("modalFin").classList.remove("ver");
@@ -7337,6 +7457,7 @@ function abrirEventos(){
   eventoCiudadPartida=null;eventoCiudadResultado=false;
   eventoFindePartida=null;eventoFindeResultado=false;
   esPartidaDiaria=false;eventoDiarioUI=false;esEventoCiudad=false;esEventoFinde=false;
+  entrenamientoLimpiarFlags();
   $("fondoMundo").classList.remove("ver");
   $("juego").style.display="none";
   const ciudad=MUNDO[eventoCiudadDeHoyIdx()];
@@ -7374,6 +7495,9 @@ function abrirEventos(){
     $("evFindeEstado").textContent=estadoFinde==="ganado"?"✓ Completado · Volvé el próximo fin de semana":
       "5 rondas · Reintentá hasta ganar · Cada derrota cuesta 1 vida";
   }
+  const mejorToss=entrenamientoMejor("toss"),mejorBonus=entrenamientoMejor("bonus");
+  $("evEntrenoTossEstado").textContent="4 rondas · Ganá más de la mitad para superarlo"+(mejorToss?" · Mejor: "+mejorToss+"/4":"");
+  $("evEntrenoBonusEstado").textContent="4 rondas · Ganá más de la mitad para superarlo"+(mejorBonus?" · Mejor: "+mejorBonus+"/4":"");
   document.querySelectorAll(".capa.ver").forEach(c=>c.classList.remove("ver"));
   $("setup").style.display="none";$("mundo").style.display="none";$("pantDurazno").style.display="none";
   $("eventos").style.display="block";
@@ -7394,6 +7518,8 @@ $("evBanner3").onclick=()=>{
   if($("evBanner3").classList.contains("cerrado")){revelarEvento("evBanner3");return;}
   iniciarEventoFinde();
 };
+$("evEntrenoToss").onclick=iniciarEntrenamientoToss;
+$("evEntrenoBonus").onclick=iniciarEntrenamientoBonus;
 function tnRenderRuedas(contId,soloBasicos){
   const cont=$(contId||"ruedaGrid");if(!cont)return;cont.innerHTML="";
   const catalogo=tiendaFiltrar("rueda",RUEDAS_SKIN.filter(m=>m.catalogo!==false));
@@ -7792,7 +7918,7 @@ $("confirmar").onclick=()=>{
 $("fSalir").onclick=()=>{
   if(enPruebaPunteros){salirPruebaPunteros();return;}
   detenerPartidaAnterior();
-  esPartidaDiaria=false;eventoDiarioUI=false;esEventoCiudad=false;esEventoFinde=false;
+  esPartidaDiaria=false;eventoDiarioUI=false;esEventoCiudad=false;esEventoFinde=false;entrenamientoLimpiarFlags();
   $("eventos").style.display="none";$("fondoMundo").classList.remove("ver");
   $("modalFin").classList.remove("ver");
   if(mq){try{mq.end(true);}catch(e){}mq=null;}
@@ -7811,8 +7937,8 @@ $("fSalir").onclick=()=>{
 };
 $("bAbandonarPartida").onclick=()=>{
   if(!S||S.fase==="fin")return;
-  $("confirmAbandonar").querySelector("p").textContent=enPruebaPunteros?
-    "¿Salir de la partida de prueba? No afecta vidas, monedas ni progreso.":
+  $("confirmAbandonar").querySelector("p").textContent=(enPruebaPunteros||esEntrenamientoToss||esEntrenamientoBonus)?
+    "¿Salir del entrenamiento? No afecta vidas, monedas ni progreso.":
     "¿Seguro que querés abandonar la partida? Se cuenta como partida perdida.";
   $("confirmAbandonar").style.display="flex";
 };
@@ -8151,7 +8277,7 @@ $("fMapa").onclick=()=>{
     abrirEventos();
     return;
   }
-  detenerPartidaAnterior();esPartidaDiaria=false;eventoDiarioUI=false;esEventoCiudad=false;esEventoFinde=false;$("modalFin").classList.remove("ver");
+  detenerPartidaAnterior();esPartidaDiaria=false;eventoDiarioUI=false;esEventoCiudad=false;esEventoFinde=false;entrenamientoLimpiarFlags();$("modalFin").classList.remove("ver");
   const continuar=()=>{
     if(fSiguientePaso!==null){const p=fSiguientePaso;fSiguientePaso=null;
       const dd=MUNDO[destino];
