@@ -1231,27 +1231,11 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
 <div class="capa" id="capaTienda"><div class="caja tn-caja">
   <h2>🛍️ Tienda</h2>
   <p class="tn-monedas">🪙 <span id="tnMonedas">500</span></p>
-  <h3 class="tn-subtitulo" data-fijo="1">⏳ Ofertas diarias</h3>
   <div class="tn-grid">
   <div class="tn-item tn-card">
   <div class="tn-card-img" style="background-image:url('assets/shop/regalo.webp')"></div>
-  <div class="tn-card-info"><b>Monedas gratis</b><span>+80 monedas — 1 por día</span></div>
-  <button class="tn-comprar" data-tipo="oferta_gratis" data-precio="0" data-nombre="las monedas">🎁 Gratis</button>
-  </div>
-  <div class="tn-item tn-card">
-  <div class="tn-card-img" style="background-image:url('assets/shop/vida-1.webp')"></div>
-  <div class="tn-card-info"><b>Vida instantánea</b><span>+1 vida al toque</span></div>
-  <button class="tn-comprar" data-tipo="vida" data-precio="150">🪙 150</button>
-  </div>
-  <div class="tn-item tn-card">
-  <div class="tn-card-img" style="background-image:url('assets/shop/ruleta.webp')"></div>
-  <div class="tn-card-info"><b>Giro extra</b><span>Otra vuelta de la ruleta ahora</span></div>
-  <button class="tn-comprar" data-tipo="ruleta" data-precio="200">🪙 200</button>
-  </div>
-  <div class="tn-item tn-card tn-card-infinita">
-  <div class="tn-card-img" style="background-image:url('assets/shop/vida-infinita.webp')"></div>
-  <div class="tn-card-info"><b>Vidas infinitas</b><span>Jugá sin gastar vidas durante 30 minutos</span></div>
-  <button class="tn-comprar" data-tipo="vida_infinita_30" data-precio="3200" data-nombre="Vidas infinitas por 30 minutos">🪙 3200</button>
+  <div class="tn-card-info"><b>Monedas gratis</b><span>+80 monedas — mirá un anuncio</span></div>
+  <button class="tn-comprar" id="tnBotonGratis" data-tipo="oferta_gratis" data-precio="0" data-nombre="las monedas">▶️ Recoger</button>
   </div>
   </div>
   <h3 class="tn-subtitulo" data-fijo="1">🎁 Packs</h3>
@@ -1389,7 +1373,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <div class="frame-grid" id="punteroTiendaGrid"></div>
   <h3 class="tn-subtitulo tn-abre-lista" data-fijo="1" id="tituloMarcos">🖼️ Marcos de avatar 🔻</h3>
   <div class="frame-grid" id="frameGrid"></div>
-  <h3 class="tn-subtitulo" data-fijo="1" id="tituloDineroReal">💳 Paquetes con dinero real</h3>
+  <h3 class="tn-subtitulo" data-fijo="1" id="tituloDineroReal">💳 Ofertas diarias</h3>
   <div class="tn-grid">
   <div class="tn-item tn-card tn-real">
   <div class="tn-card-img" style="background-image:url('assets/shop/monedas-1.webp')"></div>
@@ -1848,7 +1832,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
           <small id="evFindeEstado">5 rondas · Reintentá hasta ganar · Cada derrota cuesta 1 vida</small></span>
         <span class="evento-card-premios">
           <span class="evento-card-premio-emoji">🪙</span>
-          <span class="evento-card-premio-emoji">❤️</span>
+          <span class="evento-card-premio-emoji">❤️∞</span>
           <span class="evento-card-premio-visual" id="evVisual3"></span>
         </span>
       </span>
@@ -2716,7 +2700,8 @@ function finalizarEventoFinde(ganado,detalle,abandonado){
       const extra=otorgarPremioConcreto(premioConcreto);
       guardarEventoFinde({...r,estado:"ganado",premioEntregado:true,premio:premioConcreto});
       sumarMonedas(350);recuperarVida();objSumar("victorias",1);
-      premio=" +350 🪙, +1 ❤️ y "+extra+".";
+      meta.vidasInfinitasHasta=Date.now()+30*60*1000;meta.ultimaRuleta=0;guardarMeta();
+      premio=" +350 🪙, +1 ❤️, 30 min de vidas infinitas ❤️∞, otro giro en la Ruleta 🎡 y "+extra+".";
     }else{guardarEventoFinde({...r,estado:"pendiente",premioEntregado:false});const infinita=vidasInfinitasActivas();gastarVida();premio=infinita?" ❤️∞ activo: no gastaste vida. Podés volver a intentarlo.":" -1 ❤️. Podés volver a intentarlo.";}
   }
   eventoFindeResultado=true;
@@ -3060,9 +3045,7 @@ function gratisDiariaTextoEspera(){
   return"⏳ "+hh+"h "+mm+"m";
 }
 function tnPuedeComprar(tipo){
-  if(tipo==="vida"||tipo==="recarga")return meta.vidas<VIDAS_MAX;
-  if(tipo==="vida_infinita_30")return!vidasInfinitasActivas();
-  if(tipo==="ruleta")return!rwPuedeGirar();
+  if(tipo==="recarga")return meta.vidas<VIDAS_MAX;
   if(tipo.indexOf("sobre_")===0)return sobrePuedeComprar(tipo.slice(6));
   if(tipo==="oferta_gratis")return gratisDiariaPuedeReclamar();
   if(tipo.indexOf("marco_")===0)return!framesComprados.has(tipo.slice(6));
@@ -3071,9 +3054,7 @@ function tnPuedeComprar(tipo){
   return true;
 }
 function tnRazonBloqueo(tipo){
-  if(tipo==="vida"||tipo==="recarga")return"❤️ Vidas llenas";
-  if(tipo==="vida_infinita_30")return"❤️∞ "+textoVidasInfinitas()+" restantes";
-  if(tipo==="ruleta")return"✅ Ya disponible";
+  if(tipo==="recarga")return"❤️ Vidas llenas";
   if(tipo.indexOf("sobre_")===0)return sobreTextoEspera(tipo.slice(6));
   if(tipo==="oferta_gratis")return gratisDiariaTextoEspera();
   if(tipo.indexOf("marco_")===0)return"✅ Ya lo tenés";
@@ -3100,21 +3081,20 @@ function tnActualizar(){
   $("tnMonedas").textContent=meta.monedas;
   document.querySelectorAll(".tn-comprar").forEach(b=>{
     const tipo=b.dataset.tipo,precio=+b.dataset.precio,puede=tnPuedeComprar(tipo),alcanza=meta.monedas>=precio;
-    if(tipo==="ruleta"){
-      /* Este botón ya no compra desde acá: siempre está habilitado y lleva
-         a la Ruleta (con confirmación), sea que el giro gratis ya esté
-         disponible o haya que comprarlo ahí adentro. */
-      b.disabled=false;b.title="";
-      b.textContent="🎡 Ir a girar";
-      return;
-    }
     b.disabled=!alcanza||!puede;
     if(!puede){b.textContent=tnRazonBloqueo(tipo);b.title="";}
-    else if(tipo==="oferta_gratis"){b.textContent="🎁 Gratis";b.title="";}
+    else if(tipo==="oferta_gratis"){b.textContent="▶️ Recoger";b.title="";}
     else{b.textContent="🪙 "+precio;b.title=alcanza?"":"Te faltan "+(precio-meta.monedas)+" monedas";}
     const fijo=b.parentElement.querySelector(".tn-pack-precio-fijo");
     if(fijo)fijo.textContent=b.textContent;
   });
+}
+/* Gancho para el anuncio recompensado de "Monedas gratis": acá va el
+   código real de anuncios (Gonzalo lo conecta aparte). Por ahora
+   entrega la recompensa directo, sin mostrar ningún anuncio, para
+   poder probar el resto del flujo mientras tanto. */
+function tnVerAnuncioRecompensado(onCompletado){
+  onCompletado();
 }
 /* Las secciones de la Tienda que ya existían quedan siempre visibles
    (marcadas con data-fijo="1" en su <h3>). Cualquier sección NUEVA que se
@@ -3346,10 +3326,7 @@ function tnNombreItem(b){
 }
 function tnEjecutarCompra(tipo,precio){
   meta.monedas-=precio;
-  if(tipo==="vida")recuperarVida();
-  else if(tipo==="recarga"){meta.vidas=VIDAS_MAX;meta.proxima=0;}
-  else if(tipo==="vida_infinita_30")meta.vidasInfinitasHasta=Date.now()+30*60*1000;
-  else if(tipo==="ruleta")meta.ultimaRuleta=0;
+  if(tipo==="recarga"){meta.vidas=VIDAS_MAX;meta.proxima=0;}
   else if(tipo.indexOf("sobre_")===0){
     const ciudadId=tipo.slice(6);
     if(coleccionMeta[ciudadId]){
@@ -3408,12 +3385,9 @@ function tnEjecutarCompra(tipo,precio){
 document.querySelectorAll(".tn-comprar").forEach(b=>{
   b.onclick=()=>{
     const tipo=b.dataset.tipo,precio=+b.dataset.precio;
-    if(tipo==="ruleta"){
-      $("confirmCompraTxt").textContent="¿Querés ir a tu giro diario?";
-      $("confirmCompraSi").textContent="Sí";
-      $("confirmCompra").style.display="flex";
-      $("confirmCompraSi").onclick=()=>{$("confirmCompra").style.display="none";$("confirmCompraSi").textContent="Comprar";$("capaTienda").classList.remove("ver");abrirRuleta();};
-      $("confirmCompraNo").onclick=()=>{$("confirmCompra").style.display="none";$("confirmCompraSi").textContent="Comprar";};
+    if(tipo==="oferta_gratis"){
+      if(!tnPuedeComprar(tipo))return;
+      tnVerAnuncioRecompensado(()=>tnEjecutarCompra(tipo,precio));
       return;
     }
     if(meta.monedas<precio||!tnPuedeComprar(tipo))return;
