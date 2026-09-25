@@ -964,27 +964,29 @@ html.rueda-prueba-boreal .centro{background:radial-gradient(circle at 38% 30%,#E
 .rtv-placa-txt{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .rtv-placa-txt .rtv-nombre{flex:0 0 auto;color:var(--crema);font-weight:800;text-shadow:0 1px 3px #000;max-width:95%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rtv-placa-txt .rtv-monto{flex:0 0 auto;color:var(--oro);font-weight:900;text-shadow:0 1px 3px #000}
+.rtv-placa-txt .rtv-monto svg{width:15px;height:10px;margin-right:4px;vertical-align:1px;opacity:.9}
 .rtv-fj-2{left:32.9%;bottom:41%;height:26.6%;transform:translate(-50%,0)}
 .rtv-costura-2{left:26.02%;top:56.85%;width:13.46%;height:5.31%}
-.rtv-placa-2{left:27.2%;width:11.7%;top:69.6%;height:5.3%}
-.rtv-placa-2 .rtv-nombre{font-size:.92rem}
-.rtv-placa-2 .rtv-monto{font-size:.82rem}
+.rtv-placa-2{left:28.11%;width:10.77%;top:70.46%;height:5%}
+.rtv-placa-2 .rtv-nombre{font-size:.8rem}
+.rtv-placa-2 .rtv-monto{font-size:.72rem}
 .rtv-fj-1{left:49%;bottom:47.4%;height:31.9%;transform:translate(-50%,0)}
 .rtv-costura-1{left:41.27%;top:51%;width:15.55%;height:5.31%}
-.rtv-placa-1{left:41.3%;width:15.2%;top:67%;height:6.9%}
-.rtv-placa-1 .rtv-nombre{font-size:1.08rem}
-.rtv-placa-1 .rtv-monto{font-size:.98rem}
+.rtv-placa-1{left:43.96%;width:11.06%;top:67.48%;height:5.31%}
+.rtv-placa-1 .rtv-nombre{font-size:1rem}
+.rtv-placa-1 .rtv-monto{font-size:.9rem}
 .rtv-fj-3{left:65.2%;bottom:38.15%;height:26.6%;transform:translate(-50%,0)}
 .rtv-costura-3{left:58.91%;top:59.72%;width:12.56%;height:5.31%}
-.rtv-placa-3{left:59.2%;width:12%;top:69.6%;height:5.3%}
-.rtv-placa-3 .rtv-nombre{font-size:.92rem}
-.rtv-placa-3 .rtv-monto{font-size:.82rem}
+.rtv-placa-3{left:61%;width:9.27%;top:70.99%;height:5%}
+.rtv-placa-3 .rtv-nombre{font-size:.8rem}
+.rtv-placa-3 .rtv-monto{font-size:.72rem}
 .rtv-resto{position:relative;z-index:1;display:flex;flex-direction:column;gap:6px;margin-top:6px;max-height:160px;overflow-y:auto}
 .rtv-resto-fila{display:flex;align-items:center;gap:8px;background:#00000030;border-radius:10px;padding:6px 10px;text-align:left}
 .rtv-resto-fila .rtv-resto-puesto{color:#B49FCE;font-weight:800;font-size:.75rem;width:18px;flex:0 0 auto}
 .rtv-resto-fila img{width:26px;height:26px;border-radius:50%;flex:0 0 auto}
 .rtv-resto-fila .rtv-resto-nombre{flex:1;color:var(--crema);font-weight:700;font-size:.78rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rtv-resto-fila .rtv-resto-monto{color:var(--oro);font-weight:800;font-size:.78rem;flex:0 0 auto}
+.rtv-resto-fila .rtv-resto-monto svg{width:14px;height:9px;margin-right:3px;vertical-align:1px;opacity:.9}
 #capaSeccionTienda{z-index:11}
 .capa.ver{display:grid}
 .caja{background:var(--noche2);border:1px solid #FFFFFF1F;border-radius:20px;padding:26px 22px;max-width:440px;width:100%;text-align:center}
@@ -7828,7 +7830,7 @@ function mostrarResultadosTV(){
     if(!x){lug.style.display="none";return;}
     lug.style.display="flex";
     $("rtvNom"+idx).textContent=x.j.n;
-    $("rtvMonto"+idx).textContent="$"+x.j.tot;
+    $("rtvMonto"+idx).innerHTML=BILLETE+"$"+x.j.tot;
     const fj=rtvFestejoParaAvatar(x.j.av,usadosFj);
     usadosFj.push(fj);
     $("rtvFj"+idx).src="assets/festejos/"+fj+".webp";
@@ -7840,7 +7842,7 @@ function mostrarResultadosTV(){
     d.innerHTML='<span class="rtv-resto-puesto">'+(i+4)+'°</span>'+
       '<img src="'+rtvAvatarImg(x.j.av)+'" alt="">'+
       '<span class="rtv-resto-nombre">'+rkEsc(x.j.n)+'</span>'+
-      '<span class="rtv-resto-monto">$'+x.j.tot+'</span>';
+      '<span class="rtv-resto-monto">'+BILLETE+'$'+x.j.tot+'</span>';
     resto.appendChild(d);
   });
   rtvGenerarConfetti();
