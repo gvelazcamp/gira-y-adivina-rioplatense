@@ -1584,6 +1584,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <button class="btn-grande sec" id="bPruebaPunteros"><span class="btn-ico">🎯</span><span class="btn-txt">Ruletas de prueba · 8 punteros</span></button>
     <button class="btn-grande sec" id="bPruebaAltaPerfil"><span class="btn-ico">👤</span><span class="btn-txt">Alta de usuario nuevo</span></button>
     <button class="btn-grande sec" id="bPruebaGiftTienda"><span class="btn-ico">🎁</span><span class="btn-txt">Vista previa Gift de Tienda</span></button>
+    <button class="btn-grande sec" id="bPruebaSalaTVBots"><span class="btn-ico">📺</span><span class="btn-txt">Sala TV con bots ficticios</span></button>
   </div>
   <button class="no" id="pruebasCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
 </div></div>
@@ -2061,6 +2062,7 @@ const norm=s=>s.toUpperCase().normalize("NFD").replace(/[\u0300-\u0304\u0306-\u0
 let modo="local", miJug=0, mq=null, sala="", rondasElegidas=3, holaTimer=null, serie=[0,0], arranca=0, ultGanador=-1, racha=0, relojID=null, relojOculto=null;
 let mqInv=null, invPendiente=null;
 let familiaJugadores=[],tvPartidaIniciada=false,tvMiIndex=-1;
+let tvPruebaBotsActiva=false,tvPruebaBotT=null;
 let tvId=(()=>{try{let x=sessionStorage.getItem("larueda_tv_id");if(!x){x="p"+Math.random().toString(36).slice(2,10);sessionStorage.setItem("larueda_tv_id",x);}return x;}catch(e){return "p"+Math.random().toString(36).slice(2,10);}})();
 let S=null, V={mask:"",cat:"",usadas:[],jug:[{n:"",tot:0,ronda:0},{n:"",tot:0,ronda:0}],turno:0,fase:"girar",hayVoc:true,cons:1,aviso:""};
 let giroActual=0, animando=false;
@@ -4735,6 +4737,7 @@ $("bPruebas").onclick=()=>{$("capaPruebas").classList.add("ver");};
 $("bPruebaPunteros").onclick=iniciarPruebaPunteros;
 $("bPruebaAltaPerfil").onclick=()=>{$("capaPruebas").classList.remove("ver");$("capaMas").classList.remove("ver");previsualizarPerfilVacio();};
 $("bPruebaGiftTienda").onclick=()=>{if(!esGonzalo())return;ptVistaPrueba=true;$("capaPruebas").classList.remove("ver");$("capaMas").classList.remove("ver");$("capaPromoTienda").classList.add("pt-vista-prueba","ver");ptIniciarVideo();};
+$("bPruebaSalaTVBots").onclick=iniciarPruebaSalaTVBots;
 $("pruebasCerrar").onclick=()=>$("capaPruebas").classList.remove("ver");
 $("bTutorial").onclick=()=>$("capaTutorial").classList.add("ver");
 $("tutoCerrar").onclick=()=>$("capaTutorial").classList.remove("ver");
@@ -6332,6 +6335,72 @@ function tvComenzarPartidaConArranque(indiceArranca){
   $("tvLobby").style.display="none";$("juego").style.display="block";document.body.classList.remove("tv-lobby-bg");document.body.classList.add("tvhost");armarTeclado();
   iniciarPartidaJugadores(familiaJugadores,null);
 }
+function iniciarPruebaSalaTVBots(){
+  if(!esGonzalo())return;
+  detenerPartidaAnterior();
+  tvPruebaBotsActiva=true;tvPartidaIniciada=false;modo="tvhost";miJug=-1;tvMiIndex=-1;destino=null;pasoActual=null;vinoDeJugarOnline=false;
+  esPartidaDiaria=false;eventoDiarioUI=false;esEventoCiudad=false;eventoCiudadResultado=false;esEventoFinde=false;eventoFindeResultado=false;entrenamientoLimpiarFlags();
+  sala="TEST";rondasElegidas=3;modoVelocidadElegido=false;
+  familiaJugadores=[
+    {id:"tvbot-gonzalo",n:(perfil.nombre||"Gonzalo").slice(0,12),av:perfil.avatar||"avatar-01",frame:frameEquipado||null,tab:tableroEquipado||null},
+    {id:"tvbot-valen",n:"Valen Bot",av:"avatar-03",frame:null,tab:null},
+    {id:"tvbot-sofi",n:"Sofi Bot",av:"avatar-05",frame:null,tab:null},
+    {id:"tvbot-marcos",n:"Marcos Bot",av:"avatar-07",frame:null,tab:null}
+  ];
+  $("capaPruebas").classList.remove("ver");$("capaMas").classList.remove("ver");$("setup").style.display="none";
+  $("lobby").style.display="none";$("tvControl").style.display="none";$("juego").style.display="none";
+  $("tvLobby").style.display="block";document.body.classList.add("tv-lobby-bg");document.body.classList.remove("tvhost");
+  $("tvEstado").textContent="Prueba con bots ficticios · tocá Comenzar para ver todo el flujo";
+  renderTVLobby();
+  mostrarToast("📺","Sala TV de prueba lista: jugadores ficticios conectados.");
+}
+function tvPruebaResolverProbable(){
+  if(!S||!S.frase)return false;
+  const letras=[...new Set(S.frase.replace(/ /g,"").split(""))];
+  if(!letras.length)return false;
+  const abiertas=letras.filter(l=>S.abiertas.has(l)).length/letras.length;
+  return abiertas>.62||consRestantes()<=2;
+}
+function tvPruebaLetra(solo){
+  const l=letraHumana(solo);
+  if(l)return l;
+  const fuente=solo==="voc"?VOCALES:LETRAS.join("");
+  return fuente.split("").find(c=>!S.usadas.has(c))||null;
+}
+function programarTVBotsPrueba(){
+  clearTimeout(tvPruebaBotT);
+  if(!tvPruebaBotsActiva||modo!=="tvhost"||!S||S.finYa||animando)return;
+  if(S.fase==="fin"||S.fase==="toss_fin"||S.fase==="bonus_fin")return;
+  const token=matchToken;
+  tvPruebaBotT=setTimeout(()=>{
+    if(token!==matchToken||!tvPruebaBotsActiva||modo!=="tvhost"||!S||S.finYa||animando)return;
+    const j=S.jug[S.turno];
+    if(!j)return;
+    if(S.fase==="tossup"){
+      if(S.tossPausado)return;
+      const disp=S.jug.map((_,i)=>i).filter(i=>!(S.tossBloq&&S.tossBloq[i]));
+      if(!disp.length)return;
+      const idx=disp[Math.floor(Math.random()*disp.length)];
+      hostResolver(Math.random()<.78?S.frase:"RESPUESTA DE PRUEBA",idx);return;
+    }
+    if(S.fase==="bonus_elegir"){
+      const cons="RSTLNBCMPD".split("").find(l=>!VOCALES.includes(l)&&!S.usadas.has(l)&&(!S.bonusCons||S.bonusCons.length<3));
+      const voc="EAOIU".split("").find(l=>VOCALES.includes(l)&&!S.usadas.has(l)&&!S.bonusVocal);
+      const l=(S.bonusCons&&S.bonusCons.length<3)?cons:voc;
+      if(l)hostLetraBonus(l);else hostResolverBonus(Math.random()<.65?S.frase:"BONUS PRUEBA");return;
+    }
+    if(S.fase==="bonus_resolver"){hostResolverBonus(Math.random()<.72?S.frase:"BONUS PRUEBA");return;}
+    if(S.fase==="lodo"){hostLodoLimpio&&hostLodoLimpio(S.turno);return;}
+    if(S.fase==="girar"){
+      if(tvPruebaResolverProbable()&&Math.random()<.32){hostResolver(S.frase);return;}
+      if(consRestantes()===0){if(j.ronda>=250&&[...VOCALES].some(v=>!S.usadas.has(v)&&S.frase.includes(v)))hostVocal();else hostResolver(S.frase);return;}
+      if(j.ronda>=250&&Math.random()<.14&&[...VOCALES].some(v=>!S.usadas.has(v)&&S.frase.includes(v))){hostVocal();return;}
+      hostGirar();return;
+    }
+    if(S.fase==="consonante"){const l=tvPruebaLetra("cons");if(l)hostLetra(l);return;}
+    if(S.fase==="vocal"){const l=tvPruebaLetra("voc");if(l)hostLetra(l);return;}
+  },900+Math.random()*900);
+}
 $("bTVSalir").onclick=()=>location.href=location.origin+location.pathname;
 $("tvcGirar").onclick=()=>enviar({a:"girar"});
 $("tvcVocal").onclick=()=>enviar({a:"vocal"});
@@ -6962,6 +7031,7 @@ function publicar(txt,fx,mantenerReloj){
     (esBonusReloj?Math.max(1,Math.ceil((S.bonusFin-Date.now())/1000)):(vivo?Math.max(1,Math.round((S.tFin-Date.now())/1000)):0));
   V.relojMax=esToss?(S.tossPausado?Math.ceil(TOSS_RESPUESTA_DURACION/1000):15):(esBonusReloj?10:25);
   if(modo==="bot")setTimeout(programarBot,0);
+  if(tvPruebaBotsActiva)setTimeout(programarTVBotsPrueba,0);
   if(modo!=="local"&&modo!=="bot")enviar({tipo:"estado",v:V});
   pintarTodo();
 }
@@ -8032,7 +8102,7 @@ function eventoTiempoRestanteTxt(){
 // Invalida callbacks de la partida anterior y detiene sus temporizadores.
 function detenerPartidaAnterior(){
   matchToken++;botPausado=0;
-  clearTimeout(botT);botT=null;
+  clearTimeout(botT);botT=null;clearTimeout(tvPruebaBotT);tvPruebaBotT=null;tvPruebaBotsActiva=false;
   limpiarToss();limpiarBonus();pararReloj();
   animando=false;duckMusica(false);
   if(S){S.fase="fin";S.finYa=true;}
