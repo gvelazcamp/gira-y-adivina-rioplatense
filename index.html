@@ -3052,8 +3052,8 @@ const TORNEO_PREMIOS=[
 function torneosAbrir(){torneosActualizar();$("capaTorneos").classList.add("ver");}
 function torneosRenderEscalera(){
   $("torneosEscalera").innerHTML=TORNEO_PREMIOS.map(p=>
-    '<div style="display:flex;justify-content:space-between;align-items:center;background:#00000030;border-radius:10px;padding:9px 13px">'+
-    '<span>🏅 '+p.en+' seguidas</span><span style="color:var(--oro);font-weight:800">'+p.texto+'</span></div>'
+    '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;background:#00000030;border-radius:10px;padding:9px 13px">'+
+    '<span style="flex:0 0 auto">🏅 '+p.en+' seguidas</span><span style="color:var(--oro);font-weight:800;text-align:right">'+p.texto+'</span></div>'
   ).join('');
 }
 function torneosActualizar(){
