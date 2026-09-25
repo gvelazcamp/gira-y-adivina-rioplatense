@@ -1004,7 +1004,7 @@ body.tv-lobby-bg{background-image:linear-gradient(#0C0616CC,#0C0616F2),url('asse
 .tv-persona .av{width:26px;height:26px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid #FFFFFF33}
 .tv-persona::before{content:'📱 ';opacity:.9}
 .tv-ayuda{color:#C9B8DE;line-height:1.45;margin:10px 0}
-.tv-link{font-size:.82rem;color:#9FE1CB;word-break:break-all;margin:8px 0 14px}
+.tv-link-chico{display:block;margin:14px auto 0;background:none;border:0;color:#B49FCE;font-size:.85rem;font-weight:700;text-decoration:underline;padding:6px}
 #tvControl{max-width:520px}
 #tvControl .tv-panel{background:#0C0616E6;border:1px solid #FFFFFF1F;border-radius:18px;padding:18px 16px;margin-bottom:12px}
 #tvControl .tv-quien{font-family:'Archivo Black';font-size:1.45rem;color:var(--oro)}
@@ -1746,12 +1746,10 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <h1 class="titulo" style="font-size:2.5rem">SALA TV</h1>
   <p class="tv-ayuda">Dejá esta pantalla abierta en la televisión. Cada persona entra desde su celular con el código.</p>
   <div class="tv-codigo" id="tvCodigo">····</div>
-  <div class="tv-link" id="tvLink"></div>
   <p class="estado" id="tvEstado">Conectando…</p>
   <div id="tvLista"></div>
   <button class="btn-grande" id="bTVComenzar" disabled>Comenzar partida</button>
-  <button class="btn-grande sec" id="bTVCopiar">Copiar enlace para celulares</button>
-  <button class="btn-grande sec" id="bTVSalir">Volver al inicio</button>
+  <button class="tv-link-chico" id="bTVSalir">Volver al inicio</button>
 </section>
 
 <div id="capaAnuncioTV">
@@ -6053,8 +6051,6 @@ function jugarBotToss(){
 
 function renderTVLobby(){
   $("tvCodigo").textContent=sala||"····";
-  const link=location.origin+location.pathname+"?tv="+sala;
-  $("tvLink").textContent=link;
   const lista=$("tvLista");lista.innerHTML="";
   familiaJugadores.forEach((j,i)=>{const d=document.createElement("div");d.className="tv-persona";
     d.innerHTML=(j.av?'<span class="avatar-wrap"><img class="av ver" src="assets/avatars/'+j.av+'.webp" alt="">'+
@@ -6314,7 +6310,6 @@ function tvComenzarPartidaConArranque(indiceArranca){
   $("tvLobby").style.display="none";$("juego").style.display="block";document.body.classList.remove("tv-lobby-bg");document.body.classList.add("tvhost");armarTeclado();
   iniciarPartidaJugadores(familiaJugadores,null);
 }
-$("bTVCopiar").onclick=async()=>{const t=location.origin+location.pathname+"?tv="+sala;try{await navigator.clipboard.writeText(t);$("bTVCopiar").textContent="Enlace copiado";}catch(e){}setTimeout(()=>$("bTVCopiar").textContent="Copiar enlace para celulares",1600);};
 $("bTVSalir").onclick=()=>location.href=location.origin+location.pathname;
 $("tvcGirar").onclick=()=>enviar({a:"girar"});
 $("tvcVocal").onclick=()=>enviar({a:"vocal"});
