@@ -806,11 +806,13 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 #capaRuletaTV{position:fixed;inset:0;background:#160B24F5;display:none;z-index:33;
  place-items:center;align-content:center;gap:18px;padding:20px}
 #capaRuletaTV.ver{display:grid}
-.rtv-arranque-titulo{font-family:'Archivo Black',sans-serif;color:var(--oro);text-align:center;
- font-size:clamp(1.4rem,6vw,2rem);text-shadow:0 3px 0 #00000055}
 #capaRuletaTV .ruedabox{width:min(78vw,380px);justify-self:center}
-#salioGiroTV{font-family:'Archivo Black',sans-serif;font-size:clamp(1.4rem,7vw,2.2rem);
- color:var(--oro);text-align:center;text-shadow:0 4px 0 #7A2E00;min-height:1.2em}
+.rtv-cartelito{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.6);
+ background:var(--noche2);border:2px solid var(--oro);border-radius:16px;padding:16px 26px;
+ font-family:'Archivo Black',sans-serif;font-size:clamp(1.3rem,6vw,1.9rem);color:var(--oro);
+ text-align:center;text-shadow:0 3px 0 #00000055;opacity:0;pointer-events:none;z-index:2;
+ box-shadow:0 10px 40px #000000AA;transition:transform .35s cubic-bezier(.34,1.56,.64,1),opacity .25s}
+.rtv-cartelito.ver{opacity:1;transform:translate(-50%,-50%) scale(1)}
 #ruedaTV{width:100%;max-width:none;height:auto;border-radius:50%;will-change:transform;
  backface-visibility:hidden;transform:translateZ(0);background-color:#0C0616;
  filter:drop-shadow(0 6px 16px #00000090)}
@@ -1760,14 +1762,13 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
 </div>
 
 <div id="capaRuletaTV">
-  <h2 class="rtv-arranque-titulo">🎡 ¿Quién arranca?</h2>
   <div class="ruedabox rtv-ruedabox-marco">
     <img class="rtv-marco-img" src="assets/salatv-ruleta-marco.webp" alt="">
     <div class="aguja" id="agujaTV"></div>
     <div class="aro"><canvas id="ruedaTV" width="600" height="600"></canvas></div>
     <div class="centro"></div>
   </div>
-  <div id="salioGiroTV">Girando…</div>
+  <div class="rtv-cartelito" id="salioGiroTV"></div>
 </div>
 
 <section id="tvControl">
@@ -6314,12 +6315,13 @@ function tvAbrirRuletaArranque(){
   tvRuletaGiroActual=0;
   $("ruedaTV").style.transform="rotate(0deg)";
   tvDibujarRuedaArranque(gajos,familiaJugadores);
-  $("salioGiroTV").textContent="Girando…";
+  $("salioGiroTV").classList.remove("ver");
   $("capaRuletaTV").classList.add("ver");
   const indiceGanador=Math.floor(Math.random()*familiaJugadores.length);
   setTimeout(()=>{
     tvAnimarRuletaArranque(gajos,indiceGanador,()=>{
       $("salioGiroTV").textContent="🎉 ¡Arranca "+familiaJugadores[indiceGanador].n+"!";
+      $("salioGiroTV").classList.add("ver");
       setTimeout(()=>{$("capaRuletaTV").classList.remove("ver");tvComenzarPartidaConArranque(indiceGanador);},1800);
     });
   },500);
