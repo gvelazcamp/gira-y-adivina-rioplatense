@@ -795,6 +795,12 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 #capaRueda{position:fixed;inset:0;background:#160B24F5;display:none;z-index:15;
  place-items:center;align-content:center;gap:22px;padding:20px}
 #capaRueda.ver{display:grid}
+#capaAnuncioTV{position:fixed;inset:0;background:#160B24F5;display:none;z-index:33;place-items:center;padding:20px}
+#capaAnuncioTV.ver{display:grid}
+.anuncio-tv-caja{text-align:center;animation:entra .5s cubic-bezier(.2,1.4,.4,1)}
+.anuncio-tv-emoji{font-size:3.4rem;margin-bottom:6px}
+.anuncio-tv-titulo{font-family:'Archivo Black',sans-serif;color:var(--oro);font-size:clamp(1.6rem,7vw,2.4rem);text-shadow:0 3px 0 #00000055}
+.anuncio-tv-sub{color:var(--crema);font-size:clamp(1rem,4vw,1.3rem);font-weight:700;margin-top:8px}
 #capaRuletaTV{position:fixed;inset:0;background:#160B24F5;display:none;z-index:33;
  place-items:center;align-content:center;gap:18px;padding:20px}
 #capaRuletaTV.ver{display:grid}
@@ -1732,6 +1738,14 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="btn-grande sec" id="bTVCopiar">Copiar enlace para celulares</button>
   <button class="btn-grande sec" id="bTVSalir">Volver al inicio</button>
 </section>
+
+<div id="capaAnuncioTV">
+  <div class="anuncio-tv-caja">
+    <div class="anuncio-tv-emoji">🎉</div>
+    <h2 class="anuncio-tv-titulo">¡Antes de arrancar!</h2>
+    <p class="anuncio-tv-sub">Vamos a sortear quién juega primero 🎡</p>
+  </div>
+</div>
 
 <div id="capaRuletaTV">
   <h2 class="rtv-arranque-titulo">🎡 ¿Quién arranca?</h2>
@@ -6186,8 +6200,12 @@ $("bEntrarTV").onclick=()=>{
 };
 $("bTVComenzar").onclick=()=>{
   if(familiaJugadores.length<2||tvPartidaIniciada)return;
-  tvAbrirRuletaArranque();
+  tvAnunciarSorteo();
 };
+function tvAnunciarSorteo(){
+  $("capaAnuncioTV").classList.add("ver");
+  setTimeout(()=>{$("capaAnuncioTV").classList.remove("ver");tvAbrirRuletaArranque();},2200);
+}
 /* Ruleta de arranque de Sala TV: antes de largar la partida, se gira
    una ruleta con los nombres de los jugadores (repartidos parejo en
    24 gajos, igual que la ruleta de premios) para decidir quién
