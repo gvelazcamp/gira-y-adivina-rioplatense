@@ -1453,6 +1453,19 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="tn-comprar" data-tipo="pack_ovni" data-precio="13000" data-real-agregado="1" data-nombre="el Pack OVNI">🪙 13000</button>
   <span class="tn-pack-precio-fijo" id="tnPrecioFijoOvni">🪙 13000</span>
   </div>
+  <h3 class="tn-subtitulo" data-fijo="1">🎟️ Tickets de torneo</h3>
+  <div class="tn-grid">
+  <div class="tn-item tn-card">
+  <div class="tn-card-img" style="background-image:url('assets/eventos/ticket-icono.webp')"></div>
+  <div class="tn-card-info"><b>1 ticket de torneo</b><span>Se gana jugando los Eventos</span></div>
+  <button class="tn-comprar" data-tipo="ticket_1" data-precio="900" data-nombre="1 ticket de torneo">🪙 900</button>
+  </div>
+  <div class="tn-item tn-card">
+  <div class="tn-card-img" style="background-image:url('assets/eventos/ticket-icono.webp')"></div>
+  <div class="tn-card-info"><b>5 tickets de torneo</b><span>Entrada completa a un Torneo</span></div>
+  <button class="tn-comprar" data-tipo="ticket_5" data-precio="3500" data-nombre="5 tickets de torneo">🪙 3500</button>
+  </div>
+  </div>
   <h3 class="tn-subtitulo tn-abre-lista" data-fijo="1" id="tituloAvatares">🧑‍🎤 Avatares premium 🔻</h3>
   <div class="frame-grid" id="avatarPremiumGrid"></div>
   <h3 class="tn-subtitulo tn-abre-lista" data-fijo="1" id="tituloTableros">🎲 Tableros 🔻</h3>
@@ -3771,6 +3784,12 @@ function tnEjecutarCompra(tipo,precio){
     const idMarco=tipo.slice(6);
     framesComprados.add(idMarco);guardarFramesComprados();
     equiparMarco(idMarco);
+  }else if(tipo==="ticket_1"){
+    meta.ticketsTorneo=(meta.ticketsTorneo||0)+1;
+    mostrarToast("🎟️","+1 ticket de torneo");
+  }else if(tipo==="ticket_5"){
+    meta.ticketsTorneo=(meta.ticketsTorneo||0)+5;
+    mostrarToast("🎟️","+5 tickets de torneo");
   }
   guardarMeta();
   tnActualizar();mundoActualizarHud();rwActualizarBadge();
