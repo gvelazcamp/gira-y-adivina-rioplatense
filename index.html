@@ -6488,6 +6488,15 @@ function programarTVBotsPrueba(){
     const j=S.jug[S.turno];
     if(!j)return;
     miJug=S.turno;
+    if((S.fase==="girar"||S.fase==="consonante"||S.fase==="vocal")&&fraseCompleta()){
+      /* La ronda ya se ganó (por Resolver o por completar todas las letras)
+         y está esperando su propio nuevaRonda() ya programado. Si un bot
+         vuelve a actuar acá (comprar otra vocal, girar, etc.) dispara una
+         segunda "ronda ganada" en paralelo — dos nuevaRonda() compitiendo
+         que arruinan la ronda siguiente (pisan la frase, saltean el
+         número de ronda). Por eso no hacemos nada mientras se espera. */
+      return;
+    }
     if(S.fase==="tossup"){
       if(S.tossPausado)return;
       /* Sin esto, el primer bot que le toca resolver apenas arranca el
