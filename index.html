@@ -1049,7 +1049,7 @@ body.tv-lobby-bg{background-image:linear-gradient(#0C0616CC,#0C0616F2),url('asse
 body.tvhost #juego{max-width:1240px}
 body.tvhost #juego .marcador,body.tv-prueba-bots #juego .marcador{
  display:flex;grid-template-columns:none;overflow-x:auto;scroll-snap-type:x mandatory;
- gap:14px;padding:10px 42px 14px;margin-left:-42px;margin-right:-42px;width:calc(100% + 84px);
+ gap:14px;padding:10px calc(50% - 64px) 14px;margin-left:-42px;margin-right:-42px;width:calc(100% + 84px);
  scrollbar-width:none}
 body.tvhost #juego .marcador::-webkit-scrollbar,body.tv-prueba-bots #juego .marcador::-webkit-scrollbar{display:none}
 body.tvhost #juego .jug,body.tv-prueba-bots #juego .jug{
@@ -8672,7 +8672,13 @@ function pintar(){
        vez de solo la fila de jugadores. */
     const activo=$("j"+V.turno),cont=$("marcador");
     if(activo&&cont)setTimeout(()=>{
-      const destino=activo.offsetLeft-(cont.clientWidth-activo.offsetWidth)/2;
+      /* Centrar contra el ancho VISIBLE (el del contenedor padre), no
+         contra cont.clientWidth: #marcador es a propósito más ancho que
+         lo que se ve (sangra 42px de cada lado para el efecto de "espiar"
+         la tarjeta siguiente), así que centrar contra su propio ancho
+         corría la tarjeta activa del centro real de la pantalla. */
+      const anchoVisible=(cont.parentElement||cont).clientWidth;
+      const destino=activo.offsetLeft-(anchoVisible-activo.offsetWidth)/2;
       cont.scrollTo({left:destino,behavior:"smooth"});
     },50);
   }
