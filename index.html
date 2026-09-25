@@ -2387,9 +2387,13 @@ function programarRankingSync(){
   rankingSyncTimer=setTimeout(()=>{rankingSyncTimer=null;empujarRanking();},1500);
 }
 const guardarMeta=()=>{try{localStorage.setItem(METAK,JSON.stringify(meta));}catch(e){}programarRankingSync();};
-const vidasInfinitasActivas=()=>meta.vidasInfinitasHasta>Date.now();
+function recursosInfinitosGonzalo(){try{return esGonzalo();}catch(e){return false;}}
+function puedePagarMonedas(precio){return recursosInfinitosGonzalo()||meta.monedas>=precio;}
+function gastarMonedas(precio){if(!recursosInfinitosGonzalo())meta.monedas-=precio;guardarMeta();}
+const vidasInfinitasActivas=()=>recursosInfinitosGonzalo()||meta.vidasInfinitasHasta>Date.now();
 const tieneVidas=()=>vidasInfinitasActivas()||meta.vidas>0;
 function textoVidasInfinitas(){
+  if(recursosInfinitosGonzalo())return"tester Gonzalo";
   if(!vidasInfinitasActivas())return"";
   const rest=Math.max(0,meta.vidasInfinitasHasta-Date.now()),mm=Math.floor(rest/60000),ss=Math.floor(rest%60000/1000);
   return mm+":"+String(ss).padStart(2,"0");
@@ -3154,8 +3158,8 @@ function rwControles(){
   $("rwGirar").disabled=!puede||rwGirando;
   const cg=$("rwComprarGiro");
   cg.style.display=puede?"none":"";
-  cg.disabled=meta.monedas<RW_PRECIO_GIRO;
-  cg.textContent=meta.monedas<RW_PRECIO_GIRO?"🪙 Te faltan monedas para el giro extra":"🎟️ Comprar giro extra — 🪙 "+RW_PRECIO_GIRO;
+  cg.disabled=!puedePagarMonedas(RW_PRECIO_GIRO);
+  cg.textContent=!puedePagarMonedas(RW_PRECIO_GIRO)?"🪙 Te faltan monedas para el giro extra":"🎟️ Comprar giro extra — 🪙 "+RW_PRECIO_GIRO;
 }
 function abrirRuleta(){
   rwDibujar();
@@ -3167,8 +3171,8 @@ function abrirRuleta(){
 $("bRuleta").onclick=abrirRuleta;
 $("rwCerrar").onclick=()=>{$("capaRuleta").classList.remove("ver");rwActualizarBadge();};
 $("rwComprarGiro").onclick=()=>{
-  if(meta.monedas<RW_PRECIO_GIRO)return;
-  meta.monedas-=RW_PRECIO_GIRO;meta.ultimaRuleta=0;guardarMeta();
+  if(!puedePagarMonedas(RW_PRECIO_GIRO))return;
+  gastarMonedas(RW_PRECIO_GIRO);meta.ultimaRuleta=0;guardarMeta();
   mundoActualizarHud();rwActualizarBadge();bip(190,.16,"triangle",.07);
   abrirRuleta();
 };
@@ -3301,11 +3305,11 @@ function tnActualizar(){
   regenerarVidas();
   $("tnMonedas").textContent=meta.monedas;
   document.querySelectorAll(".tn-comprar").forEach(b=>{
-    const tipo=b.dataset.tipo,precio=+b.dataset.precio,puede=tnPuedeComprar(tipo),alcanza=meta.monedas>=precio;
+    const tipo=b.dataset.tipo,precio=+b.dataset.precio,puede=tnPuedeComprar(tipo),alcanza=puedePagarMonedas(precio);
     b.disabled=!alcanza||!puede;
     if(!puede){b.textContent=tnRazonBloqueo(tipo);b.title="";}
     else if(tipo==="oferta_gratis"){b.textContent="▶️ Recoger";b.title="";}
-    else{b.textContent="🪙 "+precio;b.title=alcanza?"":"Te faltan "+(precio-meta.monedas)+" monedas";}
+    else{b.textContent="🪙 "+precio;b.title=alcanza?"":"Te faltan "+Math.max(0,precio-meta.monedas)+" monedas";}
     const fijo=b.parentElement.querySelector(".tn-pack-precio-fijo");
     if(fijo)fijo.textContent=b.textContent;
   });
@@ -3550,7 +3554,7 @@ function tnNombreItem(b){
 }
 function tnEjecutarCompra(tipo,precio){
   if(tipo==="oferta_gratis"){recogerMonedasGratis();return;}
-  meta.monedas-=precio;
+  gastarMonedas(precio);
   if(tipo==="recarga"){meta.vidas=VIDAS_MAX;meta.proxima=0;}
   else if(tipo.indexOf("sobre_")===0){
     const ciudadId=tipo.slice(6);
@@ -3614,7 +3618,7 @@ document.querySelectorAll(".tn-comprar").forEach(b=>{
       tnVerAnuncioRecompensado(()=>recogerMonedasGratis());
       return;
     }
-    if(meta.monedas<precio||!tnPuedeComprar(tipo))return;
+    if(!puedePagarMonedas(precio)||!tnPuedeComprar(tipo))return;
     $("confirmCompraTxt").textContent=precio>0?"¿Comprar "+tnNombreItem(b)+" por 🪙 "+precio+"?":"¿Reclamar "+tnNombreItem(b)+" gratis?";
     $("confirmCompra").style.display="flex";
     $("confirmCompraSi").onclick=()=>{$("confirmCompra").style.display="none";tnEjecutarCompra(tipo,precio);};
@@ -4153,11 +4157,11 @@ function tnRenderFrames(contId,soloBasicos){
     if(equipado)btn.disabled=true;
     else if(poseido)btn.onclick=()=>equiparMarco(f.id);
     else{
-      btn.disabled=meta.monedas<f.precio;
+      btn.disabled=!puedePagarMonedas(f.precio);
       btn.onclick=()=>{
-        if(meta.monedas<f.precio){alert("No tenés suficientes monedas.");return;}
+        if(!puedePagarMonedas(f.precio)){alert("No tenés suficientes monedas.");return;}
         tnConfirmarCompraFrame(f.nombre,f.precio,()=>{
-          meta.monedas-=f.precio;guardarMeta();
+          gastarMonedas(f.precio);
           framesComprados.add(f.id);guardarFramesComprados();
           mundoActualizarHud();
           equiparMarco(f.id);
@@ -4221,11 +4225,11 @@ function tnRenderAvataresPremium(contId,soloBasicos){
     if(equipado)btn.disabled=true;
     else if(poseido)btn.onclick=()=>equiparAvatarPremium(a.id);
     else{
-      btn.disabled=meta.monedas<a.precio;
+      btn.disabled=!puedePagarMonedas(a.precio);
       btn.onclick=()=>{
-        if(meta.monedas<a.precio){alert("No tenés suficientes monedas.");return;}
+        if(!puedePagarMonedas(a.precio)){alert("No tenés suficientes monedas.");return;}
         tnConfirmarCompraFrame(a.nombre,a.precio,()=>{
-          meta.monedas-=a.precio;guardarMeta();
+          gastarMonedas(a.precio);
           avataresComprados.add(a.id);guardarAvataresComprados();
           mundoActualizarHud();
           equiparAvatarPremium(a.id);
@@ -4669,11 +4673,11 @@ function tnRenderPunteros(contId,soloBasicos){
     if(equipado)btn.disabled=true;
     else if(poseido)btn.onclick=()=>equiparPunteroTienda(p.id);
     else{
-      btn.disabled=meta.monedas<p.precio;
+      btn.disabled=!puedePagarMonedas(p.precio);
       btn.onclick=()=>{
-        if(meta.monedas<p.precio){alert("No tenés suficientes monedas.");return;}
+        if(!puedePagarMonedas(p.precio)){alert("No tenés suficientes monedas.");return;}
         tnConfirmarCompraFrame(p.nombre,p.precio,()=>{
-          meta.monedas-=p.precio;guardarMeta();punterosComprados.add(p.id);guardarPunterosComprados();
+          gastarMonedas(p.precio);punterosComprados.add(p.id);guardarPunterosComprados();
           mundoActualizarHud();equiparPunteroTienda(p.id);bip(190,.16,"triangle",.07);logroDesbloquear("tienda");
         });
       };
@@ -6204,7 +6208,7 @@ function renderTVControl(){
     document.querySelectorAll("#tvcPoderes .poder-btn").forEach(b=>{
       const id=b.dataset.poder;
       const puede=turno&&puedoUsarPoderGuest(id);
-      b.disabled=!puede||meta.monedas<PODERES[id].precio;
+      b.disabled=!puede||!puedePagarMonedas(PODERES[id].precio);
       b.classList.toggle("usado",miPoderesRondaSombra.includes(id));
       b.classList.toggle("activo",(id==="escudo"&&miEscudoSombra)||(id==="comodin"&&miComodinSombra));
     });
@@ -7241,8 +7245,8 @@ function ejecutarCompraPoder(id){
     if(!V||V.turno!==miJug)return;
     if(V.fase!=="girar"&&V.fase!=="consonante"&&V.fase!=="vocal")return;
     if(!puedoUsarPoderGuest(id))return;
-    if(meta.monedas<PODERES[id].precio)return;
-    meta.monedas-=PODERES[id].precio;guardarMeta();mundoActualizarHud();
+    if(!puedePagarMonedas(PODERES[id].precio))return;
+    gastarMonedas(PODERES[id].precio);mundoActualizarHud();
     registrarUsoPoderGuest(id);
     enviar({a:"poder",id});
     pintarTodo();
@@ -7251,8 +7255,8 @@ function ejecutarCompraPoder(id){
   if(!poderesActivosAqui()||!S)return;
   const jugIdx=(modo==="host")?0:S.turno;
   if(!puedeUsarPoder(jugIdx,id))return;
-  if(meta.monedas<PODERES[id].precio)return;
-  meta.monedas-=PODERES[id].precio;guardarMeta();mundoActualizarHud();
+  if(!puedePagarMonedas(PODERES[id].precio))return;
+  gastarMonedas(PODERES[id].precio);mundoActualizarHud();
   aplicarPoderEnHost(jugIdx,id);
 }
 function ejecutarCompraPoderTV(id){
@@ -7260,8 +7264,8 @@ function ejecutarCompraPoderTV(id){
   if(!V||V.turno!==tvMiIndex)return;
   if(V.fase!=="girar"&&V.fase!=="consonante"&&V.fase!=="vocal")return;
   if(!puedoUsarPoderGuest(id))return;
-  if(meta.monedas<PODERES[id].precio)return;
-  meta.monedas-=PODERES[id].precio;guardarMeta();
+  if(!puedePagarMonedas(PODERES[id].precio))return;
+  gastarMonedas(PODERES[id].precio);
   registrarUsoPoderGuest(id);
   enviar({a:"poder",id});
   renderTVControl();
@@ -7374,11 +7378,11 @@ function hostPista(){
   if(modo!=="bot"||animando||S.pistaUsada)return;
   if(S.fase!=="girar"&&S.fase!=="consonante"&&S.fase!=="vocal")return;
   const tienePistaGratis=(meta.pistasGratis||0)>0;
-  if(!enTutorial&&!tienePistaGratis&&meta.monedas<PISTA_PRECIO)return;
+  if(!enTutorial&&!tienePistaGratis&&!puedePagarMonedas(PISTA_PRECIO))return;
   const ocultas=[...new Set(S.frase.replace(/ /g,""))].filter(c=>!S.abiertas.has(c));
   if(!ocultas.length)return;
   if(!enTutorial){
-    if(tienePistaGratis)meta.pistasGratis--;else meta.monedas-=PISTA_PRECIO;
+    if(tienePistaGratis)meta.pistasGratis--;else gastarMonedas(PISTA_PRECIO);
     guardarMeta();mundoActualizarHud();
   }
   S.pistaUsada=true;
@@ -7943,11 +7947,11 @@ function tnRenderTableros(contId,soloBasicos){
     if(equipado)btn.disabled=true;
     else if(poseido)btn.onclick=()=>equiparTablero(m.id);
     else{
-      btn.disabled=meta.monedas<m.precio;
+      btn.disabled=!puedePagarMonedas(m.precio);
       btn.onclick=()=>{
-        if(meta.monedas<m.precio){alert("No tenés suficientes monedas.");return;}
+        if(!puedePagarMonedas(m.precio)){alert("No tenés suficientes monedas.");return;}
         tnConfirmarCompraFrame(m.nombre,m.precio,()=>{
-          meta.monedas-=m.precio;guardarMeta();
+          gastarMonedas(m.precio);
           tablerosComprados.add(m.id);guardarTablerosComprados();
           mundoActualizarHud();
           equiparTablero(m.id);
@@ -7979,11 +7983,11 @@ function tnRenderCuadrosTablero(contId,soloBasicos){
     if(equipado)btn.disabled=true;
     else if(poseido)btn.onclick=()=>equiparFichaSkin(m.id);
     else{
-      btn.disabled=meta.monedas<m.precio;
+      btn.disabled=!puedePagarMonedas(m.precio);
       btn.onclick=()=>{
-        if(meta.monedas<m.precio){alert("No tenés suficientes monedas.");return;}
+        if(!puedePagarMonedas(m.precio)){alert("No tenés suficientes monedas.");return;}
         tnConfirmarCompraFrame(m.nombre,m.precio,()=>{
-          meta.monedas-=m.precio;guardarMeta();
+          gastarMonedas(m.precio);
           fichasComprados.add(m.id);guardarFichasComprados();
           mundoActualizarHud();
           equiparFichaSkin(m.id);
@@ -8239,11 +8243,11 @@ function tnRenderRuedas(contId,soloBasicos){
     if(equipado)btn.disabled=true;
     else if(poseido)btn.onclick=()=>equiparRuedaSkin(m.id);
     else{
-      btn.disabled=meta.monedas<m.precio;
+      btn.disabled=!puedePagarMonedas(m.precio);
       btn.onclick=()=>{
-        if(meta.monedas<m.precio){alert("No tenés suficientes monedas.");return;}
+        if(!puedePagarMonedas(m.precio)){alert("No tenés suficientes monedas.");return;}
         tnConfirmarCompraFrame(m.nombre,m.precio,()=>{
-          meta.monedas-=m.precio;guardarMeta();
+          gastarMonedas(m.precio);
           ruedasComprados.add(m.id);guardarRuedasComprados();
           mundoActualizarHud();
           equiparRuedaSkin(m.id);
@@ -8512,7 +8516,7 @@ function pintar(){
     const fasesOk=S.fase==="girar"||S.fase==="consonante"||S.fase==="vocal";
     const quedanOcultas=!!S.frase&&[...new Set(S.frase.replace(/ /g,""))].some(c=>!S.abiertas.has(c));
     const tienePistaGratis=(meta.pistasGratis||0)>0;
-    $("bPista").disabled=!mio||!fasesOk||!!S.pistaUsada||(!enTutorial&&!tienePistaGratis&&meta.monedas<PISTA_PRECIO)||!quedanOcultas;
+    $("bPista").disabled=!mio||!fasesOk||!!S.pistaUsada||(!enTutorial&&!tienePistaGratis&&!puedePagarMonedas(PISTA_PRECIO))||!quedanOcultas;
     $("bPista").textContent=S.pistaUsada?"💡 Pista usada":enTutorial?"💡 Pista (gratis)":
       tienePistaGratis?"💡 Pista (gratis, te quedan "+meta.pistasGratis+")":"💡 Pista 🪙"+PISTA_PRECIO;
   }else{
@@ -8533,7 +8537,7 @@ function pintar(){
         const jRef=S&&S.jug[jugIdx];
         if(jRef){usado=(jRef.poderesRonda||[]).includes(id);activo=(id==="escudo"&&jRef.escudo)||(id==="comodin"&&jRef.comodin);}
       }
-      b.disabled=!puede||meta.monedas<PODERES[id].precio;
+      b.disabled=!puede||!puedePagarMonedas(PODERES[id].precio);
       b.classList.toggle("usado",usado);
       b.classList.toggle("activo",activo);
     });
@@ -9145,3 +9149,4 @@ document.addEventListener("keydown",e=>{
 </script>
 </body>
 </html>
+
