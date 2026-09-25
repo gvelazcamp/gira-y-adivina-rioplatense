@@ -1034,7 +1034,33 @@ body.tv-lobby-bg{background-image:linear-gradient(#0C0616CC,#0C0616F2),url('asse
 #tvcRespuestaBtns button{flex:1;border-radius:11px;padding:12px;font-weight:800}
 #tvcMiniTiempo{font-family:'Archivo Black';color:var(--oro);margin-bottom:8px}
 body.tvhost #juego{max-width:1240px}
-body.tvhost #juego .marcador{grid-template-columns:repeat(auto-fit,minmax(145px,1fr))}
+body.tvhost #juego .marcador,body.tv-prueba-bots #juego .marcador{
+ display:flex;grid-template-columns:none;overflow-x:auto;scroll-snap-type:x mandatory;
+ gap:14px;padding:10px 42px 14px;margin-left:-42px;margin-right:-42px;width:calc(100% + 84px);
+ scrollbar-width:none}
+body.tvhost #juego .marcador::-webkit-scrollbar,body.tv-prueba-bots #juego .marcador::-webkit-scrollbar{display:none}
+body.tvhost #juego .jug,body.tv-prueba-bots #juego .jug{
+ flex:0 0 auto;width:118px;scroll-snap-align:center;display:flex;flex-direction:column;align-items:center;
+ text-align:center;padding:14px 10px 12px;transition:width .35s,transform .35s,box-shadow .35s;opacity:.72}
+body.tvhost #juego .jug .nom,body.tv-prueba-bots #juego .jug .nom{flex-direction:column;gap:6px}
+body.tvhost #juego .jug .quien,body.tv-prueba-bots #juego .jug .quien{flex-direction:column;gap:6px}
+body.tvhost #juego .jug .avatar-wrap,body.tv-prueba-bots #juego .jug .avatar-wrap{width:46px;height:46px}
+body.tvhost #juego .jug .av,body.tv-prueba-bots #juego .jug .av{width:46px;height:46px}
+body.tvhost #juego .jug .n,body.tv-prueba-bots #juego .jug .n{white-space:normal;font-size:.85rem;text-align:center}
+body.tvhost #juego .jug .turno,body.tv-prueba-bots #juego .jug .turno{order:-1;margin-bottom:2px}
+body.tvhost #juego .jug .cifras,body.tv-prueba-bots #juego .jug .cifras{justify-content:center;margin-top:8px;font-size:.72rem;gap:10px}
+body.tvhost #juego .jug.activo,body.tv-prueba-bots #juego .jug.activo{
+ width:148px;opacity:1;transform:scale(1.08);box-shadow:0 0 0 2px var(--oro),0 10px 30px #F5B3013D}
+body.tvhost #juego .jug.activo .avatar-wrap,body.tv-prueba-bots #juego .jug.activo .avatar-wrap{width:66px;height:66px}
+body.tvhost #juego .jug.activo .av,body.tv-prueba-bots #juego .jug.activo .av{width:66px;height:66px}
+body.tvhost #juego .jug.activo .n,body.tv-prueba-bots #juego .jug.activo .n{font-size:1rem;font-weight:800}
+.marcador-flecha{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:34px;height:34px;
+ border-radius:50%;background:#160B24E6;border:1px solid #F5B30155;color:var(--oro);font-size:1.2rem;
+ line-height:1;display:none;align-items:center;justify-content:center;cursor:pointer}
+body.tvhost .marcador-wrap,body.tv-prueba-bots .marcador-wrap{position:relative}
+body.tvhost .marcador-flecha,body.tv-prueba-bots .marcador-flecha{display:flex}
+.marcador-flecha.prev{left:0}
+.marcador-flecha.next{right:0}
 body.tvhost #tossBuzz,body.tvhost #juego .poderes,body.tvhost #juego .lodo-zona,
 body.tvhost #juego .confirm-poder,body.tvhost .juego-abandonar{display:none!important}
 body.tvhost #juego .acciones,body.tvhost #juego .teclado{display:grid!important}
@@ -1834,11 +1860,15 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <div id="jgSobre" style="display:none">🎁 0/3</div>
   </div>
   <div class="serie" id="serie"></div>
-  <div class="marcador" id="marcador">
-    <div class="jug" id="j0"><div class="nom"><span class="quien"><span class="avatar-wrap"><img class="av"><img class="avatar-frame"></span><span class="n"></span></span><span class="turno">turno</span></div>
-      <div class="cifras"><div>ronda<b class="ronda">$0</b></div><div>total<b class="total">$0</b></div></div></div>
-    <div class="jug" id="j1"><div class="nom"><span class="quien"><span class="avatar-wrap"><img class="av"><img class="avatar-frame"></span><span class="n"></span></span><span class="turno">turno</span></div>
-      <div class="cifras"><div>ronda<b class="ronda">$0</b></div><div>total<b class="total">$0</b></div></div></div>
+  <div class="marcador-wrap">
+    <button type="button" class="marcador-flecha prev" id="marcadorPrev" aria-label="Ver jugador anterior">‹</button>
+    <div class="marcador" id="marcador">
+      <div class="jug" id="j0"><div class="nom"><span class="quien"><span class="avatar-wrap"><img class="av"><img class="avatar-frame"></span><span class="n"></span></span><span class="turno">turno</span></div>
+        <div class="cifras"><div>ronda<b class="ronda">$0</b></div><div>total<b class="total">$0</b></div></div></div>
+      <div class="jug" id="j1"><div class="nom"><span class="quien"><span class="avatar-wrap"><img class="av"><img class="avatar-frame"></span><span class="n"></span></span><span class="turno">turno</span></div>
+        <div class="cifras"><div>ronda<b class="ronda">$0</b></div><div>total<b class="total">$0</b></div></div></div>
+    </div>
+    <button type="button" class="marcador-flecha next" id="marcadorNext" aria-label="Ver jugador siguiente">›</button>
   </div>
   <div class="marco-selector" id="marcoSelector" style="display:none">
     <button id="marcoPrev" type="button" title="Marco anterior">‹</button>
@@ -2074,7 +2104,7 @@ const norm=s=>s.toUpperCase().normalize("NFD").replace(/[\u0300-\u0304\u0306-\u0
 let modo="local", miJug=0, mq=null, sala="", rondasElegidas=3, holaTimer=null, serie=[0,0], arranca=0, ultGanador=-1, racha=0, relojID=null, relojOculto=null;
 let mqInv=null, invPendiente=null;
 let familiaJugadores=[],tvPartidaIniciada=false,tvMiIndex=-1;
-let tvPruebaBotsActiva=false,tvPruebaBotT=null,tvPruebaWatchdogI=null;
+let tvPruebaBotsActiva=false,tvPruebaBotT=null,tvPruebaWatchdogI=null,marcadorTurnoCentrado=-1;
 let tvId=(()=>{try{let x=sessionStorage.getItem("larueda_tv_id");if(!x){x="p"+Math.random().toString(36).slice(2,10);sessionStorage.setItem("larueda_tv_id",x);}return x;}catch(e){return "p"+Math.random().toString(36).slice(2,10);}})();
 let S=null, V={mask:"",cat:"",usadas:[],jug:[{n:"",tot:0,ronda:0},{n:"",tot:0,ronda:0}],turno:0,fase:"girar",hayVoc:true,cons:1,aviso:""};
 let giroActual=0, animando=false;
@@ -6368,10 +6398,13 @@ function tvComenzarPartidaConArranque(indiceArranca){
   tvPartidaIniciada=true;renderTVLobby();emitirTVLobby();
   serie=new Array(familiaJugadores.length).fill(0);ultGanador=-1;racha=0;arranca=indiceArranca;
   $("tvLobby").style.display="none";$("juego").style.display="block";document.body.classList.remove("tv-lobby-bg");
-  if(eraPruebaBots){document.body.classList.remove("tvhost");document.body.classList.add("tv-prueba-bots");}
-  else document.body.classList.add("tvhost");
   armarTeclado();
   iniciarPartidaJugadores(familiaJugadores,null);
+  /* detenerPartidaAnterior() (llamado dentro de iniciarPartidaJugadores)
+     saca la clase tv-prueba-bots del body como limpieza — por eso las
+     clases de body se ponen ACÁ, después de esa llamada, no antes. */
+  if(eraPruebaBots){document.body.classList.remove("tvhost");document.body.classList.add("tv-prueba-bots");}
+  else document.body.classList.add("tvhost");
   if(eraPruebaBots){
     tvPruebaBotsActiva=true;
     miJug=arranca;
@@ -6465,6 +6498,8 @@ function programarTVBotsPrueba(){
   },900+Math.random()*900);
 }
 $("bTVSalir").onclick=()=>location.href=location.origin+location.pathname;
+$("marcadorPrev").onclick=()=>$("marcador").scrollBy({left:-160,behavior:"smooth"});
+$("marcadorNext").onclick=()=>$("marcador").scrollBy({left:160,behavior:"smooth"});
 $("tvcGirar").onclick=()=>enviar({a:"girar"});
 $("tvcVocal").onclick=()=>enviar({a:"vocal"});
 $("tvcResolver").onclick=()=>{
@@ -8543,6 +8578,11 @@ function pintar(){
     e.querySelector(".turno").textContent=(i===V.turno&&V.doble)?"turno · x2":"turno";
     setMonto(e.querySelector(".ronda"),j.ronda,i,0);
     setMonto(e.querySelector(".total"),j.tot,i,1);});
+  if((modo==="tvhost"||tvPruebaBotsActiva)&&V.turno!==marcadorTurnoCentrado){
+    marcadorTurnoCentrado=V.turno;
+    const activo=$("j"+V.turno);
+    if(activo)setTimeout(()=>activo.scrollIntoView({behavior:"smooth",inline:"center",block:"nearest"}),50);
+  }
   const mio=esMiTurno()&&!animando&&V.fase!=="fin";
   const esToss=V.fase==="tossup",miToss=(modo==="local"?false:(!V.tossPausado&&!(V.tossBloq&&V.tossBloq[miJug])));
   const bonusElegir=V.fase==="bonus_elegir",bonusResolver=V.fase==="bonus_resolver",esBonus=bonusElegir||bonusResolver||V.fase==="bonus_fin";
