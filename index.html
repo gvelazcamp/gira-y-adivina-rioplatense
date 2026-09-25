@@ -948,26 +948,37 @@ html.rueda-prueba-boreal .centro{background:radial-gradient(circle at 38% 30%,#E
 #modalFin{z-index:30}
 #capaSinVidas{z-index:35}
 #capaResultadosTV{z-index:32}
-.rtv-caja{max-width:480px;width:100%;position:relative;overflow:hidden;background:linear-gradient(160deg,var(--noche2),var(--noche));border:2px solid #F5B30155;border-radius:22px;padding:26px 18px 22px;text-align:center}
-.rtv-confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+#capaResultadosTV .rtv-caja{max-width:820px;width:100%;position:relative;overflow:hidden;background:linear-gradient(160deg,var(--noche2),var(--noche));border:2px solid #F5B30155;border-radius:22px;padding:14px 14px 20px;text-align:center}
+.rtv-confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:2}
 .rtv-confetti span{position:absolute;top:-10%;width:8px;height:14px;opacity:.9;border-radius:2px;animation:rtvCaer 3.2s linear infinite}
 @keyframes rtvCaer{0%{transform:translateY(-10%)}100%{transform:translateY(650%)}}
-.rtv-banner{position:relative;z-index:1;font-family:'Archivo Black',sans-serif;font-size:1.7rem;color:var(--oro);text-shadow:0 3px 0 #00000055;letter-spacing:.5px}
-.rtv-sub{position:relative;z-index:1;color:var(--crema);margin:2px 0 18px;font-weight:700}
-.rtv-podio{position:relative;z-index:1;display:flex;align-items:flex-end;justify-content:center;gap:8px;margin-bottom:14px}
-.rtv-lugar{display:flex;flex-direction:column;align-items:center;flex:1;min-width:0}
-.rtv-festejo{width:88px;height:auto;margin-bottom:2px;filter:drop-shadow(0 5px 7px #00000070);pointer-events:none;flex:0 0 auto}
-.rtv-lugar-1 .rtv-festejo{width:116px}
-.rtv-corona{font-size:1.6rem;margin-bottom:-6px}
-.rtv-pedestal{width:100%;border-radius:8px 8px 0 0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:6px;font-family:'Archivo Black',sans-serif;font-weight:900;color:var(--tinta)}
-.rtv-pedestal-num{flex:0 0 auto}
-.rtv-pedestal-1{height:104px;background:linear-gradient(160deg,#FFD65C,var(--oro));font-size:1.5rem}
-.rtv-pedestal-2{height:82px;background:linear-gradient(160deg,#D8D8E8,#9C9CB8);font-size:1.2rem}
-.rtv-pedestal-3{height:66px;background:linear-gradient(160deg,#E8B98C,#C88554);font-size:1.1rem}
-.rtv-placa{margin-top:auto;width:86%;background:var(--tinta);border-radius:6px;padding:4px 3px 5px;margin-bottom:7px}
-.rtv-nombre{font-weight:800;color:var(--crema);font-size:.7rem;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.rtv-lugar-1 .rtv-nombre{font-size:.78rem}
-.rtv-monto{color:var(--oro);font-weight:900;font-size:.72rem}
+/* Podio: foto fija de fondo (assets/salatv-resultados-fondo.webp, 1672x941) con
+   el festejo de cada jugador, la "costura" (un recorte de la misma foto que
+   tapa el borde inferior del festejo detrás del frente del podio) y el
+   nombre/plata superpuestos en % sobre esa foto — así el jugador queda
+   parado detrás del podio en vez de flotando delante. */
+.rtv-podio-foto{position:relative;z-index:1;width:100%;border-radius:14px;overflow:hidden;margin-bottom:10px}
+.rtv-podio-foto>img{width:100%;display:block}
+.rtv-fj{position:absolute;pointer-events:none;filter:drop-shadow(0 10px 14px #00000080)}
+.rtv-costura{position:absolute;display:block;pointer-events:none;width:auto}
+.rtv-placa-txt{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.rtv-placa-txt .rtv-nombre{flex:0 0 auto;color:var(--crema);font-weight:800;text-shadow:0 1px 3px #000;max-width:95%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rtv-placa-txt .rtv-monto{flex:0 0 auto;color:var(--oro);font-weight:900;text-shadow:0 1px 3px #000}
+.rtv-fj-2{left:32.9%;bottom:41%;height:26.6%;transform:translate(-50%,0)}
+.rtv-costura-2{left:26.02%;top:56.85%;width:13.46%;height:5.31%}
+.rtv-placa-2{left:27.2%;width:11.7%;top:69.6%;height:5.3%}
+.rtv-placa-2 .rtv-nombre{font-size:.92rem}
+.rtv-placa-2 .rtv-monto{font-size:.82rem}
+.rtv-fj-1{left:49%;bottom:47.4%;height:31.9%;transform:translate(-50%,0)}
+.rtv-costura-1{left:41.27%;top:51%;width:15.55%;height:5.31%}
+.rtv-placa-1{left:41.3%;width:15.2%;top:67%;height:6.9%}
+.rtv-placa-1 .rtv-nombre{font-size:1.08rem}
+.rtv-placa-1 .rtv-monto{font-size:.98rem}
+.rtv-fj-3{left:65.2%;bottom:38.15%;height:26.6%;transform:translate(-50%,0)}
+.rtv-costura-3{left:58.91%;top:59.72%;width:12.56%;height:5.31%}
+.rtv-placa-3{left:59.2%;width:12%;top:69.6%;height:5.3%}
+.rtv-placa-3 .rtv-nombre{font-size:.92rem}
+.rtv-placa-3 .rtv-monto{font-size:.82rem}
 .rtv-resto{position:relative;z-index:1;display:flex;flex-direction:column;gap:6px;margin-top:6px;max-height:160px;overflow-y:auto}
 .rtv-resto-fila{display:flex;align-items:center;gap:8px;background:#00000030;border-radius:10px;padding:6px 10px;text-align:left}
 .rtv-resto-fila .rtv-resto-puesto{color:#B49FCE;font-weight:800;font-size:.75rem;width:18px;flex:0 0 auto}
@@ -2037,30 +2048,22 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
 
 <div class="capa" id="capaResultadosTV"><div class="caja rtv-caja">
   <div class="rtv-confetti" id="rtvConfetti"></div>
-  <div class="rtv-banner">🎉 RESULTADOS</div>
-  <p class="sub rtv-sub">¡Qué buena partida!</p>
-  <div class="rtv-podio">
-    <div class="rtv-lugar rtv-lugar-2" id="rtvLugar2">
-      <img class="rtv-festejo" id="rtvFj2" src="" alt="">
-      <div class="rtv-pedestal rtv-pedestal-2">
-        <div class="rtv-pedestal-num">2</div>
-        <div class="rtv-placa"><div class="rtv-nombre" id="rtvNom2"></div><div class="rtv-monto" id="rtvMonto2"></div></div>
-      </div>
+  <div class="rtv-podio-foto">
+    <img src="assets/salatv-resultados-fondo.webp" alt="Resultados — ¡Qué buena partida!">
+    <div class="rtv-lugar" id="rtvLugar2">
+      <img class="rtv-fj rtv-fj-2" id="rtvFj2" src="" alt="">
+      <img class="rtv-costura rtv-costura-2" src="assets/salatv-resultados-costura-2.webp" alt="">
+      <div class="rtv-placa-txt rtv-placa-2"><div class="rtv-nombre" id="rtvNom2"></div><div class="rtv-monto" id="rtvMonto2"></div></div>
     </div>
-    <div class="rtv-lugar rtv-lugar-1" id="rtvLugar1">
-      <div class="rtv-corona">👑</div>
-      <img class="rtv-festejo" id="rtvFj1" src="" alt="">
-      <div class="rtv-pedestal rtv-pedestal-1">
-        <div class="rtv-pedestal-num">1</div>
-        <div class="rtv-placa"><div class="rtv-nombre" id="rtvNom1"></div><div class="rtv-monto" id="rtvMonto1"></div></div>
-      </div>
+    <div class="rtv-lugar" id="rtvLugar1">
+      <img class="rtv-fj rtv-fj-1" id="rtvFj1" src="" alt="">
+      <img class="rtv-costura rtv-costura-1" src="assets/salatv-resultados-costura-1.webp" alt="">
+      <div class="rtv-placa-txt rtv-placa-1"><div class="rtv-nombre" id="rtvNom1"></div><div class="rtv-monto" id="rtvMonto1"></div></div>
     </div>
-    <div class="rtv-lugar rtv-lugar-3" id="rtvLugar3">
-      <img class="rtv-festejo" id="rtvFj3" src="" alt="">
-      <div class="rtv-pedestal rtv-pedestal-3">
-        <div class="rtv-pedestal-num">3</div>
-        <div class="rtv-placa"><div class="rtv-nombre" id="rtvNom3"></div><div class="rtv-monto" id="rtvMonto3"></div></div>
-      </div>
+    <div class="rtv-lugar" id="rtvLugar3">
+      <img class="rtv-fj rtv-fj-3" id="rtvFj3" src="" alt="">
+      <img class="rtv-costura rtv-costura-3" src="assets/salatv-resultados-costura-3.webp" alt="">
+      <div class="rtv-placa-txt rtv-placa-3"><div class="rtv-nombre" id="rtvNom3"></div><div class="rtv-monto" id="rtvMonto3"></div></div>
     </div>
   </div>
   <div class="rtv-resto" id="rtvResto"></div>
@@ -2114,7 +2117,9 @@ const TOSS_CADA_RONDAS=2, TOSS_DURACION=20000, TOSS_PASO=800, TOSS_RESPUESTA_DUR
 let tossTimer=null,tossRespuestaTimer=null,tossRespondedor=null;
 
 // Ronda Bonus: R S T L N E + 3 consonantes + 1 vocal y 10 segundos para resolver.
-const BONUS_BASE="RSTLNE", BONUS_DURACION=10000, BONUS_PREMIO=2000;
+// En Sala TV no hay "elegir letras" (eso es para un solo concursante): todos
+// resuelven a la vez desde su celular con R S T L N E nomás, por eso tienen más tiempo.
+const BONUS_BASE="RSTLNE", BONUS_DURACION=10000, BONUS_PREMIO=2000, BONUS_TV_DURACION=20000;
 let bonusTimer=null;
 
 let ac=null;
@@ -6160,8 +6165,7 @@ function recibirTVHost(d){
   if(S.fase==="tossup"&&d.a==="toss_pausa"){pausarToss(idx);return;}
   if(S.fase==="tossup"&&d.a==="toss_cancelar"){cancelarPausaToss(idx);return;}
   if(S.fase==="tossup"&&d.a==="resolver"){hostResolver(d.txt,idx);return;}
-  if(S.fase==="bonus_elegir"&&S.bonusGanador===idx&&d.a==="letra"){hostLetraBonus(d.l);return;}
-  if((S.fase==="bonus_resolver"||S.fase==="bonus_elegir")&&S.bonusGanador===idx&&d.a==="resolver"){hostResolverBonus(d.txt);return;}
+  if(S.fase==="bonus_resolver"&&d.a==="resolver"){hostResolverBonusTV(d.txt,idx);return;}
   if(S.fase==="lodo"&&S.turno===idx&&d.a==="lodo_limpio"){hostLodoLimpio(idx);return;}
   if(d.a==="abrir_resolver"){avisarResolverAbierto(idx);return;}
   if(S.turno!==idx||animando)return;
@@ -6222,8 +6226,11 @@ function renderTVControl(){
     else if(V.tossPausado)estado="⚡ "+(V.jug[V.tossRespondedor]?V.jug[V.tossRespondedor].n:"Otro jugador")+" está respondiendo…";
     else if(V.tossBloq&&V.tossBloq[tvMiIndex])estado="⚡ Ya quedaste fuera de esta prueba. Mirá la TV.";
     else estado="⚡ Mirá la TV. Tocá RESOLVER apenas sepas la frase.";
-  }else if(bonusElegir||bonusResolver){
-    estado=V.bonusGanador===tvMiIndex?(bonusElegir?"⭐ Ganaste. Elegí 3 consonantes y 1 vocal.":"⭐ Tenés 10 segundos para resolver el Bonus."):
+  }else if(bonusResolver){
+    const yaRespondio=V.bonusListos&&V.bonusListos[tvMiIndex];
+    estado=yaRespondio?"⭐ Ya respondiste. Mirá la TV.":"⭐ Si sabés la frase, escribila. Si acertás sumás $"+BONUS_PREMIO+".";
+  }else if(bonusElegir){
+    estado=V.bonusGanador===tvMiIndex?"⭐ Ganaste. Elegí 3 consonantes y 1 vocal.":
       "⭐ "+(V.jug[V.bonusGanador]?V.jug[V.bonusGanador].n:"El ganador")+" está jugando la Ronda Bonus.";
   }else if(esFin)estado="Partida terminada. Mirá la TV.";
   else if(esLodo)estado=turno?"🟤 ¡Te tiraron Lodo! Limpiá la pantalla para seguir.":"Esperando a "+(actual?actual.n:"otro jugador")+"…";
@@ -6239,7 +6246,7 @@ function renderTVControl(){
   $("tvcGirar").disabled=!turno||V.fase!=="girar"||V.cons===0;
   $("tvcVocal").disabled=!turno||V.fase!=="girar"||!V.hayVoc||yo.ronda<250;
   $("tvcResolver").disabled=esToss?(!!V.tossPausado||!!(V.tossBloq&&V.tossBloq[tvMiIndex])):
-    ((bonusResolver||bonusElegir)?V.bonusGanador!==tvMiIndex:(esFin?true:!turno));
+    (bonusResolver?!!(V.bonusListos&&V.bonusListos[tvMiIndex]):(bonusElegir?V.bonusGanador!==tvMiIndex:(esFin?true:!turno)));
   if(esToss&&V.tossPausado&&V.tossRespondedor===tvMiIndex){$("tvcRespuestaWrap").classList.add("ver");$("tvcMiniTiempo").textContent="⏱️ 9 segundos para responder";}
   else if(!bonusResolver&&V.fase!=="girar"&&V.fase!=="consonante"&&V.fase!=="vocal"){$("tvcRespuestaWrap").classList.remove("ver");}
   const puedeVerPoderes=!esToss&&!bonusElegir&&!bonusResolver&&!esFin&&!esLodo;
@@ -6455,11 +6462,26 @@ function tvPruebaLetra(solo){
 function tvPruebaAviso(txt){const a=$("aviso");if(a)a.innerHTML="<span>"+txt+"</span>";}
 function programarTVBotsPrueba(){
   clearTimeout(tvPruebaBotT);
-  if(!tvPruebaBotsActiva||modo!=="tvhost"||!S||S.finYa||animando)return;
+  if(!tvPruebaBotsActiva||modo!=="tvhost"||!S||animando)return;
+  /* S.finYa se pone en true apenas termina el desafío principal, pero en
+     Sala TV la Ronda Bonus (todos resuelven a la vez) sigue abierta
+     después de eso — si cortáramos acá, los bots de prueba nunca la
+     jugarían y quedaría colgada. */
+  if(S.finYa&&S.fase!=="bonus_resolver")return;
   if(S.fase==="fin"||S.fase==="toss_fin"||S.fase==="bonus_fin")return;
   const token=matchToken;
   tvPruebaBotT=setTimeout(()=>{
-    if(token!==matchToken||!tvPruebaBotsActiva||modo!=="tvhost"||!S||S.finYa||animando)return;
+    if(token!==matchToken||!tvPruebaBotsActiva||modo!=="tvhost"||!S||animando)return;
+    if(S.finYa&&S.fase!=="bonus_resolver")return;
+    if(S.fase==="bonus_resolver"){
+      /* Acá NO hay "turno": todos pueden resolver a la vez, así que cada
+         intento elige al azar entre los bots que todavía no respondieron. */
+      const disp=S.jug.map((_,i)=>i).filter(i=>!(S.bonusListos&&S.bonusListos[i]));
+      if(!disp.length)return;
+      const idx=disp[Math.floor(Math.random()*disp.length)];
+      tvPruebaAviso("<b>"+S.jug[idx].n+"</b> intenta resolver la Ronda Bonus.");
+      hostResolverBonusTV(Math.random()<.68?S.frase:"BONUS PRUEBA",idx);return;
+    }
     const j=S.jug[S.turno];
     if(!j)return;
     miJug=S.turno;
@@ -6481,15 +6503,6 @@ function programarTVBotsPrueba(){
       tvPruebaAviso("<b>"+S.jug[idx].n+"</b> toca Resolver en la Prueba de Velocidad.");
       hostResolver(Math.random()<.78?S.frase:"RESPUESTA DE PRUEBA",idx);return;
     }
-    if(S.fase==="bonus_elegir"){
-      const cons="RSTLNBCMPD".split("").find(l=>!VOCALES.includes(l)&&!S.usadas.has(l)&&(!S.bonusCons||S.bonusCons.length<3));
-      const voc="EAOIU".split("").find(l=>VOCALES.includes(l)&&!S.usadas.has(l)&&!S.bonusVocal);
-      const l=(S.bonusCons&&S.bonusCons.length<3)?cons:voc;
-      if(l){tvPruebaAviso("<b>"+j.n+"</b> elige la letra "+l+" en la Ronda Bonus.");hostLetraBonus(l);}
-      else{tvPruebaAviso("<b>"+j.n+"</b> intenta resolver la Ronda Bonus.");hostResolverBonus(Math.random()<.65?S.frase:"BONUS PRUEBA");}
-      return;
-    }
-    if(S.fase==="bonus_resolver"){tvPruebaAviso("<b>"+j.n+"</b> intenta resolver la Ronda Bonus.");hostResolverBonus(Math.random()<.72?S.frase:"BONUS PRUEBA");return;}
     if(S.fase==="lodo"){hostLodoLimpio&&hostLodoLimpio(S.turno);return;}
     if(S.fase==="girar"){
       if(tvPruebaResolverProbable()&&Math.random()<.32){tvPruebaAviso("<b>"+j.n+"</b> cree saber la frase y va a resolver.");hostResolver(S.frase);return;}
@@ -6964,7 +6977,15 @@ function textoEleccionBonus(){
 }
 function iniciarBonus(ganador,finalPendiente){
   limpiarToss();limpiarBonus();pararReloj();
-  const mazoBonus=nuevoMazo(S.cats),f=mazoBonus.pop();
+  const mazoBonus=nuevoMazo(S.cats);
+  let f=mazoBonus.pop();
+  if(modo==="tvhost"){
+    /* En Sala TV todos resuelven a la vez con las mismas letras base — una
+       frase de 2 palabras se adivina casi siempre y el Bonus pierde
+       tensión. Buscamos una de más de 2 palabras para que cueste más. */
+    let intentos=0;
+    while(f&&f.t.trim().split(/\s+/).length<=2&&mazoBonus.length&&intentos<40){f=mazoBonus.pop();intentos++;}
+  }
   if(!f){finalizarPartidaPendiente();return;}
   vistas.add(f.t);guardarVistas();
   S.finalPendiente=finalPendiente;S.turno=ganador;S.frase=f.t;S.catRaw=f.c;
@@ -6973,8 +6994,48 @@ function iniciarBonus(ganador,finalPendiente){
   S.jug.forEach(j=>{j.ronda=0;j.comodin=false;j.hielo={};j.lodo=false;j.escudo=false;j.poderesRonda=[];j.poderUsadoTurno=false;});S.valor=0;S.doble=false;
   BONUS_BASE.split("").forEach(l=>{S.abiertas.add(l);S.usadas.add(l);});
   S.cat=(destino!==null&&modo==="bot"?MUNDO[destino].n+" · ":"")+"⭐ Ronda Bonus · "+f.c;
+  if(modo==="tvhost"){
+    /* En Sala TV juegan todos a la vez desde su celular, no un solo
+       ganador eligiendo letras: cada uno que acierta suma el premio fijo
+       a SU propio puntaje, así el orden final se puede mover — el 2do
+       puede pasar al 1ro, o hasta el 3ro puede terminar ganando. */
+    S.bonusListos=Array(S.jug.length).fill(false);S.bonusGanadores=[];
+    S.fase="bonus_resolver";S.bonusFin=Date.now()+BONUS_TV_DURACION;
+    publicar("<b>RONDA BONUS</b> — ya aparecen R S T L N E. Todos pueden resolver desde su celular: el que acierta suma $"+BONUS_PREMIO+".");
+    bonusTimer=setInterval(()=>{
+      if(!S||S.fase!=="bonus_resolver"){limpiarBonus();return;}
+      if(Date.now()>=S.bonusFin)finBonusTV();
+    },120);
+    return;
+  }
   S.fase="bonus_elegir";
   publicar("<b>RONDA BONUS</b> — "+S.jug[ganador].n+", ya aparecen R S T L N E. Elegí <b>3 consonantes y 1 vocal</b>.");
+}
+function hostResolverBonusTV(txt,jugador){
+  if(!S||S.fase!=="bonus_resolver"||modo!=="tvhost")return;
+  if(!Number.isInteger(jugador)||jugador<0||jugador>=S.jug.length)return;
+  if(!S.bonusListos)S.bonusListos=Array(S.jug.length).fill(false);
+  if(S.bonusListos[jugador])return;
+  S.bonusListos[jugador]=true;
+  const j=S.jug[jugador];
+  if(norm(txt)===norm(S.frase)){
+    j.ronda=(j.ronda||0)+BONUS_PREMIO;j.tot+=BONUS_PREMIO;
+    (S.bonusGanadores=S.bonusGanadores||[]).push(jugador);
+    bip(1046,.12,"sine",.055);
+    publicar("<b>"+j.n+"</b> acertó la Ronda Bonus y suma $"+BONUS_PREMIO+".","resuelto");
+  }else{
+    bip(140,.35,"square",.07);
+    publicar("<b>"+j.n+"</b> no acertó la Ronda Bonus.","error");
+  }
+  if(S.bonusListos.every(Boolean))finBonusTV();
+}
+function finBonusTV(){
+  if(!S||S.fase!=="bonus_resolver")return;
+  limpiarBonus();abrirTodoBonus();S.fase="bonus_fin";
+  const ok=(S.bonusGanadores||[]).map(i=>S.jug[i]&&S.jug[i].n).filter(Boolean);
+  publicar(ok.length?"<b>RONDA BONUS</b> — "+ok.join(", ")+" acertaron y sumaron $"+BONUS_PREMIO+" cada uno. La frase era <b>"+S.frase+"</b>.":
+    "Nadie acertó la Ronda Bonus. La frase era <b>"+S.frase+"</b>.","resuelto");
+  setTimeout(tk(()=>finalizarPartidaPendiente((S.bonusGanadores||[]).length>0)),5200);
 }
 function hostLetraBonus(l){
   if(!S||S.fase!=="bonus_elegir"||S.usadas.has(l))return;
@@ -7127,6 +7188,7 @@ function publicar(txt,fx,mantenerReloj){
      cons:consRestantes(),serie:serie.slice(),doble:!!S.doble,
      tossBloq:S.tossBloq?S.tossBloq.slice():Array(S.jug.length).fill(false),tossPausado:!!S.tossPausado,tossRespondedor:S.tossRespondedor,
      bonusCons:S.bonusCons?S.bonusCons.slice():[],bonusVocal:S.bonusVocal||null,bonusGanador:S.bonusGanador,
+     bonusListos:S.bonusListos?S.bonusListos.slice():[],bonusGanadores:S.bonusGanadores?S.bonusGanadores.slice():[],
      racha:{g:ultGanador,n:racha},aviso:txt,fx:fx||"",fxId:fx?++fxN:0,
      hielo:(S.jug[S.turno]&&S.jug[S.turno].hielo)||{},poderRondaId:S.poderRondaId||0};
   const esToss=S.fase==="tossup",esBonusReloj=S.fase==="bonus_resolver";
@@ -7137,7 +7199,7 @@ function publicar(txt,fx,mantenerReloj){
   const tossMs=esToss?(S.tossPausado?Math.max(0,(S.tossRespuestaFin||Date.now())-Date.now()):Math.max(0,S.tossFin-Date.now())):0;
   V.seg=esToss?Math.max(1,Math.ceil(tossMs/1000)):
     (esBonusReloj?Math.max(1,Math.ceil((S.bonusFin-Date.now())/1000)):(vivo?Math.max(1,Math.round((S.tFin-Date.now())/1000)):0));
-  V.relojMax=esToss?(S.tossPausado?Math.ceil(TOSS_RESPUESTA_DURACION/1000):15):(esBonusReloj?10:25);
+  V.relojMax=esToss?(S.tossPausado?Math.ceil(TOSS_RESPUESTA_DURACION/1000):15):(esBonusReloj?(modo==="tvhost"?Math.ceil(BONUS_TV_DURACION/1000):10):25);
   if(modo==="bot")setTimeout(programarBot,0);
   if(tvPruebaBotsActiva)setTimeout(programarTVBotsPrueba,0);
   if(modo!=="local"&&modo!=="bot")enviar({tipo:"estado",v:V});
@@ -7677,7 +7739,7 @@ function revancha(){
   }
   matchToken++;botPausado=0;
   limpiarToss();limpiarBonus();arranca=(arranca+1)%S.jug.length;S.finYa=false;S.finalPendiente=null;
-  S.bonusCons=[];S.bonusVocal=null;S.bonusGanador=null;S.bonusFin=0;
+  S.bonusCons=[];S.bonusVocal=null;S.bonusGanador=null;S.bonusFin=0;S.bonusListos=[];S.bonusGanadores=[];
   S.jug.forEach(j=>{j.tot=0;j.ronda=0;j.rg=0;j.escudo=false;j.hielo={};j.lodo=false;j.comodin=false;j.poderesRonda=[];j.poderUsadoTurno=false;});
   S.poderRondaId=(S.poderRondaId||0)+1;S.pistaPos=new Set();
   S.turno=arranca;S.ronda=0;S.normalesDesdeToss=0;S.valor=0;S.fase="girar";
@@ -8213,7 +8275,12 @@ function detenerPartidaAnterior(){
   matchToken++;botPausado=0;
   clearTimeout(botT);botT=null;clearTimeout(tvPruebaBotT);tvPruebaBotT=null;tvPruebaBotsActiva=false;
   clearInterval(tvPruebaWatchdogI);tvPruebaWatchdogI=null;
-  document.body.classList.remove("tv-prueba-bots");
+  /* Si venías de Sala TV (real o de prueba) y arrancás otro modo (Mundo,
+     1v1, etc.) sin recargar la página, estas clases del body quedaban
+     pegadas — el CSS de Sala TV (el resaltado dorado del jugador activo,
+     el fondo del lobby) seguía aplicándose encima de un juego que no
+     tiene nada que ver, aunque el modo ya había cambiado. */
+  document.body.classList.remove("tv-prueba-bots","tvhost","tv-lobby-bg");
   limpiarToss();limpiarBonus();pararReloj();
   animando=false;duckMusica(false);
   if(S){S.fase="fin";S.finYa=true;}
@@ -8480,10 +8547,18 @@ function pintarTodo(){
   $("tossBuzz").classList.toggle("ver",esToss&&modo==="local");
   $("bonusInfo").classList.toggle("ver",esBonus);
   if(esBonus){
-    const cons=(V.bonusCons||[]),voc=V.bonusVocal||"—";
-    $("bonusTexto").textContent=V.fase==="bonus_elegir"?
-      "R S T L N E visibles · Consonantes: "+(cons.length?cons.join(" · "):"—")+" ("+cons.length+"/3) · Vocal: "+voc:
-      (V.fase==="bonus_resolver"?"Letras elegidas. Tenés 10 segundos para resolver.":"Ronda Bonus terminada.");
+    if(modo==="tvhost"){
+      const listos=(V.bonusListos||[]).filter(Boolean).length,total=(V.jug||[]).length;
+      const ok=(V.bonusGanadores||[]).map(i=>V.jug[i]&&V.jug[i].n).filter(Boolean);
+      $("bonusTexto").textContent=V.fase==="bonus_fin"?
+        (ok.length?ok.join(", ")+" acertaron y sumaron $"+BONUS_PREMIO+" cada uno.":"Nadie acertó la Ronda Bonus."):
+        "R S T L N E visibles · Todos resuelven desde su celular · respondieron "+listos+"/"+total+(ok.length?" · acertaron: "+ok.join(", "):"");
+    }else{
+      const cons=(V.bonusCons||[]),voc=V.bonusVocal||"—";
+      $("bonusTexto").textContent=V.fase==="bonus_elegir"?
+        "R S T L N E visibles · Consonantes: "+(cons.length?cons.join(" · "):"—")+" ("+cons.length+"/3) · Vocal: "+voc:
+        (V.fase==="bonus_resolver"?"Letras elegidas. Tenés 10 segundos para resolver.":"Ronda Bonus terminada.");
+    }
   }
   document.querySelector(".acciones").classList.toggle("toss",esToss||esBonus);
   if(esToss&&V.jug&&V.jug.length){
