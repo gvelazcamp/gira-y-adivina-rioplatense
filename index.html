@@ -3054,17 +3054,18 @@ function torneosRenderEscalera(){
   ).join('');
 }
 function torneosActualizar(){
-  const tickets=meta.ticketsTorneo||0;
-  $("torneosTickets").textContent="🎟️ Tenés "+tickets+" ticket"+(tickets===1?"":"s")+" de torneo";
+  const tickets=meta.ticketsTorneo||0,bypass=esGonzalo();
+  $("torneosTickets").textContent="🎟️ Tenés "+tickets+" ticket"+(tickets===1?"":"s")+" de torneo"+(bypass?" · acceso de prueba (Gonzalo)":"");
   torneosRenderEscalera();
-  const alcanza=tickets>=TORNEO_TICKETS_ENTRADA;
+  const alcanza=bypass||tickets>=TORNEO_TICKETS_ENTRADA;
   $("torneosEntrar").disabled=!alcanza;
-  $("torneosEntrar").textContent=alcanza?"Entrar ("+TORNEO_TICKETS_ENTRADA+" 🎟️)":"Te faltan "+(TORNEO_TICKETS_ENTRADA-tickets)+" 🎟️ — jugá los Eventos";
+  $("torneosEntrar").textContent=bypass?"Entrar (prueba, gratis)":(alcanza?"Entrar ("+TORNEO_TICKETS_ENTRADA+" 🎟️)":"Te faltan "+(TORNEO_TICKETS_ENTRADA-tickets)+" 🎟️ — jugá los Eventos");
 }
 function torneoEntrar(){
-  if((meta.ticketsTorneo||0)<TORNEO_TICKETS_ENTRADA)return;
+  const bypass=esGonzalo();
+  if(!bypass&&(meta.ticketsTorneo||0)<TORNEO_TICKETS_ENTRADA)return;
   if(!perfilExiste()){abrirPerfil(torneoEntrar);return;}
-  meta.ticketsTorneo-=TORNEO_TICKETS_ENTRADA;guardarMeta();
+  if(!bypass){meta.ticketsTorneo-=TORNEO_TICKETS_ENTRADA;guardarMeta();}
   torneoRacha=0;torneoPremiosGanados=[];vinoDeTorneo=true;
   $("capaTorneos").classList.remove("ver");
   torneoJugarSiguiente();
