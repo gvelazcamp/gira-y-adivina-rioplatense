@@ -181,6 +181,7 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 @media(hover:hover){.dz-coleccion-fab:hover{box-shadow:0 6px 18px #000000AA,0 0 24px #F5B301AA}}
 @media(max-width:600px){.dz-coleccion-fab{width:52px;height:52px;left:10px;bottom:10px;font-size:1.3rem}}
 #mundo{position:relative}
+#eventos{position:relative}
 .mundo-volver{position:absolute;top:8px;left:8px;z-index:5;width:56px;height:56px;
  border-radius:50%;padding:0;color:var(--oro);
  background:radial-gradient(circle at 35% 30%,#2A1A3C,#120A1D);
@@ -1959,6 +1960,12 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
      con fondo blanco del botón por detrás). Es una <section> de
      pantalla completa como #mundo o #setup, no un popup chico. -->
 <section id="eventos">
+  <button class="mundo-volver" id="eventosVolverArriba" type="button" aria-label="Volver al inicio" title="Volver al inicio">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9.5 15.5 4 10l5.5-5.5"/>
+      <path d="M4 10h11a5.5 5.5 0 0 1 0 11h-3.5"/>
+    </svg>
+  </button>
   <h1 class="titulo" style="font-size:2.2rem">EVENTOS</h1>
   <p class="sub">Volvé cada día por algo nuevo</p>
   <button type="button" class="evento-card evento-card-diario cerrado" id="evBanner1">
@@ -8374,6 +8381,7 @@ function abrirEventos(){
 function cerrarEventos(){$("eventos").style.display="none";$("setup").style.display="block";}
 $("bMenuEventosPrueba").onclick=abrirEventos;
 $("evCerrar").onclick=cerrarEventos;
+$("eventosVolverArriba").onclick=cerrarEventos;
 $("evBanner1").onclick=()=>{
   if($("evBanner1").classList.contains("cerrado")){revelarEvento("evBanner1");return;}
   eventoDiarioUI=true;iniciarPartidaDiaria();
