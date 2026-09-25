@@ -795,6 +795,16 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 #capaRueda{position:fixed;inset:0;background:#160B24F5;display:none;z-index:15;
  place-items:center;align-content:center;gap:22px;padding:20px}
 #capaRueda.ver{display:grid}
+#capaRuletaTV{position:fixed;inset:0;background:#160B24F5;display:none;z-index:33;
+ place-items:center;align-content:center;gap:18px;padding:20px}
+#capaRuletaTV.ver{display:grid}
+.rtv-arranque-titulo{font-family:'Archivo Black',sans-serif;color:var(--oro);text-align:center;
+ font-size:clamp(1.4rem,6vw,2rem);text-shadow:0 3px 0 #00000055}
+#capaRuletaTV .ruedabox{width:min(78vw,380px);justify-self:center}
+#salioGiroTV{font-family:'Archivo Black',sans-serif;font-size:clamp(1.4rem,7vw,2.2rem);
+ color:var(--oro);text-align:center;text-shadow:0 4px 0 #7A2E00;min-height:1.2em}
+#ruedaTV{width:100%;max-width:none;height:auto;border-radius:50%;will-change:transform;
+ backface-visibility:hidden;transform:translateZ(0);background-color:#0C0616}
 .ruedabox{width:min(84vw,420px);justify-self:center}
 #salioGiro{font-family:'Archivo Black',sans-serif;font-size:clamp(1.6rem,8vw,2.6rem);
  color:var(--oro);text-align:center;text-shadow:0 4px 0 #7A2E00;min-height:1.2em}
@@ -1722,6 +1732,12 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="btn-grande sec" id="bTVCopiar">Copiar enlace para celulares</button>
   <button class="btn-grande sec" id="bTVSalir">Volver al inicio</button>
 </section>
+
+<div id="capaRuletaTV">
+  <h2 class="rtv-arranque-titulo">🎡 ¿Quién arranca?</h2>
+  <div class="ruedabox"><div class="aguja" id="agujaTV"></div><div class="aro"><canvas id="ruedaTV" width="600" height="600"></canvas></div><div class="centro"></div></div>
+  <div id="salioGiroTV">Girando…</div>
+</div>
 
 <section id="tvControl">
   <h1 class="titulo" style="font-size:2.2rem">CONTROL</h1>
@@ -6169,11 +6185,88 @@ $("bEntrarTV").onclick=()=>{
   $("estado").textContent="Escribí el código que aparece en la televisión.";
 };
 $("bTVComenzar").onclick=()=>{
-  if(familiaJugadores.length<2||tvPartidaIniciada)return;tvPartidaIniciada=true;renderTVLobby();emitirTVLobby();
-  serie=new Array(familiaJugadores.length).fill(0);ultGanador=-1;racha=0;arranca=0;
+  if(familiaJugadores.length<2||tvPartidaIniciada)return;
+  tvAbrirRuletaArranque();
+};
+/* Ruleta de arranque de Sala TV: antes de largar la partida, se gira
+   una ruleta con los nombres de los jugadores (repartidos parejo en
+   24 gajos, igual que la ruleta de premios) para decidir quién
+   empieza. Es una rueda independiente de #capaRueda/#rueda (la de
+   premios reales) para no tocar su lógica de juego/compras. */
+let tvRuletaGiroActual=0;
+function tvArmarGajos(jugadores){
+  const total=24,n=jugadores.length,gajos=[];
+  for(let i=0;i<total;i++)gajos.push(i%n);
+  for(let i=gajos.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const tmp=gajos[i];gajos[i]=gajos[j];gajos[j]=tmp;}
+  return gajos;
+}
+function tvDibujarRuedaArranque(gajos,jugadores){
+  const cvT=$("ruedaTV"),cxT=cvT.getContext("2d"),CENTRO=300,paso=Math.PI*2/gajos.length;
+  const colores=["#F5B301","#E5197C","#37D6C0","#7B3FE4","#F97316","#2DA8FF"];
+  cxT.clearRect(0,0,600,600);
+  gajos.forEach((idxJ,i)=>{
+    const a0=i*paso;
+    cxT.beginPath();cxT.moveTo(CENTRO,CENTRO);cxT.arc(CENTRO,CENTRO,CENTRO,a0,a0+paso);cxT.closePath();
+    cxT.fillStyle=colores[idxJ%colores.length];cxT.fill();cxT.strokeStyle="#160B24";cxT.lineWidth=3;cxT.stroke();
+    const mid=a0+paso/2,nom=jugadores[idxJ].n,et=nom.length>9?nom.slice(0,8)+"…":nom;
+    cxT.save();cxT.translate(CENTRO,CENTRO);cxT.rotate(mid);
+    cxT.fillStyle="#160B24";cxT.font="800 22px Outfit, sans-serif";
+    if(mid>Math.PI/2&&mid<Math.PI*1.5){cxT.rotate(Math.PI);cxT.textAlign="left";cxT.fillText(et,-(CENTRO-24),8);}
+    else{cxT.textAlign="right";cxT.fillText(et,CENTRO-24,8);}
+    cxT.restore();
+  });
+}
+function tvSegmentoArranqueDe(gajos,g){
+  const paso=360/gajos.length,local=((270-(g%360))%360+360)%360;
+  return gajos[Math.floor(local/paso)%gajos.length];
+}
+function tvAnimarRuletaArranque(gajos,indiceGanador,alFinal){
+  const candidatos=[];
+  gajos.forEach((idx,i)=>{if(idx===indiceGanador)candidatos.push(i);});
+  const elegido=candidatos[Math.floor(Math.random()*candidatos.length)];
+  const paso=360/gajos.length,dentro=elegido*paso+paso*(.15+Math.random()*.7);
+  const base=((270-dentro)%360+360)%360,destino=base+360*6;
+  const cvT=$("ruedaTV"),ag=$("agujaTV"),ini=tvRuletaGiroActual,dur=4200,t0=performance.now();
+  sonarRuletaGiro();
+  let ult=-1,tAnt=t0,gAnt=ini;
+  requestAnimationFrame(function frame(t){
+    const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3.2);
+    tvRuletaGiroActual=ini+(destino-ini)*e;
+    cvT.style.transform="rotate("+tvRuletaGiroActual.toFixed(2)+"deg) translateZ(0)";
+    const k=Math.floor(tvRuletaGiroActual/paso);
+    if(k!==ult){
+      if(ult>=0){
+        const vel=Math.min((tvRuletaGiroActual-gAnt)/Math.max(t-tAnt,1)/paso,1.6),r=vel/1.6;
+        if(r<.55){ag.style.transform="translateX(-50%) rotate("+(9-r*9).toFixed(1)+"deg)";
+          setTimeout(()=>ag.style.transform="translateX(-50%)",70);}
+      }
+      ult=k;tAnt=t;gAnt=tvRuletaGiroActual;
+    }
+    if(p<1)requestAnimationFrame(frame);
+    else{ag.style.transform="translateX(-50%)";bip(190,.16,"triangle",.07);if(alFinal)alFinal();}
+  });
+}
+function tvAbrirRuletaArranque(){
+  const gajos=tvArmarGajos(familiaJugadores);
+  tvRuletaGiroActual=0;
+  $("ruedaTV").style.transform="rotate(0deg)";
+  tvDibujarRuedaArranque(gajos,familiaJugadores);
+  $("salioGiroTV").textContent="Girando…";
+  $("capaRuletaTV").classList.add("ver");
+  const indiceGanador=Math.floor(Math.random()*familiaJugadores.length);
+  setTimeout(()=>{
+    tvAnimarRuletaArranque(gajos,indiceGanador,()=>{
+      $("salioGiroTV").textContent="🎉 ¡Arranca "+familiaJugadores[indiceGanador].n+"!";
+      setTimeout(()=>{$("capaRuletaTV").classList.remove("ver");tvComenzarPartidaConArranque(indiceGanador);},1800);
+    });
+  },500);
+}
+function tvComenzarPartidaConArranque(indiceArranca){
+  tvPartidaIniciada=true;renderTVLobby();emitirTVLobby();
+  serie=new Array(familiaJugadores.length).fill(0);ultGanador=-1;racha=0;arranca=indiceArranca;
   $("tvLobby").style.display="none";$("juego").style.display="block";document.body.classList.remove("tv-lobby-bg");document.body.classList.add("tvhost");armarTeclado();
   iniciarPartidaJugadores(familiaJugadores,null);
-};
+}
 $("bTVCopiar").onclick=async()=>{const t=location.origin+location.pathname+"?tv="+sala;try{await navigator.clipboard.writeText(t);$("bTVCopiar").textContent="Enlace copiado";}catch(e){}setTimeout(()=>$("bTVCopiar").textContent="Copiar enlace para celulares",1600);};
 $("bTVSalir").onclick=()=>location.href=location.origin+location.pathname;
 $("tvcGirar").onclick=()=>enviar({a:"girar"});
