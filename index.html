@@ -1995,10 +1995,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
         <span class="evento-card-info"><span class="evento-card-tipo">PREMIO SORPRESA</span><b>Evento diario</b>
           <small>3 rondas contra la máquina · 1 intento</small></span>
         <span class="evento-card-premios">
-          <span class="evento-card-premio-emoji">❤️</span>
-          <span class="evento-card-premio-emoji">🪙</span>
           <span class="evento-card-premio-emoji">🎟️</span>
-          <span class="evento-card-premio-visual" id="evVisual1"></span>
         </span>
       </span>
     </span>
@@ -2012,10 +2009,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
         <span class="evento-card-info"><span class="evento-card-tipo">DESAFÍO DE LOCALIDAD</span><b id="evCiudadTit">Evento de ciudad</b>
           <small id="evCiudadEstado">3 rondas · Reintentá hasta ganar · Cada derrota cuesta 1 vida</small></span>
         <span class="evento-card-premios">
-          <span class="evento-card-premio-emoji">🪙</span>
-          <span class="evento-card-premio-emoji">❤️</span>
           <span class="evento-card-premio-emoji">🎟️</span>
-          <span class="evento-card-premio-visual" id="evVisual2"></span>
         </span>
       </span>
     </span>
@@ -2029,9 +2023,6 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
         <span class="evento-card-info"><span class="evento-card-tipo">EVENTO DE FIN DE SEMANA</span><b>Desafío especial</b>
           <small id="evFindeEstado">5 rondas · Reintentá hasta ganar · Cada derrota cuesta 1 vida</small></span>
         <span class="evento-card-premios">
-          <span class="evento-card-premio-emoji">🪙</span>
-          <span class="evento-card-premio-item"><span class="evento-card-premio-emoji">❤️</span><span class="evento-card-premio-badge">30m</span></span>
-          <span class="evento-card-premio-emoji">🎡</span>
           <span class="evento-card-premio-emoji">🎟️</span>
         </span>
       </span>
@@ -8509,11 +8500,6 @@ function abrirEventos(){
   $("juego").style.display="none";
   const ciudad=MUNDO[eventoCiudadDeHoyIdx()];
   $("evCiudadTit").textContent="Evento en "+ciudad.n;
-  $("evVisual1").innerHTML=premioVisualHTML(eventoPremioDeHoy(0));
-  const registro=leerEventoCiudad(),dia=Math.floor(Date.now()/86400000);
-  const premioCiudad=registro&&registro.dia===dia&&registro.premioEntregado&&registro.premio?
-    registro.premio:resolverPremioRotativo(eventoPremioDeHoy(2),ciudad.id);
-  $("evVisual2").innerHTML=premioConcretoVisualHTML(premioCiudad);
   const t=eventoTiempoRestanteTxt();
   $("evTiempo1").textContent=t;$("evTiempo2").textContent=t;
   // Cada tarjeta permanece revelada hasta la siguiente rotación diaria.
