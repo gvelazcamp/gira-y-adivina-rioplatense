@@ -906,6 +906,10 @@ html.rueda-prueba-boreal .centro{background:radial-gradient(circle at 38% 30%,#E
 .teclado button:disabled{opacity:1;background:#150C20;color:#7C6A94;border-color:#FFFFFF14;cursor:not-allowed}
 .teclado button.vocal:disabled{background:#1B1030;color:#5E8C86}
 .teclado button:not(:disabled):hover{background:var(--oro);color:var(--tinta)}
+.teclado button.letra-seleccionada{animation:teclaSeleccionada 1.15s ease-out;background:var(--oro)!important;color:var(--tinta)!important;
+ border-color:#FFF4B8!important;box-shadow:0 0 0 4px #F5B30155,0 0 26px #F5B301CC;transform:scale(1.12)}
+@keyframes teclaSeleccionada{0%{transform:scale(1);filter:brightness(1)}25%{transform:scale(1.22);filter:brightness(1.45)}
+ 55%{transform:scale(1.08);filter:brightness(1.2)}100%{transform:scale(1);filter:brightness(1)}}
 
 .reloj{position:relative;height:24px;border-radius:99px;background:#0C0616E6;overflow:hidden;display:none}
 .reloj i{position:absolute;inset:0 auto 0 0;width:100%;background:var(--agua);opacity:.45;transition:width .2s linear}
@@ -6170,6 +6174,13 @@ function armarTecladoTV(){
       enviar({a:"letra",l});
     };t.appendChild(b);});
 }
+function resaltarLetraElegida(l){
+  document.querySelectorAll('.teclado button[data-l="'+l+'"]').forEach(b=>{
+    b.classList.remove("letra-seleccionada");void b.offsetWidth;
+    b.classList.add("letra-seleccionada");
+    setTimeout(()=>b.classList.remove("letra-seleccionada"),1200);
+  });
+}
 function tvAbrirRespuesta(){$("tvcRespuestaWrap").classList.add("ver");$("tvcRespuesta").value="";$("tvcRespuesta").focus();}
 function renderTVControl(){
   if(modo!=="tvguest"||tvMiIndex<0||!V.jug||!V.jug[tvMiIndex])return;
@@ -6916,6 +6927,7 @@ function hostLetraBonus(l){
   const voc=VOCALES.includes(l);
   if(voc){if(S.bonusVocal)return;S.bonusVocal=l;}
   else{if(S.bonusCons.length>=3)return;S.bonusCons.push(l);}
+  resaltarLetraElegida(l);
   S.usadas.add(l);S.abiertas.add(l);bip(1046,.12,"sine",.055);
   if(S.bonusCons.length===3&&S.bonusVocal){
     S.fase="bonus_resolver";S.bonusFin=Date.now()+BONUS_DURACION;
@@ -7421,6 +7433,7 @@ function hostLetra(l){
   if(S.fase==="consonante"&&voc)return;
   if(S.fase==="vocal"&&!voc)return;
   if(S.fase!=="consonante"&&S.fase!=="vocal")return;
+  resaltarLetraElegida(l);
   S.usadas.add(l);
   const veces=[...S.frase].filter(c=>c===l).length;
   if(veces>0){
