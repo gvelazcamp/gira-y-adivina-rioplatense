@@ -932,13 +932,15 @@ html.rueda-prueba-boreal .centro{background:radial-gradient(circle at 38% 30%,#E
 .rtv-frame{position:absolute;inset:0;width:100%;height:100%;display:none;transform:scale(1.35)}
 .rtv-frame.ver{display:block}
 .rtv-corona{font-size:1.6rem;margin-bottom:-6px}
-.rtv-nombre{font-weight:800;color:var(--crema);font-size:.82rem;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.rtv-lugar-1 .rtv-nombre{font-size:.95rem;max-width:110px}
-.rtv-monto{color:var(--oro);font-weight:900;font-size:.85rem;margin-bottom:6px}
-.rtv-pedestal{width:100%;border-radius:8px 8px 0 0;display:flex;align-items:flex-start;justify-content:center;padding-top:6px;font-family:'Archivo Black',sans-serif;font-weight:900;color:var(--tinta)}
-.rtv-pedestal-1{height:72px;background:linear-gradient(160deg,#FFD65C,var(--oro));font-size:1.6rem}
-.rtv-pedestal-2{height:52px;background:linear-gradient(160deg,#D8D8E8,#9C9CB8);font-size:1.3rem}
-.rtv-pedestal-3{height:40px;background:linear-gradient(160deg,#E8B98C,#C88554);font-size:1.2rem}
+.rtv-pedestal{width:100%;border-radius:8px 8px 0 0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:6px;font-family:'Archivo Black',sans-serif;font-weight:900;color:var(--tinta)}
+.rtv-pedestal-num{flex:0 0 auto}
+.rtv-pedestal-1{height:104px;background:linear-gradient(160deg,#FFD65C,var(--oro));font-size:1.5rem}
+.rtv-pedestal-2{height:82px;background:linear-gradient(160deg,#D8D8E8,#9C9CB8);font-size:1.2rem}
+.rtv-pedestal-3{height:66px;background:linear-gradient(160deg,#E8B98C,#C88554);font-size:1.1rem}
+.rtv-placa{margin-top:auto;width:86%;background:var(--tinta);border-radius:6px;padding:4px 3px 5px;margin-bottom:7px}
+.rtv-nombre{font-weight:800;color:var(--crema);font-size:.7rem;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rtv-lugar-1 .rtv-nombre{font-size:.78rem}
+.rtv-monto{color:var(--oro);font-weight:900;font-size:.72rem}
 .rtv-resto{position:relative;z-index:1;display:flex;flex-direction:column;gap:6px;margin-top:6px;max-height:160px;overflow-y:auto}
 .rtv-resto-fila{display:flex;align-items:center;gap:8px;background:#00000030;border-radius:10px;padding:6px 10px;text-align:left}
 .rtv-resto-fila .rtv-resto-puesto{color:#B49FCE;font-weight:800;font-size:.75rem;width:18px;flex:0 0 auto}
@@ -1957,24 +1959,27 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <div class="rtv-lugar rtv-lugar-2" id="rtvLugar2">
       <img class="rtv-festejo" id="rtvFj2" src="" alt="">
       <div class="rtv-avatar-wrap"><img class="rtv-avatar" id="rtvAv2" src="" alt=""><img class="rtv-frame" id="rtvFr2" src="" alt=""></div>
-      <div class="rtv-nombre" id="rtvNom2"></div>
-      <div class="rtv-monto" id="rtvMonto2"></div>
-      <div class="rtv-pedestal rtv-pedestal-2">2</div>
+      <div class="rtv-pedestal rtv-pedestal-2">
+        <div class="rtv-pedestal-num">2</div>
+        <div class="rtv-placa"><div class="rtv-nombre" id="rtvNom2"></div><div class="rtv-monto" id="rtvMonto2"></div></div>
+      </div>
     </div>
     <div class="rtv-lugar rtv-lugar-1" id="rtvLugar1">
       <div class="rtv-corona">👑</div>
       <img class="rtv-festejo" id="rtvFj1" src="" alt="">
       <div class="rtv-avatar-wrap"><img class="rtv-avatar" id="rtvAv1" src="" alt=""><img class="rtv-frame" id="rtvFr1" src="" alt=""></div>
-      <div class="rtv-nombre" id="rtvNom1"></div>
-      <div class="rtv-monto" id="rtvMonto1"></div>
-      <div class="rtv-pedestal rtv-pedestal-1">1</div>
+      <div class="rtv-pedestal rtv-pedestal-1">
+        <div class="rtv-pedestal-num">1</div>
+        <div class="rtv-placa"><div class="rtv-nombre" id="rtvNom1"></div><div class="rtv-monto" id="rtvMonto1"></div></div>
+      </div>
     </div>
     <div class="rtv-lugar rtv-lugar-3" id="rtvLugar3">
       <img class="rtv-festejo" id="rtvFj3" src="" alt="">
       <div class="rtv-avatar-wrap"><img class="rtv-avatar" id="rtvAv3" src="" alt=""><img class="rtv-frame" id="rtvFr3" src="" alt=""></div>
-      <div class="rtv-nombre" id="rtvNom3"></div>
-      <div class="rtv-monto" id="rtvMonto3"></div>
-      <div class="rtv-pedestal rtv-pedestal-3">3</div>
+      <div class="rtv-pedestal rtv-pedestal-3">
+        <div class="rtv-pedestal-num">3</div>
+        <div class="rtv-placa"><div class="rtv-nombre" id="rtvNom3"></div><div class="rtv-monto" id="rtvMonto3"></div></div>
+      </div>
     </div>
   </div>
   <div class="rtv-resto" id="rtvResto"></div>
