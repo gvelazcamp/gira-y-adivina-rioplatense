@@ -8272,7 +8272,12 @@ function detenerPartidaAnterior(){
   matchToken++;botPausado=0;
   clearTimeout(botT);botT=null;clearTimeout(tvPruebaBotT);tvPruebaBotT=null;tvPruebaBotsActiva=false;
   clearInterval(tvPruebaWatchdogI);tvPruebaWatchdogI=null;
-  document.body.classList.remove("tv-prueba-bots");
+  /* Si venías de Sala TV (real o de prueba) y arrancás otro modo (Mundo,
+     1v1, etc.) sin recargar la página, estas clases del body quedaban
+     pegadas — el CSS de Sala TV (el resaltado dorado del jugador activo,
+     el fondo del lobby) seguía aplicándose encima de un juego que no
+     tiene nada que ver, aunque el modo ya había cambiado. */
+  document.body.classList.remove("tv-prueba-bots","tvhost","tv-lobby-bg");
   limpiarToss();limpiarBonus();pararReloj();
   animando=false;duckMusica(false);
   if(S){S.fase="fin";S.finYa=true;}
