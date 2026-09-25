@@ -6195,7 +6195,11 @@ $("bTVComenzar").onclick=()=>{
    premios reales) para no tocar su lógica de juego/compras. */
 let tvRuletaGiroActual=0;
 function tvArmarGajos(jugadores){
-  const total=24,n=jugadores.length,gajos=[];
+  /* La cantidad total de gajos tiene que ser múltiplo de la cantidad
+     de jugadores para que a todos les toque exactamente la misma
+     cantidad de gajos (nunca uno con más chances que otro). Se busca
+     el múltiplo más cercano a 24. */
+  const n=jugadores.length,porJugador=Math.max(1,Math.round(24/n)),total=n*porJugador,gajos=[];
   for(let i=0;i<total;i++)gajos.push(i%n);
   for(let i=gajos.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const tmp=gajos[i];gajos[i]=gajos[j];gajos[j]=tmp;}
   return gajos;
