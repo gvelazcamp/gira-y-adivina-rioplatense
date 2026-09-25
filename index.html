@@ -814,7 +814,13 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 #salioGiroTV{font-family:'Archivo Black',sans-serif;font-size:clamp(1.4rem,7vw,2.2rem);
  color:var(--oro);text-align:center;text-shadow:0 4px 0 #7A2E00;min-height:1.2em}
 #ruedaTV{width:100%;max-width:none;height:auto;border-radius:50%;will-change:transform;
- backface-visibility:hidden;transform:translateZ(0);background-color:#0C0616}
+ backface-visibility:hidden;transform:translateZ(0);background-color:#0C0616;
+ filter:drop-shadow(0 6px 16px #00000090)}
+.rtv-ruedabox-marco .aro{box-shadow:none}
+.rtv-ruedabox-marco .centro{background:radial-gradient(circle at 35% 30%,#FFF9E0 0%,#FFE89A 25%,#F5B301 55%,#8A5A00 100%);
+ border-color:#3A2400;box-shadow:0 0 0 4px #160B24,0 0 16px #F5B30188}
+.rtv-marco-img{position:absolute;top:50%;left:50%;width:117.5%;height:117.5%;
+ transform:translate(-50%,-50%);pointer-events:none;z-index:1}
 .ruedabox{width:min(84vw,420px);justify-self:center}
 #salioGiro{font-family:'Archivo Black',sans-serif;font-size:clamp(1.6rem,8vw,2.6rem);
  color:var(--oro);text-align:center;text-shadow:0 4px 0 #7A2E00;min-height:1.2em}
@@ -1758,7 +1764,12 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
 
 <div id="capaRuletaTV">
   <h2 class="rtv-arranque-titulo">🎡 ¿Quién arranca?</h2>
-  <div class="ruedabox"><div class="aguja" id="agujaTV"></div><div class="aro"><canvas id="ruedaTV" width="600" height="600"></canvas></div><div class="centro"></div></div>
+  <div class="ruedabox rtv-ruedabox-marco">
+    <img class="rtv-marco-img" src="assets/salatv-ruleta-marco.webp" alt="">
+    <div class="aguja" id="agujaTV"></div>
+    <div class="aro"><canvas id="ruedaTV" width="600" height="600"></canvas></div>
+    <div class="centro"></div>
+  </div>
   <div id="salioGiroTV">Girando…</div>
 </div>
 
@@ -6242,19 +6253,32 @@ function tvArmarGajos(jugadores){
   for(let i=gajos.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const tmp=gajos[i];gajos[i]=gajos[j];gajos[j]=tmp;}
   return gajos;
 }
+function tvSombraHex(hex,cant){
+  const n=parseInt(hex.slice(1),16);
+  let r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+  const mezcla=(canal,hacia)=>Math.round(canal+(hacia-canal)*cant);
+  if(cant>0){r=mezcla(r,255);g=mezcla(g,255);b=mezcla(b,255);}
+  else{r=mezcla(r,0);g=mezcla(g,0);b=mezcla(b,0);}
+  return "rgb("+r+","+g+","+b+")";
+}
 function tvDibujarRuedaArranque(gajos,jugadores){
-  const cvT=$("ruedaTV"),cxT=cvT.getContext("2d"),CENTRO=300,paso=Math.PI*2/gajos.length;
+  const cvT=$("ruedaTV"),cxT=cvT.getContext("2d"),CENTRO=300,RADIO=294,paso=Math.PI*2/gajos.length;
   const colores=["#F5B301","#E5197C","#37D6C0","#7B3FE4","#F97316","#2DA8FF"];
   cxT.clearRect(0,0,600,600);
   gajos.forEach((idxJ,i)=>{
-    const a0=i*paso;
-    cxT.beginPath();cxT.moveTo(CENTRO,CENTRO);cxT.arc(CENTRO,CENTRO,CENTRO,a0,a0+paso);cxT.closePath();
-    cxT.fillStyle=colores[idxJ%colores.length];cxT.fill();cxT.strokeStyle="#160B24";cxT.lineWidth=3;cxT.stroke();
+    const a0=i*paso,base=colores[idxJ%colores.length];
+    const grad=cxT.createRadialGradient(CENTRO,CENTRO,20,CENTRO,CENTRO,RADIO);
+    grad.addColorStop(0,tvSombraHex(base,.4));
+    grad.addColorStop(1,tvSombraHex(base,-.22));
+    cxT.beginPath();cxT.moveTo(CENTRO,CENTRO);cxT.arc(CENTRO,CENTRO,RADIO,a0,a0+paso);cxT.closePath();
+    cxT.fillStyle=grad;cxT.fill();
+    cxT.strokeStyle="#F5B30199";cxT.lineWidth=2;cxT.stroke();
     const mid=a0+paso/2,nom=jugadores[idxJ].n,et=nom.length>9?nom.slice(0,8)+"…":nom;
     cxT.save();cxT.translate(CENTRO,CENTRO);cxT.rotate(mid);
     cxT.fillStyle="#160B24";cxT.font="800 22px Outfit, sans-serif";
-    if(mid>Math.PI/2&&mid<Math.PI*1.5){cxT.rotate(Math.PI);cxT.textAlign="left";cxT.fillText(et,-(CENTRO-24),8);}
-    else{cxT.textAlign="right";cxT.fillText(et,CENTRO-24,8);}
+    cxT.shadowColor="#00000055";cxT.shadowBlur=2;
+    if(mid>Math.PI/2&&mid<Math.PI*1.5){cxT.rotate(Math.PI);cxT.textAlign="left";cxT.fillText(et,-(RADIO-24),8);}
+    else{cxT.textAlign="right";cxT.fillText(et,RADIO-24,8);}
     cxT.restore();
   });
 }
