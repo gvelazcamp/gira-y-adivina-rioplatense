@@ -1034,11 +1034,11 @@ body.tvhost #juego .marcador{grid-template-columns:repeat(auto-fit,minmax(145px,
 body.tvhost #juego .acciones,body.tvhost #juego .teclado,body.tvhost #juego .reacciones,body.tvhost #tossBuzz,
 body.tvhost #juego .poderes,body.tvhost #juego .lodo-zona,body.tvhost #juego .confirm-poder,
 body.tvhost #jgHud,body.tvhost .juego-abandonar{display:none!important}
-body.tv-prueba-bots #juego .acciones{display:grid!important}
-body.tv-prueba-bots #juego .teclado{display:grid!important}
-body.tv-prueba-bots #juego .reacciones{display:flex!important}
-body.tv-prueba-bots #jgHud{display:block!important}
-body.tv-prueba-bots .juego-abandonar{display:block!important}
+body.tvhost.tv-prueba-bots #juego .acciones,body.tv-prueba-bots #juego #acciones{display:grid!important}
+body.tvhost.tv-prueba-bots #juego .teclado,body.tv-prueba-bots #juego #teclado{display:grid!important}
+body.tvhost.tv-prueba-bots #juego .reacciones,body.tv-prueba-bots #juego #reacciones{display:flex!important}
+body.tvhost.tv-prueba-bots #jgHud,body.tv-prueba-bots #jgHud{display:block!important}
+body.tvhost.tv-prueba-bots .juego-abandonar,body.tv-prueba-bots .juego-abandonar{display:block!important}
 #poderesFila,#tvcPoderes,#confirmPoder,#tvcConfirmPoder{display:none!important}
 body.tvhost #juego .tablero{padding:26px 18px}
 body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66px);font-size:clamp(1.1rem,2.6vw,1.8rem)}
@@ -6360,8 +6360,10 @@ function tvComenzarPartidaConArranque(indiceArranca){
   const eraPruebaBots=tvPruebaBotsActiva;
   tvPartidaIniciada=true;renderTVLobby();emitirTVLobby();
   serie=new Array(familiaJugadores.length).fill(0);ultGanador=-1;racha=0;arranca=indiceArranca;
-  $("tvLobby").style.display="none";$("juego").style.display="block";document.body.classList.remove("tv-lobby-bg");document.body.classList.add("tvhost");armarTeclado();
-  if(eraPruebaBots)document.body.classList.add("tv-prueba-bots");
+  $("tvLobby").style.display="none";$("juego").style.display="block";document.body.classList.remove("tv-lobby-bg");
+  if(eraPruebaBots){document.body.classList.remove("tvhost");document.body.classList.add("tv-prueba-bots");}
+  else document.body.classList.add("tvhost");
+  armarTeclado();
   iniciarPartidaJugadores(familiaJugadores,null);
   if(eraPruebaBots){
     tvPruebaBotsActiva=true;
