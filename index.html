@@ -6974,7 +6974,15 @@ function textoEleccionBonus(){
 }
 function iniciarBonus(ganador,finalPendiente){
   limpiarToss();limpiarBonus();pararReloj();
-  const mazoBonus=nuevoMazo(S.cats),f=mazoBonus.pop();
+  const mazoBonus=nuevoMazo(S.cats);
+  let f=mazoBonus.pop();
+  if(modo==="tvhost"){
+    /* En Sala TV todos resuelven a la vez con las mismas letras base — una
+       frase de 2 palabras se adivina casi siempre y el Bonus pierde
+       tensión. Buscamos una de más de 2 palabras para que cueste más. */
+    let intentos=0;
+    while(f&&f.t.trim().split(/\s+/).length<=2&&mazoBonus.length&&intentos<40){f=mazoBonus.pop();intentos++;}
+  }
   if(!f){finalizarPartidaPendiente();return;}
   vistas.add(f.t);guardarVistas();
   S.finalPendiente=finalPendiente;S.turno=ganador;S.frase=f.t;S.catRaw=f.c;
