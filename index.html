@@ -1034,6 +1034,11 @@ body.tvhost #juego .marcador{grid-template-columns:repeat(auto-fit,minmax(145px,
 body.tvhost #juego .acciones,body.tvhost #juego .teclado,body.tvhost #juego .reacciones,body.tvhost #tossBuzz,
 body.tvhost #juego .poderes,body.tvhost #juego .lodo-zona,body.tvhost #juego .confirm-poder,
 body.tvhost #jgHud,body.tvhost .juego-abandonar{display:none!important}
+body.tv-prueba-bots #juego .acciones{display:grid!important}
+body.tv-prueba-bots #juego .teclado{display:grid!important}
+body.tv-prueba-bots #juego .reacciones{display:flex!important}
+body.tv-prueba-bots #jgHud{display:block!important}
+body.tv-prueba-bots .juego-abandonar{display:block!important}
 #poderesFila,#tvcPoderes,#confirmPoder,#tvcConfirmPoder{display:none!important}
 body.tvhost #juego .tablero{padding:26px 18px}
 body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66px);font-size:clamp(1.1rem,2.6vw,1.8rem)}
@@ -6356,9 +6361,11 @@ function tvComenzarPartidaConArranque(indiceArranca){
   tvPartidaIniciada=true;renderTVLobby();emitirTVLobby();
   serie=new Array(familiaJugadores.length).fill(0);ultGanador=-1;racha=0;arranca=indiceArranca;
   $("tvLobby").style.display="none";$("juego").style.display="block";document.body.classList.remove("tv-lobby-bg");document.body.classList.add("tvhost");armarTeclado();
+  if(eraPruebaBots)document.body.classList.add("tv-prueba-bots");
   iniciarPartidaJugadores(familiaJugadores,null);
   if(eraPruebaBots){
     tvPruebaBotsActiva=true;
+    miJug=arranca;
     publicar("<b>Prueba Sala TV</b> — los jugadores ficticios juegan solos. Mirá el flujo completo.");
   }
 }
@@ -6376,7 +6383,7 @@ function iniciarPruebaSalaTVBots(){
   ];
   $("capaPruebas").classList.remove("ver");$("capaMas").classList.remove("ver");$("setup").style.display="none";
   $("lobby").style.display="none";$("tvControl").style.display="none";$("juego").style.display="none";
-  $("tvLobby").style.display="block";document.body.classList.add("tv-lobby-bg");document.body.classList.remove("tvhost");
+  $("tvLobby").style.display="block";document.body.classList.add("tv-lobby-bg","tv-prueba-bots");document.body.classList.remove("tvhost");
   $("tvEstado").textContent="Prueba con bots ficticios · tocá Comenzar para ver todo el flujo";
   renderTVLobby();
   mostrarToast("📺","Sala TV de prueba lista: jugadores ficticios conectados.");
@@ -6394,6 +6401,7 @@ function tvPruebaLetra(solo){
   const fuente=solo==="voc"?VOCALES:LETRAS.join("");
   return fuente.split("").find(c=>!S.usadas.has(c))||null;
 }
+function tvPruebaAviso(txt){const a=$("aviso");if(a)a.innerHTML="<span>"+txt+"</span>";}
 function programarTVBotsPrueba(){
   clearTimeout(tvPruebaBotT);
   if(!tvPruebaBotsActiva||modo!=="tvhost"||!S||S.finYa||animando)return;
@@ -6403,29 +6411,38 @@ function programarTVBotsPrueba(){
     if(token!==matchToken||!tvPruebaBotsActiva||modo!=="tvhost"||!S||S.finYa||animando)return;
     const j=S.jug[S.turno];
     if(!j)return;
+    miJug=S.turno;
     if(S.fase==="tossup"){
       if(S.tossPausado)return;
       const disp=S.jug.map((_,i)=>i).filter(i=>!(S.tossBloq&&S.tossBloq[i]));
       if(!disp.length)return;
       const idx=disp[Math.floor(Math.random()*disp.length)];
+      tvPruebaAviso("<b>"+S.jug[idx].n+"</b> toca Resolver en la Prueba de Velocidad.");
       hostResolver(Math.random()<.78?S.frase:"RESPUESTA DE PRUEBA",idx);return;
     }
     if(S.fase==="bonus_elegir"){
       const cons="RSTLNBCMPD".split("").find(l=>!VOCALES.includes(l)&&!S.usadas.has(l)&&(!S.bonusCons||S.bonusCons.length<3));
       const voc="EAOIU".split("").find(l=>VOCALES.includes(l)&&!S.usadas.has(l)&&!S.bonusVocal);
       const l=(S.bonusCons&&S.bonusCons.length<3)?cons:voc;
-      if(l)hostLetraBonus(l);else hostResolverBonus(Math.random()<.65?S.frase:"BONUS PRUEBA");return;
+      if(l){tvPruebaAviso("<b>"+j.n+"</b> elige la letra "+l+" en la Ronda Bonus.");hostLetraBonus(l);}
+      else{tvPruebaAviso("<b>"+j.n+"</b> intenta resolver la Ronda Bonus.");hostResolverBonus(Math.random()<.65?S.frase:"BONUS PRUEBA");}
+      return;
     }
-    if(S.fase==="bonus_resolver"){hostResolverBonus(Math.random()<.72?S.frase:"BONUS PRUEBA");return;}
+    if(S.fase==="bonus_resolver"){tvPruebaAviso("<b>"+j.n+"</b> intenta resolver la Ronda Bonus.");hostResolverBonus(Math.random()<.72?S.frase:"BONUS PRUEBA");return;}
     if(S.fase==="lodo"){hostLodoLimpio&&hostLodoLimpio(S.turno);return;}
     if(S.fase==="girar"){
-      if(tvPruebaResolverProbable()&&Math.random()<.32){hostResolver(S.frase);return;}
-      if(consRestantes()===0){if(j.ronda>=250&&[...VOCALES].some(v=>!S.usadas.has(v)&&S.frase.includes(v)))hostVocal();else hostResolver(S.frase);return;}
-      if(j.ronda>=250&&Math.random()<.14&&[...VOCALES].some(v=>!S.usadas.has(v)&&S.frase.includes(v))){hostVocal();return;}
+      if(tvPruebaResolverProbable()&&Math.random()<.32){tvPruebaAviso("<b>"+j.n+"</b> cree saber la frase y va a resolver.");hostResolver(S.frase);return;}
+      if(consRestantes()===0){
+        if(j.ronda>=250&&[...VOCALES].some(v=>!S.usadas.has(v)&&S.frase.includes(v))){tvPruebaAviso("<b>"+j.n+"</b> compra una vocal.");hostVocal();}
+        else{tvPruebaAviso("<b>"+j.n+"</b> intenta resolver porque no quedan consonantes.");hostResolver(S.frase);}
+        return;
+      }
+      if(j.ronda>=250&&Math.random()<.14&&[...VOCALES].some(v=>!S.usadas.has(v)&&S.frase.includes(v))){tvPruebaAviso("<b>"+j.n+"</b> compra una vocal.");hostVocal();return;}
+      tvPruebaAviso("<b>"+j.n+"</b> gira la ruleta.");
       hostGirar();return;
     }
-    if(S.fase==="consonante"){const l=tvPruebaLetra("cons");if(l)hostLetra(l);return;}
-    if(S.fase==="vocal"){const l=tvPruebaLetra("voc");if(l)hostLetra(l);return;}
+    if(S.fase==="consonante"){const l=tvPruebaLetra("cons");if(l){tvPruebaAviso("<b>"+j.n+"</b> elige la consonante "+l+".");hostLetra(l);}return;}
+    if(S.fase==="vocal"){const l=tvPruebaLetra("voc");if(l){tvPruebaAviso("<b>"+j.n+"</b> elige la vocal "+l+".");hostLetra(l);}return;}
   },900+Math.random()*900);
 }
 $("bTVSalir").onclick=()=>location.href=location.origin+location.pathname;
@@ -8130,6 +8147,7 @@ function eventoTiempoRestanteTxt(){
 function detenerPartidaAnterior(){
   matchToken++;botPausado=0;
   clearTimeout(botT);botT=null;clearTimeout(tvPruebaBotT);tvPruebaBotT=null;tvPruebaBotsActiva=false;
+  document.body.classList.remove("tv-prueba-bots");
   limpiarToss();limpiarBonus();pararReloj();
   animando=false;duckMusica(false);
   if(S){S.fase="fin";S.finYa=true;}
@@ -8487,6 +8505,7 @@ function aplicarTableroSegunTurno(){
 function pintar(){
   asegurarMarcador();
   aplicarTableroSegunTurno();
+  if(tvPruebaBotsActiva&&V&&Number.isInteger(V.turno))miJug=V.turno;
   V.jug.forEach((j,i)=>{const e=$("j"+i);if(!e)return;
     e.classList.toggle("activo",i===V.turno);
     e.classList.toggle("yo",modo!=="local"&&modo!=="tvhost"&&i===miJug);
