@@ -807,12 +807,15 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
  place-items:center;align-content:center;gap:18px;padding:20px}
 #capaRuletaTV.ver{display:grid}
 #capaRuletaTV .ruedabox{width:min(78vw,380px);justify-self:center}
-.rtv-cartelito{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.6);
- background:var(--noche2);border:2px solid var(--oro);border-radius:16px;padding:16px 26px;
- font-family:'Archivo Black',sans-serif;font-size:clamp(1.3rem,6vw,1.9rem);color:var(--oro);
- text-align:center;text-shadow:0 3px 0 #00000055;opacity:0;pointer-events:none;z-index:2;
- box-shadow:0 10px 40px #000000AA;transition:transform .35s cubic-bezier(.34,1.56,.64,1),opacity .25s}
-.rtv-cartelito.ver{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.rtv-cartelito{position:fixed;top:50%;left:50%;width:min(92vw,860px);transform:translate(-50%,-50%) scale(.72);
+ opacity:0;pointer-events:none;z-index:4;transition:transform .35s cubic-bezier(.34,1.56,.64,1),opacity .25s;
+ filter:drop-shadow(0 18px 42px #000000AA)}
+.rtv-cartelito.ver{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+.rtv-cartelito img{width:100%;display:block}
+.rtv-cartelito-nombre{position:absolute;left:25%;right:25%;top:46.8%;height:15%;
+ display:grid;place-items:center;font-family:'Archivo Black',sans-serif;font-size:clamp(1.35rem,5vw,3.1rem);
+ color:#fff;text-align:center;text-shadow:0 4px 0 #07112E,0 0 14px #37D6C0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rtv-cartelito-btn{position:absolute;left:27%;right:27%;top:69.5%;height:15%;border:0;background:transparent;cursor:pointer}
 #ruedaTV{width:100%;max-width:none;height:auto;border-radius:50%;will-change:transform;
  backface-visibility:hidden;transform:translateZ(0);background-color:#0C0616;
  filter:drop-shadow(0 6px 16px #00000090)}
@@ -1769,7 +1772,11 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <div class="aro"><canvas id="ruedaTV" width="600" height="600"></canvas></div>
     <div class="centro"></div>
   </div>
-  <div class="rtv-cartelito" id="salioGiroTV"></div>
+  <div class="rtv-cartelito" id="salioGiroTV">
+    <img src="assets/salatv-arranca-jugador.webp" alt="Ya tenemos jugador">
+    <div class="rtv-cartelito-nombre" id="salioGiroTVNombre"></div>
+    <button type="button" class="rtv-cartelito-btn" id="salioGiroTVBtn" aria-label="Empezar partida"></button>
+  </div>
 </div>
 
 <section id="tvControl">
@@ -6244,6 +6251,7 @@ $("bAnuncioTVSortear").onclick=()=>{
    empieza. Es una rueda independiente de #capaRueda/#rueda (la de
    premios reales) para no tocar su lógica de juego/compras. */
 let tvRuletaGiroActual=0;
+let tvArranquePendiente=null,tvArranqueAutoT=null;
 function tvArmarGajos(jugadores){
   /* La cantidad total de gajos tiene que ser múltiplo de la cantidad
      de jugadores para que a todos les toque exactamente la misma
@@ -6318,17 +6326,27 @@ function tvAbrirRuletaArranque(){
   tvRuletaGiroActual=0;
   $("ruedaTV").style.transform="rotate(0deg)";
   tvDibujarRuedaArranque(gajos,familiaJugadores);
-  $("salioGiroTV").classList.remove("ver");
+  $("salioGiroTV").classList.remove("ver");tvArranquePendiente=null;if(tvArranqueAutoT){clearTimeout(tvArranqueAutoT);tvArranqueAutoT=null;}
   $("capaRuletaTV").classList.add("ver");
   const indiceGanador=Math.floor(Math.random()*familiaJugadores.length);
   setTimeout(()=>{
     tvAnimarRuletaArranque(gajos,indiceGanador,()=>{
-      $("salioGiroTV").textContent="🎉 ¡Arranca "+familiaJugadores[indiceGanador].n+"!";
+      tvArranquePendiente=indiceGanador;
+      $("salioGiroTVNombre").textContent=familiaJugadores[indiceGanador].n;
       $("salioGiroTV").classList.add("ver");
-      setTimeout(()=>{$("capaRuletaTV").classList.remove("ver");tvComenzarPartidaConArranque(indiceGanador);},1800);
+      tvArranqueAutoT=setTimeout(tvConfirmarArranqueTV,6500);
     });
   },500);
 }
+function tvConfirmarArranqueTV(){
+  if(tvArranquePendiente===null)return;
+  const idx=tvArranquePendiente;tvArranquePendiente=null;
+  if(tvArranqueAutoT){clearTimeout(tvArranqueAutoT);tvArranqueAutoT=null;}
+  $("salioGiroTV").classList.remove("ver");
+  $("capaRuletaTV").classList.remove("ver");
+  tvComenzarPartidaConArranque(idx);
+}
+$("salioGiroTVBtn").onclick=tvConfirmarArranqueTV;
 function tvComenzarPartidaConArranque(indiceArranca){
   tvPartidaIniciada=true;renderTVLobby();emitirTVLobby();
   serie=new Array(familiaJugadores.length).fill(0);ultGanador=-1;racha=0;arranca=indiceArranca;
