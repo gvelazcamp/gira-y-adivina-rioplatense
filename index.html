@@ -5801,8 +5801,8 @@ function letraHumana(solo){
 function botSuavePrimerDurazno(){
   if(modo!=="bot"||destino===null||!MUNDO[destino]||MUNDO[destino].id!=="durazno")return null;
   const hechos=typeof dzHechos==="function"?dzHechos():0;
-  if(hechos===0)return{minResolver:.72,chanceMult:.34,errorLetra:.28,compraVocal:.55};
-  if(hechos===1)return{minResolver:.66,chanceMult:.55,errorLetra:.22,compraVocal:.42};
+  if(hechos===0)return{minResolver:.68,chanceMult:.48,errorLetra:.18,compraVocal:.48};
+  if(hechos===1)return{minResolver:.63,chanceMult:.62,errorLetra:.15,compraVocal:.38};
   return null;
 }
 function programarBot(){
