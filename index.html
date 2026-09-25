@@ -1183,8 +1183,11 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
 </div>
 
 <div class="capa" id="capaTorneos"><div class="caja rk-caja" style="text-align:center">
-  <h2>🏆 Torneos</h2>
-  <p class="sub" style="margin:6px 0 18px">Competí contra otros jugadores — muy pronto en Girá y Adiviná.</p>
+  <h2>🏆 Torneo</h2>
+  <p class="sub" style="margin:6px 0 10px">Ganá partidas seguidas contra la Máquina y subí la escalera de premios.</p>
+  <div id="torneosTickets" style="font-weight:800;color:var(--oro);margin-bottom:14px"></div>
+  <div id="torneosEscalera" style="display:flex;flex-direction:column;gap:8px;text-align:left;margin-bottom:18px"></div>
+  <button class="ok" id="torneosEntrar" style="width:100%;border-radius:14px;padding:13px;font-weight:800;margin-bottom:10px">Entrar</button>
   <button class="no" id="torneosCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700">Cerrar</button>
 </div></div>
 
@@ -2417,6 +2420,7 @@ function cargarMeta(){
   if(typeof m.proxima!=="number")m.proxima=0;
   if(typeof m.ultimaRuleta!=="number")m.ultimaRuleta=0;
   if(!Number.isSafeInteger(m.girosExtraGratis)||m.girosExtraGratis<0)m.girosExtraGratis=0;
+  if(!Number.isSafeInteger(m.ticketsTorneo)||m.ticketsTorneo<0)m.ticketsTorneo=0;
   if(typeof m.ultimaGratisDiaria!=="number")m.ultimaGratisDiaria=0;
   if(typeof m.monedasGanadasTotal!=="number")m.monedasGanadasTotal=m.monedas;
   if(typeof m.diaRacha!=="number")m.diaRacha=0;
@@ -2846,7 +2850,8 @@ function finalizarEventoCiudad(ganado,detalle,abandonado){
       const extra=otorgarPremioConcreto(premioConcreto);
       guardarEventoCiudad({...r,estado:"ganado",premioEntregado:true,premio:premioConcreto});
       sumarMonedas(200);recuperarVida();objSumar("victorias",1);
-      premio=" +200 🪙, +1 ❤️ y "+extra+".";
+      meta.ticketsTorneo=(meta.ticketsTorneo||0)+1;guardarMeta();
+      premio=" +200 🪙, +1 ❤️, +1 🎟️ de torneo y "+extra+".";
     }else{guardarEventoCiudad({...r,estado:"pendiente",premioEntregado:false});const infinita=vidasInfinitasActivas();gastarVida();premio=infinita?" ❤️∞ activo: no gastaste vida. Podés volver a intentarlo.":" -1 ❤️. Podés volver a intentarlo.";}
   }
   eventoCiudadResultado=true;
@@ -2927,8 +2932,9 @@ function finalizarEventoFinde(ganado,detalle,abandonado){
       guardarEventoFinde({...r,estado:"ganado",premioEntregado:true,premio:premioConcreto});
       meta.vidasInfinitasHasta=Math.max(Date.now(),meta.vidasInfinitasHasta||0)+30*60*1000;
       meta.girosExtraGratis=(meta.girosExtraGratis||0)+1;
+      meta.ticketsTorneo=(meta.ticketsTorneo||0)+1;
       sumarMonedas(350);recuperarVida();guardarMeta();rwActualizarBadge();objSumar("victorias",1);
-      premio=" +350 🪙, 30 minutos de vidas infinitas, +1 giro gratis extra, +1 ❤️ y "+extra+".";
+      premio=" +350 🪙, 30 minutos de vidas infinitas, +1 giro gratis extra, +1 ❤️, +1 🎟️ de torneo y "+extra+".";
     }else{guardarEventoFinde({...r,estado:"pendiente",premioEntregado:false});const infinita=vidasInfinitasActivas();gastarVida();premio=infinita?" ❤️∞ activo: no gastaste vida. Podés volver a intentarlo.":" -1 ❤️. Podés volver a intentarlo.";}
   }
   eventoFindeResultado=true;
@@ -3025,6 +3031,80 @@ function finalizarEntrenamientoBonus(){
   $("fCopa").textContent=pasa?"🏆":"😤";
   $("fMapa").style.display="none";$("fSalir").style.display="block";$("fBoton").style.display="none";
   $("fVolverMapaPaso").style.display="none";$("fCompartir").style.display="none";
+}
+/* ---- Torneos: entrás gastando tickets, encadenás partidas rápidas
+   contra la Máquina y subís una escalera de premios por racha de
+   victorias seguidas. Perder o empatar corta la racha y termina el
+   intento — los premios ya ganados en el camino quedan igual. Los
+   tickets se ganan jugando los 3 Eventos (o comprándolos en la
+   Tienda, a agregar aparte). */
+let enTorneo=false,vinoDeTorneo=false,torneoRacha=0,torneoPremiosGanados=[];
+const TORNEO_TICKETS_ENTRADA=5;
+const TORNEO_PREMIOS=[
+  {en:3,texto:"30 min de vidas infinitas",aplicar:()=>{meta.vidasInfinitasHasta=Math.max(Date.now(),meta.vidasInfinitasHasta||0)+30*60*1000;}},
+  {en:6,texto:"+500 🪙",aplicar:()=>{sumarMonedas(500);}},
+  {en:9,texto:"+1 sobre de colección",aplicar:()=>{otorgarSobreSorpresa();}},
+  {en:12,texto:"+1000 🪙",aplicar:()=>{sumarMonedas(1000);}}
+];
+function torneosAbrir(){torneosActualizar();$("capaTorneos").classList.add("ver");}
+function torneosRenderEscalera(){
+  $("torneosEscalera").innerHTML=TORNEO_PREMIOS.map(p=>
+    '<div style="display:flex;justify-content:space-between;align-items:center;background:#00000030;border-radius:10px;padding:9px 13px">'+
+    '<span>🏅 '+p.en+' seguidas</span><span style="color:var(--oro);font-weight:800">'+p.texto+'</span></div>'
+  ).join('');
+}
+function torneosActualizar(){
+  const tickets=meta.ticketsTorneo||0;
+  $("torneosTickets").textContent="🎟️ Tenés "+tickets+" ticket"+(tickets===1?"":"s")+" de torneo";
+  torneosRenderEscalera();
+  const alcanza=tickets>=TORNEO_TICKETS_ENTRADA;
+  $("torneosEntrar").disabled=!alcanza;
+  $("torneosEntrar").textContent=alcanza?"Entrar ("+TORNEO_TICKETS_ENTRADA+" 🎟️)":"Te faltan "+(TORNEO_TICKETS_ENTRADA-tickets)+" 🎟️ — jugá los Eventos";
+}
+function torneoEntrar(){
+  if((meta.ticketsTorneo||0)<TORNEO_TICKETS_ENTRADA)return;
+  if(!perfilExiste()){abrirPerfil(torneoEntrar);return;}
+  meta.ticketsTorneo-=TORNEO_TICKETS_ENTRADA;guardarMeta();
+  torneoRacha=0;torneoPremiosGanados=[];vinoDeTorneo=true;
+  $("capaTorneos").classList.remove("ver");
+  torneoJugarSiguiente();
+}
+function torneoJugarSiguiente(){
+  detenerPartidaAnterior();
+  esPartidaDiaria=false;eventoDiarioUI=false;vinoDeJugarOnline=false;
+  esEventoCiudad=false;eventoCiudadPartida=null;eventoCiudadResultado=false;
+  esEventoFinde=false;eventoFindePartida=null;eventoFindeResultado=false;
+  destino=null;pasoActual=null;fSiguientePaso=null;modoVelocidadElegido=false;
+  entrenamientoLimpiarFlags();
+  enTorneo=true;modo="bot";miJug=0;arranca=0;
+  ["setup","eventos","mundo","pantDurazno"].forEach(id=>$(id).style.display="none");
+  $("fondoMundo").classList.remove("ver");$("juego").style.display="block";
+  const rival=rivalOnlineFalso();
+  armarTeclado();iniciarPartida(perfil.nombre,rival.n,undefined,perfil.avatar,rival.a,frameEquipado||null,null);
+}
+function finalizarPartidaTorneo(g,detalle){
+  S.fase="fin";pararReloj();limpiarBonus();
+  publicar("Partida terminada.");
+  $("fMapa").style.display="none";$("fVolverMapaPaso").style.display="none";$("fCompartir").style.display="none";
+  if(g===0){
+    torneoRacha++;
+    const premio=TORNEO_PREMIOS.find(p=>p.en===torneoRacha);
+    let premioTxt="";
+    if(premio){torneoPremiosGanados.push(premio.en);premio.aplicar();guardarMeta();mundoActualizarHud();premioTxt=" 🎉 Ganaste: "+premio.texto+".";}
+    $("fCopa").textContent="🏆";
+    mostrarFin("¡Ganaste! Racha: "+torneoRacha,detalle+premioTxt);
+    $("fSalir").style.display="none";$("fBoton").style.display="";$("fBoton").textContent="Siguiente partida →";
+  }else{
+    enTorneo=false;
+    const rachaFinal=torneoRacha,huboPremios=torneoPremiosGanados.length>0;
+    torneoRacha=0;
+    $("fCopa").textContent=g<0?"🤝":"😤";
+    mostrarFin(g<0?"Empate — Torneo terminado":"Perdiste — Torneo terminado",
+      detalle+" Terminaste con "+rachaFinal+" victoria"+(rachaFinal===1?"":"s")+" seguida"+(rachaFinal===1?"":"s")+" en el torneo."+
+      (huboPremios?" Los premios que ya ganaste quedan tuyos.":" No llegaste a ganar ningún premio esta vez."));
+    $("fSalir").style.display="block";$("fSalir").textContent="Volver a Torneos";
+    $("fBoton").style.display="none";$("fBoton").textContent="Revancha";
+  }
 }
 function eventoCiudadFichaDeHoyId(){
   const disp=FICHAS_SKIN.filter(f=>f.id);
@@ -4082,8 +4162,9 @@ $("bSocial").onclick=()=>{
   $("socialContinuar").style.display=esGonzalo()?"block":"none";
   $("capaSocial").classList.add("ver");
 };
-$("bTorneos").onclick=()=>$("capaTorneos").classList.add("ver");
+$("bTorneos").onclick=torneosAbrir;
 $("torneosCerrar").onclick=()=>$("capaTorneos").classList.remove("ver");
+$("torneosEntrar").onclick=torneoEntrar;
 $("socialCerrar").onclick=()=>$("capaSocial").classList.remove("ver");
 $("socialContinuar").onclick=()=>{$("capaSocial").classList.remove("ver");usrAbrir();};
 async function usrCargarLista(){
@@ -7150,9 +7231,10 @@ function finalizarPartidaPendiente(bonusGanado){
   let pdTxt="";
   if(esPartidaDiaria){esPartidaDiaria=false;pdGuardarEstado("jugada");objActualizarBadge();
     recuperarVida();sumarMonedas(100);mundoActualizarHud();
+    meta.ticketsTorneo=(meta.ticketsTorneo||0)+1;guardarMeta();
     const extra=otorgarPremioRotativo(eventoPremioDeHoy(0));
     const nombre=eventoDiarioUI?"el Evento diario":"la Partida Diaria";eventoDiarioUI=false;
-    pdTxt=" · ¡Ganaste "+nombre+"! +1 vida, +100 🪙 y "+extra+".";}
+    pdTxt=" · ¡Ganaste "+nombre+"! +1 vida, +100 🪙, +1 🎟️ de torneo y "+extra+".";}
   S.finalPendiente=null;S.fase="fin";pararReloj();limpiarBonus();
   $("modalResolver").classList.remove("ver");
   publicar("Partida terminada.");
@@ -7174,6 +7256,16 @@ function terminarPorAbandono(idx){
     entrenamientoLimpiarFlags();detenerPartidaAnterior();
     mostrarFin("Partida abandonada","Entrenamiento cancelado. Esta partida no modifica vidas, monedas, objetivos ni progreso.");
     $("fMapa").style.display="none";$("fSalir").style.display="block";$("fBoton").style.display="none";
+    $("fCompartir").style.display="none";return;
+  }
+  if(enTorneo){
+    enTorneo=false;
+    const rachaFinal=torneoRacha,huboPremios=torneoPremiosGanados.length>0;
+    torneoRacha=0;
+    detenerPartidaAnterior();
+    mostrarFin("Torneo abandonado","Terminaste con "+rachaFinal+" victoria"+(rachaFinal===1?"":"s")+" seguida"+(rachaFinal===1?"":"s")+" en el torneo."+
+      (huboPremios?" Los premios que ya ganaste quedan tuyos.":" No llegaste a ganar ningún premio esta vez."));
+    $("fMapa").style.display="none";$("fSalir").style.display="block";$("fSalir").textContent="Volver a Torneos";$("fBoton").style.display="none";
     $("fCompartir").style.display="none";return;
   }
   const eraPartidaDiaria=esPartidaDiaria;
@@ -7198,7 +7290,7 @@ function terminarPorAbandono(idx){
 }
 function abandonarPartidaPropia(){
   if(enPruebaPunteros){salirPruebaPunteros();return;}
-  const pierdeVida=modo==="bot"&&!vidasInfinitasActivas()&&!esEntrenamientoToss&&!esEntrenamientoBonus;
+  const pierdeVida=modo==="bot"&&!vidasInfinitasActivas()&&!esEntrenamientoToss&&!esEntrenamientoBonus&&!enTorneo;
   if(modo==="guest")enviar({a:"abandonar"});
   else terminarPorAbandono(miJug);
   /* Abandonar es una salida definitiva: después de registrar la derrota
@@ -7663,6 +7755,7 @@ function finDelJuego(){
     $("fCompartir").style.display="none";return;
   }
   if(esEntrenamientoToss){finalizarEntrenamientoToss();return;}
+  if(enTorneo){finalizarPartidaTorneo(g,detalle);return;}
   if(esEventoCiudad){
     if(g===0)iniciarBonus(g,{g,tit:"¡Evento completado!",extra:""});
     else finalizarEventoCiudad(false,detalle+(g<0?" El empate cuenta como derrota.":""));
@@ -8848,12 +8941,14 @@ $("fSalir").onclick=()=>{
   if(enPruebaPunteros){salirPruebaPunteros();return;}
   detenerPartidaAnterior();
   esPartidaDiaria=false;eventoDiarioUI=false;esEventoCiudad=false;esEventoFinde=false;entrenamientoLimpiarFlags();
+  enTorneo=false;
   $("eventos").style.display="none";$("fondoMundo").classList.remove("ver");
   $("modalFin").classList.remove("ver");
   if(mq){try{mq.end(true);}catch(e){}mq=null;}
   modo="local";sala="";S=null;
   $("juego").style.display="none";
   $("setup").style.display="block";
+  if(vinoDeTorneo){vinoDeTorneo=false;torneosAbrir();return;}
   /* El día que alguien recién ve el tutorial, no lo encadenamos a la
      Partida Diaria — ese día solo tiene que ver el tutorial. Desde el
      día siguiente ya arranca todo con normalidad. */
@@ -9244,6 +9339,7 @@ $("reacciones").addEventListener("click",ev=>{
   else if(modo==="host")enviar({tipo:"reaccion",e:b.dataset.e});
 });
 $("fBoton").onclick=()=>{
+  if(enTorneo){torneoJugarSiguiente();return;}
   if(modo==="guest"){enviar({a:"revancha"});$("modalFin").classList.remove("ver");
     $("aviso").innerHTML="<span>Pediste revancha. Esperando al otro jugador…</span>";}
   else revancha();
