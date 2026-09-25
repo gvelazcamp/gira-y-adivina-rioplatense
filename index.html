@@ -6263,7 +6263,7 @@ function tvSombraHex(hex,cant){
 }
 function tvDibujarRuedaArranque(gajos,jugadores){
   const cvT=$("ruedaTV"),cxT=cvT.getContext("2d"),CENTRO=300,RADIO=294,paso=Math.PI*2/gajos.length;
-  const colores=["#F5B301","#E5197C","#37D6C0","#7B3FE4","#F97316","#2DA8FF"];
+  const colores=["#F5B301","#C1272D","#37D6C0","#7B3FE4","#F97316","#2DA8FF"];
   cxT.clearRect(0,0,600,600);
   gajos.forEach((idxJ,i)=>{
     const a0=i*paso,base=colores[idxJ%colores.length];
