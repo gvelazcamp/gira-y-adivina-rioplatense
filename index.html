@@ -914,6 +914,35 @@ html.rueda-prueba-boreal .centro{background:radial-gradient(circle at 38% 30%,#E
 .capa{position:fixed;inset:0;background:#0A0412E6;display:none;place-items:center;padding:20px;z-index:9;overflow-y:auto}
 #modalFin{z-index:30}
 #capaSinVidas{z-index:35}
+#capaResultadosTV{z-index:32}
+.rtv-caja{max-width:480px;width:100%;position:relative;overflow:hidden;background:linear-gradient(160deg,var(--noche2),var(--noche));border:2px solid #F5B30155;border-radius:22px;padding:26px 18px 22px;text-align:center}
+.rtv-confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.rtv-confetti span{position:absolute;top:-10%;width:8px;height:14px;opacity:.9;border-radius:2px;animation:rtvCaer 3.2s linear infinite}
+@keyframes rtvCaer{0%{transform:translateY(-10%)}100%{transform:translateY(650%)}}
+.rtv-banner{position:relative;z-index:1;font-family:'Archivo Black',sans-serif;font-size:1.7rem;color:var(--oro);text-shadow:0 3px 0 #00000055;letter-spacing:.5px}
+.rtv-sub{position:relative;z-index:1;color:var(--crema);margin:2px 0 18px;font-weight:700}
+.rtv-podio{position:relative;z-index:1;display:flex;align-items:flex-end;justify-content:center;gap:8px;margin-bottom:14px}
+.rtv-lugar{display:flex;flex-direction:column;align-items:center;flex:1;min-width:0}
+.rtv-avatar-wrap{position:relative;width:56px;height:56px;margin-bottom:4px;flex:0 0 auto}
+.rtv-lugar-1 .rtv-avatar-wrap{width:74px;height:74px}
+.rtv-avatar{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;border:2px solid var(--crema)}
+.rtv-lugar-1 .rtv-avatar{border-color:var(--oro);border-width:3px}
+.rtv-frame{position:absolute;inset:0;width:100%;height:100%;display:none;transform:scale(1.35)}
+.rtv-frame.ver{display:block}
+.rtv-corona{font-size:1.6rem;margin-bottom:-6px}
+.rtv-nombre{font-weight:800;color:var(--crema);font-size:.82rem;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rtv-lugar-1 .rtv-nombre{font-size:.95rem;max-width:110px}
+.rtv-monto{color:var(--oro);font-weight:900;font-size:.85rem;margin-bottom:6px}
+.rtv-pedestal{width:100%;border-radius:8px 8px 0 0;display:flex;align-items:flex-start;justify-content:center;padding-top:6px;font-family:'Archivo Black',sans-serif;font-weight:900;color:var(--tinta)}
+.rtv-pedestal-1{height:72px;background:linear-gradient(160deg,#FFD65C,var(--oro));font-size:1.6rem}
+.rtv-pedestal-2{height:52px;background:linear-gradient(160deg,#D8D8E8,#9C9CB8);font-size:1.3rem}
+.rtv-pedestal-3{height:40px;background:linear-gradient(160deg,#E8B98C,#C88554);font-size:1.2rem}
+.rtv-resto{position:relative;z-index:1;display:flex;flex-direction:column;gap:6px;margin-top:6px;max-height:160px;overflow-y:auto}
+.rtv-resto-fila{display:flex;align-items:center;gap:8px;background:#00000030;border-radius:10px;padding:6px 10px;text-align:left}
+.rtv-resto-fila .rtv-resto-puesto{color:#B49FCE;font-weight:800;font-size:.75rem;width:18px;flex:0 0 auto}
+.rtv-resto-fila img{width:26px;height:26px;border-radius:50%;flex:0 0 auto}
+.rtv-resto-fila .rtv-resto-nombre{flex:1;color:var(--crema);font-weight:700;font-size:.78rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rtv-resto-fila .rtv-resto-monto{color:var(--oro);font-weight:800;font-size:.78rem;flex:0 0 auto}
 #capaSeccionTienda{z-index:11}
 .capa.ver{display:grid}
 .caja{background:var(--noche2);border:1px solid #FFFFFF1F;border-radius:20px;padding:26px 22px;max-width:440px;width:100%;text-align:center}
@@ -1916,6 +1945,35 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="no" id="fCompartirCiudad100" style="width:100%;border-radius:12px;padding:13px;font-weight:700;margin-top:10px;display:none">📤 Compartir ciudad 100%</button>
   <button class="no" id="fCompartir100" style="width:100%;border-radius:12px;padding:13px;font-weight:700;margin-top:10px;display:none">📤 Compartir pasaporte 100%</button>
   <button class="no" id="fVolverMapaPaso" style="width:100%;border-radius:12px;padding:13px;font-weight:700;margin-top:10px;display:none">🗺️ Volver al mapa</button>
+</div></div>
+
+<div class="capa" id="capaResultadosTV"><div class="caja rtv-caja">
+  <div class="rtv-confetti" id="rtvConfetti"></div>
+  <div class="rtv-banner">🎉 RESULTADOS</div>
+  <p class="sub rtv-sub">¡Qué buena partida!</p>
+  <div class="rtv-podio">
+    <div class="rtv-lugar rtv-lugar-2" id="rtvLugar2">
+      <div class="rtv-avatar-wrap"><img class="rtv-avatar" id="rtvAv2" src="" alt=""><img class="rtv-frame" id="rtvFr2" src="" alt=""></div>
+      <div class="rtv-nombre" id="rtvNom2"></div>
+      <div class="rtv-monto" id="rtvMonto2"></div>
+      <div class="rtv-pedestal rtv-pedestal-2">2</div>
+    </div>
+    <div class="rtv-lugar rtv-lugar-1" id="rtvLugar1">
+      <div class="rtv-corona">👑</div>
+      <div class="rtv-avatar-wrap"><img class="rtv-avatar" id="rtvAv1" src="" alt=""><img class="rtv-frame" id="rtvFr1" src="" alt=""></div>
+      <div class="rtv-nombre" id="rtvNom1"></div>
+      <div class="rtv-monto" id="rtvMonto1"></div>
+      <div class="rtv-pedestal rtv-pedestal-1">1</div>
+    </div>
+    <div class="rtv-lugar rtv-lugar-3" id="rtvLugar3">
+      <div class="rtv-avatar-wrap"><img class="rtv-avatar" id="rtvAv3" src="" alt=""><img class="rtv-frame" id="rtvFr3" src="" alt=""></div>
+      <div class="rtv-nombre" id="rtvNom3"></div>
+      <div class="rtv-monto" id="rtvMonto3"></div>
+      <div class="rtv-pedestal rtv-pedestal-3">3</div>
+    </div>
+  </div>
+  <div class="rtv-resto" id="rtvResto"></div>
+  <button class="ok" id="rtvRevancha" style="width:100%;border-radius:14px;padding:13px;font-weight:800;margin-top:16px">🔁 Jugar de nuevo</button>
 </div></div>
 
 <script>
@@ -7320,7 +7378,55 @@ function mostrarFin(tit,txt,selloImg){
   if(!enPruebaPunteros&&!esEntrenamientoToss&&!esEntrenamientoBonus&&!tieneVidas()){
     setTimeout(abrirPopupSinVidas,900);
   }
+  if(modo==="tvhost")mostrarResultadosTV();
 }
+/* Pantalla de festejo con podio para Sala TV: reemplaza el cartel de texto
+   plano por un resultado visual (1°/2°/3° + el resto en lista), pensada
+   para la pantalla grande compartida. No cambia nada del cálculo del
+   ganador ni de las estadísticas — solo cómo se muestra. */
+function rtvAvatarImg(av){return av?"assets/avatars/"+av+".webp":"assets/avatars/avatar-01.webp";}
+function rtvGenerarConfetti(){
+  const cont=$("rtvConfetti");cont.innerHTML="";
+  const colores=["#F5B301","#E5197C","#37D6C0","#F6EFE2","#7B3FE4"];
+  for(let i=0;i<18;i++){
+    const s=document.createElement("span");
+    s.style.left=Math.random()*100+"%";
+    s.style.background=colores[i%colores.length];
+    s.style.animationDelay=(Math.random()*2.5)+"s";
+    s.style.animationDuration=(2.4+Math.random()*1.6)+"s";
+    s.style.transform="rotate("+Math.floor(Math.random()*360)+"deg)";
+    cont.appendChild(s);
+  }
+}
+function mostrarResultadosTV(){
+  if(!S||!S.jug)return;
+  const orden=S.jug.map((j,i)=>({j,i})).sort((a,b)=>b.j.tot-a.j.tot||b.j.rg-a.j.rg);
+  const pon=(idx,puesto)=>{
+    const x=orden[puesto],lug=$("rtvLugar"+idx);
+    if(!x){lug.style.display="none";return;}
+    lug.style.display="flex";
+    $("rtvAv"+idx).src=rtvAvatarImg(x.j.av);
+    const fr=$("rtvFr"+idx);
+    if(x.j.frame){fr.src="assets/frames/frame-"+x.j.frame+".png";fr.classList.add("ver");}
+    else fr.classList.remove("ver");
+    $("rtvNom"+idx).textContent=x.j.n;
+    $("rtvMonto"+idx).textContent="$"+x.j.tot;
+  };
+  pon(1,0);pon(2,1);pon(3,2);
+  const resto=$("rtvResto");resto.innerHTML="";
+  orden.slice(3).forEach((x,i)=>{
+    const d=document.createElement("div");d.className="rtv-resto-fila";
+    d.innerHTML='<span class="rtv-resto-puesto">'+(i+4)+'°</span>'+
+      '<img src="'+rtvAvatarImg(x.j.av)+'" alt="">'+
+      '<span class="rtv-resto-nombre">'+rkEsc(x.j.n)+'</span>'+
+      '<span class="rtv-resto-monto">$'+x.j.tot+'</span>';
+    resto.appendChild(d);
+  });
+  rtvGenerarConfetti();
+  $("modalFin").classList.remove("ver");
+  $("capaResultadosTV").classList.add("ver");
+}
+$("rtvRevancha").onclick=()=>{$("capaResultadosTV").classList.remove("ver");revancha();};
 function armarTeclado(){
   mundoActualizarHud();
   jgActualizarSobre();
