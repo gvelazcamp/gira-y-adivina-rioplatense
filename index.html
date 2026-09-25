@@ -1199,7 +1199,8 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <h2>Torneo</h2>
     <p class="sub">Ganá partidas seguidas contra la Máquina y subí la escalera de premios.</p>
   </div>
-  <div id="torneosTickets" style="font-weight:800;color:var(--oro);margin-bottom:14px"></div>
+  <div id="torneosTickets" style="font-weight:800;color:var(--oro);margin-bottom:4px"></div>
+  <div id="torneosTemporada" style="font-size:.8rem;color:#BFAFD1;font-weight:700;margin-bottom:14px"></div>
   <div id="torneosEscalera" class="torneo-escalera" style="margin-bottom:18px"></div>
   <button class="ok" id="torneosEntrar" style="width:100%;border-radius:14px;padding:13px;font-weight:800;margin-bottom:10px">Entrar</button>
   <button class="no" id="torneosCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700">Cerrar</button>
@@ -2438,6 +2439,7 @@ function cargarMeta(){
   if(typeof m.ultimaRuleta!=="number")m.ultimaRuleta=0;
   if(!Number.isSafeInteger(m.girosExtraGratis)||m.girosExtraGratis<0)m.girosExtraGratis=0;
   if(!Number.isSafeInteger(m.ticketsTorneo)||m.ticketsTorneo<0)m.ticketsTorneo=0;
+  if(!Number.isSafeInteger(m.torneoTemporadaVista))m.torneoTemporadaVista=-1;
   if(typeof m.ultimaGratisDiaria!=="number")m.ultimaGratisDiaria=0;
   if(typeof m.monedasGanadasTotal!=="number")m.monedasGanadasTotal=m.monedas;
   if(typeof m.diaRacha!=="number")m.diaRacha=0;
@@ -3057,6 +3059,19 @@ function finalizarEntrenamientoBonus(){
    Tienda, a agregar aparte). */
 let enTorneo=false,vinoDeTorneo=false,torneoRacha=0,torneoPremiosGanados=[];
 const TORNEO_TICKETS_ENTRADA=5;
+const TORNEO_TEMPORADA_MS=10*86400000;
+function torneoTemporadaIdx(){return Math.floor(Date.now()/TORNEO_TEMPORADA_MS);}
+function torneoTemporadaTexto(){
+  const restante=TORNEO_TEMPORADA_MS-(Date.now()%TORNEO_TEMPORADA_MS);
+  const dias=Math.floor(restante/86400000),horas=Math.floor((restante%86400000)/3600000);
+  return dias>0?dias+"d "+horas+"h":horas+"h";
+}
+function torneoComprobarTemporada(){
+  const idx=torneoTemporadaIdx();
+  if(meta.torneoTemporadaVista!==idx){
+    meta.torneoTemporadaVista=idx;meta.ticketsTorneo=0;guardarMeta();
+  }
+}
 const TORNEO_PREMIOS=[
   {en:3,medalla:"🥉",texto:"30 min de vidas infinitas",aplicar:()=>{meta.vidasInfinitasHasta=Math.max(Date.now(),meta.vidasInfinitasHasta||0)+30*60*1000;}},
   {en:6,medalla:"🥈",texto:"+500 🪙",aplicar:()=>{sumarMonedas(500);}},
@@ -3074,8 +3089,10 @@ function torneosRenderEscalera(){
   ).join('');
 }
 function torneosActualizar(){
+  torneoComprobarTemporada();
   const tickets=meta.ticketsTorneo||0,bypass=esGonzalo();
   $("torneosTickets").textContent="🎟️ Tenés "+tickets+" ticket"+(tickets===1?"":"s")+" de torneo"+(bypass?" · acceso de prueba (Gonzalo)":"");
+  $("torneosTemporada").textContent="⏳ Esta temporada termina en "+torneoTemporadaTexto();
   torneosRenderEscalera();
   const alcanza=bypass||tickets>=TORNEO_TICKETS_ENTRADA;
   $("torneosEntrar").disabled=!alcanza;
