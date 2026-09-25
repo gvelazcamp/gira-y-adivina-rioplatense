@@ -479,6 +479,17 @@ body.gonzalo-admin .frame-card .tn-admin-x,body.gonzalo-admin .tn-item .tn-admin
 .obj-reclamar.hecho{background:#150C20;color:var(--agua);border-color:#37D6C066}
 .obj-item.destacado{border-color:#F5B30166;background:#F5B3011A}
 .rk-caja{max-width:440px;max-height:86vh;overflow-y:auto}
+.torneo-banner{background:linear-gradient(135deg,#3A1B5C,#5C1F52 60%,#7A2A3E);border-radius:16px;padding:16px 10px 12px;margin-bottom:14px;box-shadow:inset 0 0 0 1px #FFFFFF1A}
+.torneo-banner-ico{font-size:2.6rem;filter:drop-shadow(0 3px 4px #00000066);display:block}
+.torneo-banner h2{color:var(--crema);margin:4px 0 2px}
+.torneo-banner .sub{margin:0}
+.torneo-escalera{position:relative;padding-left:32px}
+.torneo-escalera::before{content:"";position:absolute;left:15px;top:4px;bottom:4px;width:4px;border-radius:4px;background:linear-gradient(180deg,var(--agua),var(--oro));opacity:.6}
+.torneo-paso{position:relative;display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#00000038,#00000015);border:1px solid #FFFFFF14;border-radius:14px;padding:11px 14px;margin-bottom:10px}
+.torneo-paso-num{position:absolute;left:-32px;top:50%;transform:translateY(-50%);width:26px;height:26px;border-radius:50%;background:var(--noche2);border:2px solid var(--oro);color:var(--oro);font-weight:900;font-size:.78rem;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 4px var(--noche)}
+.torneo-paso-medalla{font-size:1.7rem;flex:0 0 auto;filter:drop-shadow(0 2px 2px #00000055)}
+.torneo-paso-racha{font-size:.8rem;color:#BFAFD1;font-weight:700}
+.torneo-paso-premio{color:var(--oro);font-weight:800;text-align:right;margin-left:auto}
 .rk-acciones{display:flex;gap:8px;margin-bottom:12px}
 .rk-acciones button{flex:1;border-radius:10px;padding:9px 4px;font-weight:700;font-size:.76rem}
 .rk-lista{text-align:left}
@@ -1183,10 +1194,13 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
 </div>
 
 <div class="capa" id="capaTorneos"><div class="caja rk-caja" style="text-align:center">
-  <h2>🏆 Torneo</h2>
-  <p class="sub" style="margin:6px 0 10px">Ganá partidas seguidas contra la Máquina y subí la escalera de premios.</p>
+  <div class="torneo-banner">
+    <span class="torneo-banner-ico">🏆</span>
+    <h2>Torneo</h2>
+    <p class="sub">Ganá partidas seguidas contra la Máquina y subí la escalera de premios.</p>
+  </div>
   <div id="torneosTickets" style="font-weight:800;color:var(--oro);margin-bottom:14px"></div>
-  <div id="torneosEscalera" style="display:flex;flex-direction:column;gap:8px;text-align:left;margin-bottom:18px"></div>
+  <div id="torneosEscalera" class="torneo-escalera" style="margin-bottom:18px"></div>
   <button class="ok" id="torneosEntrar" style="width:100%;border-radius:14px;padding:13px;font-weight:800;margin-bottom:10px">Entrar</button>
   <button class="no" id="torneosCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700">Cerrar</button>
 </div></div>
@@ -3044,16 +3058,19 @@ function finalizarEntrenamientoBonus(){
 let enTorneo=false,vinoDeTorneo=false,torneoRacha=0,torneoPremiosGanados=[];
 const TORNEO_TICKETS_ENTRADA=5;
 const TORNEO_PREMIOS=[
-  {en:3,texto:"30 min de vidas infinitas",aplicar:()=>{meta.vidasInfinitasHasta=Math.max(Date.now(),meta.vidasInfinitasHasta||0)+30*60*1000;}},
-  {en:6,texto:"+500 🪙",aplicar:()=>{sumarMonedas(500);}},
-  {en:9,texto:"+1 sobre de colección",aplicar:()=>{otorgarSobreSorpresa();}},
-  {en:12,texto:"+1000 🪙",aplicar:()=>{sumarMonedas(1000);}}
+  {en:3,medalla:"🥉",texto:"30 min de vidas infinitas",aplicar:()=>{meta.vidasInfinitasHasta=Math.max(Date.now(),meta.vidasInfinitasHasta||0)+30*60*1000;}},
+  {en:6,medalla:"🥈",texto:"+500 🪙",aplicar:()=>{sumarMonedas(500);}},
+  {en:9,medalla:"🥇",texto:"+1 sobre de colección",aplicar:()=>{otorgarSobreSorpresa();}},
+  {en:12,medalla:"🏆",texto:"+1000 🪙",aplicar:()=>{sumarMonedas(1000);}}
 ];
 function torneosAbrir(){torneosActualizar();$("capaTorneos").classList.add("ver");}
 function torneosRenderEscalera(){
   $("torneosEscalera").innerHTML=TORNEO_PREMIOS.map(p=>
-    '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;background:#00000030;border-radius:10px;padding:9px 13px">'+
-    '<span style="flex:0 0 auto">🏅 '+p.en+' seguidas</span><span style="color:var(--oro);font-weight:800;text-align:right">'+p.texto+'</span></div>'
+    '<div class="torneo-paso">'+
+    '<span class="torneo-paso-num">'+p.en+'</span>'+
+    '<span class="torneo-paso-medalla">'+p.medalla+'</span>'+
+    '<span class="torneo-paso-racha">'+p.en+' seguidas</span>'+
+    '<span class="torneo-paso-premio">'+p.texto+'</span></div>'
   ).join('');
 }
 function torneosActualizar(){
