@@ -5547,7 +5547,8 @@ function empezarDestino(i,paso){
   esEventoCiudad=false;eventoCiudadPartida=null;eventoCiudadResultado=false;
   esEventoFinde=false;eventoFindePartida=null;eventoFindeResultado=false;
   entrenamientoLimpiarFlags();
-  if(!gastarVida())return;
+  regenerarVidas();
+  if(!tieneVidas())return;
   // Evita que un cartel de sobre/colección que quedó pendiente de una partida anterior
   // quede flotando encima de la partida nueva que arranca acá.
   $("modalSobreConseguido").classList.remove("ver");
@@ -7135,7 +7136,7 @@ function finDelJuego(){
       tit="¡Paso "+(pasoActual+1)+" superado!";
       const esNuevo=hechos(d.id)<=pasoActual;
       if(esNuevo){progreso[d.id]=pasoActual+1;guardarPasos();
-        sumarMonedas(100);recuperarVida();
+        sumarMonedas(100);
         if(CIUDAD_RICA[d.id]){
           selloImg=CIUDAD_RICA[d.id].sellos[pasoActual].img;
           if(d.id==="durazno"){
@@ -7148,7 +7149,11 @@ function finDelJuego(){
       extra=esNuevo?((progreso[d.id]>=d.pasos.length)?" Se destrabó el desafío contra "+d.r+". +100 🪙":
         " Te falta llegar hasta "+d.r+". +100 🪙"):" Ya habías superado este paso — ¡buen repaso!";
     }else if(g<0)tit="¡Empate!";
-    else{tit="No pudiste";extra=" Probá este paso de nuevo.";}
+    else{
+      tit="No pudiste";
+      const infinita=vidasInfinitasActivas();gastarVida();
+      extra=" Probá este paso de nuevo."+(infinita?" ❤️∞ activo: no gastaste vida.":" -1 ❤️.");
+    }
     S.fase="fin";pararReloj();publicar("Partida terminada.");
     $("fMapa").style.display="block";$("fSalir").style.display="none";
     $("fMapa").textContent=fSiguientePaso===null?"Volver al mapa":
@@ -7215,7 +7220,8 @@ function finDelJuego(){
 }
 function revancha(){
   if(esEventoCiudad||eventoCiudadResultado||esEventoFinde||eventoFindeResultado||esEntrenamientoToss||esEntrenamientoBonus)return;
-  if(modo==="bot"&&destino!==null&&!gastarVida()){
+  regenerarVidas();
+  if(modo==="bot"&&destino!==null&&!tieneVidas()){
     matchToken++;botPausado=0;
     $("modalFin").classList.remove("ver");
     const continuar=()=>{
