@@ -6348,10 +6348,15 @@ function tvConfirmarArranqueTV(){
 }
 $("salioGiroTVBtn").onclick=tvConfirmarArranqueTV;
 function tvComenzarPartidaConArranque(indiceArranca){
+  const eraPruebaBots=tvPruebaBotsActiva;
   tvPartidaIniciada=true;renderTVLobby();emitirTVLobby();
   serie=new Array(familiaJugadores.length).fill(0);ultGanador=-1;racha=0;arranca=indiceArranca;
   $("tvLobby").style.display="none";$("juego").style.display="block";document.body.classList.remove("tv-lobby-bg");document.body.classList.add("tvhost");armarTeclado();
   iniciarPartidaJugadores(familiaJugadores,null);
+  if(eraPruebaBots){
+    tvPruebaBotsActiva=true;
+    publicar("<b>Prueba Sala TV</b> — los jugadores ficticios juegan solos. Mirá el flujo completo.");
+  }
 }
 function iniciarPruebaSalaTVBots(){
   if(!esGonzalo())return;
