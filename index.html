@@ -411,6 +411,8 @@ body.gonzalo-admin .frame-card .tn-admin-x,body.gonzalo-admin .tn-item .tn-admin
 .evento-card-ciudad .evento-card-premios::before{content:"PREMIOS AL GANAR";color:#72F1DF}
 .evento-card-finde .evento-card-premios::before{content:"PREMIOS AL GANAR";color:#FF9CC4}
 .evento-card-premio-emoji{font-size:1.9rem;line-height:1;filter:drop-shadow(0 2px 2px #00000055)}
+.evento-card-premio-emoji img{width:1em;height:1em;display:block}
+.ico-ticket{height:1em;width:1em;vertical-align:-.15em;display:inline-block;filter:drop-shadow(0 1px 2px #00000055)}
 .evento-card-premio-item{position:relative;display:inline-flex}
 .evento-card-premio-badge{position:absolute;bottom:-3px;right:-8px;background:var(--agua);color:var(--tinta);font-size:.5rem;font-weight:900;border-radius:6px;padding:1px 3px;line-height:1;white-space:nowrap;box-shadow:0 1px 2px #00000055}
 .evento-card-premio-visual{display:inline-flex;align-items:center;flex:0 0 auto}
@@ -1995,7 +1997,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
         <span class="evento-card-info"><span class="evento-card-tipo">PREMIO SORPRESA</span><b>Evento diario</b>
           <small>3 rondas contra la máquina · 1 intento</small></span>
         <span class="evento-card-premios">
-          <span class="evento-card-premio-emoji">🎟️</span>
+          <span class="evento-card-premio-emoji"><img src="assets/eventos/ticket-icono.webp" alt="ticket de torneo"></span>
         </span>
       </span>
     </span>
@@ -2009,7 +2011,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
         <span class="evento-card-info"><span class="evento-card-tipo">DESAFÍO DE LOCALIDAD</span><b id="evCiudadTit">Evento de ciudad</b>
           <small id="evCiudadEstado">3 rondas · Reintentá hasta ganar · Cada derrota cuesta 1 vida</small></span>
         <span class="evento-card-premios">
-          <span class="evento-card-premio-emoji">🎟️</span>
+          <span class="evento-card-premio-emoji"><img src="assets/eventos/ticket-icono.webp" alt="ticket de torneo"></span>
         </span>
       </span>
     </span>
@@ -2023,7 +2025,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
         <span class="evento-card-info"><span class="evento-card-tipo">EVENTO DE FIN DE SEMANA</span><b>Desafío especial</b>
           <small id="evFindeEstado">5 rondas · Reintentá hasta ganar · Cada derrota cuesta 1 vida</small></span>
         <span class="evento-card-premios">
-          <span class="evento-card-premio-emoji">🎟️</span>
+          <span class="evento-card-premio-emoji"><img src="assets/eventos/ticket-icono.webp" alt="ticket de torneo"></span>
         </span>
       </span>
     </span>
@@ -3082,12 +3084,13 @@ function torneosRenderEscalera(){
 function torneosActualizar(){
   torneoComprobarTemporada();
   const tickets=meta.ticketsTorneo||0,bypass=esGonzalo();
-  $("torneosTickets").textContent="🎟️ Tenés "+tickets+" ticket"+(tickets===1?"":"s")+" de torneo"+(bypass?" · acceso de prueba (Gonzalo)":"");
+  const icoTk='<img class="ico-ticket" src="assets/eventos/ticket-icono.webp" alt="ticket">';
+  $("torneosTickets").innerHTML=icoTk+" Tenés "+tickets+" ticket"+(tickets===1?"":"s")+" de torneo"+(bypass?" · acceso de prueba (Gonzalo)":"");
   $("torneosTemporada").textContent="⏳ Esta temporada termina en "+torneoTemporadaTexto();
   torneosRenderEscalera();
   const alcanza=bypass||tickets>=TORNEO_TICKETS_ENTRADA;
   $("torneosEntrar").disabled=!alcanza;
-  $("torneosEntrar").textContent=bypass?"Entrar (prueba, gratis)":(alcanza?"Entrar ("+TORNEO_TICKETS_ENTRADA+" 🎟️)":"Te faltan "+(TORNEO_TICKETS_ENTRADA-tickets)+" 🎟️ — jugá los Eventos");
+  $("torneosEntrar").innerHTML=bypass?"Entrar (prueba, gratis)":(alcanza?"Entrar ("+TORNEO_TICKETS_ENTRADA+" "+icoTk+")":"Te faltan "+(TORNEO_TICKETS_ENTRADA-tickets)+" "+icoTk+" — jugá los Eventos");
 }
 function torneoEntrar(){
   const bypass=esGonzalo();
