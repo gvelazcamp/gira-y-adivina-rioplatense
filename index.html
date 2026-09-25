@@ -6887,7 +6887,12 @@ function iniciarTossUp(f){
 function pausarToss(jugador){
   if(!S||S.fase!=="tossup"||S.tossPausado)return false;
   jugador=(Number.isInteger(jugador)&&jugador>=0&&jugador<S.jug.length)?jugador:0;
-  if(S.tossBloq&&S.tossBloq[jugador]&&modo!=="bot")return false;
+  /* El reintento sin límite es solo para el propio reintento de la Máquina
+     (jugador 1, con su lógica de "segunda chance") o para el Entrenamiento
+     de Toss-Up (donde practicar sin penalidad es el punto). Jugando de
+     verdad contra la Máquina (Jugar ahora Uruguay), si el humano erró ya
+     queda afuera como en cualquier otro modo. */
+  if(S.tossBloq&&S.tossBloq[jugador]&&!(modo==="bot"&&(jugador===1||esEntrenamientoToss)))return false;
   const ahora=Date.now();
   S.tossRestante=Math.max(0,S.tossFin-ahora);
   S.tossHastaProx=Math.max(0,S.tossProx-ahora);
@@ -6919,12 +6924,16 @@ function finRespuestaToss(jugador){
   if(!S||S.fase!=="tossup"||!S.tossPausado||S.tossRespondedor!==jugador)return;
   tossRespuestaTimer=null;
   if(tossRespondedor===jugador){$("modalResolver").classList.remove("ver");tossRespondedor=null;}
-  if(modo==="bot"){
+  if(modo==="bot"&&jugador===1){
     /* No debería pasar (la "reacción"+"pensamiento" del bot dura menos de
        9s), pero si el timeout del bot se retrasó (pestaña en segundo plano,
        etc.), no lo dejamos colgado esperando para siempre esta ronda. */
-    if(jugador===1&&S.botTossPlan)S.botTossPlan.agotado=true;
+    if(S.botTossPlan)S.botTossPlan.agotado=true;
     reanudarToss("Se terminaron los <b>9 segundos para responder</b>. La prueba continúa.");
+    return;
+  }
+  if(modo==="bot"&&esEntrenamientoToss){
+    reanudarToss("Se terminaron los <b>9 segundos para responder</b>. La prueba continúa — podés volver a intentar.");
     return;
   }
   S.tossBloq[jugador]=true;
@@ -6951,7 +6960,7 @@ function finTossTiempo(){
 function hostResolverToss(txt,jugador){
   if(!S||S.fase!=="tossup")return;
   jugador=(Number.isInteger(jugador)&&jugador>=0&&jugador<S.jug.length)?jugador:0;
-  if(S.tossBloq&&S.tossBloq[jugador]&&modo!=="bot")return;
+  if(S.tossBloq&&S.tossBloq[jugador]&&!(modo==="bot"&&(jugador===1||esEntrenamientoToss)))return;
   if(!S.tossPausado){if(!pausarToss(jugador))return;}
   if(S.tossRespondedor!==jugador)return;
   if(tossRespuestaTimer){clearTimeout(tossRespuestaTimer);tossRespuestaTimer=null;}
@@ -6963,9 +6972,9 @@ function hostResolverToss(txt,jugador){
     setTimeout(tk(nuevaRonda),5200);
   }else{
     bip(140,.35,"square",.07);
-    if(modo==="bot"){
-      const msg=(jugador===1)?"<b>"+S.jug[jugador].n+"</b> se apuró y no acertó. La prueba continúa.":"«"+txt.toUpperCase()+"» no era. La prueba continúa y podés volver a intentar.";
-      if(jugador===1&&S.botTossPlan){
+    if(modo==="bot"&&jugador===1){
+      const msg="<b>"+S.jug[jugador].n+"</b> se apuró y no acertó. La prueba continúa.";
+      if(S.botTossPlan){
         const plan=S.botTossPlan;
         /* Por defecto, un solo intento por Toss-Up. Una pequeña proporción de
            los que fallaron puede tener un segundo intento, mucho más tarde
@@ -6977,7 +6986,13 @@ function hostResolverToss(txt,jugador){
         }else plan.agotado=true;
       }
       reanudarToss(msg);
-      if(jugador===1)programarBotToss();
+      programarBotToss();
+      return;
+    }
+    if(modo==="bot"&&esEntrenamientoToss){
+      /* Entrenamiento: practicar sin penalidad es el punto — el humano
+         puede reintentar las veces que quiera hasta que se acabe el tiempo. */
+      reanudarToss("«"+txt.toUpperCase()+"» no era. La prueba continúa y podés volver a intentar.");
       return;
     }
     S.tossBloq[jugador]=true;
