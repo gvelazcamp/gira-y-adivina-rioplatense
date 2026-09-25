@@ -3620,14 +3620,21 @@ function tnEjecutarCompra(tipo,precio){
       {icono:"❤️",texto:"+1 vida"},{icono:"🪙",texto:"+300"},{icono:"🎁",texto:"+1 sobre"}
     ],()=>colMostrarSobreConseguido(cual,true));
   }else if(tipo==="pack_racha"){
-    meta.vidas=VIDAS_MAX;meta.proxima=0;meta.ultimaRuleta=0;
+    meta.vidas=VIDAS_MAX;meta.proxima=0;
+    /* El "🎡×1" de la tarjeta del pack tiene que ser un Giro extra gratis
+       DE VERDAD (meta.girosExtraGratis, el mismo contador que usa la
+       Ruleta y que se ve como "🎟️ Giros gratis extra: N") — no solo
+       resetear el cooldown diario (meta.ultimaRuleta), que si ya tenías
+       el giro gratis del día disponible no sumaba nada y el jugador no
+       tenía forma de notar que la compra le había dado algo. */
+    meta.girosExtraGratis=(meta.girosExtraGratis||0)+1;
     /* Acá "coleccionables y monedas" lo dan los propios 2 sobres del pack
        (no garantizados): cada uno puede tocar coleccionable o la sorpresa
        de monedas/vida, como cualquier sobre normal — no hace falta un
        +monedas aparte pegado al pack. */
     const sobres=[otorgarSobreSorpresa(),otorgarSobreSorpresa()];
     mostrarPackItems([
-      {icono:"❤️",texto:"Vidas llenas"},{icono:"🎁",texto:"+2 sobres"}
+      {icono:"❤️",texto:"Vidas llenas"},{icono:"🎡",texto:"+1 Giro extra"},{icono:"🎁",texto:"+2 sobres"}
     ],()=>mostrarSobresPack(sobres));
   }else if(tipo==="pack_mutante"){
     avataresComprados.add("avatar-27");guardarAvataresComprados();equiparAvatarPremium("avatar-27");
