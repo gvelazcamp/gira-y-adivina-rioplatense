@@ -5843,12 +5843,25 @@ function jugarBot(){
    "va normal" o "está bueno" — con su propio umbral de letras, precisión y tiempo
    de reacción. Una vez sorteado el plan NO se vuelve a tirar una probabilidad
    cada 500ms: solo se espera a que se cumpla el umbral y se ejecuta UNA reacción. */
+/* Las primeras veces que se juega Durazno (la primera ciudad del juego),
+   el Toss-Up se inclina un poco hacia perfiles más flojos — no se tocan los
+   rangos de umbral/precisión/reacción de cada perfil (sigue siendo el mismo
+   comportamiento humano), solo cambian las proporciones con que salen. */
+function tossPlanSesgoDurazno(){
+  if(modo!=="bot"||destino===null||!MUNDO[destino]||MUNDO[destino].id!=="durazno")return null;
+  const hechos=typeof dzHechos==="function"?dzHechos():0;
+  if(hechos===0)return{no:.40,apura:.20,normal:.30};
+  if(hechos===1)return{no:.35,apura:.18,normal:.32};
+  return null;
+}
 function generarBotTossPlan(){
+  const sesgo=tossPlanSesgoDurazno();
+  const pNo=sesgo?sesgo.no:.30,pApura=sesgo?sesgo.apura:.15,pNormal=sesgo?sesgo.normal:.35;
   const r=Math.random();
-  if(r<.30)return{perfil:"no_resuelve",agotado:true,intentos:0,maxIntentos:0,reaccionProgramada:false};
+  if(r<pNo)return{perfil:"no_resuelve",agotado:true,intentos:0,maxIntentos:0,reaccionProgramada:false};
   let perfil,umbralMin,umbralMax,precMin,precMax,reaccionMin,reaccionMax;
-  if(r<.45){perfil="apura";umbralMin=.58;umbralMax=.70;precMin=.35;precMax=.50;reaccionMin=700;reaccionMax=1600;}
-  else if(r<.80){perfil="normal";umbralMin=.72;umbralMax=.87;precMin=.60;precMax=.75;reaccionMin=700;reaccionMax=1500;}
+  if(r<pNo+pApura){perfil="apura";umbralMin=.58;umbralMax=.70;precMin=.35;precMax=.50;reaccionMin=700;reaccionMax=1600;}
+  else if(r<pNo+pApura+pNormal){perfil="normal";umbralMin=.72;umbralMax=.87;precMin=.60;precMax=.75;reaccionMin=700;reaccionMax=1500;}
   else{perfil="bueno";umbralMin=.85;umbralMax=.96;precMin=.80;precMax=.90;reaccionMin=500;reaccionMax=1200;}
   return{
     perfil,
