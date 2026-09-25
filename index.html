@@ -923,14 +923,8 @@ html.rueda-prueba-boreal .centro{background:radial-gradient(circle at 38% 30%,#E
 .rtv-sub{position:relative;z-index:1;color:var(--crema);margin:2px 0 18px;font-weight:700}
 .rtv-podio{position:relative;z-index:1;display:flex;align-items:flex-end;justify-content:center;gap:8px;margin-bottom:14px}
 .rtv-lugar{display:flex;flex-direction:column;align-items:center;flex:1;min-width:0}
-.rtv-festejo{width:58px;height:auto;margin-bottom:-4px;filter:drop-shadow(0 5px 7px #00000070);pointer-events:none;flex:0 0 auto}
-.rtv-lugar-1 .rtv-festejo{width:86px;margin-bottom:-6px}
-.rtv-avatar-wrap{position:relative;width:56px;height:56px;margin-bottom:4px;flex:0 0 auto}
-.rtv-lugar-1 .rtv-avatar-wrap{width:74px;height:74px}
-.rtv-avatar{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;border:2px solid var(--crema)}
-.rtv-lugar-1 .rtv-avatar{border-color:var(--oro);border-width:3px}
-.rtv-frame{position:absolute;inset:0;width:100%;height:100%;display:none;transform:scale(1.35)}
-.rtv-frame.ver{display:block}
+.rtv-festejo{width:88px;height:auto;margin-bottom:2px;filter:drop-shadow(0 5px 7px #00000070);pointer-events:none;flex:0 0 auto}
+.rtv-lugar-1 .rtv-festejo{width:116px}
 .rtv-corona{font-size:1.6rem;margin-bottom:-6px}
 .rtv-pedestal{width:100%;border-radius:8px 8px 0 0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:6px;font-family:'Archivo Black',sans-serif;font-weight:900;color:var(--tinta)}
 .rtv-pedestal-num{flex:0 0 auto}
@@ -1958,7 +1952,6 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <div class="rtv-podio">
     <div class="rtv-lugar rtv-lugar-2" id="rtvLugar2">
       <img class="rtv-festejo" id="rtvFj2" src="" alt="">
-      <div class="rtv-avatar-wrap"><img class="rtv-avatar" id="rtvAv2" src="" alt=""><img class="rtv-frame" id="rtvFr2" src="" alt=""></div>
       <div class="rtv-pedestal rtv-pedestal-2">
         <div class="rtv-pedestal-num">2</div>
         <div class="rtv-placa"><div class="rtv-nombre" id="rtvNom2"></div><div class="rtv-monto" id="rtvMonto2"></div></div>
@@ -1967,7 +1960,6 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <div class="rtv-lugar rtv-lugar-1" id="rtvLugar1">
       <div class="rtv-corona">👑</div>
       <img class="rtv-festejo" id="rtvFj1" src="" alt="">
-      <div class="rtv-avatar-wrap"><img class="rtv-avatar" id="rtvAv1" src="" alt=""><img class="rtv-frame" id="rtvFr1" src="" alt=""></div>
       <div class="rtv-pedestal rtv-pedestal-1">
         <div class="rtv-pedestal-num">1</div>
         <div class="rtv-placa"><div class="rtv-nombre" id="rtvNom1"></div><div class="rtv-monto" id="rtvMonto1"></div></div>
@@ -1975,7 +1967,6 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     </div>
     <div class="rtv-lugar rtv-lugar-3" id="rtvLugar3">
       <img class="rtv-festejo" id="rtvFj3" src="" alt="">
-      <div class="rtv-avatar-wrap"><img class="rtv-avatar" id="rtvAv3" src="" alt=""><img class="rtv-frame" id="rtvFr3" src="" alt=""></div>
       <div class="rtv-pedestal rtv-pedestal-3">
         <div class="rtv-pedestal-num">3</div>
         <div class="rtv-placa"><div class="rtv-nombre" id="rtvNom3"></div><div class="rtv-monto" id="rtvMonto3"></div></div>
@@ -7421,10 +7412,6 @@ function mostrarResultadosTV(){
     const x=orden[puesto],lug=$("rtvLugar"+idx);
     if(!x){lug.style.display="none";return;}
     lug.style.display="flex";
-    $("rtvAv"+idx).src=rtvAvatarImg(x.j.av);
-    const fr=$("rtvFr"+idx);
-    if(x.j.frame){fr.src="assets/frames/frame-"+x.j.frame+".png";fr.classList.add("ver");}
-    else fr.classList.remove("ver");
     $("rtvNom"+idx).textContent=x.j.n;
     $("rtvMonto"+idx).textContent="$"+x.j.tot;
     $("rtvFj"+idx).src="assets/festejos/"+festejos[puesto]+".webp";
