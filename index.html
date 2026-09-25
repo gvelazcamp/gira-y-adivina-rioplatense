@@ -5858,7 +5858,15 @@ function generarBotTossPlan(){
   const sesgo=tossPlanSesgoDurazno();
   const pNo=sesgo?sesgo.no:.30,pApura=sesgo?sesgo.apura:.15,pNormal=sesgo?sesgo.normal:.35;
   const r=Math.random();
-  if(r<pNo)return{perfil:"no_resuelve",agotado:true,intentos:0,maxIntentos:0,reaccionProgramada:false};
+  /* "Último cartucho": además de todo el plan de arriba, cuando ya casi no
+     quedan letras sin revelar (a esta ronda le tocó 3, 2 o 1 — al azar) la
+     máquina prueba una vez más con 50% de acierto, aunque su plan diga que
+     no iba a resolver o ya se le haya agotado el intento normal. Así nunca
+     se queda sin hacer nada justo cuando la frase está por quedar visible. */
+  const ultimaChanceFaltan=1+Math.floor(Math.random()*3);
+  if(r<pNo)return{perfil:"no_resuelve",agotado:true,intentos:0,maxIntentos:0,
+    reaccionProgramada:false,segundoChanceUsada:true,
+    ultimaChanceFaltan,ultimaChanceUsada:false};
   let perfil,umbralMin,umbralMax,precMin,precMax,reaccionMin,reaccionMax;
   if(r<pNo+pApura){perfil="apura";umbralMin=.58;umbralMax=.70;precMin=.35;precMax=.50;reaccionMin=700;reaccionMax=1600;}
   else if(r<pNo+pApura+pNormal){perfil="normal";umbralMin=.72;umbralMax=.87;precMin=.60;precMax=.75;reaccionMin=700;reaccionMax=1500;}
@@ -5869,7 +5877,8 @@ function generarBotTossPlan(){
     precision:precMin+Math.random()*(precMax-precMin),
     reaccionMin,reaccionMax,
     intentos:0,maxIntentos:1,
-    reaccionProgramada:false,agotado:false,segundoChanceUsada:false
+    reaccionProgramada:false,agotado:false,segundoChanceUsada:false,
+    ultimaChanceFaltan,ultimaChanceUsada:false
   };
 }
 function programarBotToss(){
@@ -5880,13 +5889,39 @@ function programarBotToss(){
 function jugarBotToss(){
   if(modo!=="bot"||!S||S.fase!=="tossup")return;
   const plan=S.botTossPlan;
-  /* Sin plan (no debería pasar), agotado (ya intentó lo que tenía que intentar)
-     o con una reacción ya programada: no hay más nada que sondear cada 500ms. */
-  if(!plan||plan.agotado||plan.reaccionProgramada)return;
+  if(!plan)return;
   if(S.tossPausado||animando){programarBotToss();return;}
   const totalPos=[...S.frase].filter(c=>c!==" ").length;
   const reveladas=S.tossPos?S.tossPos.size:0;
   const r=totalPos?reveladas/totalPos:0;
+  const faltan=totalPos-reveladas;
+
+  /* Último cartucho: no depende del plan normal, se fija solo en cuántas
+     letras quedan por aparecer. Si todavía no se usó y la máquina no tiene
+     ya una reacción en curso, prueba una vez con 50% de acierto. */
+  if(!plan.ultimaChanceUsada&&!plan.reaccionProgramada&&plan.ultimaChanceFaltan!=null&&
+     faltan<=plan.ultimaChanceFaltan&&faltan>=0){
+    plan.ultimaChanceUsada=true;plan.reaccionProgramada=true;
+    const esperaUC=500+Math.random()*900;
+    botTossReaccionT=setTimeout(()=>{
+      botTossReaccionT=null;
+      if(!S||S.fase!=="tossup")return;
+      if(S.tossPausado){plan.reaccionProgramada=false;programarBotToss();return;}
+      if(!pausarToss(1)){plan.reaccionProgramada=false;programarBotToss();return;}
+      botTossPensarT=setTimeout(()=>{
+        botTossPensarT=null;
+        if(!S||S.fase!=="tossup"||S.tossRespondedor!==1)return;
+        plan.intentos++;
+        const aciertoUC=Math.random()<.5;
+        hostResolverToss(aciertoUC?S.frase:"",1);
+      },300+Math.random()*400);
+    },esperaUC);
+    return;
+  }
+
+  /* Sin plan de resolver todavía (agotado, o "no resuelve"), o con una
+     reacción ya programada: no hay más nada que sondear cada 500ms. */
+  if(plan.agotado||plan.reaccionProgramada)return;
   if(r<plan.umbral){programarBotToss();return;}
 
   /* Umbral del plan alcanzado: se programa UNA reacción con tiempo de
