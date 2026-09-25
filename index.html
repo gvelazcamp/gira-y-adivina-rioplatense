@@ -6465,6 +6465,16 @@ function programarTVBotsPrueba(){
     miJug=S.turno;
     if(S.fase==="tossup"){
       if(S.tossPausado)return;
+      /* Sin esto, el primer bot que le toca resolver apenas arranca el
+         Toss-Up lo hacía al toque (menos de 2s) — se veía como si la
+         Prueba de Velocidad "apareciera y desapareciera" de la nada.
+         Ahora espera a que se revele buena parte de la frase (esta
+         función se vuelve a llamar sola en cada letra nueva, vía
+         publicar) y encima no siempre lo intenta apenas cumple eso. */
+      const totalPos=[...S.frase].filter(c=>c!==" ").length;
+      const reveladas=S.tossPos?S.tossPos.size:0;
+      const r=totalPos?reveladas/totalPos:0;
+      if(r<.45||Math.random()>.35)return;
       const disp=S.jug.map((_,i)=>i).filter(i=>!(S.tossBloq&&S.tossBloq[i]));
       if(!disp.length)return;
       const idx=disp[Math.floor(Math.random()*disp.length)];
