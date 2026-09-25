@@ -7400,21 +7400,40 @@ function rtvGenerarConfetti(){
   }
 }
 const RTV_FESTEJOS=["festejo-1","festejo-2","festejo-3","festejo-4","festejo-5","festejo-6","festejo-7","festejo-8","festejo-9","festejo-10","festejo-11","festejo-12","festejo-13","festejo-14","festejo-15","festejo-16","festejo-17","festejo-18","festejo-19","festejo-20","festejo-21","festejo-22","festejo-23","festejo-24","festejo-25","festejo-26","festejo-27","festejo-28","festejo-29","festejo-30","festejo-31","festejo-32","festejo-33","festejo-34","festejo-35","festejo-36","festejo-37","festejo-38","festejo-39","festejo-40"];
-function rtvFestejosAlAzar(n){
-  const mazo=[...RTV_FESTEJOS].sort(()=>Math.random()-.5);
-  return mazo.slice(0,n);
+/* Cada avatar tiene su propia versión festejando (mismo personaje, pose de festejo).
+   avatar-27 no tiene versión festejo todavía: cae al azar como los avatares futuros. */
+const RTV_AVATAR_FESTEJO={
+  "avatar-01":"festejo-2","avatar-02":"festejo-8","avatar-03":"festejo-7","avatar-04":"festejo-3",
+  "avatar-05":"festejo-6","avatar-06":"festejo-9","avatar-07":"festejo-5","avatar-08":"festejo-4",
+  "avatar-09":"festejo-11","avatar-10":"festejo-12","avatar-11":"festejo-15","avatar-12":"festejo-19",
+  "avatar-13":"festejo-13","avatar-14":"festejo-1","avatar-15":"festejo-18","avatar-16":"festejo-17",
+  "avatar-17":"festejo-10","avatar-18":"festejo-16","avatar-19":"festejo-23","avatar-20":"festejo-29",
+  "avatar-21":"festejo-25","avatar-22":"festejo-22","avatar-23":"festejo-24","avatar-24":"festejo-21",
+  "avatar-25":"festejo-27","avatar-26":"festejo-28","avatar-28":"festejo-26","avatar-29":"festejo-20",
+  "avatar-30":"festejo-33","avatar-31":"festejo-37","avatar-33":"festejo-31","avatar-34":"festejo-30",
+  "avatar-35":"festejo-39","avatar-36":"festejo-36","avatar-37":"festejo-38","avatar-38":"festejo-34",
+  "avatar-39":"festejo-35","avatar-40":"festejo-32","avatar-41":"festejo-40"
+};
+function rtvFestejoParaAvatar(av,usados){
+  const directo=av&&RTV_AVATAR_FESTEJO[av];
+  if(directo)return directo;
+  const libres=RTV_FESTEJOS.filter(f=>!usados.includes(f));
+  const pool=libres.length?libres:RTV_FESTEJOS;
+  return pool[Math.floor(Math.random()*pool.length)];
 }
 function mostrarResultadosTV(){
   if(!S||!S.jug)return;
   const orden=S.jug.map((j,i)=>({j,i})).sort((a,b)=>b.j.tot-a.j.tot||b.j.rg-a.j.rg);
-  const festejos=rtvFestejosAlAzar(3);
+  const usadosFj=[];
   const pon=(idx,puesto)=>{
     const x=orden[puesto],lug=$("rtvLugar"+idx);
     if(!x){lug.style.display="none";return;}
     lug.style.display="flex";
     $("rtvNom"+idx).textContent=x.j.n;
     $("rtvMonto"+idx).textContent="$"+x.j.tot;
-    $("rtvFj"+idx).src="assets/festejos/"+festejos[puesto]+".webp";
+    const fj=rtvFestejoParaAvatar(x.j.av,usadosFj);
+    usadosFj.push(fj);
+    $("rtvFj"+idx).src="assets/festejos/"+fj+".webp";
   };
   pon(1,0);pon(2,1);pon(3,2);
   const resto=$("rtvResto");resto.innerHTML="";
