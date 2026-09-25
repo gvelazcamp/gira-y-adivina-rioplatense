@@ -795,6 +795,13 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 #capaRueda{position:fixed;inset:0;background:#160B24F5;display:none;z-index:15;
  place-items:center;align-content:center;gap:22px;padding:20px}
 #capaRueda.ver{display:grid}
+#capaBienvenidaTV{position:fixed;inset:0;background:#160B24F5;display:none;z-index:34;place-items:center;padding:16px}
+#capaBienvenidaTV.ver{display:grid}
+.bvtv-caja{position:relative;width:min(94vw,640px);aspect-ratio:1672/941;animation:entra .5s cubic-bezier(.2,1.4,.4,1)}
+.bvtv-caja img{width:100%;height:100%;display:block}
+.bvtv-btn{position:absolute;top:70.6%;height:13.8%;border:0;background:transparent;cursor:pointer;padding:0}
+.bvtv-btn-si{left:14.1%;width:37.8%}
+.bvtv-btn-no{left:54.1%;width:32%}
 #capaAnuncioTV{position:fixed;inset:0;background:#160B24F5;display:none;z-index:33;place-items:center;padding:20px}
 #capaAnuncioTV.ver{display:grid}
 .anuncio-tv-caja{text-align:center;animation:entra .5s cubic-bezier(.2,1.4,.4,1)}
@@ -1593,6 +1600,14 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   </div>
   <button class="no" id="tutoCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Entendido</button>
 </div></div>
+
+<div id="capaBienvenidaTV">
+  <div class="bvtv-caja">
+    <img src="assets/salatv-bienvenida.webp" alt="Bienvenidos a Girá y Adiviná Rioplatense - Sala TV">
+    <button type="button" class="bvtv-btn bvtv-btn-si" id="bBienvenidaTVJugar" aria-label="Jugar ahora"></button>
+    <button type="button" class="bvtv-btn bvtv-btn-no" id="bBienvenidaTVNo" aria-label="Ahora no"></button>
+  </div>
+</div>
 
 <div class="capa" id="capaSalaTVMenu"><div class="caja">
   <h2>📺 Sala TV / Familia</h2>
@@ -6052,13 +6067,23 @@ function emitirTVLobby(){if(modo==="tvhost")enviar({tipo:"tv_lobby",jugadores:fa
 function crearSalaTV(){
   modo="tvhost";miJug=-1;familiaJugadores=[];tvPartidaIniciada=false;S=null;
   sala=Array.from({length:4},()=>"ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[Math.floor(Math.random()*32)]).join("");
-  $("setup").style.display="none";$("tvLobby").style.display="block";document.body.classList.add("tv-lobby-bg");renderTVLobby();
+  $("setup").style.display="none";
+  $("capaBienvenidaTV").classList.add("ver");
   conectar(()=>{
     mq.subscribe(tema("tvaccion"));
     mq.on("message",(t,pl)=>{if(t===tema("tvaccion")){try{recibirTVHost(JSON.parse(pl.toString()));}catch(e){}}});
     $("tvEstado").textContent="Sala lista · esperando celulares…";renderTVLobby();
   },()=>{$("tvEstado").textContent="No se pudo conectar la Sala TV. Revisá internet e intentá de nuevo.";});
 }
+/* Cartel de bienvenida de Sala TV: aparece apenas el anfitrión crea la
+   sala, antes de ver el código y la lista de gente conectándose.
+   "Jugar ahora" revela la pantalla de siempre (código/link/lista);
+   "Ahora no" deshace la creación de la sala y vuelve al inicio. */
+$("bBienvenidaTVJugar").onclick=()=>{
+  $("capaBienvenidaTV").classList.remove("ver");
+  $("tvLobby").style.display="block";document.body.classList.add("tv-lobby-bg");renderTVLobby();
+};
+$("bBienvenidaTVNo").onclick=()=>{location.href=location.origin+location.pathname;};
 function unirseTV(cod){
   if(!cod||cod.length<4){$("estado").textContent="El código tiene 4 caracteres.";return;}
   const n=($("miNombre").value.trim()||"Jugador").slice(0,12);
