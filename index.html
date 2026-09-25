@@ -948,26 +948,37 @@ html.rueda-prueba-boreal .centro{background:radial-gradient(circle at 38% 30%,#E
 #modalFin{z-index:30}
 #capaSinVidas{z-index:35}
 #capaResultadosTV{z-index:32}
-.rtv-caja{max-width:480px;width:100%;position:relative;overflow:hidden;background:linear-gradient(160deg,var(--noche2),var(--noche));border:2px solid #F5B30155;border-radius:22px;padding:26px 18px 22px;text-align:center}
-.rtv-confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+#capaResultadosTV .rtv-caja{max-width:820px;width:100%;position:relative;overflow:hidden;background:linear-gradient(160deg,var(--noche2),var(--noche));border:2px solid #F5B30155;border-radius:22px;padding:14px 14px 20px;text-align:center}
+.rtv-confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:2}
 .rtv-confetti span{position:absolute;top:-10%;width:8px;height:14px;opacity:.9;border-radius:2px;animation:rtvCaer 3.2s linear infinite}
 @keyframes rtvCaer{0%{transform:translateY(-10%)}100%{transform:translateY(650%)}}
-.rtv-banner{position:relative;z-index:1;font-family:'Archivo Black',sans-serif;font-size:1.7rem;color:var(--oro);text-shadow:0 3px 0 #00000055;letter-spacing:.5px}
-.rtv-sub{position:relative;z-index:1;color:var(--crema);margin:2px 0 18px;font-weight:700}
-.rtv-podio{position:relative;z-index:1;display:flex;align-items:flex-end;justify-content:center;gap:8px;margin-bottom:14px}
-.rtv-lugar{display:flex;flex-direction:column;align-items:center;flex:1;min-width:0}
-.rtv-festejo{width:88px;height:auto;margin-bottom:2px;filter:drop-shadow(0 5px 7px #00000070);pointer-events:none;flex:0 0 auto}
-.rtv-lugar-1 .rtv-festejo{width:116px}
-.rtv-corona{font-size:1.6rem;margin-bottom:-6px}
-.rtv-pedestal{width:100%;border-radius:8px 8px 0 0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:6px;font-family:'Archivo Black',sans-serif;font-weight:900;color:var(--tinta)}
-.rtv-pedestal-num{flex:0 0 auto}
-.rtv-pedestal-1{height:104px;background:linear-gradient(160deg,#FFD65C,var(--oro));font-size:1.5rem}
-.rtv-pedestal-2{height:82px;background:linear-gradient(160deg,#D8D8E8,#9C9CB8);font-size:1.2rem}
-.rtv-pedestal-3{height:66px;background:linear-gradient(160deg,#E8B98C,#C88554);font-size:1.1rem}
-.rtv-placa{margin-top:auto;width:86%;background:var(--tinta);border-radius:6px;padding:4px 3px 5px;margin-bottom:7px}
-.rtv-nombre{font-weight:800;color:var(--crema);font-size:.7rem;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.rtv-lugar-1 .rtv-nombre{font-size:.78rem}
-.rtv-monto{color:var(--oro);font-weight:900;font-size:.72rem}
+/* Podio: foto fija de fondo (assets/salatv-resultados-fondo.webp, 1672x941) con
+   el festejo de cada jugador, la "costura" (un recorte de la misma foto que
+   tapa el borde inferior del festejo detrás del frente del podio) y el
+   nombre/plata superpuestos en % sobre esa foto — así el jugador queda
+   parado detrás del podio en vez de flotando delante. */
+.rtv-podio-foto{position:relative;z-index:1;width:100%;border-radius:14px;overflow:hidden;margin-bottom:10px}
+.rtv-podio-foto>img{width:100%;display:block}
+.rtv-fj{position:absolute;pointer-events:none;filter:drop-shadow(0 10px 14px #00000080)}
+.rtv-costura{position:absolute;display:block;pointer-events:none;width:auto}
+.rtv-placa-txt{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.rtv-placa-txt .rtv-nombre{flex:0 0 auto;color:var(--crema);font-weight:800;text-shadow:0 1px 3px #000;max-width:95%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rtv-placa-txt .rtv-monto{flex:0 0 auto;color:var(--oro);font-weight:900;text-shadow:0 1px 3px #000}
+.rtv-fj-2{left:32.9%;bottom:41%;height:26.6%;transform:translate(-50%,0)}
+.rtv-costura-2{left:26.02%;top:56.85%;width:13.46%;height:5.31%}
+.rtv-placa-2{left:27.2%;width:11.7%;top:69.6%;height:5.3%}
+.rtv-placa-2 .rtv-nombre{font-size:.92rem}
+.rtv-placa-2 .rtv-monto{font-size:.82rem}
+.rtv-fj-1{left:49%;bottom:47.4%;height:31.9%;transform:translate(-50%,0)}
+.rtv-costura-1{left:41.27%;top:51%;width:15.55%;height:5.31%}
+.rtv-placa-1{left:41.3%;width:15.2%;top:67%;height:6.9%}
+.rtv-placa-1 .rtv-nombre{font-size:1.08rem}
+.rtv-placa-1 .rtv-monto{font-size:.98rem}
+.rtv-fj-3{left:65.2%;bottom:38.15%;height:26.6%;transform:translate(-50%,0)}
+.rtv-costura-3{left:58.91%;top:59.72%;width:12.56%;height:5.31%}
+.rtv-placa-3{left:59.2%;width:12%;top:69.6%;height:5.3%}
+.rtv-placa-3 .rtv-nombre{font-size:.92rem}
+.rtv-placa-3 .rtv-monto{font-size:.82rem}
 .rtv-resto{position:relative;z-index:1;display:flex;flex-direction:column;gap:6px;margin-top:6px;max-height:160px;overflow-y:auto}
 .rtv-resto-fila{display:flex;align-items:center;gap:8px;background:#00000030;border-radius:10px;padding:6px 10px;text-align:left}
 .rtv-resto-fila .rtv-resto-puesto{color:#B49FCE;font-weight:800;font-size:.75rem;width:18px;flex:0 0 auto}
@@ -2037,30 +2048,22 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
 
 <div class="capa" id="capaResultadosTV"><div class="caja rtv-caja">
   <div class="rtv-confetti" id="rtvConfetti"></div>
-  <div class="rtv-banner">🎉 RESULTADOS</div>
-  <p class="sub rtv-sub">¡Qué buena partida!</p>
-  <div class="rtv-podio">
-    <div class="rtv-lugar rtv-lugar-2" id="rtvLugar2">
-      <img class="rtv-festejo" id="rtvFj2" src="" alt="">
-      <div class="rtv-pedestal rtv-pedestal-2">
-        <div class="rtv-pedestal-num">2</div>
-        <div class="rtv-placa"><div class="rtv-nombre" id="rtvNom2"></div><div class="rtv-monto" id="rtvMonto2"></div></div>
-      </div>
+  <div class="rtv-podio-foto">
+    <img src="assets/salatv-resultados-fondo.webp" alt="Resultados — ¡Qué buena partida!">
+    <div class="rtv-lugar" id="rtvLugar2">
+      <img class="rtv-fj rtv-fj-2" id="rtvFj2" src="" alt="">
+      <img class="rtv-costura rtv-costura-2" src="assets/salatv-resultados-costura-2.webp" alt="">
+      <div class="rtv-placa-txt rtv-placa-2"><div class="rtv-nombre" id="rtvNom2"></div><div class="rtv-monto" id="rtvMonto2"></div></div>
     </div>
-    <div class="rtv-lugar rtv-lugar-1" id="rtvLugar1">
-      <div class="rtv-corona">👑</div>
-      <img class="rtv-festejo" id="rtvFj1" src="" alt="">
-      <div class="rtv-pedestal rtv-pedestal-1">
-        <div class="rtv-pedestal-num">1</div>
-        <div class="rtv-placa"><div class="rtv-nombre" id="rtvNom1"></div><div class="rtv-monto" id="rtvMonto1"></div></div>
-      </div>
+    <div class="rtv-lugar" id="rtvLugar1">
+      <img class="rtv-fj rtv-fj-1" id="rtvFj1" src="" alt="">
+      <img class="rtv-costura rtv-costura-1" src="assets/salatv-resultados-costura-1.webp" alt="">
+      <div class="rtv-placa-txt rtv-placa-1"><div class="rtv-nombre" id="rtvNom1"></div><div class="rtv-monto" id="rtvMonto1"></div></div>
     </div>
-    <div class="rtv-lugar rtv-lugar-3" id="rtvLugar3">
-      <img class="rtv-festejo" id="rtvFj3" src="" alt="">
-      <div class="rtv-pedestal rtv-pedestal-3">
-        <div class="rtv-pedestal-num">3</div>
-        <div class="rtv-placa"><div class="rtv-nombre" id="rtvNom3"></div><div class="rtv-monto" id="rtvMonto3"></div></div>
-      </div>
+    <div class="rtv-lugar" id="rtvLugar3">
+      <img class="rtv-fj rtv-fj-3" id="rtvFj3" src="" alt="">
+      <img class="rtv-costura rtv-costura-3" src="assets/salatv-resultados-costura-3.webp" alt="">
+      <div class="rtv-placa-txt rtv-placa-3"><div class="rtv-nombre" id="rtvNom3"></div><div class="rtv-monto" id="rtvMonto3"></div></div>
     </div>
   </div>
   <div class="rtv-resto" id="rtvResto"></div>
