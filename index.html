@@ -8580,8 +8580,15 @@ function pintar(){
     setMonto(e.querySelector(".total"),j.tot,i,1);});
   if((modo==="tvhost"||tvPruebaBotsActiva)&&V.turno!==marcadorTurnoCentrado){
     marcadorTurnoCentrado=V.turno;
-    const activo=$("j"+V.turno);
-    if(activo)setTimeout(()=>activo.scrollIntoView({behavior:"smooth",inline:"center",block:"nearest"}),50);
+    /* Mueve SOLO el scroll horizontal interno de #marcador (nunca la
+       página): scrollIntoView podía arrastrar también el scroll de
+       contenedores ancestros, corriendo toda la pantalla del juego en
+       vez de solo la fila de jugadores. */
+    const activo=$("j"+V.turno),cont=$("marcador");
+    if(activo&&cont)setTimeout(()=>{
+      const destino=activo.offsetLeft-(cont.clientWidth-activo.offsetWidth)/2;
+      cont.scrollTo({left:destino,behavior:"smooth"});
+    },50);
   }
   const mio=esMiTurno()&&!animando&&V.fase!=="fin";
   const esToss=V.fase==="tossup",miToss=(modo==="local"?false:(!V.tossPausado&&!(V.tossBloq&&V.tossBloq[miJug])));
