@@ -5563,7 +5563,7 @@ function empezarDestino(i,paso){
     pasoActual===null?d.r:"Máquina",categoriasAlAzar(pasoActual===null?2:1),perfil.avatar||null,null,frameEquipado||null,null);
 }
 
-let botT=null,botTossT=null;
+let botT=null,botTossT=null,botTossReaccionT=null,botTossPensarT=null;
 
 /* ---- Perfil del jugador (nombre + avatar) ---- */
 const AVATARES=Array.from({length:21},(_,i)=>"avatar-"+String(i+1).padStart(2,"0")).concat(["avatar-33"]);
@@ -5836,35 +5836,66 @@ function jugarBot(){
   hostGirar();
 }
 
-/* El rival de mentira también tiene que intentar resolver en la Prueba de Velocidad;
-   antes no tenía ninguna lógica acá y por eso nunca respondía. */
+/* El rival de mentira también tiene que intentar resolver en la Prueba de Velocidad,
+   pero de forma humana: al arrancar CADA Toss-Up se sortea un plan privado
+   (S.botTossPlan) que define de entrada si esta vez "no la reconoce", "se apura",
+   "va normal" o "está bueno" — con su propio umbral de letras, precisión y tiempo
+   de reacción. Una vez sorteado el plan NO se vuelve a tirar una probabilidad
+   cada 500ms: solo se espera a que se cumpla el umbral y se ejecuta UNA reacción. */
+function generarBotTossPlan(){
+  const r=Math.random();
+  if(r<.30)return{perfil:"no_resuelve",agotado:true,intentos:0,maxIntentos:0,reaccionProgramada:false};
+  let perfil,umbralMin,umbralMax,precMin,precMax,reaccionMin,reaccionMax;
+  if(r<.45){perfil="apura";umbralMin=.58;umbralMax=.70;precMin=.35;precMax=.50;reaccionMin=700;reaccionMax=1600;}
+  else if(r<.80){perfil="normal";umbralMin=.72;umbralMax=.87;precMin=.60;precMax=.75;reaccionMin=700;reaccionMax=1500;}
+  else{perfil="bueno";umbralMin=.85;umbralMax=.96;precMin=.80;precMax=.90;reaccionMin=500;reaccionMax=1200;}
+  return{
+    perfil,
+    umbral:umbralMin+Math.random()*(umbralMax-umbralMin),
+    precision:precMin+Math.random()*(precMax-precMin),
+    reaccionMin,reaccionMax,
+    intentos:0,maxIntentos:1,
+    reaccionProgramada:false,agotado:false,segundoChanceUsada:false
+  };
+}
 function programarBotToss(){
   clearTimeout(botTossT);
   if(modo!=="bot"||!S||S.fase!=="tossup")return;
-  botTossT=setTimeout(jugarBotToss,500+Math.random()*700);
+  botTossT=setTimeout(jugarBotToss,220);
 }
 function jugarBotToss(){
   if(modo!=="bot"||!S||S.fase!=="tossup")return;
+  const plan=S.botTossPlan;
+  /* Sin plan (no debería pasar), agotado (ya intentó lo que tenía que intentar)
+     o con una reacción ya programada: no hay más nada que sondear cada 500ms. */
+  if(!plan||plan.agotado||plan.reaccionProgramada)return;
   if(S.tossPausado||animando){programarBotToss();return;}
   const totalPos=[...S.frase].filter(c=>c!==" ").length;
   const reveladas=S.tossPos?S.tossPos.size:0;
   const r=totalPos?reveladas/totalPos:0;
+  if(r<plan.umbral){programarBotToss();return;}
 
-  /* En un Toss-Up real la máquina no debería resolver perfecto por porcentaje.
-     Espera más letras, tiene una probabilidad gradual y puede apurarse. */
-  if(reveladas<Math.min(12,Math.ceil(totalPos*.62))){programarBotToss();return;}
-  const base=Math.max(0,(r-.62)/.35);
-  let chance=Math.min(.42,Math.pow(base,1.9)*.24);
-  if(r>=.88)chance=Math.max(chance,.22);
-  if(r>=.96)chance=Math.max(chance,.38);
-  if(Math.random()<chance&&pausarToss(1)){
-    const precision=Math.min(.82,.28+(r-.62)*1.15);
-    setTimeout(()=>{
-      if(S&&S.fase==="tossup"&&S.tossRespondedor===1)hostResolverToss(Math.random()<precision?S.frase:"",1);
-    },950+Math.random()*1800);
-    return;
-  }
-  programarBotToss();
+  /* Umbral del plan alcanzado: se programa UNA reacción con tiempo de
+     "humano pensando", no una tirada de dados nueva. */
+  plan.reaccionProgramada=true;
+  const espera=plan.reaccionMin+Math.random()*(plan.reaccionMax-plan.reaccionMin);
+  botTossReaccionT=setTimeout(()=>{
+    botTossReaccionT=null;
+    if(!S||S.fase!=="tossup")return;
+    if(S.tossPausado){
+      /* El jugador (u otro) apretó Resolver primero: tiene prioridad.
+         Posponemos la reacción de la máquina, no la cancelamos del todo. */
+      plan.reaccionProgramada=false;programarBotToss();return;
+    }
+    if(!pausarToss(1)){plan.reaccionProgramada=false;programarBotToss();return;}
+    botTossPensarT=setTimeout(()=>{
+      botTossPensarT=null;
+      if(!S||S.fase!=="tossup"||S.tossRespondedor!==1)return;
+      plan.intentos++;
+      const acierto=Math.random()<plan.precision;
+      hostResolverToss(acierto?S.frase:"",1);
+    },300+Math.random()*500);
+  },espera);
 }
 
 function renderTVLobby(){
@@ -6336,7 +6367,9 @@ function limpiarToss(){
   if(tossTimer){clearInterval(tossTimer);tossTimer=null;}
   if(tossRespuestaTimer){clearTimeout(tossRespuestaTimer);tossRespuestaTimer=null;}
   if(botTossT){clearTimeout(botTossT);botTossT=null;}
-  if(S){S.tossPausado=false;S.tossRespondedor=null;S.tossRestante=0;S.tossHastaProx=0;}
+  if(botTossReaccionT){clearTimeout(botTossReaccionT);botTossReaccionT=null;}
+  if(botTossPensarT){clearTimeout(botTossPensarT);botTossPensarT=null;}
+  if(S){S.tossPausado=false;S.tossRespondedor=null;S.tossRestante=0;S.tossHastaProx=0;S.botTossPlan=null;}
 }
 function arrancarIntervaloToss(){
   if(tossTimer)clearInterval(tossTimer);
@@ -6348,7 +6381,12 @@ function arrancarIntervaloToss(){
     while(S.tossOrden.length&&ahora>=S.tossProx){S.tossPos.add(S.tossOrden.shift());S.tossProx+=TOSS_PASO;cambio=true;}
     if(!S.tossOrden.length){
       if(!S.tossTodoDesde)S.tossTodoDesde=ahora;
-      if(ahora-S.tossTodoDesde>=1800){finTossTiempo();return;}
+      /* Si el bot ya tiene una reacción humana programada (esperando su
+         tiempo de "pensó, ahora responde"), no cortarla justo antes de que
+         se ejecute: se le da un margen más generoso y acotado, no infinito. */
+      const botEsperando=modo==="bot"&&S.botTossPlan&&!S.botTossPlan.agotado&&S.botTossPlan.reaccionProgramada&&!S.tossPausado;
+      const margen=botEsperando?3600:1800;
+      if(ahora-S.tossTodoDesde>=margen){finTossTiempo();return;}
     }
     if(ahora>=S.tossFin){finTossTiempo();return;}
     if(cambio)publicar("<b>PRUEBA DE VELOCIDAD</b> — mirá bien y resolvé cuando la sepas.");
@@ -6371,7 +6409,7 @@ function iniciarTossUp(f){
     ((destino!==null&&modo==="bot"?MUNDO[destino].n+" · ":"")+"⚡ Prueba de velocidad · "+f.c);
   publicar("<b>PRUEBA DE VELOCIDAD</b> — las letras aparecen solas. Resolvé antes de que se terminen los 20 segundos.");
   arrancarIntervaloToss();
-  if(modo==="bot")programarBotToss();
+  if(modo==="bot"){S.botTossPlan=generarBotTossPlan();programarBotToss();}
 }
 function pausarToss(jugador){
   if(!S||S.fase!=="tossup"||S.tossPausado)return false;
@@ -6409,6 +6447,10 @@ function finRespuestaToss(jugador){
   tossRespuestaTimer=null;
   if(tossRespondedor===jugador){$("modalResolver").classList.remove("ver");tossRespondedor=null;}
   if(modo==="bot"){
+    /* No debería pasar (la "reacción"+"pensamiento" del bot dura menos de
+       9s), pero si el timeout del bot se retrasó (pestaña en segundo plano,
+       etc.), no lo dejamos colgado esperando para siempre esta ronda. */
+    if(jugador===1&&S.botTossPlan)S.botTossPlan.agotado=true;
     reanudarToss("Se terminaron los <b>9 segundos para responder</b>. La prueba continúa.");
     return;
   }
@@ -6450,7 +6492,19 @@ function hostResolverToss(txt,jugador){
     bip(140,.35,"square",.07);
     if(modo==="bot"){
       const msg=(jugador===1)?"<b>"+S.jug[jugador].n+"</b> se apuró y no acertó. La prueba continúa.":"«"+txt.toUpperCase()+"» no era. La prueba continúa y podés volver a intentar.";
+      if(jugador===1&&S.botTossPlan){
+        const plan=S.botTossPlan;
+        /* Por defecto, un solo intento por Toss-Up. Una pequeña proporción de
+           los que fallaron puede tener un segundo intento, mucho más tarde
+           (umbral más alto), nunca por rubber-banding ni por el puntaje. */
+        if(!plan.segundoChanceUsada&&Math.random()<.15){
+          plan.segundoChanceUsada=true;plan.maxIntentos=2;
+          plan.umbral=Math.min(.97,plan.umbral+.10+Math.random()*.08);
+          plan.reaccionProgramada=false;
+        }else plan.agotado=true;
+      }
       reanudarToss(msg);
+      if(jugador===1)programarBotToss();
       return;
     }
     S.tossBloq[jugador]=true;
