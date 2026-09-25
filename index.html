@@ -563,15 +563,13 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 .pd-premio-preview .evento-card-marco{width:96px!important;height:96px!important}
 .pd-premio-preview .evento-card-premio-emoji{font-size:4rem}
 .pt-video-wrap{width:200px;height:200px;margin:0 auto 16px;display:grid;place-items:center}
-.pt-video-wrap canvas{width:100%;height:100%;filter:drop-shadow(0 8px 16px #000A)}
 #capaPromoTienda .caja{max-width:380px;overflow:hidden}
 #capaPromoTienda h2{margin-bottom:10px}
 #capaPromoTienda .pt-video-wrap{position:relative;width:min(50vw,190px)!important;
  max-width:190px!important;height:auto!important;aspect-ratio:1;margin:0 auto 10px!important;
- display:grid;place-items:center;overflow:hidden}
-#capaPromoTienda .pt-video-wrap video,
-#capaPromoTienda .pt-video-wrap canvas{position:absolute;inset:0;width:100%;height:100%;
- object-fit:contain;transform:scale(.84);transform-origin:center bottom;filter:drop-shadow(0 8px 16px #000A)}
+ display:grid;place-items:center;overflow:hidden;background:#fff;border-radius:12px}
+#capaPromoTienda .pt-video-wrap video{position:absolute;inset:0;width:100%;height:100%;
+ object-fit:contain;background:#fff}
 #capaPromoTienda .caja>p{position:relative;margin:4px 8px 14px;line-height:1.35}
 #capaPromoTienda .btn-grande,
 #capaPromoTienda .no{position:relative;z-index:2}
@@ -1539,9 +1537,8 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
 
 <div class="capa" id="capaPromoTienda"><div class="caja" style="max-width:380px">
   <h2>¡Mirá lo que tenemos!</h2>
-  <div class="pt-video-wrap" style="position:relative;width:100%;max-width:320px;aspect-ratio:1;margin:auto">
+  <div class="pt-video-wrap">
     <video id="ptVideo" src="assets/social/avatar-toxico-promo.mp4" poster="assets/avatars/avatar-27.webp" muted loop playsinline preload="metadata" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain"></video>
-    <canvas id="ptCanvas" width="320" height="320" style="position:relative;width:100%;display:none;pointer-events:none"></canvas>
   </div>
   <button class="no" id="ptReintentar" style="display:none;width:100%">▶ Reproducir video</button>
   <p>Avatares, marcos, tableros y sobres de colección te esperan en la Tienda.</p>
@@ -2566,8 +2563,8 @@ $("objLista").addEventListener("click",e=>{
 $("pdVamos").onclick=()=>{$("capaPartidaDiaria").classList.remove("ver");iniciarPartidaDiaria();};
 $("pdMasTarde").onclick=()=>{$("capaPartidaDiaria").classList.remove("ver");pdGuardarEstado("pospuesto");objActualizarBadge();ptChequearAutoPopup();};
 let ptVistaPrueba=false;
-$("ptIrTienda").onclick=()=>{$("capaPromoTienda").classList.remove("ver","pt-vista-prueba");ptDetenerChromaKey();if(!ptVistaPrueba){ptGuardarEstado("vista");}ptVistaPrueba=false;$("bTienda").click();};
-$("ptMasTarde").onclick=()=>{$("capaPromoTienda").classList.remove("ver","pt-vista-prueba");ptDetenerChromaKey();if(!ptVistaPrueba){ptGuardarEstado("vista");}ptVistaPrueba=false;};
+$("ptIrTienda").onclick=()=>{$("capaPromoTienda").classList.remove("ver","pt-vista-prueba");ptDetenerVideo();if(!ptVistaPrueba){ptGuardarEstado("vista");}ptVistaPrueba=false;$("bTienda").click();};
+$("ptMasTarde").onclick=()=>{$("capaPromoTienda").classList.remove("ver","pt-vista-prueba");ptDetenerVideo();if(!ptVistaPrueba){ptGuardarEstado("vista");}ptVistaPrueba=false;};
 $("bienvenidaTutorial").onclick=()=>{$("capaBienvenida").classList.remove("ver");iniciarTutorial();};
 function bienvenidaContinuarSinTutorial(){
   $("capaBienvenida").classList.remove("ver");
@@ -4736,7 +4733,7 @@ $("bMasOpciones").onclick=()=>{actualizarAccesoPruebas();$("capaMas").classList.
 $("bPruebas").onclick=()=>{$("capaPruebas").classList.add("ver");};
 $("bPruebaPunteros").onclick=iniciarPruebaPunteros;
 $("bPruebaAltaPerfil").onclick=()=>{$("capaPruebas").classList.remove("ver");$("capaMas").classList.remove("ver");previsualizarPerfilVacio();};
-$("bPruebaGiftTienda").onclick=()=>{if(!esGonzalo())return;ptVistaPrueba=true;$("capaPruebas").classList.remove("ver");$("capaMas").classList.remove("ver");$("capaPromoTienda").classList.add("pt-vista-prueba","ver");ptIniciarChromaKey();};
+$("bPruebaGiftTienda").onclick=()=>{if(!esGonzalo())return;ptVistaPrueba=true;$("capaPruebas").classList.remove("ver");$("capaMas").classList.remove("ver");$("capaPromoTienda").classList.add("pt-vista-prueba","ver");ptIniciarVideo();};
 $("pruebasCerrar").onclick=()=>$("capaPruebas").classList.remove("ver");
 $("bTutorial").onclick=()=>$("capaTutorial").classList.add("ver");
 $("tutoCerrar").onclick=()=>$("capaTutorial").classList.remove("ver");
@@ -8945,7 +8942,7 @@ $("fBoton").onclick=()=>{
       let revisar=false;try{revisar=new URLSearchParams(location.search).get("revisar")==="1";}catch(e){}
       if(revisar){
         setTimeout(()=>{$("capaBienvenida").classList.add("ver");},900);
-        setTimeout(()=>{$("capaPromoTienda").classList.add("ver");ptIniciarChromaKey();},4000);
+        setTimeout(()=>{$("capaPromoTienda").classList.add("ver");ptIniciarVideo();},4000);
         return;
       }
       /* Debug para previsualizar la pantalla de "nombre y avatar
@@ -8987,91 +8984,48 @@ function ptChequearAutoPopup(){
     if(document.hidden||$("setup").style.display==="none"||document.querySelector(".capa.ver")){
       ptPopupTimer=setTimeout(intentar,1500);return;
     }
-    $("capaPromoTienda").classList.add("ver");ptIniciarChromaKey();
+    $("capaPromoTienda").classList.add("ver");ptIniciarVideo();
   };
   ptPopupTimer=setTimeout(intentar,2800);
 }
-let ptRafId=null,ptFrameTimer=null,ptActivo=false,ptSesion=0;
-function ptDibujarFrameChroma(){
-  ptRafId=null;
-  if(!ptActivo)return;
-  if(!$("capaPromoTienda").classList.contains("ver")){ptDetenerChromaKey();return;}
-  const video=$("ptVideo"),canvas=$("ptCanvas");
-  try{if(video&&canvas&&video.readyState>=2){
-    const ctx=canvas.getContext("2d");
-    ctx.drawImage(video,0,0,canvas.width,canvas.height);
-    const frame=ctx.getImageData(0,0,canvas.width,canvas.height);
-    const d=frame.data;
-    for(let i=0;i<d.length;i+=4){
-      const minc=Math.min(d[i],d[i+1],d[i+2]);
-      if(minc>245)d[i+3]=0;
-      else if(minc>190)d[i+3]=Math.min(d[i+3],Math.round(255*(245-minc)/55));
-    }
-    /* El video en sí trae 1px de artefacto de codificación oscuro pegado
-       al borde superior (no es blanco, así que el chroma-key de arriba no
-       lo agarra) — se veía como una rayita fina arriba del personaje.
-       Se fuerza transparente directamente por posición, no por color. */
-    for(let x=0;x<canvas.width;x++)d[(x*4)+3]=0;
-    ctx.putImageData(frame,0,0);
-    clearTimeout(ptFrameTimer);ptFrameTimer=null;
-    canvas.style.display="block";video.style.opacity="0";
-    $("ptReintentar").style.display="none";
-  }}catch(e){ptMostrarVideoDirecto();return;}
-  ptProgramarSiguienteFrame();
-}
-/* requestAnimationFrame dispara ~60 veces por segundo sin importar si el
-   video ya mostró un frame nuevo o no — en un celular de gama media, repetir
-   el procesamiento por píxel (getImageData/putImageData) de más se siente
-   como que el video "traba" en vez de fluir. requestVideoFrameCallback
-   (cuando está disponible) redibuja justo cuando hay un frame nuevo del
-   video, ni más ni menos. */
-function ptProgramarSiguienteFrame(){
-  if(!ptActivo)return;
-  const video=$("ptVideo");
-  if(video&&typeof video.requestVideoFrameCallback==="function"){
-    ptRafId=video.requestVideoFrameCallback(ptDibujarFrameChroma);
-  }else{
-    ptRafId=requestAnimationFrame(ptDibujarFrameChroma);
-  }
-}
+// La animación conserva su fondo blanco original, sin procesar los píxeles.
+let ptFrameTimer=null,ptActivo=false,ptSesion=0;
 function ptMostrarVideoDirecto(){
-  ptDetenerChromaKey();
-  const video=$("ptVideo");
-  video.style.opacity="1";video.controls=true;
-  $("ptCanvas").style.display="none";
+  clearTimeout(ptFrameTimer);ptFrameTimer=null;
+  $("ptVideo").controls=true;
   $("ptReintentar").style.display="block";
 }
-function ptIniciarChromaKey(){
-  ptDetenerChromaKey();
+function ptIniciarVideo(){
+  ptDetenerVideo();
   const video=$("ptVideo");
   if(!video)return;
   const sesion=ptSesion;
-  ptActivo=true;video.muted=true;video.controls=false;video.style.opacity="1";
-  $("ptCanvas").style.display="none";$("ptReintentar").style.display="none";
+  ptActivo=true;video.muted=true;video.controls=false;
+  $("ptReintentar").style.display="none";
   try{video.currentTime=0;}catch(e){}
   ptFrameTimer=setTimeout(()=>{if(ptActivo&&sesion===ptSesion)ptMostrarVideoDirecto();},6000);
   try{
     const reproduccion=video.play();
     if(reproduccion)reproduccion.catch(()=>{if(ptActivo&&sesion===ptSesion)ptMostrarVideoDirecto();});
-    ptDibujarFrameChroma();
   }catch(e){ptMostrarVideoDirecto();}
 }
-function ptDetenerChromaKey(){
+function ptDetenerVideo(){
   ptActivo=false;ptSesion++;
   clearTimeout(ptFrameTimer);ptFrameTimer=null;
   const video=$("ptVideo");
-  if(ptRafId!==null){
-    if(video&&typeof video.cancelVideoFrameCallback==="function")video.cancelVideoFrameCallback(ptRafId);
-    else cancelAnimationFrame(ptRafId);
-  }
-  ptRafId=null;
   if(video)video.pause();
 }
 $("ptReintentar").onclick=()=>{
   const video=$("ptVideo");
   if(video.error)video.load();
-  ptIniciarChromaKey();
+  ptIniciarVideo();
 };
+$("ptVideo").addEventListener("playing",()=>{
+  if(!ptActivo)return;
+  clearTimeout(ptFrameTimer);ptFrameTimer=null;
+  $("ptVideo").controls=false;
+  $("ptReintentar").style.display="none";
+});
 $("ptVideo").addEventListener("error",()=>{if(ptActivo)ptMostrarVideoDirecto();});
 
 /* ---- Mostrar el cartel de instalación a los de iPhone la primera vez, sin que
