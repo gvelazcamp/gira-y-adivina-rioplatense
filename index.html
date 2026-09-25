@@ -7278,8 +7278,21 @@ function armarTeclado(){
   $("fichaSelector").style.display="none";
   $("ruedaSelector").style.display="none";
   $("punteroSelector").style.display="none";
-  $("tablero").classList.remove("con-marco");
-  $("tablero").style.backgroundImage="";
+  /* Antes acá se sacaba el marco del tablero (fichas más grandes, sin
+     marco) y recién con el primer pintar() se volvía a poner el marco
+     equipado (fichas más chicas para no salirse del tablero con el marco
+     puesto) — eso hacía que las fichas se vieran grandes un instante y
+     "achicaran" justo al arrancar la partida. Arrancamos directo con el
+     marco propio puesto (si el jugador tiene uno equipado) para evitar
+     ese salto de tamaño. */
+  const tableroEl=$("tablero");
+  if(tableroEquipado){
+    tableroEl.style.backgroundImage="url('assets/tableros/"+tableroEquipado+".webp')";
+    tableroEl.classList.add("con-marco");
+  }else{
+    tableroEl.style.backgroundImage="";
+    tableroEl.classList.remove("con-marco");
+  }
 }
 
 /* ---- Marcos de tablero: los básicos son gratis, los nuevos se compran
