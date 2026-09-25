@@ -2074,7 +2074,7 @@ const norm=s=>s.toUpperCase().normalize("NFD").replace(/[\u0300-\u0304\u0306-\u0
 let modo="local", miJug=0, mq=null, sala="", rondasElegidas=3, holaTimer=null, serie=[0,0], arranca=0, ultGanador=-1, racha=0, relojID=null, relojOculto=null;
 let mqInv=null, invPendiente=null;
 let familiaJugadores=[],tvPartidaIniciada=false,tvMiIndex=-1;
-let tvPruebaBotsActiva=false,tvPruebaBotT=null;
+let tvPruebaBotsActiva=false,tvPruebaBotT=null,tvPruebaWatchdogI=null;
 let tvId=(()=>{try{let x=sessionStorage.getItem("larueda_tv_id");if(!x){x="p"+Math.random().toString(36).slice(2,10);sessionStorage.setItem("larueda_tv_id",x);}return x;}catch(e){return "p"+Math.random().toString(36).slice(2,10);}})();
 let S=null, V={mask:"",cat:"",usadas:[],jug:[{n:"",tot:0,ronda:0},{n:"",tot:0,ronda:0}],turno:0,fase:"girar",hayVoc:true,cons:1,aviso:""};
 let giroActual=0, animando=false;
@@ -6376,6 +6376,16 @@ function tvComenzarPartidaConArranque(indiceArranca){
     tvPruebaBotsActiva=true;
     miJug=arranca;
     publicar("<b>Prueba Sala TV</b> — los jugadores ficticios juegan solos. Mirá el flujo completo.");
+    /* Watchdog: por si algún setTimeout de programarTVBotsPrueba se
+       pierde (pestaña en segundo plano, etc.), esto vuelve a
+       dispararlo cada 4s mientras la prueba siga activa — es
+       inofensivo llamarlo de más porque él mismo limpia su propio
+       timer antes de programar uno nuevo. */
+    clearInterval(tvPruebaWatchdogI);
+    tvPruebaWatchdogI=setInterval(()=>{
+      if(!tvPruebaBotsActiva){clearInterval(tvPruebaWatchdogI);tvPruebaWatchdogI=null;return;}
+      programarTVBotsPrueba();
+    },4000);
   }
 }
 function iniciarPruebaSalaTVBots(){
@@ -7299,7 +7309,7 @@ function ejecutarCompraPoderTV(id){
 }
 let poderPendienteConfirmar=null;
 function pedirConfirmacionPoder(id){
-  if(!PODERES[id])return;
+  if(tvPruebaBotsActiva||!PODERES[id])return;
   poderPendienteConfirmar=id;
   $("confirmPoderTxt").textContent="¿Usar "+PODERES[id].nombre+" por 🪙"+PODERES[id].precio+"?";
   $("confirmPoder").style.display="flex";
@@ -8158,6 +8168,7 @@ function eventoTiempoRestanteTxt(){
 function detenerPartidaAnterior(){
   matchToken++;botPausado=0;
   clearTimeout(botT);botT=null;clearTimeout(tvPruebaBotT);tvPruebaBotT=null;tvPruebaBotsActiva=false;
+  clearInterval(tvPruebaWatchdogI);tvPruebaWatchdogI=null;
   document.body.classList.remove("tv-prueba-bots");
   limpiarToss();limpiarBonus();pararReloj();
   animando=false;duckMusica(false);
@@ -8591,9 +8602,10 @@ function pintar(){
   if(enTutorial)tutorialTick();
 }
 
-$("bGirar").onclick=()=>{if(modo==="guest")enviar({a:"girar"});else hostGirar();};
-$("bVocal").onclick=()=>{if(modo==="guest")enviar({a:"vocal"});else hostVocal();};
+$("bGirar").onclick=()=>{if(tvPruebaBotsActiva)return;if(modo==="guest")enviar({a:"girar"});else hostGirar();};
+$("bVocal").onclick=()=>{if(tvPruebaBotsActiva)return;if(modo==="guest")enviar({a:"vocal"});else hostVocal();};
 function accionLetra(l){
+  if(tvPruebaBotsActiva)return;
   if(V&&V.hielo&&V.hielo[l]!==undefined){
     if(modo==="guest")enviar({a:"hielo_tap",l});else hostHieloTap(S.turno,l);
     return;
@@ -8601,6 +8613,7 @@ function accionLetra(l){
   if(modo==="guest")enviar({a:"letra",l});else hostLetra(l);
 }
 function abrirResolver(jugador){
+  if(tvPruebaBotsActiva)return;
   const esToss=V.fase==="tossup",esBonus=V.fase==="bonus_resolver"||V.fase==="bonus_elegir";
   tossRespondedor=(jugador===0||jugador===1)?jugador:null;
   if(esToss){
@@ -8644,6 +8657,7 @@ $("cancelar").onclick=()=>{
 };
 $("respuesta").addEventListener("keydown",e=>{if(e.key==="Enter")$("confirmar").click();});
 $("confirmar").onclick=()=>{
+  if(tvPruebaBotsActiva)return;
   const t=$("respuesta").value;
   if(!t.trim()){$("respuesta").focus();return;}
   $("modalResolver").classList.remove("ver");
