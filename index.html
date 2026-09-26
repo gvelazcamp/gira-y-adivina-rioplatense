@@ -2211,7 +2211,17 @@ function sonarSFX(id){
     a.currentTime=0;a.play().catch(()=>{});
   }catch(e){}
 }
+function hablarLetra(letra,veces){
+  try{
+    if(!("speechSynthesis" in window))return;
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance("Hay "+veces+" "+letra);
+    u.lang="es-UY";u.rate=1.05;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
 function cortarSFX(){
+  try{if("speechSynthesis" in window)speechSynthesis.cancel();}catch(e){}
   try{Object.values(audioSFX).forEach(a=>{if(!a.paused){a.pause();a.currentTime=0;}});}catch(e){}
 }
 function contextoMusicaActual(){
@@ -7499,7 +7509,7 @@ function hostGirar(){
       publicar("<b>x2</b> — la próxima consonante que aciertes paga doble. Volvé a girar.","x2");return;}
     bip(880,.12,"sine",.06);S.valor=s.v;
     S.fase="consonante";
-    publicar("Salió <b>$"+s.v+"</b>. "+S.jug[S.turno].n+" elige una consonante (quedan "+consRestantes()+" sin descubrir).");
+    publicar("Salió <b>$"+s.v+"</b>. "+S.jug[S.turno].n+" elige una consonante (quedan "+consRestantes()+" sin descubrir).","acierto");
   });
 }
 /* ---- Poderes: solo jugando contra otra persona (mismo celular, online 1v1 o Sala TV/Familia). NO en Uruguay solo. ---- */
@@ -7813,7 +7823,7 @@ function hostLetra(l){
     S.fase="girar";
     publicar("Hay <b>"+veces+"</b> «"+l+"». Sigue "+S.jug[S.turno].n+
       (consRestantes()===0?": no quedan consonantes, comprá una vocal o resolvé.":": girar, comprar vocal o resolver."),
-      !voc?"acierto":undefined);
+      "voz:"+l+":"+veces);
   }else if(S.jug[S.turno].comodin){
     bip(500,.2,"triangle",.06);
     S.jug[S.turno].comodin=false;
@@ -8726,6 +8736,7 @@ function efecto(f){
     },900);
   }
   if(f==="acierto")sonarSFX("aplausos");
+  if(f.indexOf("voz:")===0){const[,letra,veces]=f.split(":");hablarLetra(letra,veces);}
   if(f==="comodin"||f==="x2"){
     const t=document.querySelector(".tablero");
     t.classList.remove("bien");void t.offsetWidth;t.classList.add("bien");
