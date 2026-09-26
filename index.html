@@ -3998,7 +3998,7 @@ document.querySelectorAll(".tn-comprar").forEach(b=>{
       return;
     }
     if(!puedePagarMonedas(precio)||!tnPuedeComprar(tipo))return;
-    const notaEscudo=tipo.indexOf("escudo_")===0?" Se usa 1 por partida.":"";
+    const notaEscudo=tipo.indexOf("escudo_")===0?" 1 solo uso por compra.":"";
     $("confirmCompraTxt").textContent=(precio>0?"¿Comprar "+tnNombreItem(b)+" por 🪙 "+precio+"?":"¿Reclamar "+tnNombreItem(b)+" gratis?")+notaEscudo;
     $("confirmCompra").style.display="flex";
     $("confirmCompraSi").onclick=()=>{$("confirmCompra").style.display="none";tnEjecutarCompra(tipo,precio);};
