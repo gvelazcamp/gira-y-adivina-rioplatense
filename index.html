@@ -2325,8 +2325,15 @@ function dibujarRuedaJuego(){
   cx.clearRect(0,0,600,600);
   if(!conSkin){
     SEG.forEach((s,i)=>{const a0=i*paso;
+     const base=s.t?FONDO[s.t]:["#F5B301","#E5197C","#37D6C0","#7B3FE4","#F97316","#2DA8FF"][i%6];
      cx.beginPath();cx.moveTo(CENTRO,CENTRO);cx.arc(CENTRO,CENTRO,CENTRO,a0,a0+paso);cx.closePath();
-     cx.fillStyle=s.t?FONDO[s.t]:["#F5B301","#E5197C","#37D6C0","#7B3FE4","#F97316","#2DA8FF"][i%6];
+     /* Gajo con un degradé sutil (más claro cerca del centro) en vez de
+        color plano, para que la ruleta se vea siempre vívida y no
+        dependa de lo oscura que esté la pantalla del celular. */
+     const grad=cx.createRadialGradient(CENTRO,CENTRO,10,CENTRO,CENTRO,CENTRO);
+     grad.addColorStop(0,tvSombraHex(base,.35));
+     grad.addColorStop(1,base);
+     cx.fillStyle=grad;
      cx.fill();cx.strokeStyle="#160B24";cx.lineWidth=3;cx.stroke();
      const mid=a0+paso/2;
      cx.save();cx.translate(CENTRO,CENTRO);cx.rotate(mid);
