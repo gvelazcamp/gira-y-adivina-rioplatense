@@ -1473,7 +1473,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   </div>
   </div>
   <h3 class="tn-subtitulo" data-fijo="1">🛡️ Escudos de la ruleta</h3>
-  <p class="tn-desc-seccion" style="margin:-4px 0 10px;font-size:.78rem;color:#B49FCE">Solo sirven en Eventos y en ¡Jugar ahora!. Si tenés uno guardado, cuando caigas en Quiebra o Pierde turno vas a poder usarlo para salvarte. Se puede usar 1 por partida.</p>
+  <p class="tn-desc-seccion" style="margin:-4px 0 10px;font-size:.78rem;color:#B49FCE">Solo sirven en Eventos y en ¡Jugar ahora!. Si tenés uno guardado, cuando caigas en Quiebra o Pierde turno vas a poder usarlo para salvarte.</p>
   <div class="tn-grid">
   <div class="tn-item tn-card">
   <div class="tn-card-img">🛡️</div>
@@ -3998,7 +3998,8 @@ document.querySelectorAll(".tn-comprar").forEach(b=>{
       return;
     }
     if(!puedePagarMonedas(precio)||!tnPuedeComprar(tipo))return;
-    $("confirmCompraTxt").textContent=precio>0?"¿Comprar "+tnNombreItem(b)+" por 🪙 "+precio+"?":"¿Reclamar "+tnNombreItem(b)+" gratis?";
+    const notaEscudo=tipo.indexOf("escudo_")===0?" Se usa 1 por partida.":"";
+    $("confirmCompraTxt").textContent=(precio>0?"¿Comprar "+tnNombreItem(b)+" por 🪙 "+precio+"?":"¿Reclamar "+tnNombreItem(b)+" gratis?")+notaEscudo;
     $("confirmCompra").style.display="flex";
     $("confirmCompraSi").onclick=()=>{$("confirmCompra").style.display="none";tnEjecutarCompra(tipo,precio);};
     $("confirmCompraNo").onclick=()=>{$("confirmCompra").style.display="none";};
