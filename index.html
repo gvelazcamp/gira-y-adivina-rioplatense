@@ -576,14 +576,7 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 .pd-premio-preview .evento-card-img{width:100px;height:100px}
 .pd-premio-preview .evento-card-marco{width:96px!important;height:96px!important}
 .pd-premio-preview .evento-card-premio-emoji{font-size:4rem}
-.pt-video-wrap{width:200px;height:200px;margin:0 auto 16px;display:grid;place-items:center}
-#capaPromoTienda .caja{max-width:380px;overflow:hidden}
 #capaPromoTienda h2{margin-bottom:10px}
-#capaPromoTienda .pt-video-wrap{position:relative;width:min(50vw,190px)!important;
- max-width:190px!important;height:auto!important;aspect-ratio:1;margin:0 auto 10px!important;
- display:grid;place-items:center;overflow:hidden;background:#fff;border-radius:12px}
-#capaPromoTienda .pt-video-wrap video{position:absolute;inset:0;width:100%;height:100%;
- object-fit:contain;background:#fff}
 #capaPromoTienda .caja>p{position:relative;margin:4px 8px 14px;line-height:1.35}
 #capaPromoTienda .btn-grande,
 #capaPromoTienda .no{position:relative;z-index:2}
@@ -1641,16 +1634,22 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="no" id="pdMasTarde" style="width:100%;border-radius:12px;padding:12px;font-weight:700">Más tarde</button>
 </div></div>
 
-<div class="capa" id="capaPromoTienda"><div class="caja" style="max-width:380px">
-  <h2>¡Mirá lo que tenemos!</h2>
-  <div class="pt-video-wrap">
-    <video id="ptVideo" src="assets/social/avatar-toxico-promo.mp4" poster="assets/avatars/avatar-27.webp" muted loop playsinline preload="metadata" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain"></video>
+<div class="capa" id="capaPromoTienda"><div class="caja" style="max-width:340px;position:relative">
+  <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,#FFD65C,var(--oro));color:var(--tinta);font-weight:800;font-size:.75rem;letter-spacing:.04em;padding:6px 18px;border-radius:999px;box-shadow:0 3px 0 #B38600;white-space:nowrap">✨ ¡NUEVO!</div>
+  <div style="width:108px;height:108px;margin:18px auto 14px;border-radius:28px;background:radial-gradient(circle at 35% 30%,#7B3FE4,#3A1868 70%);display:flex;align-items:center;justify-content:center;font-size:3.4rem;box-shadow:0 8px 20px #00000055,inset 0 2px 0 #FFFFFF22">🛡️</div>
+  <h2>Escudos de la ruleta</h2>
+  <p>Comprálos en la Tienda y salvate cuando la ruleta caiga en <b>Quiebra</b> o <b>Pierde turno</b>.</p>
+  <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:18px">
+    <div style="display:flex;align-items:center;gap:10px;background:#00000033;border-radius:12px;padding:10px 14px;text-align:left">
+      <span style="font-size:1.3rem">🛡️</span><span style="font-size:.85rem"><b>Escudo Pierde Turno</b> — 🪙 750</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;background:#00000033;border-radius:12px;padding:10px 14px;text-align:left">
+      <span style="font-size:1.3rem">🛡️</span><span style="font-size:.85rem"><b>Escudo Quiebra</b> — 🪙 1250</span>
+    </div>
   </div>
-  <button class="no" id="ptReintentar" style="display:none;width:100%">▶ Reproducir video</button>
-  <p>Avatares, marcos, tableros y sobres de colección te esperan en la Tienda.</p>
   <button class="btn-grande cta-jugar" id="ptIrTienda" style="margin-bottom:10px">
     <span class="cta-play">🛍️</span>
-    <span class="cta-txt"><b>Ir a Tienda</b><small>Descubrí las novedades</small></span>
+    <span class="cta-txt"><b>Ir a Tienda</b><small>Comprar escudos ahora</small></span>
   </button>
   <button class="no" id="ptMasTarde" style="width:100%;border-radius:12px;padding:12px;font-weight:700">Más tarde</button>
 </div></div>
@@ -1687,7 +1686,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <div class="setup-menu">
     <button class="btn-grande sec" id="bPruebaPunteros"><span class="btn-ico">🎯</span><span class="btn-txt">Ruletas de prueba · 8 punteros</span></button>
     <button class="btn-grande sec" id="bPruebaAltaPerfil"><span class="btn-ico">👤</span><span class="btn-txt">Alta de usuario nuevo</span></button>
-    <button class="btn-grande sec" id="bPruebaGiftTienda"><span class="btn-ico">🎁</span><span class="btn-txt">Vista previa Gift de Tienda</span></button>
+    <button class="btn-grande sec" id="bPruebaGiftTienda"><span class="btn-ico">🛡️</span><span class="btn-txt">Vista previa Nuevo: Escudos</span></button>
     <button class="btn-grande sec" id="bPruebaSalaTVBots"><span class="btn-ico">📺</span><span class="btn-txt">Sala TV con bots ficticios</span></button>
     <button class="btn-grande sec" id="bPruebaEscudos"><span class="btn-ico">🛡️</span><span class="btn-txt">Escudos · siempre cae Quiebra/Pierde</span></button>
   </div>
@@ -2716,8 +2715,8 @@ $("objLista").addEventListener("click",e=>{
 $("pdVamos").onclick=()=>{$("capaPartidaDiaria").classList.remove("ver");iniciarPartidaDiaria();};
 $("pdMasTarde").onclick=()=>{$("capaPartidaDiaria").classList.remove("ver");pdGuardarEstado("pospuesto");objActualizarBadge();ptChequearAutoPopup();};
 let ptVistaPrueba=false;
-$("ptIrTienda").onclick=()=>{$("capaPromoTienda").classList.remove("ver","pt-vista-prueba");ptDetenerVideo();if(!ptVistaPrueba){ptGuardarEstado("vista");}ptVistaPrueba=false;$("bTienda").click();};
-$("ptMasTarde").onclick=()=>{$("capaPromoTienda").classList.remove("ver","pt-vista-prueba");ptDetenerVideo();if(!ptVistaPrueba){ptGuardarEstado("vista");}ptVistaPrueba=false;};
+$("ptIrTienda").onclick=()=>{$("capaPromoTienda").classList.remove("ver","pt-vista-prueba");if(!ptVistaPrueba){ptGuardarEstado("vista");}ptVistaPrueba=false;$("bTienda").click();};
+$("ptMasTarde").onclick=()=>{$("capaPromoTienda").classList.remove("ver","pt-vista-prueba");if(!ptVistaPrueba){ptGuardarEstado("vista");}ptVistaPrueba=false;};
 $("bienvenidaTutorial").onclick=()=>{$("capaBienvenida").classList.remove("ver");iniciarTutorial();};
 function bienvenidaContinuarSinTutorial(){
   $("capaBienvenida").classList.remove("ver");
@@ -5071,7 +5070,7 @@ $("bMasOpciones").onclick=()=>{actualizarAccesoPruebas();$("capaMas").classList.
 $("bPruebas").onclick=()=>{$("capaPruebas").classList.add("ver");};
 $("bPruebaPunteros").onclick=iniciarPruebaPunteros;
 $("bPruebaAltaPerfil").onclick=()=>{$("capaPruebas").classList.remove("ver");$("capaMas").classList.remove("ver");previsualizarPerfilVacio();};
-$("bPruebaGiftTienda").onclick=()=>{if(!esGonzalo())return;ptVistaPrueba=true;$("capaPruebas").classList.remove("ver");$("capaMas").classList.remove("ver");$("capaPromoTienda").classList.add("pt-vista-prueba","ver");ptIniciarVideo();};
+$("bPruebaGiftTienda").onclick=()=>{if(!esGonzalo())return;ptVistaPrueba=true;$("capaPruebas").classList.remove("ver");$("capaMas").classList.remove("ver");$("capaPromoTienda").classList.add("pt-vista-prueba","ver");};
 $("bPruebaSalaTVBots").onclick=iniciarPruebaSalaTVBots;
 $("bPruebaEscudos").onclick=iniciarPruebaEscudos;
 $("pruebasCerrar").onclick=()=>$("capaPruebas").classList.remove("ver");
@@ -9623,7 +9622,7 @@ $("fBoton").onclick=()=>{
       let revisar=false;try{revisar=new URLSearchParams(location.search).get("revisar")==="1";}catch(e){}
       if(revisar){
         setTimeout(()=>{$("capaBienvenida").classList.add("ver");},900);
-        setTimeout(()=>{$("capaPromoTienda").classList.add("ver");ptIniciarVideo();},4000);
+        setTimeout(()=>{$("capaPromoTienda").classList.add("ver");},4000);
         return;
       }
       /* Debug para previsualizar la pantalla de "nombre y avatar
@@ -9665,49 +9664,10 @@ function ptChequearAutoPopup(){
     if(document.hidden||$("setup").style.display==="none"||document.querySelector(".capa.ver")){
       ptPopupTimer=setTimeout(intentar,1500);return;
     }
-    $("capaPromoTienda").classList.add("ver");ptIniciarVideo();
+    $("capaPromoTienda").classList.add("ver");
   };
   ptPopupTimer=setTimeout(intentar,2800);
 }
-// La animación conserva su fondo blanco original, sin procesar los píxeles.
-let ptFrameTimer=null,ptActivo=false,ptSesion=0;
-function ptMostrarVideoDirecto(){
-  clearTimeout(ptFrameTimer);ptFrameTimer=null;
-  $("ptVideo").controls=true;
-  $("ptReintentar").style.display="block";
-}
-function ptIniciarVideo(){
-  ptDetenerVideo();
-  const video=$("ptVideo");
-  if(!video)return;
-  const sesion=ptSesion;
-  ptActivo=true;video.muted=true;video.controls=false;
-  $("ptReintentar").style.display="none";
-  try{video.currentTime=0;}catch(e){}
-  ptFrameTimer=setTimeout(()=>{if(ptActivo&&sesion===ptSesion)ptMostrarVideoDirecto();},6000);
-  try{
-    const reproduccion=video.play();
-    if(reproduccion)reproduccion.catch(()=>{if(ptActivo&&sesion===ptSesion)ptMostrarVideoDirecto();});
-  }catch(e){ptMostrarVideoDirecto();}
-}
-function ptDetenerVideo(){
-  ptActivo=false;ptSesion++;
-  clearTimeout(ptFrameTimer);ptFrameTimer=null;
-  const video=$("ptVideo");
-  if(video)video.pause();
-}
-$("ptReintentar").onclick=()=>{
-  const video=$("ptVideo");
-  if(video.error)video.load();
-  ptIniciarVideo();
-};
-$("ptVideo").addEventListener("playing",()=>{
-  if(!ptActivo)return;
-  clearTimeout(ptFrameTimer);ptFrameTimer=null;
-  $("ptVideo").controls=false;
-  $("ptReintentar").style.display="none";
-});
-$("ptVideo").addEventListener("error",()=>{if(ptActivo)ptMostrarVideoDirecto();});
 
 /* ---- Mostrar el cartel de instalación a los de iPhone la primera vez, sin que
    tengan que encontrar el botón "Instalar" solos ---- */
