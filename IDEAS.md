@@ -1,5 +1,22 @@
 # Ideas a futuro
 
+## PENDIENTE — Ocultar Sala TV del menú temporalmente
+
+Plan de Gonzalo, **solo hasta que se solucione el tema de Sala TV**
+(no es un cambio permanente):
+
+- Ocultar la tarjeta grande "Sala TV / Familia" (`bTV`) del menú
+  principal mientras el problema sigue sin resolver.
+- Pasar **Social** (hoy en la fila chica de abajo: Ruleta, Ranking,
+  Objetivos, Social) al lugar que deja libre Sala TV, como tarjeta
+  grande.
+- Pasar **Logros** (hoy escondido dentro de otro menú, botón `bLogros`)
+  al lugar que deja libre Social en la fila chica.
+- Cuando se resuelva lo de Sala TV, volver todo para atrás (reaparece
+  Sala TV, Social y Logros vuelven a como estaban).
+
+No implementado todavía — Gonzalo pidió guardarlo acá primero.
+
 ## PENDIENTE — Terminar app de Android TV (retomar el lunes en una PC)
 
 Ya está la parte que se podía hacer sin una compu con internet normal.
