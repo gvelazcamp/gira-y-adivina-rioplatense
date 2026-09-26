@@ -3998,7 +3998,12 @@ document.querySelectorAll(".tn-comprar").forEach(b=>{
       return;
     }
     if(!puedePagarMonedas(precio)||!tnPuedeComprar(tipo))return;
-    const notaEscudo=tipo.indexOf("escudo_")===0?" 1 solo uso por compra.":"";
+    const CAMPO_ESCUDO={escudo_pierde:"escudosPierde",escudo_quiebra:"escudosQuiebra",escudo_tiempo:"escudosTiempo",escudo_toss:"escudosToss"};
+    let notaEscudo="";
+    if(CAMPO_ESCUDO[tipo]){
+      const stock=meta[CAMPO_ESCUDO[tipo]]||0;
+      notaEscudo=stock>0?" Ya tenés "+stock+" guardado"+(stock===1?"":"s")+" — se activa 1 por partida.":" Se activa 1 por partida.";
+    }
     $("confirmCompraTxt").textContent=(precio>0?"¿Comprar "+tnNombreItem(b)+" por 🪙 "+precio+"?":"¿Reclamar "+tnNombreItem(b)+" gratis?")+notaEscudo;
     $("confirmCompra").style.display="flex";
     $("confirmCompraSi").onclick=()=>{$("confirmCompra").style.display="none";tnEjecutarCompra(tipo,precio);};
