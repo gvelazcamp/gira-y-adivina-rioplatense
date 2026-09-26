@@ -2211,6 +2211,9 @@ function sonarSFX(id){
     a.currentTime=0;a.play().catch(()=>{});
   }catch(e){}
 }
+function cortarSFX(){
+  try{Object.values(audioSFX).forEach(a=>{if(!a.paused){a.pause();a.currentTime=0;}});}catch(e){}
+}
 function contextoMusicaActual(){
   if($("modalFin").classList.contains("ver"))return musicaCompartida?"menu":"bonus";
   musicaCompartida=false;
@@ -2380,6 +2383,7 @@ function animarRueda(destino,alFinal){
   animando=true;pintar();
   $("salioGiro").textContent="Girando…";
   $("capaRueda").classList.add("ver");
+  cortarSFX();
   sonarRuletaGiro();
   duckMusica(true);
   const paso=360/SEG.length,ini=giroActual,dur=4200,t0=performance.now();
