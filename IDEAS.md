@@ -1,5 +1,43 @@
 # Ideas a futuro
 
+## PENDIENTE — Terminar app de Android TV (retomar el lunes en una PC)
+
+Ya está la parte que se podía hacer sin una compu con internet normal.
+Falta terminar el build desde una PC (el entorno de esta sesión tiene
+bloqueado el acceso a los servidores de Android, así que no se pudo
+compilar el archivo final acá).
+
+**Ya hecho:**
+- En el juego (ya en producción): parámetro `?tvhost=1` — abre la web
+  directo como anfitrión de Sala TV, sin pasar por el menú (pensado
+  para un dispositivo sin pantalla táctil).
+- Repo nuevo `gvelazcamp/gira-y-adivina-tv` con `twa-manifest.json` ya
+  configurado (apunta a esa URL) y un `README.md` con los pasos
+  exactos para terminarlo.
+
+**Falta (desde una PC con internet normal, siguiendo el README del
+repo `gira-y-adivina-tv`):**
+1. Instalar Node.js, correr `bubblewrap init` con el manifest del
+   juego, y `bubblewrap build` — genera el proyecto Android completo y
+   el `.aab`.
+2. Editar a mano el `AndroidManifest.xml` generado para agregar
+   soporte de TV (`android.software.leanback`, marcar
+   `android.hardware.touchscreen` como no obligatorio, agregar el
+   segundo `intent-filter` con `LEANBACK_LAUNCHER`, y el banner de
+   320×180px) — Bubblewrap no lo hace solo, hay que agregarlo.
+3. Decidir: ¿app nueva (`packageId` nuevo, más simple, no necesita el
+   keystore original) o la misma app ya publicada (necesita el
+   keystore original, que no está guardado en ningún repo)?
+4. Subir el `.aab` a Play Console, probar en un emulador de Android TV
+   o una tele real antes de mandar a producción.
+
+Contexto: la razón de todo esto es poder tener el juego como app
+instalable en la Play Store de la TV (hoy no aparece ahí porque el
+paquete actual no está armado para TV). Mientras tanto, ya se puede
+jugar en la tele hoy mismo abriendo el navegador de la TV y usando
+Sala TV — eso no necesita nada de lo de arriba.
+
+
 Borrador de cosas pensadas para más adelante — nada de esto está
 empezado ni decidido en firme, es una lista para no perder la idea.
 Cuando se decida hacer alguna, se saca de acá y se hace de verdad.
