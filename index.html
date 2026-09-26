@@ -2215,7 +2215,7 @@ function hablarLetra(letra,veces){
   try{
     if(!("speechSynthesis" in window))return;
     speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance((veces==="1"?"Una":veces)+" "+letra);
+    const u=new SpeechSynthesisUtterance("Hay "+(veces==="1"?"una":veces)+" "+letra);
     u.lang="es-ES";u.rate=1.05;
     speechSynthesis.speak(u);
   }catch(e){}
