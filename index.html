@@ -1683,7 +1683,8 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <div class="tuto-item"><span class="tuto-ico">📺</span><div><b>Sala TV / Familia</b><p>Para jugar todos juntos: una pantalla grande hace de tablero y cada uno juega desde su celular.</p></div></div>
     <div class="tuto-item"><span class="tuto-ico">🏆</span><div><b>Ranking de amigos</b><p>Elegís un apodo y quedás en una tabla junto a todos los que compartan tu mismo grupo.</p></div></div>
   </div>
-  <button class="no" id="tutoCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Entendido</button>
+  <button class="ok" id="tutoHacerGuiado" style="width:100%;border-radius:14px;padding:13px;font-weight:800;margin-top:10px">▶️ Completar tutorial</button>
+  <button class="no" id="tutoCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:8px">Entendido</button>
 </div></div>
 
 <div id="capaBienvenidaTV">
@@ -2773,8 +2774,10 @@ function tutorialTick(){
 }
 let tutRecienTerminado=false,tutorialUsuarioNuevo=false;
 function iniciarTutorial(){
+  detenerPartidaAnterior();
   tutorialUsuarioNuevo=!perfilExiste();
   $("capaBienvenida").classList.remove("ver");
+  $("capaTutorial").classList.remove("ver");
   ptGuardarEstado("vista");
   destino=null;pasoActual=null;modo="bot";miJug=0;vinoDeJugarOnline=false;esPartidaDiaria=false;
   rondasElegidas=1;
@@ -4972,6 +4975,7 @@ $("bPruebaSalaTVBots").onclick=iniciarPruebaSalaTVBots;
 $("pruebasCerrar").onclick=()=>$("capaPruebas").classList.remove("ver");
 $("bTutorial").onclick=()=>$("capaTutorial").classList.add("ver");
 $("tutoCerrar").onclick=()=>$("capaTutorial").classList.remove("ver");
+$("tutoHacerGuiado").onclick=iniciarTutorial;
 $("masCerrar").onclick=()=>$("capaMas").classList.remove("ver");
 $("capaMas").addEventListener("click",e=>{
   const b=e.target.closest("button");
