@@ -2751,7 +2751,10 @@ function mundoActualizarHud(){
   if($("setupVidas")){$("setupVidas").innerHTML=vidasInfinitasActivas()?"❤️ <b>∞</b>":"❤️ <b>"+meta.vidas+"</b>";$("setupVidas").title=vidasInfinitasActivas()?"Vidas infinitas · "+textoVidasInfinitas():"";}
   if($("setupMonedas"))$("setupMonedas").innerHTML="🪙 <b>"+meta.monedas+"</b> monedas";
   if($("setupRacha"))$("setupRacha").innerHTML="🔥 <b>"+meta.diaRacha+"</b>";
-  if($("bTorneosBadge"))$("bTorneosBadge").textContent="🎟️ "+(meta.ticketsTorneo||0);
+  if($("bTorneosBadge")){
+    const tk=meta.ticketsTorneo||0;
+    $("bTorneosBadge").textContent=tk>=TORNEO_TICKETS_ENTRADA?"✅":"🎟️ "+tk+"/"+TORNEO_TICKETS_ENTRADA;
+  }
 }
 function fechaHoy(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
 /* Partida Diaria: 1 partida de 3 rondas por día contra la máquina;
