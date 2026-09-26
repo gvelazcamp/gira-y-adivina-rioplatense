@@ -1485,6 +1485,16 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <div class="tn-card-info"><b>Escudo Quiebra</b><span>Te salva de perder la plata</span></div>
   <button class="tn-comprar" data-tipo="escudo_quiebra" data-precio="1250" data-nombre="Escudo Quiebra">🪙 1250</button>
   </div>
+  <div class="tn-item tn-card">
+  <div class="tn-card-img">🛡️</div>
+  <div class="tn-card-info"><b>Escudo Detener Tiempo</b><span>Resolvé sin límite de tiempo</span></div>
+  <button class="tn-comprar" data-tipo="escudo_tiempo" data-precio="1400" data-nombre="Escudo Detener Tiempo">🪙 1400</button>
+  </div>
+  <div class="tn-item tn-card">
+  <div class="tn-card-img">🛡️</div>
+  <div class="tn-card-info"><b>Escudo Saltar Prueba</b><span>Te saltea la Prueba de Velocidad</span></div>
+  <button class="tn-comprar" data-tipo="escudo_toss" data-precio="1400" data-nombre="Escudo Saltar Prueba">🪙 1400</button>
+  </div>
   </div>
   <h3 class="tn-subtitulo tn-abre-lista" data-fijo="1" id="tituloAvatares">🧑‍🎤 Avatares premium 🔻</h3>
   <div class="frame-grid" id="avatarPremiumGrid"></div>
@@ -2128,6 +2138,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <h2>Decí la frase</h2>
   <p>Si acertás te llevás la plata de la ronda. Si errás, pasa el turno.</p>
   <div class="reloj" id="relojModal" style="margin-bottom:10px"><i id="relojBarraModal"></i><span id="relojNumModal">25</span></div>
+  <button class="no" id="bEscudoTiempo" style="display:none;width:100%;border-radius:12px;padding:11px;font-weight:700;margin-bottom:10px">🛡️ Usar escudo: sin límite de tiempo</button>
   <input id="respuesta" placeholder="escribí la frase completa" autocomplete="off">
   <div class="fila"><button class="no" id="cancelar">Volver</button><button class="ok" id="confirmar">Responder</button></div>
 </div></div>
@@ -3965,6 +3976,12 @@ function tnEjecutarCompra(tipo,precio){
   }else if(tipo==="escudo_quiebra"){
     meta.escudosQuiebra=(meta.escudosQuiebra||0)+1;
     mostrarToast("🛡️","+1 Escudo Quiebra");
+  }else if(tipo==="escudo_tiempo"){
+    meta.escudosTiempo=(meta.escudosTiempo||0)+1;
+    mostrarToast("🛡️","+1 Escudo Detener Tiempo");
+  }else if(tipo==="escudo_toss"){
+    meta.escudosToss=(meta.escudosToss||0)+1;
+    mostrarToast("🛡️","+1 Escudo Saltar Prueba");
   }
   guardarMeta();
   tnActualizar();mundoActualizarHud();rwActualizarBadge();
@@ -5104,6 +5121,7 @@ function iniciarPruebaEscudos(){
   destino=null;pasoActual=null;fSiguientePaso=null;vinoDeJugarOnline=false;modoVelocidadElegido=false;
   enTorneo=false;
   meta.escudosPierde=(meta.escudosPierde||0)+10;meta.escudosQuiebra=(meta.escudosQuiebra||0)+10;
+  meta.escudosTiempo=(meta.escudosTiempo||0)+10;meta.escudosToss=(meta.escudosToss||0)+10;
   guardarMeta();mundoActualizarHud();
   modo="bot";miJug=0;rondasElegidas=3;arranca=0;
   $("capaMas").classList.remove("ver");$("capaPruebas").classList.remove("ver");$("setup").style.display="none";$("eventos").style.display="none";
@@ -7190,7 +7208,7 @@ function iniciarPartida(n1,n2,cats,av1,av2,frame1,frame2,tab1,tab2){
 }
 function nuevaRonda(){
   if($("modalSobreConseguido").classList.contains("ver")){accionTrasSobre=nuevaRonda;return;}
-  limpiarToss();
+  limpiarToss();escudoTiempoActivoTurno=false;
 
   // Secuencia de pareja / Mundo Uruguay:
   // 3 rondas => Normal, Normal, Toss-Up, Normal, Bonus.
@@ -7205,6 +7223,7 @@ function nuevaRonda(){
     S.frase=fToss.t;S.catRaw=fToss.c;
     S.abiertas=new Set();S.usadas=new Set();S.pistaPos=new Set();S.poderRondaId=(S.poderRondaId||0)+1;
     S.jug.forEach(j=>{j.ronda=0;j.comodin=false;j.hielo={};j.lodo=false;j.escudo=false;j.poderesRonda=[];j.poderUsadoTurno=false;});S.valor=0;S.doble=false;S.pistaUsada=false;
+    if(quierePreguntarEscudoToss()){mostrarConfirmEscudoToss(fToss);return;}
     iniciarTossUp(fToss);
     return;
   }
@@ -7591,6 +7610,7 @@ const BILLETE='<svg viewBox="0 0 28 18" aria-hidden="true"><rect x="1" y="1" wid
 let fxN=0;
 function pararReloj(){if(relojID){clearInterval(relojID);relojID=null;}if(S)S.tFin=0;}
 function arrancarReloj(){
+  if(escudoTiempoActivoTurno){pararReloj();return;}
   S.tFin=Date.now()+25000;
   if(relojID)clearInterval(relojID);
   relojID=setInterval(()=>{
@@ -7616,8 +7636,8 @@ function publicar(txt,fx,mantenerReloj){
   const vivo=(S.fase==="girar"||S.fase==="consonante"||S.fase==="vocal"||S.fase==="lodo")&&!animando&&!enTutorial&&!enPruebaPunteros;
   if(vivo){if(!mantenerReloj)arrancarReloj();}else pararReloj();
   const tossMs=esToss?(S.tossPausado?Math.max(0,(S.tossRespuestaFin||Date.now())-Date.now()):Math.max(0,S.tossFin-Date.now())):0;
-  V.seg=esToss?Math.max(1,Math.ceil(tossMs/1000)):
-    (esBonusReloj?Math.max(1,Math.ceil((S.bonusFin-Date.now())/1000)):(vivo?Math.max(1,Math.round((S.tFin-Date.now())/1000)):0));
+  V.seg=escudoTiempoActivoTurno?0:(esToss?Math.max(1,Math.ceil(tossMs/1000)):
+    (esBonusReloj?Math.max(1,Math.ceil((S.bonusFin-Date.now())/1000)):(vivo?Math.max(1,Math.round((S.tFin-Date.now())/1000)):0)));
   V.relojMax=esToss?(S.tossPausado?Math.ceil(TOSS_RESPUESTA_DURACION/1000):15):(esBonusReloj?(modo==="tvhost"?Math.ceil(BONUS_TV_DURACION/1000):10):25);
   if(modo==="bot")setTimeout(programarBot,0);
   if(tvPruebaBotsActiva)setTimeout(programarTVBotsPrueba,0);
@@ -7632,6 +7652,7 @@ function publicar(txt,fx,mantenerReloj){
 let pruebaEscudosForzar=false;
 let pruebaChatForzar=false;
 let escudoTiendaUsadoEnPartida=false;
+let escudoTiempoUsadoEnPartida=false,escudoTiempoActivoTurno=false,escudoTossUsadoEnPartida=false;
 function escudosDisponiblesAqui(){
   if(pruebaEscudosForzar)return true;
   return esEventoCiudad||(modo==="bot"&&destino!==null&&!enTorneo&&!vinoDeJugarOnline);
@@ -7667,6 +7688,31 @@ function mostrarConfirmEscudo(cual){
       publicar("<b>Pierde turno</b> — pasa al siguiente jugador.","pierde");
       setTimeout(tk(cambiarTurno),1600);
     }
+  };
+}
+function quierePreguntarEscudoToss(){
+  if(!S||!escudosDisponiblesAqui()||escudoTossUsadoEnPartida)return false;
+  return(meta.escudosToss||0)>0;
+}
+function mostrarConfirmEscudoToss(fToss){
+  const cant=meta.escudosToss;
+  $("confirmEscudoTxt").innerHTML="Arranca una <b>Prueba de Velocidad</b>. Tenés <b>"+cant+" 🛡️</b>. ¿Usar el escudo y saltearla?"+
+    "<br><small style='opacity:.75'>Si lo usás, te quedan: <s>"+cant+"</s> → "+(cant-1)+" 🛡️. Nadie juega esa prueba, se pasa directo a la siguiente ronda.</small>"+
+    "<br><small style='opacity:.6'>Se puede usar 1 escudo por partida.</small>";
+  $("confirmEscudo").style.display="flex";
+  $("confirmEscudoSi").onclick=()=>{
+    $("confirmEscudo").style.display="none";
+    meta.escudosToss--;escudoTossUsadoEnPartida=true;
+    guardarMeta();mundoActualizarHud();
+    bip(1046,.16,"sine",.07);
+    S.ronda++;
+    S.cat=(destino!==null&&modo==="bot"?MUNDO[destino].n+" · ":"")+"Ronda "+S.ronda+" de "+S.rondas+" · "+fToss.c;
+    S.fase="girar";
+    publicar("🛡️ Salteaste la Prueba de Velocidad con un escudo. Le toca a <b>"+S.jug[S.turno].n+"</b>.");
+  };
+  $("confirmEscudoNo").onclick=()=>{
+    $("confirmEscudo").style.display="none";
+    iniciarTossUp(fToss);
   };
 }
 function hostGirar(){
@@ -8067,6 +8113,7 @@ function cambiarTurno(){
      timer atrasado llega a dispararse durante una Toss-Up (u otra fase que
      no pasa turno así), no tiene que pisar esa fase. */
   if(!S||S.fase==="tossup"||S.fase==="toss_fin"||S.fase==="bonus_elegir"||S.fase==="bonus_resolver")return;
+  escudoTiempoActivoTurno=false;
   if(enPruebaPunteros){S.turno=miJug;S.fase="girar";S.valor=0;S.doble=false;publicar("<b>Modo Spin</b> — seguí girando sin límite.");return;}
   S.turno=(S.turno+1)%S.jug.length;S.fase="girar";S.valor=0;S.doble=false;
   S.jug[S.turno].poderUsadoTurno=false;
@@ -8762,6 +8809,7 @@ function eventoTiempoRestanteTxt(){
 // Invalida callbacks de la partida anterior y detiene sus temporizadores.
 function detenerPartidaAnterior(){
   matchToken++;botPausado=0;pruebaEscudosForzar=false;pruebaChatForzar=false;escudoTiendaUsadoEnPartida=false;
+  escudoTiempoUsadoEnPartida=false;escudoTiempoActivoTurno=false;escudoTossUsadoEnPartida=false;
   clearTimeout(botT);botT=null;clearTimeout(tvPruebaBotT);tvPruebaBotT=null;tvPruebaBotsActiva=false;
   clearInterval(tvPruebaWatchdogI);tvPruebaWatchdogI=null;
   /* Si venías de Sala TV (real o de prueba) y arrancás otro modo (Mundo,
@@ -9274,8 +9322,18 @@ function abrirResolver(jugador){
     ((tossRespondedor!==null&&V.jug[tossRespondedor])?V.jug[tossRespondedor].n+", el tablero está congelado. Tenés 9 segundos para escribir la frase completa.":"Tenés 9 segundos para escribir la frase completa."):
     (esBonus?(V.fase==="bonus_resolver"?"Tenés 10 segundos frescos para escribir. ":"")+"Si acertás ganás $"+BONUS_PREMIO+" extra. Si errás, perdés la Ronda Bonus — no hay segundo intento.":"Si acertás te llevás la plata de la ronda. Si errás, pasa el turno. Tenés 25 segundos frescos para escribir.");
   $("modalResolver").classList.add("ver");$("respuesta").value=enTutorial?TUT_FRASE:"";$("respuesta").focus();
+  const puedeEscudoTiempo=!esToss&&!esBonus&&escudosDisponiblesAqui()&&(meta.escudosTiempo||0)>0&&!escudoTiempoUsadoEnPartida&&!escudoTiempoActivoTurno;
+  $("bEscudoTiempo").style.display=puedeEscudoTiempo?"block":"none";
   if(enTutorial)tutOcultarSpotlight();
 }
+$("bEscudoTiempo").onclick=()=>{
+  if(!S||(meta.escudosTiempo||0)<=0)return;
+  meta.escudosTiempo--;escudoTiempoUsadoEnPartida=true;escudoTiempoActivoTurno=true;
+  guardarMeta();mundoActualizarHud();
+  bip(1046,.16,"sine",.07);
+  pararReloj();V.seg=0;pintarTodo();
+  $("bEscudoTiempo").style.display="none";
+};
 $("bResolver").onclick=()=>{
   if(V.fase==="tossup")abrirResolver(modo==="guest"?1:0);
   else abrirResolver(null);
