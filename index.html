@@ -701,6 +701,8 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 .mini-card .rw-badge{position:absolute;top:6px;right:6px;margin:0;padding:2px 6px;font-size:.6rem}
 .mini-card .obj-badge{background:var(--magenta);color:#fff;min-width:18px;height:18px;line-height:18px;
  padding:0 4px;border-radius:99px;font-size:.66rem;box-shadow:0 2px 6px #00000066}
+.menu-card .torneo-badge{position:absolute;top:8px;right:8px;margin:0;background:var(--oro);color:var(--tinta);
+ font-weight:800;border-radius:99px;padding:2px 8px;font-size:.68rem;box-shadow:0 2px 6px #00000066}
 .setup-menu{display:flex;flex-direction:column;margin-top:6px}
 .setup-menu .btn-grande{display:flex;align-items:center;gap:12px;text-align:left}
 .setup-menu .btn-txt{flex:1}
@@ -1164,7 +1166,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <button class="menu-card mc-rosa" id="bTV"><span class="mc-ico"><img src="assets/social/tv-familia-icono.webp" alt="" style="width:100%;height:100%;object-fit:contain"></span><span class="mc-txt"><span class="mc-tit">Sala TV / Familia</span><span class="mc-sub">Jugá todos juntos</span></span><span class="mc-flecha">›</span></button>
     <button class="menu-card mc-azul" id="bJugarOnline"><span class="mc-ico"><img src="assets/social/amigos-icono.webp" alt="" style="width:100%;height:100%;object-fit:contain"></span><span class="mc-txt"><span class="mc-tit">Jugar con amigos</span><span class="mc-sub">Crear sala o entrar con código</span></span><span class="mc-flecha">›</span></button>
     <button class="menu-card mc-verde" id="bTienda"><span class="mc-ico"><img src="assets/social/tienda-icono.webp" alt="" style="width:100%;height:100%;object-fit:contain"></span><span class="mc-txt"><span class="mc-tit">Tienda</span><span class="mc-sub">Monedas, marcos y más</span></span><span class="mc-flecha">›</span></button>
-    <button class="menu-card mc-naranja" id="bTorneos"><span class="mc-ico">🏆</span><span class="mc-txt"><span class="mc-tit">Torneos</span><span class="mc-sub">Competí contra otros jugadores</span></span><span class="mc-flecha">›</span></button>
+    <button class="menu-card mc-naranja" id="bTorneos"><span class="mc-ico">🏆</span><span class="mc-txt"><span class="mc-tit">Torneos</span><span class="mc-sub">Competí contra otros jugadores</span></span><span class="mc-flecha">›</span><span id="bTorneosBadge" class="rw-badge torneo-badge"></span></button>
     <button class="menu-card mc-celeste" id="bMenuEventosPrueba"><span class="mc-ico"><img src="assets/eventos/icono-evento.webp" alt="" style="width:100%;height:100%;object-fit:contain"></span><span class="mc-txt"><span class="mc-tit">Eventos</span><span class="mc-sub">Volvé cada día por algo nuevo</span></span><span class="mc-flecha">›</span></button>
   </div>
   <div class="mini-tit-fila">
@@ -1904,6 +1906,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <div id="jgHud">
     <div id="jgMonedas" title="Monedas: se ganan jugando y sirven para comprar en la Tienda">🪙 0 monedas</div>
     <div id="jgSobre" style="display:none">🎁 0/3</div>
+    <div id="jgTorneo" style="display:none">🏆 Torneo · Racha 0</div>
   </div>
   <div class="serie" id="serie"></div>
   <div class="marcador-wrap">
@@ -2678,6 +2681,7 @@ function mundoActualizarHud(){
   if($("setupVidas")){$("setupVidas").innerHTML=vidasInfinitasActivas()?"❤️ <b>∞</b>":"❤️ <b>"+meta.vidas+"</b>";$("setupVidas").title=vidasInfinitasActivas()?"Vidas infinitas · "+textoVidasInfinitas():"";}
   if($("setupMonedas"))$("setupMonedas").innerHTML="🪙 <b>"+meta.monedas+"</b> monedas";
   if($("setupRacha"))$("setupRacha").innerHTML="🔥 <b>"+meta.diaRacha+"</b>";
+  if($("bTorneosBadge"))$("bTorneosBadge").textContent="🎟️ "+(meta.ticketsTorneo||0);
 }
 function fechaHoy(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
 /* Partida Diaria: 1 partida de 3 rondas por día contra la máquina;
@@ -3076,7 +3080,7 @@ function torneoTemporadaTexto(){
 function torneoComprobarTemporada(){
   const idx=torneoTemporadaIdx();
   if(meta.torneoTemporadaVista!==idx){
-    meta.torneoTemporadaVista=idx;meta.ticketsTorneo=0;guardarMeta();
+    meta.torneoTemporadaVista=idx;meta.ticketsTorneo=0;guardarMeta();mundoActualizarHud();
   }
 }
 const TORNEO_PREMIOS=[
@@ -3136,7 +3140,7 @@ function torneoEntrar(){
   const bypass=esGonzalo();
   if(!bypass&&(meta.ticketsTorneo||0)<TORNEO_TICKETS_ENTRADA)return;
   if(!perfilExiste()){abrirPerfil(torneoEntrar);return;}
-  if(!bypass){meta.ticketsTorneo-=TORNEO_TICKETS_ENTRADA;guardarMeta();}
+  if(!bypass){meta.ticketsTorneo-=TORNEO_TICKETS_ENTRADA;guardarMeta();mundoActualizarHud();}
   torneoRacha=0;torneoPremiosGanados=[];vinoDeTorneo=true;
   $("capaTorneos").classList.remove("ver");
   torneoJugarSiguiente();
@@ -8062,9 +8066,15 @@ function mostrarResultadosTV(){
 }
 $("rtvRevancha").onclick=()=>{$("capaResultadosTV").classList.remove("ver");revancha();};
 $("rtvSalir").onclick=()=>{$("capaResultadosTV").classList.remove("ver");$("fSalir").click();};
+function jgActualizarTorneo(){
+  const el=$("jgTorneo");if(!el)return;
+  el.style.display=enTorneo?"":"none";
+  if(enTorneo)el.textContent="🏆 Torneo · Racha "+torneoRacha;
+}
 function armarTeclado(){
   mundoActualizarHud();
   jgActualizarSobre();
+  jgActualizarTorneo();
   $("teclado").innerHTML="";
   LETRAS.forEach(l=>{const b=document.createElement("button");b.textContent=l;b.dataset.l=l;
     if(VOCALES.includes(l))b.classList.add("vocal");
