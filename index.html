@@ -1720,6 +1720,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <button class="btn-grande sec" id="bPruebaSalaTVBots"><span class="btn-ico">📺</span><span class="btn-txt">Sala TV con bots ficticios</span></button>
     <button class="btn-grande sec" id="bPruebaEscudos"><span class="btn-ico">🛡️</span><span class="btn-txt">Escudos · siempre cae Quiebra/Pierde</span></button>
     <button class="btn-grande sec" id="bPruebaPromoEventos"><span class="btn-ico">🎟️</span><span class="btn-txt">Vista previa Jugá los Eventos</span></button>
+    <button class="btn-grande sec" id="bPruebaChat"><span class="btn-ico">💬</span><span class="btn-txt">Chat de sala con rival ficticio</span></button>
   </div>
   <button class="no" id="pruebasCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
 </div></div>
@@ -5120,6 +5121,30 @@ function iniciarPruebaEscudos(){
   S.cat="Prueba de escudos — siempre cae Quiebra o Pierde turno";
   publicar("<b>Prueba de escudos</b>: te sumé 10 de cada uno para probar. Cada giro va a caer en Quiebra o Pierde turno.");
 }
+function iniciarPruebaChat(){
+  if(!esGonzalo())return;
+  detenerPartidaAnterior();
+  esPartidaDiaria=false;eventoDiarioUI=false;esEventoCiudad=false;eventoCiudadResultado=false;
+  esEventoFinde=false;eventoFindePartida=null;eventoFindeResultado=false;entrenamientoLimpiarFlags();
+  destino=null;pasoActual=null;fSiguientePaso=null;vinoDeJugarOnline=false;modoVelocidadElegido=false;
+  enTorneo=false;
+  modo="bot";miJug=0;rondasElegidas=3;arranca=0;
+  $("capaMas").classList.remove("ver");$("capaPruebas").classList.remove("ver");$("setup").style.display="none";$("eventos").style.display="none";
+  $("mundo").style.display="none";$("pantDurazno").style.display="none";$("fondoMundo").classList.remove("ver");
+  $("juego").style.display="block";
+  const rival=rivalOnlineFalso();
+  armarTeclado();
+  /* Igual que en pruebaEscudosForzar: iniciarPartida() dispara de nuevo
+     detenerPartidaAnterior() por dentro, así que el interruptor (y el
+     refresco del botón de chat, que armarTeclado ya dejó oculto) van
+     DESPUÉS de armar la partida. */
+  iniciarPartida(perfil.nombre||"Gonzalo",rival.n,undefined,perfil.avatar||null,rival.a,frameEquipado||null,null);
+  pruebaChatForzar=true;
+  chatActualizarBoton();
+  S.cat="Prueba de chat — sala ficticia con "+rival.n;
+  publicar("<b>Prueba de chat</b>: te armé una sala ficticia con "+rival.n+" para que pruebes el chat vos solo.");
+  setTimeout(()=>{chatAgregarMensaje("otro","¡Hola "+(perfil.nombre||"Gonzalo")+"! ¿Jugamos?");},1200);
+}
 function actualizarAccesoPruebas(){
   const permitido=esGonzalo();
   if($("bPruebas"))$("bPruebas").style.display=permitido?"":"none";
@@ -5138,6 +5163,7 @@ $("bPruebaAltaPerfil").onclick=()=>{$("capaPruebas").classList.remove("ver");$("
 $("bPruebaGiftTienda").onclick=()=>{if(!esGonzalo())return;ptVistaPrueba=true;$("capaPruebas").classList.remove("ver");$("capaMas").classList.remove("ver");$("capaPromoTienda").classList.add("pt-vista-prueba","ver");};
 $("bPruebaSalaTVBots").onclick=iniciarPruebaSalaTVBots;
 $("bPruebaEscudos").onclick=iniciarPruebaEscudos;
+$("bPruebaChat").onclick=iniciarPruebaChat;
 $("bPruebaPromoEventos").onclick=()=>{if(!esGonzalo())return;$("capaPruebas").classList.remove("ver");$("capaMas").classList.remove("ver");$("capaPromoEventos").classList.add("ver");};
 $("pruebasCerrar").onclick=()=>$("capaPruebas").classList.remove("ver");
 $("bTutorial").onclick=()=>$("capaTutorial").classList.add("ver");
@@ -7604,6 +7630,7 @@ function publicar(txt,fx,mantenerReloj){
    los habilita en cualquier lado para poder probarlos desde el menú de
    pruebas de Gonzalo. */
 let pruebaEscudosForzar=false;
+let pruebaChatForzar=false;
 function escudosDisponiblesAqui(){
   if(pruebaEscudosForzar)return true;
   return esEventoCiudad||(modo==="bot"&&destino!==null&&!enTorneo&&!vinoDeJugarOnline);
@@ -8731,7 +8758,7 @@ function eventoTiempoRestanteTxt(){
 }
 // Invalida callbacks de la partida anterior y detiene sus temporizadores.
 function detenerPartidaAnterior(){
-  matchToken++;botPausado=0;pruebaEscudosForzar=false;
+  matchToken++;botPausado=0;pruebaEscudosForzar=false;pruebaChatForzar=false;
   clearTimeout(botT);botT=null;clearTimeout(tvPruebaBotT);tvPruebaBotT=null;tvPruebaBotsActiva=false;
   clearInterval(tvPruebaWatchdogI);tvPruebaWatchdogI=null;
   /* Si venías de Sala TV (real o de prueba) y arrancás otro modo (Mundo,
@@ -9673,7 +9700,8 @@ $("reacciones").addEventListener("click",ev=>{
    persona (host/guest, "Jugar con amigos") — contra la Máquina o en
    local no hay nadie del otro lado para chatear. */
 let chatMensajes=[],chatNoLeidos=0,chatAbierto=false;
-function chatDisponibleAqui(){return modo==="host"||modo==="guest";}
+const CHAT_RESPUESTAS_FICTICIAS=["Dale, vamos que se puede!","Jaja buena esa","Uy, casi la tenía","Te tocó una difícil esa frase","Vamos arriba loco","Ahora me toca a mí 😏","Ese lo sabía seguro","Qué frase rara jaja","Dale que la sacás","Ánimo, va la revancha"];
+function chatDisponibleAqui(){return modo==="host"||modo==="guest"||pruebaChatForzar;}
 function chatReset(){
   chatMensajes=[];chatNoLeidos=0;chatAbierto=false;
   $("chatLista").innerHTML="";
@@ -9702,6 +9730,12 @@ function chatEnviarMensaje(){
   if(!txt||!chatDisponibleAqui())return;
   $("chatInput").value="";
   chatAgregarMensaje("yo",txt);
+  if(pruebaChatForzar){
+    setTimeout(()=>{
+      chatAgregarMensaje("otro",CHAT_RESPUESTAS_FICTICIAS[Math.floor(Math.random()*CHAT_RESPUESTAS_FICTICIAS.length)]);
+    },900+Math.random()*900);
+    return;
+  }
   if(modo==="guest")enviar({a:"chat",txt});
   else if(modo==="host")enviar({tipo:"chat",txt});
 }
