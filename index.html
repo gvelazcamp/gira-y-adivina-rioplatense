@@ -2193,6 +2193,19 @@ function sonarRuletaGiro(){
     audioRuletaGiro.currentTime=0;audioRuletaGiro.play().catch(()=>{});
   }catch(e){}
 }
+/* ---- Efectos de sonido cortos (mp3), aparte de los bips sintéticos ---- */
+const SFX={
+  aplausos:"assets/audio/aplausos.mp3",
+  abucheo:"assets/audio/abucheo.mp3",
+  festejo:"assets/audio/festejo-frase.mp3"
+};
+const audioSFX={};
+function sonarSFX(id){
+  try{
+    if(!audioSFX[id]){audioSFX[id]=new Audio(SFX[id]);audioSFX[id].volume=.7;}
+    audioSFX[id].currentTime=0;audioSFX[id].play().catch(()=>{});
+  }catch(e){}
+}
 function contextoMusicaActual(){
   if($("modalFin").classList.contains("ver"))return musicaCompartida?"menu":"bonus";
   musicaCompartida=false;
@@ -7796,7 +7809,8 @@ function hostLetra(l){
     }
     S.fase="girar";
     publicar("Hay <b>"+veces+"</b> «"+l+"». Sigue "+S.jug[S.turno].n+
-      (consRestantes()===0?": no quedan consonantes, comprá una vocal o resolvé.":": girar, comprar vocal o resolver."));
+      (consRestantes()===0?": no quedan consonantes, comprá una vocal o resolvé.":": girar, comprar vocal o resolver."),
+      !voc?"acierto":undefined);
   }else if(S.jug[S.turno].comodin){
     bip(500,.2,"triangle",.06);
     S.jug[S.turno].comodin=false;
@@ -8685,6 +8699,7 @@ function efecto(f){
     setTimeout(()=>t.classList.remove("mal"),520);
     bip(150,.55,"sawtooth",.09);bip(98,.6,"square",.06);
     vibrar(f==="quiebra"?[130,70,130,70,220]:[160,80,160]);
+    if(f==="quiebra")sonarSFX("abucheo");
   }
   if(f==="quiebra"){
     const a=document.querySelector(".aro");
@@ -8702,11 +8717,12 @@ function efecto(f){
       $("btnReportarFrase").disabled=false;
       $("capaResuelto").classList.add("ver");
       papelitos();
-      [0,140,280,430,620].forEach((m,k)=>setTimeout(()=>bip([659,784,988,1175,1568][k],.3,"sine",.075),m));
+      sonarSFX("festejo");
       vibrar([70,60,70,60,160]);
       setTimeout(()=>$("capaResuelto").classList.remove("ver"),3600);
     },900);
   }
+  if(f==="acierto")sonarSFX("aplausos");
   if(f==="comodin"||f==="x2"){
     const t=document.querySelector(".tablero");
     t.classList.remove("bien");void t.offsetWidth;t.classList.add("bien");
@@ -8714,7 +8730,7 @@ function efecto(f){
     if(f==="x2")[0,90,180,300].forEach((m,k)=>setTimeout(()=>bip([523,659,784,1046][k],.18,"triangle",.07),m));
     vibrar([60,50,60]);
   }
-  if(f==="pierde"){bip(300,.18,"triangle",.06);setTimeout(()=>bip(190,.3,"triangle",.06),170);vibrar(90);}
+  if(f==="pierde"){bip(300,.18,"triangle",.06);setTimeout(()=>bip(190,.3,"triangle",.06),170);vibrar(90);sonarSFX("abucheo");}
 }
 function asegurarMarcador(){
   const m=$("marcador");if(!m||!V.jug)return;
