@@ -2012,7 +2012,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
       <span class="evento-card-cuerpo">
         <span class="evento-card-ico">🎁</span>
         <span class="evento-card-info"><span class="evento-card-tipo">PREMIO SORPRESA</span><b>Evento diario</b>
-          <small>3 rondas contra la máquina · 1 intento</small></span>
+          <small id="evDiarioEstado">3 rondas contra la máquina · 1 intento</small></span>
         <span class="evento-card-premios">
           <span class="evento-card-premio-emoji"><img src="assets/eventos/ticket-icono.webp" alt="ticket de torneo"></span>
         </span>
@@ -8570,6 +8570,10 @@ function abrirEventos(){
   $("evTiempo1").textContent=t;$("evTiempo2").textContent=t;
   // Cada tarjeta permanece revelada hasta la siguiente rotación diaria.
   ["evBanner1","evBanner2"].forEach(id=>$(id).classList.toggle("cerrado",!eventoEstaRevelado(id)));
+  const jugadaHoy=pdEstadoHoy()==="jugada";
+  $("evBanner1").disabled=jugadaHoy;$("evBanner1").classList.toggle("bloqueado",jugadaHoy);
+  if(jugadaHoy)$("evBanner1").classList.remove("cerrado");
+  $("evDiarioEstado").textContent=jugadaHoy?"✓ Jugado hoy · Volvé mañana":"3 rondas contra la máquina · 1 intento";
   const estado=estadoEventoCiudad(),bloqueado=estado==="ganado";
   $("evBanner2").disabled=bloqueado;$("evBanner2").classList.toggle("bloqueado",bloqueado);
   if(bloqueado)$("evBanner2").classList.remove("cerrado");
