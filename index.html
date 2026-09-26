@@ -7537,7 +7537,11 @@ function escudosDisponiblesAqui(){
   return esEventoCiudad||(modo==="bot"&&destino!==null&&!enTorneo&&!vinoDeJugarOnline);
 }
 function quierePreguntarEscudo(cual){
-  if(!S||S.turno!==miJug||!escudosDisponiblesAqui())return false;
+  /* Todavía en pruebas: la lógica real de "usar escudo" solo corre para
+     el usuario Gonzalo, hasta que se apruebe para el resto de la gente.
+     La compra en la Tienda ya está en producción para todos, pero no
+     hace nada todavía si no sos Gonzalo. */
+  if(!esGonzalo()||!S||S.turno!==miJug||!escudosDisponiblesAqui())return false;
   return(cual==="quiebra"?(meta.escudosQuiebra||0):(meta.escudosPierde||0))>0;
 }
 function mostrarConfirmEscudo(cual){
