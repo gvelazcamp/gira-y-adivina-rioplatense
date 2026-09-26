@@ -6139,7 +6139,25 @@ function candidatos(){
 }
 function letraHumana(solo){
   const FREQ=solo==="voc"?"EAOIU":"SRNLDCTMPBGVYQHFJZXKWÑ";
-  const libres=FREQ.split("").filter(c=>!S.usadas.has(c));
+  /* En vez de guiarse solo por qué tan común es cada letra en español en
+     general, mira las frases que todavía podrían ser la respuesta (según
+     lo ya revelado) y prioriza letras comunes ENTRE ESAS — como pensaría
+     una persona ("con esto revelado, debe ser tal palabra, probemos tal
+     letra") en vez de tirar siempre la letra más común del idioma. */
+  let orden=FREQ;
+  const cand=candidatos();
+  if(cand.length){
+    const conteo={};
+    cand.forEach(f=>{
+      new Set([...f.t]).forEach(c=>{
+        if(c===" "||S.usadas.has(c))return;
+        if((solo==="voc")===VOCALES.includes(c))conteo[c]=(conteo[c]||0)+1;
+      });
+    });
+    const vistas=Object.keys(conteo).sort((a,b)=>conteo[b]-conteo[a]);
+    if(vistas.length)orden=vistas.join("")+FREQ.split("").filter(c=>!vistas.includes(c)).join("");
+  }
+  const libres=orden.split("").filter(c=>!S.usadas.has(c));
   if(!libres.length)return null;
   const suave=botSuavePrimerDurazno();
   if(Math.random()<(suave?.errorLetra||.14)&&libres.length>4)
