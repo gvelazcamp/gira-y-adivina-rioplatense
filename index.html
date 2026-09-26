@@ -6888,6 +6888,12 @@ if(salaEnLink){
   };
   $("miNombre").addEventListener("keydown",e=>{if(e.key==="Enter")$("bUnirse").click();});
 }
+/* Entrada directa para la app de TV: abre ya mismo como anfitrión de
+   Sala TV, sin pasar por el menú principal (pensado para un dispositivo
+   sin pantalla táctil, como Android TV). */
+if(new URLSearchParams(location.search).get("tvhost")==="1"){
+  setTimeout(crearSalaTV,50);
+}
 
 function recibirHost(d){
   if(d.a==="hola"){
