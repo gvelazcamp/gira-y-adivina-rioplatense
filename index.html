@@ -7548,7 +7548,8 @@ function quierePreguntarEscudo(cual){
 function mostrarConfirmEscudo(cual){
   const nombre=cual==="quiebra"?"QUIEBRA":"PIERDE TURNO";
   const cant=cual==="quiebra"?meta.escudosQuiebra:meta.escudosPierde;
-  $("confirmEscudoTxt").innerHTML="Salió <b>"+nombre+"</b>. Tenés <b>"+cant+" 🛡️</b>. ¿Usar el escudo y salvarte?";
+  $("confirmEscudoTxt").innerHTML="Salió <b>"+nombre+"</b>. Tenés <b>"+cant+" 🛡️</b>. ¿Usar el escudo y salvarte?"+
+    "<br><small style='opacity:.75'>Si lo usás, te quedan: <s>"+cant+"</s> → "+(cant-1)+" 🛡️</small>";
   $("confirmEscudo").style.display="flex";
   $("confirmEscudoSi").onclick=()=>{
     $("confirmEscudo").style.display="none";
