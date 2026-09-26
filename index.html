@@ -2896,6 +2896,12 @@ function estadoEventoCiudad(){
    ciudades que no tengan entrada acá siguen usando categorías al azar
    hasta que se les cargue su propio lote. */
 const CATS_EVENTO_CIUDAD={rivera:["Rivera"]};
+/* Respaldo para nuevoMazo(): si el lote propio de la ciudad se queda sin
+   frases no vistas (se jugó tanto que ya salieron todas), se completa con
+   las categorías genéricas de esa misma ciudad en vez de repetir siempre
+   las mismas 14 frases — pasa esto especialmente si alguien abandona y
+   reintenta el evento varias veces el mismo día. */
+let respaldoCatsMazo=null;
 function iniciarEventoCiudad(){
   if(estadoEventoCiudad()==="ganado")return;
   if(!perfilExiste()){abrirPerfil(iniciarEventoCiudad);return;}
@@ -2913,6 +2919,7 @@ function iniciarEventoCiudad(){
   ["setup","eventos","mundo","pantDurazno"].forEach(id=>$(id).style.display="none");
   $("fondoMundo").classList.remove("ver");$("juego").style.display="block";
   const rival=rivalOnlineFalso();
+  respaldoCatsMazo=MUNDO[eventoCiudadDeHoyIdx()].cats||null;
   armarTeclado();iniciarPartida(perfil.nombre,rival.n,CATS_EVENTO_CIUDAD[cual],perfil.avatar,rival.a,frameEquipado||null,null);
 }
 function finalizarEventoCiudad(ganado,detalle,abandonado){
@@ -7002,7 +7009,10 @@ function recibirGuest(d){
 let vistas=(()=>{try{return new Set(JSON.parse(localStorage.getItem("larueda_vistas")||"[]"));}catch(e){return new Set();}})();
 const guardarVistas=()=>{try{localStorage.setItem("larueda_vistas",JSON.stringify([...vistas]));}catch(e){}};
 function nuevoMazo(cats){
-  const base=cats&&cats.length?FRASES.filter(f=>cats.includes(f.c)):FRASES;
+  let base=cats&&cats.length?FRASES.filter(f=>cats.includes(f.c)):FRASES;
+  if(cats&&cats.length&&respaldoCatsMazo&&respaldoCatsMazo.length&&!base.some(f=>!vistas.has(f.t))){
+    base=base.concat(FRASES.filter(f=>respaldoCatsMazo.includes(f.c)));
+  }
   const porCat={};
   base.forEach(f=>{(porCat[f.c]=porCat[f.c]||[]).push(f);});
   /* El filtro de "ya vistas" tiene que aplicarse POR categoría, no sobre
