@@ -1473,7 +1473,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   </div>
   </div>
   <h3 class="tn-subtitulo" data-fijo="1">🛡️ Escudos de la ruleta</h3>
-  <p class="tn-desc-seccion" style="margin:-4px 0 10px;font-size:.78rem;color:#B49FCE">Solo sirven en Eventos y en ¡Jugar ahora!. Si tenés uno guardado, cuando caigas en Quiebra o Pierde turno vas a poder usarlo para salvarte.</p>
+  <p class="tn-desc-seccion" style="margin:-4px 0 10px;font-size:.78rem;color:#B49FCE">Solo sirven en Eventos y en ¡Jugar ahora!. Si tenés uno guardado, cuando caigas en Quiebra o Pierde turno vas a poder usarlo para salvarte. Se puede usar 1 por partida.</p>
   <div class="tn-grid">
   <div class="tn-item tn-card">
   <div class="tn-card-img">🛡️</div>
@@ -7631,23 +7631,26 @@ function publicar(txt,fx,mantenerReloj){
    pruebas de Gonzalo. */
 let pruebaEscudosForzar=false;
 let pruebaChatForzar=false;
+let escudoTiendaUsadoEnPartida=false;
 function escudosDisponiblesAqui(){
   if(pruebaEscudosForzar)return true;
   return esEventoCiudad||(modo==="bot"&&destino!==null&&!enTorneo&&!vinoDeJugarOnline);
 }
 function quierePreguntarEscudo(cual){
-  if(!S||S.turno!==miJug||!escudosDisponiblesAqui())return false;
+  if(!S||S.turno!==miJug||!escudosDisponiblesAqui()||escudoTiendaUsadoEnPartida)return false;
   return(cual==="quiebra"?(meta.escudosQuiebra||0):(meta.escudosPierde||0))>0;
 }
 function mostrarConfirmEscudo(cual){
   const nombre=cual==="quiebra"?"QUIEBRA":"PIERDE TURNO";
   const cant=cual==="quiebra"?meta.escudosQuiebra:meta.escudosPierde;
   $("confirmEscudoTxt").innerHTML="Salió <b>"+nombre+"</b>. Tenés <b>"+cant+" 🛡️</b>. ¿Usar el escudo y salvarte?"+
-    "<br><small style='opacity:.75'>Si lo usás, te quedan: <s>"+cant+"</s> → "+(cant-1)+" 🛡️</small>";
+    "<br><small style='opacity:.75'>Si lo usás, te quedan: <s>"+cant+"</s> → "+(cant-1)+" 🛡️</small>"+
+    "<br><small style='opacity:.6'>Se puede usar 1 escudo por partida.</small>";
   $("confirmEscudo").style.display="flex";
   $("confirmEscudoSi").onclick=()=>{
     $("confirmEscudo").style.display="none";
     if(cual==="quiebra")meta.escudosQuiebra--;else meta.escudosPierde--;
+    escudoTiendaUsadoEnPartida=true;
     guardarMeta();mundoActualizarHud();
     bip(1046,.16,"sine",.07);
     publicar("🛡️ "+S.jug[S.turno].n+" usó un escudo y se salvó de "+nombre+".","comodin");
@@ -8758,7 +8761,7 @@ function eventoTiempoRestanteTxt(){
 }
 // Invalida callbacks de la partida anterior y detiene sus temporizadores.
 function detenerPartidaAnterior(){
-  matchToken++;botPausado=0;pruebaEscudosForzar=false;pruebaChatForzar=false;
+  matchToken++;botPausado=0;pruebaEscudosForzar=false;pruebaChatForzar=false;escudoTiendaUsadoEnPartida=false;
   clearTimeout(botT);botT=null;clearTimeout(tvPruebaBotT);tvPruebaBotT=null;tvPruebaBotsActiva=false;
   clearInterval(tvPruebaWatchdogI);tvPruebaWatchdogI=null;
   /* Si venías de Sala TV (real o de prueba) y arrancás otro modo (Mundo,
