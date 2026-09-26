@@ -8843,6 +8843,10 @@ function efecto(f){
       $("txtResuelto").innerHTML=V.aviso||"";
       $("btnReportarFrase").disabled=false;
       $("capaResuelto").classList.add("ver");
+      /* Palabras largas (ej. "DECLARATORIA", "INDEPENDENCIA") se salían de
+         la pantalla con el tamaño de ficha fijo — se achican igual que en
+         el tablero para que siempre entren completas. */
+      ajustarFichas($("capaResuelto"),c);
       papelitos();
       sonarSFX("festejo");
       vibrar([70,60,70,60,160]);
@@ -8865,8 +8869,8 @@ function asegurarMarcador(){
   while(m.children.length<V.jug.length){const i=m.children.length,d=document.createElement("div");d.className="jug";d.id="j"+i;d.innerHTML='<div class="nom"><span class="quien"><span class="avatar-wrap"><img class="av"><img class="avatar-frame"></span><span class="n"></span></span><span class="turno">turno</span></div><div class="cifras"><div>ronda<b class="ronda">$0</b></div><div>total<b class="total">$0</b></div></div>';m.appendChild(d);}
   while(m.children.length>V.jug.length)m.lastElementChild.remove();
 }
-function ajustarFichas(){
-  const tablero=$("tablero"),cont=$("frase");
+function ajustarFichas(tablero,cont){
+  tablero=tablero||$("tablero");cont=cont||$("frase");
   const palabras=[...cont.querySelectorAll(".palabra")];
   if(!palabras.length)return;
   tablero.style.removeProperty("--ficha-w");
