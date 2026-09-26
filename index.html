@@ -1471,6 +1471,20 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="tn-comprar" data-tipo="ticket_5" data-precio="4500" data-nombre="5 tickets de torneo">🪙 4500</button>
   </div>
   </div>
+  <h3 class="tn-subtitulo" data-fijo="1">🛡️ Escudos de la ruleta</h3>
+  <p class="tn-desc-seccion" style="margin:-4px 0 10px;font-size:.78rem;color:#B49FCE">Solo sirven en Eventos y en ¡Jugar ahora!. Si tenés uno guardado, cuando caigas en Quiebra o Pierde turno vas a poder usarlo para salvarte.</p>
+  <div class="tn-grid">
+  <div class="tn-item tn-card">
+  <div class="tn-card-img">🛡️</div>
+  <div class="tn-card-info"><b>Escudo Pierde Turno</b><span>Te salva de perder el turno</span></div>
+  <button class="tn-comprar" data-tipo="escudo_pierde" data-precio="350" data-nombre="Escudo Pierde Turno">🪙 350</button>
+  </div>
+  <div class="tn-item tn-card">
+  <div class="tn-card-img">🛡️</div>
+  <div class="tn-card-info"><b>Escudo Quiebra</b><span>Te salva de perder la plata</span></div>
+  <button class="tn-comprar" data-tipo="escudo_quiebra" data-precio="450" data-nombre="Escudo Quiebra">🪙 450</button>
+  </div>
+  </div>
   <h3 class="tn-subtitulo tn-abre-lista" data-fijo="1" id="tituloAvatares">🧑‍🎤 Avatares premium 🔻</h3>
   <div class="frame-grid" id="avatarPremiumGrid"></div>
   <h3 class="tn-subtitulo tn-abre-lista" data-fijo="1" id="tituloTableros">🎲 Tableros 🔻</h3>
@@ -1603,6 +1617,11 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <div class="confirm-poder-btns"><button class="no" id="confirmCompraNo">Cancelar</button><button class="ok" id="confirmCompraSi">Comprar</button></div>
 </div>
 
+<div class="confirm-poder" id="confirmEscudo" style="display:none">
+  <p id="confirmEscudoTxt"></p>
+  <div class="confirm-poder-btns"><button class="no" id="confirmEscudoNo">Aceptar</button><button class="ok" id="confirmEscudoSi">🛡️ Usar escudo</button></div>
+</div>
+
 <div class="capa" id="capaLogros"><div class="caja lg-caja">
   <h2>🏅 Logros</h2>
   <p class="lg-resumen" id="lgResumen">0 / 0 desbloqueados</p>
@@ -1670,6 +1689,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <button class="btn-grande sec" id="bPruebaAltaPerfil"><span class="btn-ico">👤</span><span class="btn-txt">Alta de usuario nuevo</span></button>
     <button class="btn-grande sec" id="bPruebaGiftTienda"><span class="btn-ico">🎁</span><span class="btn-txt">Vista previa Gift de Tienda</span></button>
     <button class="btn-grande sec" id="bPruebaSalaTVBots"><span class="btn-ico">📺</span><span class="btn-txt">Sala TV con bots ficticios</span></button>
+    <button class="btn-grande sec" id="bPruebaEscudos"><span class="btn-ico">🛡️</span><span class="btn-txt">Escudos · siempre cae Quiebra/Pierde</span></button>
   </div>
   <button class="no" id="pruebasCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
 </div></div>
@@ -3874,6 +3894,12 @@ function tnEjecutarCompra(tipo,precio){
   }else if(tipo==="ticket_5"){
     meta.ticketsTorneo=(meta.ticketsTorneo||0)+5;
     mostrarToast("🎟️","+5 tickets de torneo");
+  }else if(tipo==="escudo_pierde"){
+    meta.escudosPierde=(meta.escudosPierde||0)+1;
+    mostrarToast("🛡️","+1 Escudo Pierde Turno");
+  }else if(tipo==="escudo_quiebra"){
+    meta.escudosQuiebra=(meta.escudosQuiebra||0)+1;
+    mostrarToast("🛡️","+1 Escudo Quiebra");
   }
   guardarMeta();
   tnActualizar();mundoActualizarHud();rwActualizarBadge();
@@ -5005,6 +5031,26 @@ function salirPruebaPunteros(){
   $("ruedaSelector").style.display="none";$("punteroSelector").style.display="none";$("juego").classList.remove("prueba-spin");$("juego").style.display="none";$("setup").style.display="block";
   modo="local";sala="";S=null;$("fBoton").textContent="Revancha";sincronizarMusica();
 }
+function iniciarPruebaEscudos(){
+  if(!esGonzalo())return;
+  detenerPartidaAnterior();
+  esPartidaDiaria=false;eventoDiarioUI=false;esEventoCiudad=false;eventoCiudadResultado=false;
+  esEventoFinde=false;eventoFindePartida=null;eventoFindeResultado=false;entrenamientoLimpiarFlags();
+  destino=null;pasoActual=null;fSiguientePaso=null;vinoDeJugarOnline=false;modoVelocidadElegido=false;
+  enTorneo=false;
+  meta.escudosPierde=(meta.escudosPierde||0)+10;meta.escudosQuiebra=(meta.escudosQuiebra||0)+10;
+  guardarMeta();mundoActualizarHud();
+  pruebaEscudosForzar=true;
+  modo="bot";miJug=0;rondasElegidas=3;arranca=0;
+  $("capaMas").classList.remove("ver");$("capaPruebas").classList.remove("ver");$("setup").style.display="none";$("eventos").style.display="none";
+  $("mundo").style.display="none";$("pantDurazno").style.display="none";$("fondoMundo").classList.remove("ver");
+  $("juego").style.display="block";
+  const rival=rivalOnlineFalso();
+  armarTeclado();
+  iniciarPartida(perfil.nombre||"Gonzalo",rival.n,undefined,perfil.avatar||null,rival.a,frameEquipado||null,null);
+  S.cat="Prueba de escudos — siempre cae Quiebra o Pierde turno";
+  publicar("<b>Prueba de escudos</b>: te sumé 10 de cada uno para probar. Cada giro va a caer en Quiebra o Pierde turno.");
+}
 function actualizarAccesoPruebas(){
   const permitido=esGonzalo();
   if($("bPruebas"))$("bPruebas").style.display=permitido?"":"none";
@@ -5022,6 +5068,7 @@ $("bPruebaPunteros").onclick=iniciarPruebaPunteros;
 $("bPruebaAltaPerfil").onclick=()=>{$("capaPruebas").classList.remove("ver");$("capaMas").classList.remove("ver");previsualizarPerfilVacio();};
 $("bPruebaGiftTienda").onclick=()=>{if(!esGonzalo())return;ptVistaPrueba=true;$("capaPruebas").classList.remove("ver");$("capaMas").classList.remove("ver");$("capaPromoTienda").classList.add("pt-vista-prueba","ver");ptIniciarVideo();};
 $("bPruebaSalaTVBots").onclick=iniciarPruebaSalaTVBots;
+$("bPruebaEscudos").onclick=iniciarPruebaEscudos;
 $("pruebasCerrar").onclick=()=>$("capaPruebas").classList.remove("ver");
 $("bTutorial").onclick=()=>$("capaTutorial").classList.add("ver");
 $("tutoCerrar").onclick=()=>$("capaTutorial").classList.remove("ver");
@@ -7479,6 +7526,46 @@ function publicar(txt,fx,mantenerReloj){
   if(modo!=="local"&&modo!=="bot")enviar({tipo:"estado",v:V});
   pintarTodo();
 }
+/* Escudos de la ruleta (Tienda): solo sirven en el Evento de ciudad y en
+   ¡Jugar ahora! (Mapa de Uruguay contra la Máquina) — no en Torneo, Jugar
+   online, Partida Diaria, Entrenamiento ni Tutorial. pruebaEscudosForzar
+   los habilita en cualquier lado para poder probarlos desde el menú de
+   pruebas de Gonzalo. */
+let pruebaEscudosForzar=false;
+function escudosDisponiblesAqui(){
+  if(pruebaEscudosForzar)return true;
+  return esEventoCiudad||(modo==="bot"&&destino!==null&&!enTorneo&&!vinoDeJugarOnline);
+}
+function quierePreguntarEscudo(cual){
+  if(!S||S.turno!==miJug||!escudosDisponiblesAqui())return false;
+  return(cual==="quiebra"?(meta.escudosQuiebra||0):(meta.escudosPierde||0))>0;
+}
+function mostrarConfirmEscudo(cual){
+  const nombre=cual==="quiebra"?"QUIEBRA":"PIERDE TURNO";
+  const cant=cual==="quiebra"?meta.escudosQuiebra:meta.escudosPierde;
+  $("confirmEscudoTxt").innerHTML="Salió <b>"+nombre+"</b>. Tenés <b>"+cant+" 🛡️</b>. ¿Usar el escudo y salvarte?";
+  $("confirmEscudo").style.display="flex";
+  $("confirmEscudoSi").onclick=()=>{
+    $("confirmEscudo").style.display="none";
+    if(cual==="quiebra")meta.escudosQuiebra--;else meta.escudosPierde--;
+    guardarMeta();mundoActualizarHud();
+    bip(1046,.16,"sine",.07);
+    publicar("🛡️ "+S.jug[S.turno].n+" usó un escudo y se salvó de "+nombre+".","comodin");
+    S.fase="girar";
+  };
+  $("confirmEscudoNo").onclick=()=>{
+    $("confirmEscudo").style.display="none";
+    if(cual==="quiebra"){
+      bip(120,.5,"sawtooth",.09);S.jug[S.turno].ronda=0;
+      publicar("<b>QUIEBRA</b> — "+S.jug[S.turno].n+" pierde la plata de la ronda.","quiebra");
+      setTimeout(tk(cambiarTurno),1800);
+    }else{
+      bip(200,.35,"triangle",.07);
+      publicar("<b>Pierde turno</b> — pasa al siguiente jugador.","pierde");
+      setTimeout(tk(cambiarTurno),1600);
+    }
+  };
+}
 function hostGirar(){
   if(S.fase!=="girar"||animando||(!enPruebaPunteros&&consRestantes()===0))return;
   if(!enPruebaPunteros&&(modo!=="bot"||S.turno===miJug))objSumar("giros",1);
@@ -7490,7 +7577,8 @@ function hostGirar(){
     const local=((270-(destino%360))%360+360)%360;
     s=SEG[Math.floor(local/paso)%SEG.length];
     intentos++;
-  }while((enTutorial&&s.t&&intentos<40)||(s.t==="PIERDE"&&(S.pierdeSeguidas||0)>=2&&intentos<40));
+  }while((enTutorial&&s.t&&intentos<40)||(s.t==="PIERDE"&&(S.pierdeSeguidas||0)>=2&&intentos<40)||
+    (pruebaEscudosForzar&&s.t!=="PIERDE"&&s.t!=="QUIEBRA"&&intentos<200));
   S.pierdeSeguidas=s.t==="PIERDE"?(S.pierdeSeguidas||0)+1:0;
   if(modo!=="local"&&modo!=="bot")enviar({tipo:"giro",destino});
   animarRueda(destino,()=>{
@@ -7500,10 +7588,14 @@ function hostGirar(){
       publicar("<b>Giro de prueba "+girosPruebaPunteros+"</b> — salió <b>"+resultado+"</b>. Podés volver a girar.");
       return;
     }
-    if(s.t==="QUIEBRA"){bip(120,.5,"sawtooth",.09);S.jug[S.turno].ronda=0;
+    if(s.t==="QUIEBRA"){
+      if(quierePreguntarEscudo("quiebra")){mostrarConfirmEscudo("quiebra");return;}
+      bip(120,.5,"sawtooth",.09);S.jug[S.turno].ronda=0;
       publicar("<b>QUIEBRA</b> — "+S.jug[S.turno].n+" pierde la plata de la ronda.","quiebra");
       setTimeout(tk(cambiarTurno),1800);return;}
-    if(s.t==="PIERDE"){bip(200,.35,"triangle",.07);
+    if(s.t==="PIERDE"){
+      if(quierePreguntarEscudo("pierde")){mostrarConfirmEscudo("pierde");return;}
+      bip(200,.35,"triangle",.07);
       publicar("<b>Pierde turno</b> — pasa al siguiente jugador.","pierde");
       setTimeout(tk(cambiarTurno),1600);return;}
     if(s.t==="COMODIN"){
@@ -8565,7 +8657,7 @@ function eventoTiempoRestanteTxt(){
 }
 // Invalida callbacks de la partida anterior y detiene sus temporizadores.
 function detenerPartidaAnterior(){
-  matchToken++;botPausado=0;
+  matchToken++;botPausado=0;pruebaEscudosForzar=false;
   clearTimeout(botT);botT=null;clearTimeout(tvPruebaBotT);tvPruebaBotT=null;tvPruebaBotsActiva=false;
   clearInterval(tvPruebaWatchdogI);tvPruebaWatchdogI=null;
   /* Si venías de Sala TV (real o de prueba) y arrancás otro modo (Mundo,
