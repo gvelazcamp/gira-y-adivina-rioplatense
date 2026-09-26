@@ -7097,6 +7097,20 @@ function cancelarPausaToss(jugador){
   if(S.tossRespondedor!==jugador)return;
   reanudarToss("<b>"+S.jug[jugador].n+" canceló</b>. La Prueba de Velocidad continúa.");
 }
+/* Marca a `jugador` como afuera del Toss-Up y, si con eso ya no queda
+   nadie con chances, corta la ronda ahí mismo (revela la frase y pasa a
+   la siguiente) en vez de dejarla viva hasta el timeout real. Devuelve
+   true si la ronda terminó acá. */
+function tossMarcarFueraYRevisar(jugador){
+  S.tossBloq[jugador]=true;
+  if(S.tossBloq.every(Boolean)){
+    limpiarToss();abrirTodoToss();S.fase="toss_fin";
+    publicar((S.jug.length>2?"Todos quedaron fuera de la Prueba de Velocidad. La respuesta queda revelada.":"Los dos quedaron fuera de la Prueba de Velocidad. La respuesta queda revelada."),"error");
+    setTimeout(tk(nuevaRonda),3600);
+    return true;
+  }
+  return false;
+}
 function finRespuestaToss(jugador){
   if(!S||S.fase!=="tossup"||!S.tossPausado||S.tossRespondedor!==jugador)return;
   tossRespuestaTimer=null;
@@ -7105,7 +7119,10 @@ function finRespuestaToss(jugador){
     /* No debería pasar (la "reacción"+"pensamiento" del bot dura menos de
        9s), pero si el timeout del bot se retrasó (pestaña en segundo plano,
        etc.), no lo dejamos colgado esperando para siempre esta ronda. */
-    if(S.botTossPlan)S.botTossPlan.agotado=true;
+    if(S.botTossPlan){
+      S.botTossPlan.agotado=true;
+      if(tossMarcarFueraYRevisar(1))return;
+    }
     reanudarToss("Se terminaron los <b>9 segundos para responder</b>. La prueba continúa.");
     return;
   }
@@ -7113,12 +7130,7 @@ function finRespuestaToss(jugador){
     reanudarToss("Se terminaron los <b>9 segundos para responder</b>. La prueba continúa — podés volver a intentar.");
     return;
   }
-  S.tossBloq[jugador]=true;
-  if(S.tossBloq.every(Boolean)){
-    limpiarToss();abrirTodoToss();S.fase="toss_fin";
-    publicar((S.jug.length>2?"Todos quedaron fuera de la Prueba de Velocidad. La respuesta queda revelada.":"Los dos quedaron fuera de la Prueba de Velocidad. La respuesta queda revelada."),"error");
-    setTimeout(tk(nuevaRonda),3600);return;
-  }
+  if(tossMarcarFueraYRevisar(jugador))return;
   reanudarToss("<b>"+S.jug[jugador].n+" no respondió en 9 segundos</b> y queda fuera. El otro jugador todavía puede resolver.");
 }
 function premioToss(){
@@ -7160,7 +7172,16 @@ function hostResolverToss(txt,jugador){
           plan.segundoChanceUsada=true;plan.maxIntentos=2;
           plan.umbral=Math.min(.97,plan.umbral+.10+Math.random()*.08);
           plan.reaccionProgramada=false;
-        }else plan.agotado=true;
+        }else{
+          plan.agotado=true;
+          /* Sin esto, S.tossBloq[1] nunca se marca cuando la Máquina se
+             queda sin intentos, así que si el humano después también
+             erraba, el "every(Boolean)" no lo detectaba: el juego decía
+             "el otro jugador todavía puede resolver" cuando en realidad
+             ya no podía, y la ronda quedaba viva hasta el timeout real
+             en vez de terminar al toque. */
+          if(tossMarcarFueraYRevisar(1))return;
+        }
       }
       reanudarToss(msg);
       programarBotToss();
