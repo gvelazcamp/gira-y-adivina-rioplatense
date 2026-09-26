@@ -7097,41 +7097,26 @@ function cancelarPausaToss(jugador){
   if(S.tossRespondedor!==jugador)return;
   reanudarToss("<b>"+S.jug[jugador].n+" canceló</b>. La Prueba de Velocidad continúa.");
 }
-/* Marca a `jugador` como afuera del Toss-Up y, si con eso ya no queda
-   nadie con chances, corta la ronda ahí mismo (revela la frase y pasa a
-   la siguiente) en vez de dejarla viva hasta el timeout real. Devuelve
-   true si la ronda terminó acá. */
-function tossMarcarFueraYRevisar(jugador){
-  S.tossBloq[jugador]=true;
-  if(S.tossBloq.every(Boolean)){
-    limpiarToss();abrirTodoToss();S.fase="toss_fin";
-    publicar((S.jug.length>2?"Todos quedaron fuera de la Prueba de Velocidad. La respuesta queda revelada.":"Los dos quedaron fuera de la Prueba de Velocidad. La respuesta queda revelada."),"error");
-    setTimeout(tk(nuevaRonda),3600);
-    return true;
-  }
-  return false;
+/* Jugando de verdad (Jugar ahora Uruguay, no Entrenamiento), el Toss-Up
+   es todo o nada: el primero que se apura y erra (o no llega a responder
+   a tiempo) termina la prueba ahí mismo — se revela la frase y se pasa a
+   la ronda siguiente. No hay "el otro todavía puede resolver" ni segunda
+   chance para nadie. */
+function tossTerminarPorError(mensajeFinal){
+  limpiarToss();abrirTodoToss();S.fase="toss_fin";
+  publicar(mensajeFinal,"error");
+  setTimeout(tk(nuevaRonda),3600);
 }
 function finRespuestaToss(jugador){
   if(!S||S.fase!=="tossup"||!S.tossPausado||S.tossRespondedor!==jugador)return;
   tossRespuestaTimer=null;
   if(tossRespondedor===jugador){$("modalResolver").classList.remove("ver");tossRespondedor=null;}
-  if(modo==="bot"&&jugador===1){
-    /* No debería pasar (la "reacción"+"pensamiento" del bot dura menos de
-       9s), pero si el timeout del bot se retrasó (pestaña en segundo plano,
-       etc.), no lo dejamos colgado esperando para siempre esta ronda. */
-    if(S.botTossPlan){
-      S.botTossPlan.agotado=true;
-      if(tossMarcarFueraYRevisar(1))return;
-    }
-    reanudarToss("Se terminaron los <b>9 segundos para responder</b>. La prueba continúa.");
-    return;
-  }
   if(modo==="bot"&&esEntrenamientoToss){
     reanudarToss("Se terminaron los <b>9 segundos para responder</b>. La prueba continúa — podés volver a intentar.");
     return;
   }
-  if(tossMarcarFueraYRevisar(jugador))return;
-  reanudarToss("<b>"+S.jug[jugador].n+" no respondió en 9 segundos</b> y queda fuera. El otro jugador todavía puede resolver.");
+  S.tossBloq[jugador]=true;
+  tossTerminarPorError("<b>"+S.jug[jugador].n+" no respondió en 9 segundos</b>. La respuesta queda revelada.");
 }
 function premioToss(){
   const ms=S.tossPausado?Math.max(0,S.tossRestante||0):Math.max(0,S.tossFin-Date.now());
@@ -7161,32 +7146,6 @@ function hostResolverToss(txt,jugador){
     setTimeout(tk(nuevaRonda),5200);
   }else{
     bip(140,.35,"square",.07);
-    if(modo==="bot"&&jugador===1){
-      const msg="<b>"+S.jug[jugador].n+"</b> se apuró y no acertó. La prueba continúa.";
-      if(S.botTossPlan){
-        const plan=S.botTossPlan;
-        /* Por defecto, un solo intento por Toss-Up. Una pequeña proporción de
-           los que fallaron puede tener un segundo intento, mucho más tarde
-           (umbral más alto), nunca por rubber-banding ni por el puntaje. */
-        if(!plan.segundoChanceUsada&&Math.random()<.15){
-          plan.segundoChanceUsada=true;plan.maxIntentos=2;
-          plan.umbral=Math.min(.97,plan.umbral+.10+Math.random()*.08);
-          plan.reaccionProgramada=false;
-        }else{
-          plan.agotado=true;
-          /* Sin esto, S.tossBloq[1] nunca se marca cuando la Máquina se
-             queda sin intentos, así que si el humano después también
-             erraba, el "every(Boolean)" no lo detectaba: el juego decía
-             "el otro jugador todavía puede resolver" cuando en realidad
-             ya no podía, y la ronda quedaba viva hasta el timeout real
-             en vez de terminar al toque. */
-          if(tossMarcarFueraYRevisar(1))return;
-        }
-      }
-      reanudarToss(msg);
-      programarBotToss();
-      return;
-    }
     if(modo==="bot"&&esEntrenamientoToss){
       /* Entrenamiento: practicar sin penalidad es el punto — el humano
          puede reintentar las veces que quiera hasta que se acabe el tiempo. */
@@ -7194,12 +7153,7 @@ function hostResolverToss(txt,jugador){
       return;
     }
     S.tossBloq[jugador]=true;
-    if(S.tossBloq.every(Boolean)){
-      limpiarToss();abrirTodoToss();S.fase="toss_fin";
-      publicar((S.jug.length>2?"Todos intentaron y no era. La respuesta queda revelada.":"Los dos intentaron y no era. La respuesta queda revelada."),"error");
-      setTimeout(tk(nuevaRonda),3600);return;
-    }
-    reanudarToss("«"+txt.toUpperCase()+"» no era. <b>"+S.jug[jugador].n+"</b> queda fuera; el otro jugador todavía puede resolver.");
+    tossTerminarPorError("<b>"+S.jug[jugador].n+"</b> se apuró y no acertó. La respuesta queda revelada.");
   }
 }
 function limpiarBonus(){if(bonusTimer){clearInterval(bonusTimer);bonusTimer=null;}}
