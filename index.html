@@ -947,6 +947,14 @@ html.rueda-prueba-boreal .centro{background:radial-gradient(circle at 38% 30%,#E
 .reacciones{display:flex;gap:8px;justify-content:center}
 .reacciones button{width:46px;height:46px;border-radius:50%;background:#2A1A3CEE;border:1px solid #FFFFFF26;font-size:1.35rem}
 .reacciones button:active{transform:scale(.9)}
+.chat-flotante{position:fixed;right:16px;bottom:100px;z-index:8;width:52px;height:52px;border-radius:50%;
+ background:#2A1A3CEE;border:1px solid #FFFFFF26;font-size:1.4rem;box-shadow:0 4px 10px #00000066;display:none;place-items:center}
+.chat-badge{position:absolute;top:-4px;right:-4px;background:var(--magenta);color:#fff;font-size:.65rem;
+ font-weight:800;border-radius:999px;min-width:18px;height:18px;display:none;align-items:center;justify-content:center;padding:0 4px}
+.chat-lista{display:flex;flex-direction:column;gap:8px;text-align:left;overflow-y:auto;min-height:140px;max-height:50vh;margin-bottom:12px}
+.chat-msg{max-width:80%;padding:8px 12px;border-radius:14px;font-size:.85rem;line-height:1.3;word-break:break-word}
+.chat-msg.yo{align-self:flex-end;background:var(--magenta);color:#fff;border-bottom-right-radius:4px}
+.chat-msg.otro{align-self:flex-start;background:#3A2A52;color:var(--crema);border-bottom-left-radius:4px}
 .emo{position:fixed;bottom:12%;font-size:3.2rem;pointer-events:none;z-index:20;animation:sube 1.7s ease-out forwards}
 @keyframes sube{0%{transform:translateY(0) scale(.4);opacity:0}
  18%{opacity:1;transform:translateY(-30px) scale(1.25)}
@@ -1654,6 +1662,17 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="no" id="ptMasTarde" style="width:100%;border-radius:12px;padding:12px;font-weight:700">Más tarde</button>
 </div></div>
 
+<div class="capa" id="capaChat"><div class="caja" style="max-width:380px;display:flex;flex-direction:column">
+  <h2>💬 Chat de sala</h2>
+  <div class="chat-lista" id="chatLista"></div>
+  <div style="display:flex;gap:8px">
+    <input id="chatInput" type="text" maxlength="200" placeholder="Escribí un mensaje…"
+      style="flex:1;border-radius:10px;border:1px solid #FFFFFF33;background:#00000033;color:var(--crema);padding:10px 12px;font-size:.9rem">
+    <button class="ok" id="chatEnviar" style="border-radius:10px;padding:10px 16px">Enviar</button>
+  </div>
+  <button class="no" id="chatCerrar" style="width:100%;border-radius:14px;padding:12px;font-weight:700;margin-top:10px">Cerrar</button>
+</div></div>
+
 <div class="capa" id="capaPromoEventos"><div class="caja" style="max-width:340px">
   <img src="assets/eventos/promo-ticket-eventos.webp" alt="" style="width:108px;height:108px;margin:4px auto 14px;display:block;border-radius:28px;box-shadow:0 8px 20px #00000055">
   <h2>¡Jugá los Eventos!</h2>
@@ -2012,6 +2031,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
       <button class="juego-abandonar" id="bAbandonarPartida" type="button">Abandonar partida</button>
     </div>
   </div>
+  <button class="chat-flotante" id="bAbrirChat" type="button" aria-label="Chat de sala">💬<span class="chat-badge" id="chatBadge">0</span></button>
   <div id="capaResuelto">
     <div id="ttResuelto">¡RESUELTO!</div>
     <div class="frase" id="frResuelto"></div>
@@ -7070,6 +7090,7 @@ function recibirHost(d){
     $("lobby").style.display="none";$("juego").style.display="block";armarTeclado();
     iniciarPartida(($("miNombre").value.trim()||"Jugador 1").slice(0,12),d.n,undefined,perfil.avatar||null,d.av||null,frameEquipado||null,d.frame||null,tableroEquipado||null,d.tab||null);return;}
   if(d.a==="reaccion"){volar(d.e);return;}
+  if(d.a==="chat"){chatAgregarMensaje("otro",String(d.txt||"").slice(0,200));return;}
   if(!S)return;
   if(d.a==="revancha"){if(S.fase==="fin")revancha();return;}
   if(S.fase==="tossup"&&d.a==="toss_pausa"){pausarToss(1);return;}
@@ -7100,6 +7121,7 @@ function recibirGuest(d){
     pintarTodo();}
   else if(d.tipo==="giro")animarRueda(d.destino,null);
   else if(d.tipo==="reaccion")volar(d.e);
+  else if(d.tipo==="chat")chatAgregarMensaje("otro",String(d.txt||"").slice(0,200));
   else if(d.tipo==="fin")mostrarFin(d.tit||"Se terminó",d.txt);
 }
 
@@ -8287,6 +8309,7 @@ function armarTeclado(){
   mundoActualizarHud();
   jgActualizarSobre();
   jgActualizarTorneo();
+  chatReset();
   $("teclado").innerHTML="";
   LETRAS.forEach(l=>{const b=document.createElement("button");b.textContent=l;b.dataset.l=l;
     if(VOCALES.includes(l))b.classList.add("vocal");
@@ -9646,6 +9669,45 @@ $("reacciones").addEventListener("click",ev=>{
   if(modo==="guest")enviar({a:"reaccion",e:b.dataset.e});
   else if(modo==="host")enviar({tipo:"reaccion",e:b.dataset.e});
 });
+/* Chat de sala: solo tiene sentido jugando 1v1 de verdad con otra
+   persona (host/guest, "Jugar con amigos") — contra la Máquina o en
+   local no hay nadie del otro lado para chatear. */
+let chatMensajes=[],chatNoLeidos=0,chatAbierto=false;
+function chatDisponibleAqui(){return modo==="host"||modo==="guest";}
+function chatReset(){
+  chatMensajes=[];chatNoLeidos=0;chatAbierto=false;
+  $("chatLista").innerHTML="";
+  chatActualizarBoton();
+}
+function chatActualizarBoton(){
+  $("bAbrirChat").style.display=chatDisponibleAqui()?"grid":"none";
+  $("chatBadge").style.display=chatNoLeidos>0?"flex":"none";
+  $("chatBadge").textContent=chatNoLeidos>9?"9+":chatNoLeidos;
+}
+function chatAgregarMensaje(de,txt){
+  if(!txt)return;
+  chatMensajes.push({de,txt});
+  const d=document.createElement("div");d.className="chat-msg "+de;d.textContent=txt;
+  $("chatLista").appendChild(d);
+  $("chatLista").scrollTop=$("chatLista").scrollHeight;
+  if(de==="otro"&&!chatAbierto){chatNoLeidos++;chatActualizarBoton();bip(700,.1,"sine",.05);}
+}
+function chatEnviarMensaje(){
+  const txt=$("chatInput").value.trim().slice(0,200);
+  if(!txt||!chatDisponibleAqui())return;
+  $("chatInput").value="";
+  chatAgregarMensaje("yo",txt);
+  if(modo==="guest")enviar({a:"chat",txt});
+  else if(modo==="host")enviar({tipo:"chat",txt});
+}
+$("bAbrirChat").onclick=()=>{
+  chatAbierto=true;chatNoLeidos=0;chatActualizarBoton();
+  $("capaChat").classList.add("ver");
+  setTimeout(()=>$("chatInput").focus(),50);
+};
+$("chatCerrar").onclick=()=>{chatAbierto=false;$("capaChat").classList.remove("ver");};
+$("chatEnviar").onclick=chatEnviarMensaje;
+$("chatInput").addEventListener("keydown",e=>{if(e.key==="Enter")chatEnviarMensaje();});
 $("fBoton").onclick=()=>{
   if(enTorneo){torneoJugarSiguiente();return;}
   if(modo==="guest"){enviar({a:"revancha"});$("modalFin").classList.remove("ver");
