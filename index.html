@@ -3089,7 +3089,11 @@ const TORNEO_PREMIOS=[
     else sumarMonedas(150);
   }},
   {en:7,medalla:"🥇",texto:"+1000 🪙",aplicar:()=>{sumarMonedas(1000);}},
-  {en:9,medalla:"🏆",texto:"+1 giro extra 🎡",aplicar:()=>{meta.girosExtraGratis=(meta.girosExtraGratis||0)+1;}}
+  {en:9,medalla:"🏆",texto:"1 marco de ruleta",aplicar:()=>{
+    const item=eventoElegirNoPoseido(RUEDAS_SKIN.filter(f=>f.id),ruedasComprados,Date.now());
+    if(item){ruedasComprados.add(item.id);guardarRuedasComprados();}
+    else sumarMonedas(500);
+  }}
 ];
 function torneosAbrir(){torneosActualizar();$("capaTorneos").classList.add("ver");}
 function torneosRenderEscalera(){
