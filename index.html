@@ -9680,9 +9680,14 @@ function chatReset(){
   chatActualizarBoton();
 }
 function chatActualizarBoton(){
-  $("bAbrirChat").style.display=chatDisponibleAqui()?"grid":"none";
+  const disp=chatDisponibleAqui();
+  $("bAbrirChat").style.display=disp?"grid":"none";
   $("chatBadge").style.display=chatNoLeidos>0?"flex":"none";
   $("chatBadge").textContent=chatNoLeidos>9?"9+":chatNoLeidos;
+  /* En Sala con amigos el chat de texto reemplaza a los emojis de
+     reacción; en los demás modos (Máquina, local, TV) siguen los
+     emojis, ahí no hay chat. */
+  $("reacciones").style.display=disp?"none":"";
 }
 function chatAgregarMensaje(de,txt){
   if(!txt)return;
