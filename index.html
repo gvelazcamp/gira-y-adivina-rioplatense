@@ -1492,8 +1492,8 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   </div>
   <div class="tn-item tn-card">
   <div class="tn-card-img">🛡️</div>
-  <div class="tn-card-info"><b>Escudo Saltar Prueba</b><span>Te saltea la Prueba de Velocidad</span></div>
-  <button class="tn-comprar" data-tipo="escudo_toss" data-precio="1400" data-nombre="Escudo Saltar Prueba">🪙 1400</button>
+  <div class="tn-card-info"><b>Escudo Saltar Toss-up</b><span>Te saltea la Prueba de Velocidad</span></div>
+  <button class="tn-comprar" data-tipo="escudo_toss" data-precio="1400" data-nombre="Escudo Saltar Toss-up">🪙 1400</button>
   </div>
   </div>
   <h3 class="tn-subtitulo tn-abre-lista" data-fijo="1" id="tituloAvatares">🧑‍🎤 Avatares premium 🔻</h3>
@@ -3981,7 +3981,7 @@ function tnEjecutarCompra(tipo,precio){
     mostrarToast("🛡️","+1 Escudo Detener Tiempo");
   }else if(tipo==="escudo_toss"){
     meta.escudosToss=(meta.escudosToss||0)+1;
-    mostrarToast("🛡️","+1 Escudo Saltar Prueba");
+    mostrarToast("🛡️","+1 Escudo Saltar Toss-up");
   }
   guardarMeta();
   tnActualizar();mundoActualizarHud();rwActualizarBadge();
