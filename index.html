@@ -3080,10 +3080,16 @@ function torneoComprobarTemporada(){
   }
 }
 const TORNEO_PREMIOS=[
-  {en:3,medalla:"🥉",texto:"30 min de vidas infinitas",aplicar:()=>{meta.vidasInfinitasHasta=Math.max(Date.now(),meta.vidasInfinitasHasta||0)+30*60*1000;}},
-  {en:5,medalla:"🥈",texto:"+500 🪙",aplicar:()=>{sumarMonedas(500);}},
-  {en:7,medalla:"🥇",texto:"+1 sobre de colección",aplicar:()=>{otorgarSobreSorpresa();}},
-  {en:9,medalla:"🏆",texto:"+1000 🪙",aplicar:()=>{sumarMonedas(1000);}}
+  {en:3,medalla:"🥉",texto:"30 min de vidas infinitas",
+   html:'<span class="evento-card-premio-item"><span class="evento-card-premio-emoji">❤️</span><span class="evento-card-premio-badge">30m</span></span>',
+   aplicar:()=>{meta.vidasInfinitasHasta=Math.max(Date.now(),meta.vidasInfinitasHasta||0)+30*60*1000;}},
+  {en:5,medalla:"🥈",texto:"1 marco de tablero",aplicar:()=>{
+    const item=eventoElegirNoPoseido(FICHAS_SKIN.filter(f=>f.id),fichasComprados,Date.now());
+    if(item)otorgarPremioConcreto({tipo:"ficha",id:item.id,nombre:item.nombre});
+    else sumarMonedas(150);
+  }},
+  {en:7,medalla:"🥇",texto:"+1000 🪙",aplicar:()=>{sumarMonedas(1000);}},
+  {en:9,medalla:"🏆",texto:"+1 giro extra 🎡",aplicar:()=>{meta.girosExtraGratis=(meta.girosExtraGratis||0)+1;}}
 ];
 function torneosAbrir(){torneosActualizar();$("capaTorneos").classList.add("ver");}
 function torneosRenderEscalera(){
@@ -3092,7 +3098,7 @@ function torneosRenderEscalera(){
     '<span class="torneo-paso-num">'+p.en+'</span>'+
     '<span class="torneo-paso-medalla">'+p.medalla+'</span>'+
     '<span class="torneo-paso-racha">'+p.en+' seguidas</span>'+
-    '<span class="torneo-paso-premio">'+p.texto+'</span></div>'
+    '<span class="torneo-paso-premio">'+(p.html||p.texto)+'</span></div>'
   ).join('');
 }
 function torneosActualizar(){
