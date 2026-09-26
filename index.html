@@ -3089,11 +3089,11 @@ const TORNEO_PREMIOS=[
    aplicar:()=>{meta.vidasInfinitasHasta=Math.max(Date.now(),meta.vidasInfinitasHasta||0)+30*60*1000;}},
   {en:5,medalla:"🥈",texto:"1 marco de tablero",
    preview:()=>{
-     const item=eventoElegirNoPoseido(FICHAS_SKIN.filter(f=>f.id),fichasComprados,Date.now());
+     const item=eventoElegirNoPoseido(FICHAS_SKIN.filter(f=>f.id),fichasComprados,torneoTemporadaIdx());
      return item?'<span class="ficha-skin-preview" style="width:52px;margin-left:auto;background-image:url(\'assets/fichas/'+item.id+'.webp\')"></span>':null;
    },
    aplicar:()=>{
-    const item=eventoElegirNoPoseido(FICHAS_SKIN.filter(f=>f.id),fichasComprados,Date.now());
+    const item=eventoElegirNoPoseido(FICHAS_SKIN.filter(f=>f.id),fichasComprados,torneoTemporadaIdx());
     if(item){
       otorgarPremioConcreto({tipo:"ficha",id:item.id,nombre:item.nombre});
       return{html:'<span class="ficha-skin-preview" style="background-image:url(\'assets/fichas/'+item.id+'.webp\')"></span>',texto:"Marco de tablero: "+item.nombre};
@@ -3103,11 +3103,11 @@ const TORNEO_PREMIOS=[
   {en:7,medalla:"🥇",texto:"+1000 🪙",aplicar:()=>{sumarMonedas(1000);}},
   {en:9,medalla:"🏆",texto:"1 marco de ruleta",
    preview:()=>{
-     const item=eventoElegirNoPoseido(RUEDAS_SKIN.filter(f=>f.id),ruedasComprados,Date.now());
+     const item=eventoElegirNoPoseido(RUEDAS_SKIN.filter(f=>f.id),ruedasComprados,torneoTemporadaIdx());
      return item?'<span class="ficha-skin-preview" style="width:52px;margin-left:auto;background-image:url(\'assets/ruedas/'+item.id+'.webp\')"></span>':null;
    },
    aplicar:()=>{
-    const item=eventoElegirNoPoseido(RUEDAS_SKIN.filter(f=>f.id),ruedasComprados,Date.now());
+    const item=eventoElegirNoPoseido(RUEDAS_SKIN.filter(f=>f.id),ruedasComprados,torneoTemporadaIdx());
     if(item){
       ruedasComprados.add(item.id);guardarRuedasComprados();
       return{html:'<span class="ficha-skin-preview" style="background-image:url(\'assets/ruedas/'+item.id+'.webp\')"></span>',texto:"Marco de ruleta: "+item.nombre};
