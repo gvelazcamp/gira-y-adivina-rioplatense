@@ -3085,14 +3085,20 @@ const TORNEO_PREMIOS=[
    aplicar:()=>{meta.vidasInfinitasHasta=Math.max(Date.now(),meta.vidasInfinitasHasta||0)+30*60*1000;}},
   {en:5,medalla:"🥈",texto:"1 marco de tablero",aplicar:()=>{
     const item=eventoElegirNoPoseido(FICHAS_SKIN.filter(f=>f.id),fichasComprados,Date.now());
-    if(item)otorgarPremioConcreto({tipo:"ficha",id:item.id,nombre:item.nombre});
-    else sumarMonedas(150);
+    if(item){
+      otorgarPremioConcreto({tipo:"ficha",id:item.id,nombre:item.nombre});
+      return{html:'<span class="ficha-skin-preview" style="background-image:url(\'assets/fichas/'+item.id+'.webp\')"></span>',texto:"Marco de tablero: "+item.nombre};
+    }
+    sumarMonedas(150);
   }},
   {en:7,medalla:"🥇",texto:"+1000 🪙",aplicar:()=>{sumarMonedas(1000);}},
   {en:9,medalla:"🏆",texto:"1 marco de ruleta",aplicar:()=>{
     const item=eventoElegirNoPoseido(RUEDAS_SKIN.filter(f=>f.id),ruedasComprados,Date.now());
-    if(item){ruedasComprados.add(item.id);guardarRuedasComprados();}
-    else sumarMonedas(500);
+    if(item){
+      ruedasComprados.add(item.id);guardarRuedasComprados();
+      return{html:'<span class="ficha-skin-preview" style="background-image:url(\'assets/ruedas/'+item.id+'.webp\')"></span>',texto:"Marco de ruleta: "+item.nombre};
+    }
+    sumarMonedas(500);
   }}
 ];
 function torneosAbrir(){torneosActualizar();$("capaTorneos").classList.add("ver");}
@@ -3145,11 +3151,12 @@ function finalizarPartidaTorneo(g,detalle){
   if(g===0){
     torneoRacha++;
     const premio=TORNEO_PREMIOS.find(p=>p.en===torneoRacha);
-    let premioTxt="";
-    if(premio){torneoPremiosGanados.push(premio.en);premio.aplicar();guardarMeta();mundoActualizarHud();premioTxt=" 🎉 Ganaste: "+premio.texto+".";}
+    let premioTxt="",visual=null;
+    if(premio){torneoPremiosGanados.push(premio.en);visual=premio.aplicar();guardarMeta();mundoActualizarHud();premioTxt=" 🎉 Ganaste: "+premio.texto+".";}
     $("fCopa").textContent="🏆";
     mostrarFin("¡Ganaste! Racha: "+torneoRacha,detalle+premioTxt);
     $("fSalir").style.display="none";$("fBoton").style.display="";$("fBoton").textContent="Siguiente partida →";
+    if(visual)mostrarPackItems([visual]);
   }else{
     enTorneo=false;
     const rachaFinal=torneoRacha,huboPremios=torneoPremiosGanados.length>0;
