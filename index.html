@@ -1654,6 +1654,17 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="no" id="ptMasTarde" style="width:100%;border-radius:12px;padding:12px;font-weight:700">Más tarde</button>
 </div></div>
 
+<div class="capa" id="capaPromoEventos"><div class="caja" style="max-width:340px">
+  <img src="assets/eventos/promo-ticket-eventos.webp" alt="" style="width:108px;height:108px;margin:4px auto 14px;display:block;border-radius:28px;box-shadow:0 8px 20px #00000055">
+  <h2>¡Jugá los Eventos!</h2>
+  <p>Cada evento que jugás te da 🎟️ <b>tickets</b> para entrar a los <b>Torneos</b> y competir por premios increíbles.</p>
+  <button class="btn-grande cta-jugar" id="peIrEventos" style="margin-bottom:10px">
+    <span class="cta-play">🎉</span>
+    <span class="cta-txt"><b>Ir a Eventos</b><small>Sumá tickets para el Torneo</small></span>
+  </button>
+  <button class="no" id="peMasTarde" style="width:100%;border-radius:12px;padding:12px;font-weight:700">Más tarde</button>
+</div></div>
+
 <div class="capa" id="capaBienvenida"><div class="caja" style="max-width:380px;padding:0;background:transparent;border:none;border-radius:20px;overflow:hidden;position:relative">
   <img src="assets/tutorial/bienvenida.webp" alt="Aprendé en 30 segundos: girás la ruleta, elegís una letra, adivinás y ganás" style="width:100%;display:block">
   <button id="bienvenidaCerrarX" aria-label="Cerrar" style="position:absolute;left:86.5%;top:3%;width:11%;aspect-ratio:1;background:transparent;border:none;padding:0"></button>
@@ -1689,6 +1700,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <button class="btn-grande sec" id="bPruebaGiftTienda"><span class="btn-ico">🛡️</span><span class="btn-txt">Vista previa Nuevo: Escudos</span></button>
     <button class="btn-grande sec" id="bPruebaSalaTVBots"><span class="btn-ico">📺</span><span class="btn-txt">Sala TV con bots ficticios</span></button>
     <button class="btn-grande sec" id="bPruebaEscudos"><span class="btn-ico">🛡️</span><span class="btn-txt">Escudos · siempre cae Quiebra/Pierde</span></button>
+    <button class="btn-grande sec" id="bPruebaPromoEventos"><span class="btn-ico">🎟️</span><span class="btn-txt">Vista previa Jugá los Eventos</span></button>
   </div>
   <button class="no" id="pruebasCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
 </div></div>
@@ -2717,6 +2729,8 @@ $("pdMasTarde").onclick=()=>{$("capaPartidaDiaria").classList.remove("ver");pdGu
 let ptVistaPrueba=false;
 $("ptIrTienda").onclick=()=>{$("capaPromoTienda").classList.remove("ver","pt-vista-prueba");if(!ptVistaPrueba){ptGuardarEstado("vista");}ptVistaPrueba=false;$("bTienda").click();};
 $("ptMasTarde").onclick=()=>{$("capaPromoTienda").classList.remove("ver","pt-vista-prueba");if(!ptVistaPrueba){ptGuardarEstado("vista");}ptVistaPrueba=false;};
+$("peIrEventos").onclick=()=>{$("capaPromoEventos").classList.remove("ver");peGuardar({visto:true});abrirEventos();};
+$("peMasTarde").onclick=()=>{$("capaPromoEventos").classList.remove("ver");peGuardar({visto:true});};
 $("bienvenidaTutorial").onclick=()=>{$("capaBienvenida").classList.remove("ver");iniciarTutorial();};
 function bienvenidaContinuarSinTutorial(){
   $("capaBienvenida").classList.remove("ver");
@@ -3346,6 +3360,34 @@ function ptEstadoHoy(){
     return raw.estado;}catch(e){return"pendiente";}
 }
 function ptGuardarEstado(estado){try{localStorage.setItem("gya_promo_tienda",JSON.stringify({dia:fechaHoy(),estado}));}catch(e){}}
+/* Popup "Jugá los Eventos": aparece una sola vez por día, después de
+   terminar la 2da partida del día, y solo si todavía no entró a
+   Eventos ese mismo día (si ya entró, no tiene sentido invitarlo). */
+function peLeerEstado(){
+  try{return JSON.parse(localStorage.getItem("gya_promo_eventos")||"null");}catch(e){return null;}
+}
+function peEstadoHoy(){
+  const raw=peLeerEstado();
+  if(!raw||raw.dia!==fechaHoy())return{dia:fechaHoy(),partidas:0,visto:false,entroEventos:false};
+  return raw;
+}
+function peGuardar(cambios){
+  try{localStorage.setItem("gya_promo_eventos",JSON.stringify({...peEstadoHoy(),...cambios}));}catch(e){}
+}
+function peMarcarEntroEventos(){peGuardar({entroEventos:true});}
+function peChequearAutoPopup(){
+  const st=peEstadoHoy();
+  if(st.visto||st.entroEventos)return;
+  const partidas=st.partidas+1;
+  peGuardar({partidas});
+  if(partidas<2)return;
+  setTimeout(()=>{
+    const actual=peEstadoHoy();
+    if(actual.visto||actual.entroEventos)return;
+    if(document.hidden||$("setup").style.display==="none"||document.querySelector(".capa.ver"))return;
+    $("capaPromoEventos").classList.add("ver");
+  },900);
+}
 function diasEntreFechas(a,b){return Math.round((new Date(b+"T00:00:00")-new Date(a+"T00:00:00"))/86400000);}
 function chequearRachaDiaria(){
   const hoy=fechaHoy();
@@ -5073,6 +5115,7 @@ $("bPruebaAltaPerfil").onclick=()=>{$("capaPruebas").classList.remove("ver");$("
 $("bPruebaGiftTienda").onclick=()=>{if(!esGonzalo())return;ptVistaPrueba=true;$("capaPruebas").classList.remove("ver");$("capaMas").classList.remove("ver");$("capaPromoTienda").classList.add("pt-vista-prueba","ver");};
 $("bPruebaSalaTVBots").onclick=iniciarPruebaSalaTVBots;
 $("bPruebaEscudos").onclick=iniciarPruebaEscudos;
+$("bPruebaPromoEventos").onclick=()=>{if(!esGonzalo())return;$("capaPruebas").classList.remove("ver");$("capaMas").classList.remove("ver");$("capaPromoEventos").classList.add("ver");};
 $("pruebasCerrar").onclick=()=>$("capaPruebas").classList.remove("ver");
 $("bTutorial").onclick=()=>$("capaTutorial").classList.add("ver");
 $("tutoCerrar").onclick=()=>$("capaTutorial").classList.remove("ver");
@@ -8133,7 +8176,7 @@ function revancha(){
   else continuar2();
 }
 function mostrarFin(tit,txt,selloImg){
-  if(!enPruebaPunteros&&!tit.startsWith("Partida abandonada"))objSumar("partidas",1);
+  if(!enPruebaPunteros&&!tit.startsWith("Partida abandonada")){objSumar("partidas",1);peChequearAutoPopup();}
   $("fBoton").style.display="";
   $("capaResuelto").classList.remove("ver");
   $("capaResuelto").querySelectorAll(".papel").forEach(x=>x.remove());
@@ -8715,6 +8758,7 @@ setInterval(()=>{
   actualizarEventoFindeUI();
 },1000);
 function abrirEventos(){
+  peMarcarEntroEventos();
   detenerPartidaAnterior();
   cobrarEventoInterrumpido();
   cobrarEventoFindeInterrumpido();
