@@ -6159,6 +6159,20 @@ function actualizarChipPerfil(){
   if($("campoNombre"))$("campoNombre").style.display=perfilExiste()?"none":"";
   actualizarAccesoPruebas();
 }
+/* Evita que dos jugadores distintos elijan el mismo nombre de perfil:
+   además de generar confusión, empujarUsuario() hace upsert en
+   gya_ranking con onConflict:"grupo,apodo", así que un nombre repetido
+   pisaría silenciosamente los datos guardados de otro jugador. Si no
+   hay conexión a Supabase, no bloqueamos (mismo criterio best-effort
+   que el resto de las llamadas a Supabase de este archivo). */
+async function nombrePerfilDisponible(nombre){
+  const supa=obtenerSupa();
+  if(!supa)return true;
+  try{
+    const r=await supa.from("gya_ranking").select("apodo").in("grupo",[USR_GRUPO,RK_GRUPO]).ilike("apodo",nombre).limit(1);
+    return !(r.data&&r.data.length);
+  }catch(e){return true;}
+}
 function guardarPerfil(nombre,avatar){
   perfil={nombre,avatar};
   try{
@@ -6226,15 +6240,21 @@ function previsualizarPerfilVacio(){
 }
 $("perfilNombre").addEventListener("input",actualizarBotonPerfil);
 $("perfilNombre").addEventListener("keydown",e=>{if(e.key==="Enter"&&!$("perfilNombreOk").disabled)$("perfilNombreOk").click();});
-$("perfilNombreOk").onclick=()=>{
+$("perfilNombreOk").onclick=async()=>{
   const n=$("perfilNombre").value.trim().slice(0,12);
   if(!n)return;
   if(nombrePerfilAutomatico(n)){mostrarToast("👤","Elegí un nombre propio, distinto de "+n+".");return;}
+  if(nombrePerfilPersonal(perfil.nombre).toLowerCase()!==n.toLowerCase()){
+    $("perfilNombreOk").disabled=true;
+    const disponible=await nombrePerfilDisponible(n);
+    $("perfilNombreOk").disabled=!nombrePerfilPersonal($("perfilNombre").value.slice(0,12));
+    if(!disponible){mostrarToast("👤","Ese nombre ya lo usa otro jugador. Probá otro, por ej. "+n+"2.");return;}
+  }
   $("perfilNombre").value=n;
   perfilMostrarPaso("avatar");actualizarBotonPerfil();
 };
 $("perfilCambiarNombre").onclick=()=>perfilMostrarPaso("nombre");
-$("perfilContinuar").onclick=()=>{
+$("perfilContinuar").onclick=async()=>{
   if(previsualizandoPerfil){
     previsualizandoPerfil=false;perfilObligatorio=false;tutOcultarSpotlight();
     $("pantPerfil").style.display="none";$("perfilCerrar").style.display="";$("setup").style.display="block";
@@ -6244,6 +6264,12 @@ $("perfilContinuar").onclick=()=>{
   if(!n||!avatarElegido)return;
   if(nombrePerfilAutomatico(n)){mostrarToast("👤","Elegí un nombre propio, distinto de "+n+".");return;}
   if(avatarElegido===AVATAR_EXCLUSIVO.id&&n.toLowerCase()!==AVATAR_EXCLUSIVO.nombre)return;
+  if(nombrePerfilPersonal(perfil.nombre).toLowerCase()!==n.toLowerCase()){
+    $("perfilContinuar").disabled=true;
+    const disponible=await nombrePerfilDisponible(n);
+    actualizarBotonPerfil();
+    if(!disponible){mostrarToast("👤","Ese nombre ya lo usa otro jugador. Probá otro, por ej. "+n+"2.");return;}
+  }
   guardarPerfil(n,avatarElegido);
   perfilObligatorio=false;$("perfilCerrar").style.display="";
   tutOcultarSpotlight();
