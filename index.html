@@ -2549,6 +2549,7 @@ function cargarMeta(){
   if(typeof m.ultimaRuleta!=="number")m.ultimaRuleta=0;
   if(!Number.isSafeInteger(m.girosExtraGratis)||m.girosExtraGratis<0)m.girosExtraGratis=0;
   if(!Number.isSafeInteger(m.ticketsTorneo)||m.ticketsTorneo<0)m.ticketsTorneo=0;
+  if(typeof m.primerGiroHecho!=="boolean")m.primerGiroHecho=false;
   if(!Number.isSafeInteger(m.torneoTemporadaVista))m.torneoTemporadaVista=-1;
   if(typeof m.ultimaGratisDiaria!=="number")m.ultimaGratisDiaria=0;
   if(typeof m.monedasGanadasTotal!=="number")m.monedasGanadasTotal=m.monedas;
@@ -7771,8 +7772,16 @@ function hostGirar(){
     s=SEG[Math.floor(local/paso)%SEG.length];
     intentos++;
   }while((enTutorial&&s.t&&intentos<40)||(s.t==="PIERDE"&&(S.pierdeSeguidas||0)>=2&&intentos<40)||
-    (pruebaEscudosForzar&&s.t!=="PIERDE"&&s.t!=="QUIEBRA"&&intentos<200));
+    (pruebaEscudosForzar&&s.t!=="PIERDE"&&s.t!=="QUIEBRA"&&intentos<200)||
+    (!meta.primerGiroHecho&&modo==="bot"&&destino!==null&&!enTorneo&&!vinoDeJugarOnline&&(s.t==="PIERDE"||s.t==="QUIEBRA")&&intentos<40));
   S.pierdeSeguidas=s.t==="PIERDE"?(S.pierdeSeguidas||0)+1:0;
+  /* Regla del primer giro: en ¡Jugar ahora! (Mapa de Uruguay), el
+     primerísimo giro que hace un usuario nuevo en toda la vida del
+     juego nunca puede ser Pierde turno ni Quiebra — se marca como
+     usado la primera vez que gira ahí, sea cual sea el resultado. */
+  if(!meta.primerGiroHecho&&modo==="bot"&&destino!==null&&!enTorneo&&!vinoDeJugarOnline){
+    meta.primerGiroHecho=true;guardarMeta();
+  }
   if(modo!=="local"&&modo!=="bot")enviar({tipo:"giro",destino});
   animarRueda(destino,()=>{
     if(enPruebaPunteros){
