@@ -6206,7 +6206,7 @@ function expansionDesbloqueada(){return uruguayCompleto()||esPerfilGonzalo();}
 function actualizarBotonExpansion(){
   const b=$("bExpansion");if(!b)return;
   const listo=expansionDesbloqueada();
-  if(esPerfilGonzalo())b.textContent=mapaPaisActual==="argentina"?"🇺🇾 Ver mapa Uruguay":"🇦🇷 Ver mapa Argentina";
+  if(esPerfilGonzalo())b.textContent=mapaPaisActual==="argentina"?"🇺🇾 Ver mapa Uruguay":"⛵ Continuar expansión";
   else b.textContent=listo?"⛵ Continuar expansión":"🔒 Continuar expansión";
   b.classList.toggle("bloqueado-exp",!listo&&!esPerfilGonzalo());
 }
@@ -6220,18 +6220,26 @@ function jugarAnimacionExpansion(){
     if(i<imgs.length){imgs.forEach((im,k)=>im.classList.toggle("ver",k===i));setTimeout(paso,950);}
     else setTimeout(()=>{
       $("expansionAnim").classList.remove("ver");
-      $("mundo").style.display="none";
-      $("mundoArgentina").classList.add("ver");
+      if(esPerfilGonzalo()){
+        mapaPaisForzado="argentina";
+        sincronizarMundoActivo();
+        verMundo();
+      }else{
+        $("mundo").style.display="none";
+        $("mundoArgentina").classList.add("ver");
+      }
     },1100);
   };
   setTimeout(paso,950);
 }
 $("bExpansion").onclick=()=>{
   if(esPerfilGonzalo()){
-    mapaPaisForzado=mapaPaisActual==="argentina"?"uruguay":"argentina";
-    sincronizarMundoActivo();
-    verMundo();
-    mostrarToast(mapaPaisActual==="argentina"?"🇦🇷":"🇺🇾","Vista de prueba: mapa "+(mapaPaisActual==="argentina"?"Argentina":"Uruguay"));
+    if(mapaPaisActual==="argentina"){
+      mapaPaisForzado="uruguay";
+      sincronizarMundoActivo();
+      verMundo();
+      mostrarToast("🇺🇾","Vista de prueba: mapa Uruguay");
+    }else jugarAnimacionExpansion();
     return;
   }
   if(!expansionDesbloqueada()){mostrarToast("🔒","Ganá las 21 ciudades de Uruguay para desbloquear la expansión.");return;}
