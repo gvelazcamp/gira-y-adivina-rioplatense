@@ -1333,7 +1333,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
       <path d="M4 10h11a5.5 5.5 0 0 1 0 11h-3.5"/>
     </svg>
   </button>
-  <h1 class="titulo" style="font-size:2.4rem">URUGUAY</h1>
+  <h1 class="titulo" id="mundoTitulo" style="font-size:2.4rem">URUGUAY</h1>
   <div class="mundo-hud"><span id="mhVidas">❤️ 5</span><span class="mh-monedas" id="mhMonedas" title="Monedas: se ganan jugando y sirven para comprar en la Tienda">🪙 500 monedas</span></div>
   <p class="sub" id="subMundo">Ganale a cada rival y andá abriendo el país.</p>
   <div id="mapa"></div>
@@ -2541,7 +2541,7 @@ function conectar(alConectar,alFallar,asignar,i){
 $("rondas").addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b.id==="bTutorial")return;
  [...$("rondas").children].forEach(x=>x.setAttribute("aria-pressed",x===b));rondasElegidas=+b.dataset.r;});
 
-const MUNDO=[
+const MUNDO_URUGUAY=[
  {id:"durazno",pasos:[[24, 16], [36, 23], [20, 36], [33, 50]],nx:50,ny:60,bg:"assets/worlds/durazno.webp",video:"assets/worlds/durazno-loop.mp4",n:"Durazno",r:"El Tío del Asado",rondas:4,cats:["Dicho popular","Persona"],rica:true},
  {id:"montevideo",pasos:[[20, 22], [34, 31], [46, 41], [30, 55]],nx:58,ny:60,bg:"assets/worlds/montevideo.webp",video:"assets/worlds/montevideo-loop.mp4",n:"Montevideo",r:"La Vecina Curiosa",rondas:4,cats:["Lugar","Casa y trabajo"],rica:true},
  {id:"piriapolis",pasos:[[22, 20], [35, 28], [26, 40], [40, 52]],nx:56,ny:58,bg:"assets/worlds/piriapolis.webp",n:"Piriápolis",r:"El Guardavidas",rondas:4,cats:["Clima y verano","Viaje"],rica:true},
@@ -2563,12 +2563,30 @@ const MUNDO=[
  {id:"soriano",pasos:[[24, 18], [36, 26], [26, 38], [40, 48]],nx:56,ny:56,bg:"assets/worlds/soriano.webp",n:"Mercedes",r:"El Navegante",rondas:4,cats:["Cosas de la casa","Persona"],rica:true},
  {id:"treinta-y-tres",pasos:[[20, 16], [32, 24], [22, 36], [36, 48]],nx:46,ny:48,bg:"assets/worlds/treinta-y-tres.webp",n:"Treinta y Tres",r:"El Pescador",rondas:4,cats:["Cultura uruguaya","Pelicula"],rica:true},
  {id:"centenario",pasos:[[20, 22], [32, 30], [22, 42], [36, 52]],nx:60,ny:55,bg:"assets/worlds/estadio-centenario.webp",n:"Estadio Centenario",r:"La Campeona",rondas:4,cats:["Personajes","Dicho popular"],rica:true}];
-let ganados=(()=>{try{return new Set(JSON.parse(localStorage.getItem("larueda_mundo")||"[]"));}catch(e){return new Set();}})();
-const guardarMundo=()=>{try{localStorage.setItem("larueda_mundo",JSON.stringify([...ganados]));}catch(e){}};
+const MUNDO_ARGENTINA=[
+ {id:"bariloche",pasos:[[24, 18], [42, 30], [28, 48], [46, 66]],nx:46,ny:58,bg:"assets/worlds/bariloche.webp",n:"Bariloche",r:"La Chocolatera",rondas:4,cats:["Viaje","Clima y verano"],rica:true},
+ {id:"el-calafate",pasos:[[26, 20], [44, 34], [30, 52], [48, 70]],nx:55,ny:56,bg:"assets/worlds/el-calafate.webp",n:"El Calafate",r:"El Guía del Glaciar",rondas:4,cats:["Lugar","Animales"],rica:true}
+];
+let mapaPaisForzado=null;
+function esGonzaloGuardado(){try{return(localStorage.getItem("gya_nombre")||"").trim().toLowerCase()==="gonzalo";}catch(e){return false;}}
+function paisMapaActivo(){try{if(mapaPaisForzado)return mapaPaisForzado;return esGonzaloGuardado()&&localStorage.getItem("gya_pais")==="argentina"?"argentina":"uruguay";}catch(e){return"uruguay";}}
+let mapaPaisActual=paisMapaActivo();
+let MUNDO=mapaPaisActual==="argentina"?MUNDO_ARGENTINA:MUNDO_URUGUAY;
+function claveMundo(base){return mapaPaisActual==="argentina"?base+"_argentina":base;}
+function cargarGanadosMapa(){try{return new Set(JSON.parse(localStorage.getItem(claveMundo("larueda_mundo"))||"[]"));}catch(e){return new Set();}}
+function cargarProgresoMapa(){try{return JSON.parse(localStorage.getItem(claveMundo("larueda_pasos"))||"{}");}catch(e){return {};}}
+let ganados=cargarGanadosMapa();
+const guardarMundo=()=>{try{localStorage.setItem(claveMundo("larueda_mundo"),JSON.stringify([...ganados]));}catch(e){}};
 let destino=null,pasoActual=null,fSiguientePaso=null;
-let progreso=(()=>{try{return JSON.parse(localStorage.getItem("larueda_pasos")||"{}");}catch(e){return {};}})();
-const guardarPasos=()=>{try{localStorage.setItem("larueda_pasos",JSON.stringify(progreso));}catch(e){}};
+let progreso=cargarProgresoMapa();
+const guardarPasos=()=>{try{localStorage.setItem(claveMundo("larueda_pasos"),JSON.stringify(progreso));}catch(e){}};
 const hechos=id=>progreso[id]||0;
+function sincronizarMundoActivo(){
+  const pais=paisMapaActivo();
+  if(pais===mapaPaisActual)return;
+  mapaPaisActual=pais;MUNDO=mapaPaisActual==="argentina"?MUNDO_ARGENTINA:MUNDO_URUGUAY;
+  ganados=cargarGanadosMapa();progreso=cargarProgresoMapa();destino=null;pasoActual=null;fSiguientePaso=null;
+}
 
 /* ---- Vidas y monedas (metaprogreso) ---- */
 const METAK="gya_mundo_meta",VIDA_MS=30*60*1000,VIDAS_MAX=5;
@@ -4935,6 +4953,28 @@ const COLECCIONES={
       {id:"camiseta",nombre:"Camiseta Celeste",img:"assets/collectibles/centenario/coleccion-centenario-camiseta.webp"},
       {id:"torre",nombre:"Torre de los Homenajes",img:"assets/collectibles/centenario/coleccion-centenario-torre.webp"}
     ]
+  },
+  bariloche:{
+    nombre:"Bariloche",
+    sobreCerrado:"assets/collectibles/bariloche/coleccion-bariloche-chocolate.webp",
+    sobreAbierto:"assets/collectibles/bariloche/coleccion-bariloche-chocolate.webp",
+    items:[
+      {id:"catedral",nombre:"La Catedral de Bariloche",img:"assets/collectibles/bariloche/coleccion-bariloche-catedral.webp"},
+      {id:"cerro-otto",nombre:"Cerro Otto",img:"assets/collectibles/bariloche/coleccion-bariloche-cerro-otto.webp"},
+      {id:"chocolate",nombre:"Chocolate caliente",img:"assets/collectibles/bariloche/coleccion-bariloche-chocolate.webp"},
+      {id:"isla-victoria",nombre:"Isla Victoria",img:"assets/collectibles/bariloche/coleccion-bariloche-isla-victoria.webp"}
+    ]
+  },
+  "el-calafate":{
+    nombre:"El Calafate",
+    sobreCerrado:"assets/collectibles/el-calafate/coleccion-el-calafate-glaciar.webp",
+    sobreAbierto:"assets/collectibles/el-calafate/coleccion-el-calafate-glaciar.webp",
+    items:[
+      {id:"cordero",nombre:"Cordero patagónico",img:"assets/collectibles/el-calafate/coleccion-el-calafate-cordero.webp"},
+      {id:"glaciar",nombre:"Glaciar Perito Moreno",img:"assets/collectibles/el-calafate/coleccion-el-calafate-glaciar.webp"},
+      {id:"laguna-nimez",nombre:"Laguna Nimez",img:"assets/collectibles/el-calafate/coleccion-el-calafate-laguna-nimez.webp"},
+      {id:"tempanos",nombre:"Témpanos",img:"assets/collectibles/el-calafate/coleccion-el-calafate-tempanos.webp"}
+    ]
   }
 };
 function cargarColeccionMeta(){
@@ -5818,6 +5858,38 @@ const CIUDAD_RICA={
       {img:"assets/passport/centenario-sello-4.webp",nombre:"Aquí Nace el Fútbol"},
       {img:"assets/passport/centenario-sello-rival.webp",nombre:"La Campeona"}
     ]
+  },
+  bariloche:{
+    nodos:[
+      {tipo:"paso",x:24,y:18},
+      {tipo:"paso",x:42,y:30},
+      {tipo:"paso",x:28,y:48},
+      {tipo:"paso",x:46,y:66},
+      {tipo:"rival",x:32,y:88}
+    ],
+    sellos:[
+      {img:"assets/passport/bariloche-sello-1.webp",nombre:"Centro Cívico"},
+      {img:"assets/passport/bariloche-sello-2.webp",nombre:"Catedral"},
+      {img:"assets/passport/bariloche-sello-3.webp",nombre:"Cerro Otto"},
+      {img:"assets/passport/bariloche-sello-4.webp",nombre:"Chocolate"},
+      {img:"assets/passport/bariloche-sello-rival.webp",nombre:"La Chocolatera"}
+    ]
+  },
+  "el-calafate":{
+    nodos:[
+      {tipo:"paso",x:26,y:18},
+      {tipo:"paso",x:44,y:30},
+      {tipo:"paso",x:30,y:48},
+      {tipo:"paso",x:48,y:66},
+      {tipo:"rival",x:34,y:88}
+    ],
+    sellos:[
+      {img:"assets/passport/el-calafate-sello-1.webp",nombre:"Glaciar"},
+      {img:"assets/passport/el-calafate-sello-2.webp",nombre:"Pasarelas"},
+      {img:"assets/passport/el-calafate-sello-3.webp",nombre:"Laguna Nimez"},
+      {img:"assets/passport/el-calafate-sello-4.webp",nombre:"Témpanos"},
+      {img:"assets/passport/el-calafate-sello-rival.webp",nombre:"El Guía del Glaciar"}
+    ]
   }
 };
 let dzCiudadIdx=0;
@@ -5994,11 +6066,13 @@ activarArrastre($("mapa"),"arrastrando");
 
 let mapaVideoObs=null;
 function verMundo(){
+  sincronizarMundoActivo();
   $("fondoMundo").classList.remove("ver");
   $("setup").style.display="none";$("juego").style.display="none";$("pantDurazno").style.display="none";
   $("mundo").style.display="block";
   mundoActualizarHud();
-  $("subMundo").textContent="Ganaste "+ganados.size+" de "+MUNDO.length+" destinos.";
+  if($("mundoTitulo"))$("mundoTitulo").textContent=mapaPaisActual==="argentina"?"ARGENTINA":"URUGUAY";
+  $("subMundo").textContent="Mapa de "+(mapaPaisActual==="argentina"?"Argentina":"Uruguay")+": ganaste "+ganados.size+" de "+MUNDO.length+" destinos.";
   actualizarBotonExpansion();
   const m=$("mapa");m.innerHTML="";
   const tira=document.createElement("div");tira.className="tira";
@@ -6122,18 +6196,19 @@ $("salirMundo").onclick=()=>{$("mundo").style.display="none";$("setup").style.di
   $("fondoMundo").classList.remove("ver");};
 $("mundoVolverArriba").onclick=()=>$("salirMundo").onclick();
 
-/* ---- Expansión a Argentina: todavía no es jugable, por ahora es un
-   teaser animado que se desbloquea al ganar las 21 ciudades de Uruguay. ---- */
-function uruguayCompleto(){return MUNDO.every(d=>ganados.has(d.id));}
-/* Gonzalo puede entrar a ver el teaser de la expansión sin completar
-   Uruguay, para poder probarlo y pensar los próximos pasos. */
+/* ---- Expansión Uruguay ↔ Argentina: Gonzalo puede alternar el mapa
+   de prueba de Argentina desde Continuar expansión. ---- */
+function uruguayCompleto(){try{const g=new Set(JSON.parse(localStorage.getItem("larueda_mundo")||"[]"));return MUNDO_URUGUAY.every(d=>g.has(d.id));}catch(e){return false;}}
+/* Gonzalo puede entrar a probar el mapa de expansión sin completar
+   Uruguay, para poder pensar el flujo Uruguay ↔ Argentina. */
 function esPerfilGonzalo(){return(perfil.nombre||"").trim().toLowerCase()===AVATAR_EXCLUSIVO.nombre;}
 function expansionDesbloqueada(){return uruguayCompleto()||esPerfilGonzalo();}
 function actualizarBotonExpansion(){
   const b=$("bExpansion");if(!b)return;
   const listo=expansionDesbloqueada();
-  b.textContent=listo?"⛵ Continuar expansión":"🔒 Continuar expansión";
-  b.classList.toggle("bloqueado-exp",!listo);
+  if(esPerfilGonzalo())b.textContent=mapaPaisActual==="argentina"?"🇺🇾 Ver mapa Uruguay":"🇦🇷 Ver mapa Argentina";
+  else b.textContent=listo?"⛵ Continuar expansión":"🔒 Continuar expansión";
+  b.classList.toggle("bloqueado-exp",!listo&&!esPerfilGonzalo());
 }
 function jugarAnimacionExpansion(){
   const imgs=[$("expImg1"),$("expImg2"),$("expImg3")];
@@ -6152,6 +6227,13 @@ function jugarAnimacionExpansion(){
   setTimeout(paso,950);
 }
 $("bExpansion").onclick=()=>{
+  if(esPerfilGonzalo()){
+    mapaPaisForzado=mapaPaisActual==="argentina"?"uruguay":"argentina";
+    sincronizarMundoActivo();
+    verMundo();
+    mostrarToast(mapaPaisActual==="argentina"?"🇦🇷":"🇺🇾","Vista de prueba: mapa "+(mapaPaisActual==="argentina"?"Argentina":"Uruguay"));
+    return;
+  }
   if(!expansionDesbloqueada()){mostrarToast("🔒","Ganá las 21 ciudades de Uruguay para desbloquear la expansión.");return;}
   jugarAnimacionExpansion();
 };
@@ -6161,6 +6243,7 @@ $("bVolverDeArgentina").onclick=()=>{
 };
 
 function empezarDestino(i,paso){
+  sincronizarMundoActivo();
   esEventoCiudad=false;eventoCiudadPartida=null;eventoCiudadResultado=false;
   esEventoFinde=false;eventoFindePartida=null;eventoFindeResultado=false;
   entrenamientoLimpiarFlags();
@@ -6339,6 +6422,7 @@ $("perfilContinuar").onclick=async()=>{
     if(!disponible){mostrarToast("👤","Ese nombre ya lo usa otro jugador. Probá otro, por ej. "+n+"2.");return;}
   }
   guardarPerfil(n,avatarElegido,paisElegido);
+  mapaPaisForzado=null;sincronizarMundoActivo();
   perfilObligatorio=false;$("perfilCerrar").style.display="";
   tutOcultarSpotlight();
   $("pantPerfil").style.display="none";
