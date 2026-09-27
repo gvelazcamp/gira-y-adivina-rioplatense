@@ -21,23 +21,31 @@ self.addEventListener("activate", (e) => {
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;
 
-  // Las imágenes de assets/ se sirven de la caché primero: la tienda no
-  // tiene que esperar a la red para mostrar lo que ya se vio antes (antes
-  // pedía por red cada ícono cada vez que se abría la tienda). IMPORTANTE:
-  // si se reemplaza el CONTENIDO de un archivo ya existente en assets/
-  // (mismo nombre, distinta imagen), hay que subir el CACHE_NAME de acá
-  // arriba, si no los celulares que ya lo cachearon nunca ven el cambio.
-  if (new URL(e.request.url).pathname.includes("/assets/")) {
+  const url = new URL(e.request.url);
+  const esAssetLocal = url.pathname.includes("/assets/");
+  const esLibreriaExterna = url.origin !== self.location.origin;
+
+  // Las imágenes de assets/ Y las librerías/fuentes externas (Google
+  // Fonts, mqtt.js, supabase-js desde sus CDN) se sirven de la caché
+  // primero: son archivos que casi nunca cambian, no tiene sentido
+  // volver a pedirlos por red en CADA apertura del juego. Antes esto
+  // pasaba (caían en la regla de abajo, "red primero, sin caché") y
+  // sumaba segundos muertos de pantalla en blanco al abrir la app,
+  // sobre todo con mala señal. IMPORTANTE: si se reemplaza el
+  // CONTENIDO de un archivo ya existente en assets/ (mismo nombre,
+  // distinta imagen), hay que subir el CACHE_NAME de acá arriba, si no
+  // los celulares que ya lo cachearon nunca ven el cambio.
+  if (esAssetLocal || esLibreriaExterna) {
     e.respondWith(
       caches.match(e.request).then((cached) => {
         if (cached) return cached;
         return fetch(e.request).then((resp) => {
-          if (resp && resp.status === 200 && resp.type === "basic") {
+          if (resp && resp.status === 200 && resp.type !== "opaque") {
             const clone = resp.clone();
             caches.open(CACHE_NAME).then((c) => c.put(e.request, clone));
           }
           return resp;
-        });
+        }).catch(() => cached);
       })
     );
     return;
