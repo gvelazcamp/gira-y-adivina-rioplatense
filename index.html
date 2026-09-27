@@ -6206,7 +6206,8 @@ function guardarPerfil(nombre,avatar){
 }
 let avatarElegido=null,perfilCallback=null,previsualizandoPerfil=false,perfilObligatorio=false,perfilEdicionDirecta=false,perfilPasoActual="nombre";
 function listaAvataresDisponibles(){
-  return AVATARES;
+  const nombreActual=($("perfilNombre").value||perfil.nombre||"").trim().toLowerCase();
+  return nombreActual===AVATAR_EXCLUSIVO.nombre?AVATARES.concat([AVATAR_EXCLUSIVO.id]):AVATARES;
 }
 function renderAvatarGrid(){
   const cont=$("avatarGrid");cont.innerHTML="";
@@ -6270,6 +6271,7 @@ $("perfilNombreOk").onclick=async()=>{
     if(!disponible){mostrarToast("👤","Ese nombre ya lo usa otro jugador. Probá otro, por ej. "+n+"2.");return;}
   }
   $("perfilNombre").value=n;
+  renderAvatarGrid();
   perfilMostrarPaso("avatar");actualizarBotonPerfil();
 };
 $("perfilCambiarNombre").onclick=()=>perfilMostrarPaso("nombre");
