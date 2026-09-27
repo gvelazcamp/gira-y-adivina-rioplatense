@@ -219,6 +219,11 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 .arg-fondo{position:absolute;inset:0;background-size:cover;background-position:center 20%;filter:brightness(.4)}
 .arg-caja{position:relative;z-index:1;max-width:420px;width:88%;text-align:center;
  background:#0C0616CC;border:1px solid #FFFFFF26;border-radius:20px;padding:28px 22px}
+.arg-trofeo{font-size:3.2rem;margin-bottom:2px}
+.arg-sellos{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;margin:8px 0}
+.arg-sellos span{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+ font-size:.95rem;background:#FFFFFF12;border:1.5px solid var(--oro)}
+.arg-linea{height:1px;background:linear-gradient(90deg,transparent,#FFFFFF33,transparent);margin:16px 0}
 
 /* Pasaporte de Durazno */
 .passport-backdrop{position:fixed;inset:0;z-index:100;display:none;place-items:center;
@@ -1324,9 +1329,15 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
 <section id="mundoArgentina">
   <div class="arg-fondo" style="background-image:url('assets/expansion/expansion-3-argentina.webp')"></div>
   <div class="arg-caja">
-    <h1 class="titulo" style="font-size:2.1rem">ARGENTINA</h1>
-    <p class="sub">🔒 Muy pronto vas a poder cruzar el Río de la Plata y jugar acá.</p>
-    <button class="btn-grande sec" id="bVolverDeArgentina">Volver a Uruguay</button>
+    <div class="arg-trofeo">🏆</div>
+    <h1 class="titulo" style="font-size:1.7rem;margin:8px 0 6px">¡COMPLETASTE URUGUAY!</h1>
+    <p class="sub" style="margin:0 0 4px">Recorriste las 21 ciudades y llenaste tu pasaporte entero.<br>¡Gracias por jugar el Mapa de Uruguay! 🧉</p>
+    <div class="arg-sellos">
+      <span>🌊</span><span>🏛️</span><span>⚓</span><span>🐎</span><span>🎭</span><span>🍇</span><span>🏖️</span><span>🎸</span><span>🐑</span><span>🌅</span><span>🏰</span>
+    </div>
+    <div class="arg-linea"></div>
+    <p class="sub" style="margin:0">🔒 Muy pronto vas a poder cruzar el Río de la Plata y jugar en Argentina.</p>
+    <button class="btn-grande sec" id="bVolverDeArgentina" style="margin-top:16px">Volver a Uruguay</button>
   </div>
 </section>
 
