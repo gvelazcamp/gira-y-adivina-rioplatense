@@ -2566,6 +2566,7 @@ const MUNDO_URUGUAY=[
  {id:"centenario",pasos:[[20, 22], [32, 30], [22, 42], [36, 52]],nx:60,ny:55,bg:"assets/worlds/estadio-centenario.webp",n:"Estadio Centenario",r:"La Campeona",rondas:4,cats:["Personajes","Dicho popular"],rica:true}];
 const MUNDO_ARGENTINA=[
  {id:"buenos-aires",pasos:[[24, 18], [42, 30], [28, 48], [46, 66]],nx:50,ny:58,bg:"assets/worlds/buenos-aires.webp",n:"Buenos Aires",r:"El Porteño",rondas:4,cats:["Lugar","Musica y fiesta"],rica:true},
+ {id:"cordoba",pasos:[[24, 18], [42, 30], [28, 48], [46, 66]],nx:52,ny:58,bg:"assets/worlds/cordoba.webp",n:"Córdoba",r:"El Cuartetero",rondas:4,cats:["Musica y fiesta","Lugar"],rica:true},
  {id:"bariloche",pasos:[[24, 18], [42, 30], [28, 48], [46, 66]],nx:46,ny:58,bg:"assets/worlds/bariloche.webp",n:"Bariloche",r:"La Chocolatera",rondas:4,cats:["Viaje","Clima y verano"],rica:true},
  {id:"el-calafate",pasos:[[26, 20], [44, 34], [30, 52], [48, 70]],nx:55,ny:56,bg:"assets/worlds/el-calafate.webp",n:"El Calafate",r:"El Guía del Glaciar",rondas:4,cats:["Lugar","Animales"],rica:true}
 ];
@@ -4967,6 +4968,17 @@ const COLECCIONES={
       {id:"cafe-notable",nombre:"Café notable",img:"assets/collectibles/buenos-aires/coleccion-buenos-aires-cafe-notable.webp"}
     ]
   },
+  cordoba:{
+    nombre:"Córdoba",
+    sobreCerrado:"assets/collectibles/cordoba/coleccion-cordoba-catedral.webp",
+    sobreAbierto:"assets/collectibles/cordoba/coleccion-cordoba-catedral.webp",
+    items:[
+      {id:"faro",nombre:"Faro del Bicentenario",img:"assets/collectibles/cordoba/coleccion-cordoba-faro.webp"},
+      {id:"cabildo",nombre:"El Cabildo",img:"assets/collectibles/cordoba/coleccion-cordoba-cabildo.webp"},
+      {id:"manzana-jesuitica",nombre:"Manzana Jesuítica",img:"assets/collectibles/cordoba/coleccion-cordoba-manzana-jesuitica.webp"},
+      {id:"catedral",nombre:"La Catedral",img:"assets/collectibles/cordoba/coleccion-cordoba-catedral.webp"}
+    ]
+  },
   bariloche:{
     nombre:"Bariloche",
     sobreCerrado:"assets/collectibles/bariloche/coleccion-bariloche-chocolate.webp",
@@ -5888,6 +5900,22 @@ const CIUDAD_RICA={
       {img:"assets/passport/buenos-aires-sello-rival.webp",nombre:"El Porteño"}
     ]
   },
+  cordoba:{
+    nodos:[
+      {tipo:"paso",x:24,y:18},
+      {tipo:"paso",x:42,y:30},
+      {tipo:"paso",x:28,y:48},
+      {tipo:"paso",x:46,y:66},
+      {tipo:"rival",x:32,y:88}
+    ],
+    sellos:[
+      {img:"assets/passport/cordoba-sello-1.webp",nombre:"El Cabildo"},
+      {img:"assets/passport/cordoba-sello-2.webp",nombre:"Lago San Roque"},
+      {img:"assets/passport/cordoba-sello-3.webp",nombre:"La Manzana Jesuítica"},
+      {img:"assets/passport/cordoba-sello-4.webp",nombre:"Las Sierras"},
+      {img:"assets/passport/cordoba-sello-rival.webp",nombre:"El Cuartetero"}
+    ]
+  },
   bariloche:{
     nodos:[
       {tipo:"paso",x:24,y:18},
@@ -6245,7 +6273,7 @@ function prepararCartelExpansion(){
   if(!caja)return;
   caja.querySelector("h1").textContent=esPrueba?"¡BIENVENIDO A ARGENTINA!":"¡COMPLETASTE URUGUAY!";
   const ps=caja.querySelectorAll("p.sub");
-  if(ps[0])ps[0].innerHTML=esPrueba?"Cruzaste el Río de la Plata y se abrió el mapa de prueba.<br>Probá Buenos Aires, Bariloche y El Calafate como primeras localidades. 🇦🇷":"Recorriste las 21 ciudades y llenaste tu pasaporte entero.<br>¡Gracias por jugar el Mapa de Uruguay! 🧉";
+  if(ps[0])ps[0].innerHTML=esPrueba?"Cruzaste el Río de la Plata y se abrió el mapa de prueba.<br>Probá Buenos Aires, Córdoba, Bariloche y El Calafate como primeras localidades. 🇦🇷":"Recorriste las 21 ciudades y llenaste tu pasaporte entero.<br>¡Gracias por jugar el Mapa de Uruguay! 🧉";
   if(ps[1])ps[1].textContent=esPrueba?"Tocá el botón para entrar al mapa Argentina.":"🔒 Muy pronto vas a poder cruzar el Río de la Plata y jugar en Argentina.";
   $("bVolverDeArgentina").textContent=esPrueba?"Entrar al mapa Argentina":"Volver a Uruguay";
 }
