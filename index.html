@@ -213,8 +213,9 @@ button:focus-visible{outline:3px solid var(--agua);outline-offset:2px}
 .dz-barra i{display:block;height:100%;width:0%;background:linear-gradient(90deg,#F5B301,#FFE39B);
  transition:width .4s ease}
 #dzBoton:disabled{opacity:.5}
-.mundo-hud{display:flex;justify-content:center;align-items:center;gap:18px;margin-bottom:10px;font-weight:700}
+.mundo-hud{display:flex;justify-content:center;align-items:center;gap:18px;margin:12px 0 20px;font-weight:700;font-size:1.02rem}
 .mundo-hud .mh-monedas{color:var(--oro)}
+#subMundo{display:none}
 #bExpansion.bloqueado-exp{opacity:.55}
 #expansionAnim{position:fixed;inset:0;z-index:55;background:#04121f;display:none}
 #expansionAnim.ver{display:block}
@@ -1334,8 +1335,8 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     </svg>
   </button>
   <h1 class="titulo" id="mundoTitulo" style="font-size:2.4rem">URUGUAY</h1>
+  <p class="sub" id="subMundo" aria-hidden="true"></p>
   <div class="mundo-hud"><span id="mhVidas">❤️ 5</span><span class="mh-monedas" id="mhMonedas" title="Monedas: se ganan jugando y sirven para comprar en la Tienda">🪙 500 monedas</span></div>
-  <p class="sub" id="subMundo">Ganale a cada rival y andá abriendo el país.</p>
   <div id="mapa"></div>
   <button class="btn-grande" id="bExpansion" style="margin-top:4px">🔒 Continuar expansión</button>
   <button class="btn-grande sec" id="salirMundo">Volver al inicio</button>
@@ -6072,7 +6073,7 @@ function verMundo(){
   $("mundo").style.display="block";
   mundoActualizarHud();
   if($("mundoTitulo"))$("mundoTitulo").textContent=mapaPaisActual==="argentina"?"ARGENTINA":"URUGUAY";
-  $("subMundo").textContent="Mapa de "+(mapaPaisActual==="argentina"?"Argentina":"Uruguay")+": ganaste "+ganados.size+" de "+MUNDO.length+" destinos.";
+  $("subMundo").textContent="";
   actualizarBotonExpansion();
   const m=$("mapa");m.innerHTML="";
   const tira=document.createElement("div");tira.className="tira";
