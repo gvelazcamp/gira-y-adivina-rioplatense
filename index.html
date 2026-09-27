@@ -1358,7 +1358,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     </div>
     <div class="arg-linea"></div>
     <p class="sub" style="margin:0">🔒 Muy pronto vas a poder cruzar el Río de la Plata y jugar en Argentina.</p>
-    <button class="btn-grande sec" id="bVolverDeArgentina" style="margin-top:16px">Volver a Uruguay</button>
+    <button class="btn-grande sec" id="bVolverDeArgentina" style="margin-top:16px">Entrar al mapa Argentina</button>
   </div>
 </section>
 
@@ -6210,6 +6210,16 @@ function actualizarBotonExpansion(){
   else b.textContent=listo?"⛵ Continuar expansión":"🔒 Continuar expansión";
   b.classList.toggle("bloqueado-exp",!listo&&!esPerfilGonzalo());
 }
+function prepararCartelExpansion(){
+  const esPrueba=esPerfilGonzalo();
+  const caja=$("mundoArgentina");
+  if(!caja)return;
+  caja.querySelector("h1").textContent=esPrueba?"¡BIENVENIDO A ARGENTINA!":"¡COMPLETASTE URUGUAY!";
+  const ps=caja.querySelectorAll("p.sub");
+  if(ps[0])ps[0].innerHTML=esPrueba?"Cruzaste el Río de la Plata y se abrió el mapa de prueba.<br>Probá Bariloche y El Calafate como primeras localidades. 🇦🇷":"Recorriste las 21 ciudades y llenaste tu pasaporte entero.<br>¡Gracias por jugar el Mapa de Uruguay! 🧉";
+  if(ps[1])ps[1].textContent=esPrueba?"Tocá el botón para entrar al mapa Argentina.":"🔒 Muy pronto vas a poder cruzar el Río de la Plata y jugar en Argentina.";
+  $("bVolverDeArgentina").textContent=esPrueba?"Entrar al mapa Argentina":"Volver a Uruguay";
+}
 function jugarAnimacionExpansion(){
   const imgs=[$("expImg1"),$("expImg2"),$("expImg3")];
   imgs.forEach((im,i)=>im.classList.toggle("ver",i===0));
@@ -6220,14 +6230,9 @@ function jugarAnimacionExpansion(){
     if(i<imgs.length){imgs.forEach((im,k)=>im.classList.toggle("ver",k===i));setTimeout(paso,950);}
     else setTimeout(()=>{
       $("expansionAnim").classList.remove("ver");
-      if(esPerfilGonzalo()){
-        mapaPaisForzado="argentina";
-        sincronizarMundoActivo();
-        verMundo();
-      }else{
-        $("mundo").style.display="none";
-        $("mundoArgentina").classList.add("ver");
-      }
+      prepararCartelExpansion();
+      $("mundo").style.display="none";
+      $("mundoArgentina").classList.add("ver");
     },1100);
   };
   setTimeout(paso,950);
@@ -6247,6 +6252,10 @@ $("bExpansion").onclick=()=>{
 };
 $("bVolverDeArgentina").onclick=()=>{
   $("mundoArgentina").classList.remove("ver");
+  if(esPerfilGonzalo()){
+    mapaPaisForzado="argentina";
+    sincronizarMundoActivo();
+  }
   verMundo();
 };
 
