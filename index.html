@@ -614,6 +614,12 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 #perfilNombreOk{flex:0 0 42px;width:42px;height:42px;border-radius:50%;padding:0;background:var(--agua);
  color:var(--tinta);font-size:1.25rem;font-weight:900;box-shadow:0 3px 0 #16796D}
 #perfilNombreOk:disabled{opacity:.35;box-shadow:none}
+.perfil-pais{margin:12px 0 6px;text-align:left}
+.perfil-pais-titulo{display:block;color:#B49FCE;font-size:.85rem;font-weight:700;margin:0 0 8px 6px}
+.perfil-pais-botones{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.perfil-pais-btn{border:1px solid #FFFFFF22;background:#2A1A3C;color:var(--crema);border-radius:16px;padding:12px 8px;font-weight:900;box-shadow:0 4px 0 #150C1F}
+.perfil-pais-btn.elegido{background:var(--agua);color:var(--tinta);border-color:var(--agua);box-shadow:0 4px 0 #16796D}
+.perfil-pais-ayuda{display:block;color:#B49FCE;font-size:.78rem;line-height:1.25;margin:8px 6px 0}
 #perfilCambiarNombre{background:none;color:var(--agua);font-weight:700;padding:4px 8px;margin:-2px 0 12px}
 .avatar-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:0 0 22px}
 .avatar-opcion{position:relative;border-radius:50%;padding:0;border:3px solid transparent;background:none;aspect-ratio:1;overflow:hidden}
@@ -1277,6 +1283,14 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <h1 class="titulo" id="perfilTitulo" style="font-size:2.1rem">ELEGÍ TU NOMBRE</h1>
   <div id="perfilPasoNombre">
     <div class="campo perfil-nombre-campo"><span>Nombre</span><input id="perfilNombre" placeholder="escribí tu nombre" maxlength="12" autocomplete="off"><button id="perfilNombreOk" type="button" aria-label="Confirmar nombre" disabled>✓</button></div>
+    <div class="perfil-pais" id="perfilPaisWrap">
+      <span class="perfil-pais-titulo">País de origen</span>
+      <div class="perfil-pais-botones">
+        <button class="perfil-pais-btn" type="button" data-pais="uruguay">🇺🇾 Uruguay</button>
+        <button class="perfil-pais-btn" type="button" data-pais="argentina">🇦🇷 Argentina</button>
+      </div>
+      <small class="perfil-pais-ayuda" id="perfilPaisAyuda">Elegí tu país para habilitar el perfil. La expansión sugerida queda cruzada al otro lado del Río de la Plata.</small>
+    </div>
   </div>
   <div id="perfilPasoAvatar" style="display:none">
     <p class="sub" id="avatarTitulo" style="margin:8px 0 4px">Ahora elegí tu avatar</p>
@@ -6173,9 +6187,9 @@ let botT=null,botTossT=null,botTossReaccionT=null,botTossPensarT=null;
 const AVATARES=Array.from({length:21},(_,i)=>"avatar-"+String(i+1).padStart(2,"0")).concat(["avatar-33","avatar-42","avatar-43","avatar-44","avatar-45","avatar-46","avatar-47","avatar-48","avatar-49","avatar-50","avatar-51","avatar-52","avatar-53","avatar-54"]);
 const AVATAR_EXCLUSIVO={id:"avatar-22",nombre:"gonzalo"};
 function cargarPerfil(){
-  let nombre="",avatar="";
-  try{nombre=localStorage.getItem("gya_nombre")||"";avatar=localStorage.getItem("gya_avatar")||"";}catch(e){}
-  return{nombre,avatar};
+  let nombre="",avatar="",pais="";
+  try{nombre=localStorage.getItem("gya_nombre")||"";avatar=localStorage.getItem("gya_avatar")||"";pais=localStorage.getItem("gya_pais")||"";}catch(e){}
+  return{nombre,avatar,pais};
 }
 let perfil=cargarPerfil();
 /* Versiones viejas podían dejar nombres de respaldo como "Explorer 1"
@@ -6187,7 +6201,9 @@ function nombrePerfilAutomatico(nombre){
 function nombrePerfilPersonal(nombre){
   const limpio=String(nombre||"").trim();return limpio&&!nombrePerfilAutomatico(limpio)?limpio:"";
 }
-const perfilExiste=()=>!!(nombrePerfilPersonal(perfil.nombre)&&perfil.avatar);
+function paisPerfilValido(pais){return pais==="uruguay"||pais==="argentina";}
+function paisExpansionPerfil(pais){return pais==="argentina"?"Uruguay":"Argentina";}
+const perfilExiste=()=>!!(nombrePerfilPersonal(perfil.nombre)&&perfil.avatar&&paisPerfilValido(perfil.pais));
 function actualizarChipPerfil(){
   actualizarModoAdminGonzalo();
   const chip=$("perfilChip");if(!chip)return;
@@ -6214,11 +6230,12 @@ async function nombrePerfilDisponible(nombre){
     return !(r.data&&r.data.length);
   }catch(e){return true;}
 }
-function guardarPerfil(nombre,avatar){
-  perfil={nombre,avatar};
+function guardarPerfil(nombre,avatar,pais){
+  perfil={nombre,avatar,pais};
   try{
     localStorage.setItem("gya_nombre",nombre);
     localStorage.setItem("gya_avatar",avatar);
+    localStorage.setItem("gya_pais",pais);
     localStorage.setItem("larueda_nombre",nombre);
   }catch(e){}
   $("miNombre").value=nombre;
@@ -6226,7 +6243,7 @@ function guardarPerfil(nombre,avatar){
   logroDesbloquear("avatar");
   empujarUsuario();
 }
-let avatarElegido=null,perfilCallback=null,previsualizandoPerfil=false,perfilObligatorio=false,perfilEdicionDirecta=false,perfilPasoActual="nombre";
+let avatarElegido=null,paisElegido=null,perfilCallback=null,previsualizandoPerfil=false,perfilObligatorio=false,perfilEdicionDirecta=false,perfilPasoActual="nombre";
 function listaAvataresDisponibles(){
   const nombreActual=($("perfilNombre").value||perfil.nombre||"").trim().toLowerCase();
   return nombreActual===AVATAR_EXCLUSIVO.nombre?AVATARES.concat([AVATAR_EXCLUSIVO.id]):AVATARES;
@@ -6244,10 +6261,17 @@ function renderAvatarGrid(){
     cont.appendChild(b);
   });
 }
+function renderPaisPerfil(){
+  document.querySelectorAll(".perfil-pais-btn").forEach(b=>b.classList.toggle("elegido",b.dataset.pais===paisElegido));
+  const ayuda=$("perfilPaisAyuda");
+  if(ayuda)ayuda.textContent=paisPerfilValido(paisElegido)?("Tu expansión sugerida será "+paisExpansionPerfil(paisElegido)+"."):"Elegí tu país para habilitar el perfil.";
+}
 function actualizarBotonPerfil(){
   const nombre=nombrePerfilPersonal($("perfilNombre").value.slice(0,12));
-  $("perfilNombreOk").disabled=!nombre;
-  $("perfilContinuar").disabled=!(nombre&&avatarElegido);
+  const paisOk=paisPerfilValido(paisElegido);
+  $("perfilNombreOk").disabled=!(nombre&&paisOk);
+  $("perfilContinuar").disabled=!(nombre&&paisOk&&avatarElegido);
+  renderPaisPerfil();
 }
 function perfilMostrarPaso(paso){
   perfilPasoActual=paso==="todo"?"todo":paso==="avatar"?"avatar":"nombre";
@@ -6266,7 +6290,7 @@ function abrirPerfil(callback,obligatorio=false){
   $("eventos").style.display="none";
   perfilCallback=callback||null;perfilObligatorio=!!obligatorio;perfilEdicionDirecta=!perfilObligatorio&&!perfilCallback&&perfilExiste();
   $("perfilNombre").value=nombrePerfilPersonal(perfil.nombre)||nombrePerfilPersonal($("miNombre").value)||"";
-  avatarElegido=perfil.avatar||null;
+  avatarElegido=perfil.avatar||null;paisElegido=paisPerfilValido(perfil.pais)?perfil.pais:null;
   $("setup").style.display="none";$("mundo").style.display="none";$("pantDurazno").style.display="none";
   $("pantPerfil").style.display="block";
   $("perfilCerrar").style.display=perfilObligatorio?"none":"";
@@ -6274,17 +6298,18 @@ function abrirPerfil(callback,obligatorio=false){
 }
 function previsualizarPerfilVacio(){
   previsualizandoPerfil=true;perfilCallback=null;perfilObligatorio=true;perfilEdicionDirecta=false;
-  $("perfilNombre").value="";avatarElegido=null;
+  $("perfilNombre").value="";avatarElegido=null;paisElegido=null;
   $("setup").style.display="none";$("mundo").style.display="none";$("pantDurazno").style.display="none";
   $("pantPerfil").style.display="block";
   $("perfilCerrar").style.display="none";
   renderAvatarGrid();actualizarBotonPerfil();perfilMostrarPaso("nombre");
 }
 $("perfilNombre").addEventListener("input",actualizarBotonPerfil);
+document.querySelectorAll(".perfil-pais-btn").forEach(b=>b.onclick=()=>{paisElegido=b.dataset.pais;actualizarBotonPerfil();});
 $("perfilNombre").addEventListener("keydown",e=>{if(e.key==="Enter"&&!$("perfilNombreOk").disabled)$("perfilNombreOk").click();});
 $("perfilNombreOk").onclick=async()=>{
   const n=$("perfilNombre").value.trim().slice(0,12);
-  if(!n)return;
+  if(!n||!paisPerfilValido(paisElegido))return;
   if(nombrePerfilAutomatico(n)){mostrarToast("👤","Elegí un nombre propio, distinto de "+n+".");return;}
   if(nombrePerfilPersonal(perfil.nombre).toLowerCase()!==n.toLowerCase()){
     $("perfilNombreOk").disabled=true;
@@ -6304,7 +6329,7 @@ $("perfilContinuar").onclick=async()=>{
     mostrarToast("✅","Prueba terminada: el usuario ya podría entrar con su perfil.");return;
   }
   const n=$("perfilNombre").value.trim().slice(0,12);
-  if(!n||!avatarElegido)return;
+  if(!n||!avatarElegido||!paisPerfilValido(paisElegido))return;
   if(nombrePerfilAutomatico(n)){mostrarToast("👤","Elegí un nombre propio, distinto de "+n+".");return;}
   if(avatarElegido===AVATAR_EXCLUSIVO.id&&n.toLowerCase()!==AVATAR_EXCLUSIVO.nombre)return;
   if(nombrePerfilPersonal(perfil.nombre).toLowerCase()!==n.toLowerCase()){
@@ -6313,7 +6338,7 @@ $("perfilContinuar").onclick=async()=>{
     actualizarBotonPerfil();
     if(!disponible){mostrarToast("👤","Ese nombre ya lo usa otro jugador. Probá otro, por ej. "+n+"2.");return;}
   }
-  guardarPerfil(n,avatarElegido);
+  guardarPerfil(n,avatarElegido,paisElegido);
   perfilObligatorio=false;$("perfilCerrar").style.display="";
   tutOcultarSpotlight();
   $("pantPerfil").style.display="none";
@@ -7850,7 +7875,10 @@ function hostGirar(){
         if(S.turno===miJug&&destino!==null)sumarRondaColeccion(MUNDO[destino].id);
         setTimeout(tk(nuevaRonda),3000);return;}
       S.fase="girar";
-      publicar("<b>COMODÍN</b> — te regala la letra «"+l+"». Seguís vos.","comodin");return;
+      const sinCons=consRestantes()===0;
+      publicar("<b>COMODÍN</b> — te regala la letra «"+l+"». "+(sinCons?"No quedan consonantes: resolvé la frase para seguir.":"Seguís vos."),"comodin");
+      if(sinCons&&S.turno===miJug&&(modo==="bot"||modo==="local"||modo==="host")){setTimeout(()=>{if(S&&S.fase==="girar"&&consRestantes()===0&&!$("modalResolver").classList.contains("ver"))abrirResolver(null);},650);}
+      return;
     }
     if(s.t==="X2"){S.doble=true;S.fase="girar";
       publicar("<b>x2</b> — la próxima consonante que aciertes paga doble. Volvé a girar.","x2");return;}
