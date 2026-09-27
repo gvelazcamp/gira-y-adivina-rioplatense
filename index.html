@@ -3051,7 +3051,14 @@ function cobrarEventoFindeInterrumpido(){
 }
 function estadoEventoFinde(){
   const r=leerEventoFinde();
-  return r&&r.dia===Math.floor(Date.now()/86400000)&&r.estado==="ganado"?"ganado":"pendiente";
+  if(!r||r.estado!=="ganado")return"pendiente";
+  /* El premio es 1 por fin de semana (sábado+domingo), no 1 por día: si
+     comparábamos r.dia contra el día exacto de hoy, ganar el sábado
+     dejaba "pendiente" de nuevo el domingo y se podía cobrar el premio
+     dos veces el mismo fin de semana. */
+  const hoyDia=Math.floor(Date.now()/86400000),diaSemana=new Date().getDay();
+  const inicioFinde=hoyDia-(diaSemana===6?0:1);
+  return(r.dia===inicioFinde||r.dia===inicioFinde+1)?"ganado":"pendiente";
 }
 function iniciarEventoFinde(){
   if(!esFinDeSemana()||estadoEventoFinde()==="ganado")return;
@@ -4470,6 +4477,12 @@ $("rkCrear").onclick=async()=>{
   if(!apodo){$("rkApodo").focus();return;}
   if(nombrePerfilAutomatico(apodo)){mostrarToast("👤","Elegí un apodo propio para el ranking.");$("rkApodo").focus();return;}
   const anterior=cargarRkPerfil(),supa=obtenerSupa();
+  if(!anterior||anterior.apodo!==apodo){
+    $("rkCrear").disabled=true;
+    const disponible=await nombrePerfilDisponible(apodo);
+    $("rkCrear").disabled=false;
+    if(!disponible){mostrarToast("👤","Ese apodo ya lo usa otro jugador. Probá otro.");$("rkApodo").focus();return;}
+  }
   if(supa&&anterior&&anterior.apodo&&anterior.apodo!==apodo){
     try{await supa.from("gya_ranking").update({apodo}).eq("grupo",RK_GRUPO).eq("apodo",anterior.apodo);}catch(e){}
   }
@@ -7398,8 +7411,7 @@ function abrirTodoToss(){[...S.frase].forEach(c=>{if(c!==" ")S.abiertas.add(c);}
 function finTossTiempo(){
   if(!S||S.fase!=="tossup")return;
   limpiarToss();abrirTodoToss();
-  if(modo==="bot"){S.fase="toss_fin";publicar("Se terminó el tiempo. Nadie resolvió la Prueba de Velocidad.","error");}
-  else{S.fase="toss_fin";publicar("Se terminó el tiempo. Nadie resolvió la Prueba de Velocidad.","error");}
+  S.fase="toss_fin";publicar("Se terminó el tiempo. Nadie resolvió la Prueba de Velocidad.","error");
   setTimeout(tk(nuevaRonda),3600);
 }
 function hostResolverToss(txt,jugador){
