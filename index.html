@@ -24,7 +24,14 @@
 <meta name="twitter:image" content="https://gvelazcamp.github.io/rueda-de-la-fortuna/icono-512.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Outfit:wght@400;500;700&display=swap" rel="stylesheet">
+<!-- Las fuentes se cargan sin bloquear el primer dibujo de la pantalla:
+     antes, el navegador esperaba a bajar esta hoja de estilos ANTES de
+     mostrar nada (ni siquiera el fondo oscuro del splash), sumando
+     pantalla en blanco muerta al abrir el juego con mala señal. Con
+     "preload" + el onload de abajo, arranca a mostrarse ya mismo y el
+     texto solo cambia de tipografía cuando la fuente termina de llegar. -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Outfit:wght@400;500;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Outfit:wght@400;500;700&display=swap"></noscript>
 <script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" defer></script>
 <style>
