@@ -2568,6 +2568,7 @@ const MUNDO_ARGENTINA=[
  {id:"buenos-aires",pasos:[[24, 18], [42, 30], [28, 48], [46, 66]],nx:50,ny:58,bg:"assets/worlds/buenos-aires.webp",n:"Buenos Aires",r:"El Porteño",rondas:4,cats:["Lugar","Musica y fiesta"],rica:true},
  {id:"cordoba",pasos:[[24, 18], [42, 30], [28, 48], [46, 66]],nx:52,ny:58,bg:"assets/worlds/cordoba.webp",n:"Córdoba",r:"El Cuartetero",rondas:4,cats:["Musica y fiesta","Lugar"],rica:true},
  {id:"mendoza",pasos:[[24, 18], [42, 30], [28, 48], [46, 66]],nx:48,ny:58,bg:"assets/worlds/mendoza.webp",n:"Mendoza",r:"La Vendimiadora",rondas:4,cats:["Comida","Viaje"],rica:true},
+ {id:"salta",pasos:[[24, 18], [42, 30], [28, 48], [46, 66]],nx:52,ny:58,bg:"assets/worlds/salta.webp",n:"Salta",r:"El Serenatero",rondas:4,cats:["Musica y fiesta","Viaje"],rica:true},
  {id:"bariloche",pasos:[[24, 18], [42, 30], [28, 48], [46, 66]],nx:46,ny:58,bg:"assets/worlds/bariloche.webp",n:"Bariloche",r:"La Chocolatera",rondas:4,cats:["Viaje","Clima y verano"],rica:true},
  {id:"el-calafate",pasos:[[26, 20], [44, 34], [30, 52], [48, 70]],nx:55,ny:56,bg:"assets/worlds/el-calafate.webp",n:"El Calafate",r:"El Guía del Glaciar",rondas:4,cats:["Lugar","Animales"],rica:true}
 ];
@@ -4991,6 +4992,17 @@ const COLECCIONES={
       {id:"vinedo",nombre:"Viñedo",img:"assets/collectibles/mendoza/coleccion-mendoza-vinedo.webp"}
     ]
   },
+  salta:{
+    nombre:"Salta",
+    sobreCerrado:"assets/passport/salta-sello-1.webp",
+    sobreAbierto:"assets/passport/salta-sello-1.webp",
+    items:[
+      {id:"plaza-9-de-julio",nombre:"Plaza 9 de Julio",img:"assets/passport/salta-sello-1.webp"},
+      {id:"cerro-san-bernardo",nombre:"Cerro San Bernardo",img:"assets/passport/salta-sello-2.webp"},
+      {id:"la-catedral",nombre:"La Catedral",img:"assets/passport/salta-sello-3.webp"},
+      {id:"tren-a-las-nubes",nombre:"Tren a las Nubes",img:"assets/passport/salta-sello-4.webp"}
+    ]
+  },
   bariloche:{
     nombre:"Bariloche",
     sobreCerrado:"assets/collectibles/bariloche/coleccion-bariloche-chocolate.webp",
@@ -5944,6 +5956,22 @@ const CIUDAD_RICA={
       {img:"assets/passport/mendoza-sello-rival.webp",nombre:"La Vendimiadora"}
     ]
   },
+  salta:{
+    nodos:[
+      {tipo:"paso",x:24,y:18},
+      {tipo:"paso",x:42,y:30},
+      {tipo:"paso",x:28,y:48},
+      {tipo:"paso",x:46,y:66},
+      {tipo:"rival",x:32,y:88}
+    ],
+    sellos:[
+      {img:"assets/passport/salta-sello-1.webp",nombre:"Plaza 9 de Julio"},
+      {img:"assets/passport/salta-sello-2.webp",nombre:"Cerro San Bernardo"},
+      {img:"assets/passport/salta-sello-3.webp",nombre:"La Catedral"},
+      {img:"assets/passport/salta-sello-4.webp",nombre:"Tren a las Nubes"},
+      {img:"assets/passport/salta-sello-rival.webp",nombre:"El Serenatero"}
+    ]
+  },
   bariloche:{
     nodos:[
       {tipo:"paso",x:24,y:18},
@@ -6301,7 +6329,7 @@ function prepararCartelExpansion(){
   if(!caja)return;
   caja.querySelector("h1").textContent=esPrueba?"¡BIENVENIDO A ARGENTINA!":"¡COMPLETASTE URUGUAY!";
   const ps=caja.querySelectorAll("p.sub");
-  if(ps[0])ps[0].innerHTML=esPrueba?"Cruzaste el Río de la Plata y se abrió el mapa de prueba.<br>Probá Buenos Aires, Córdoba, Mendoza, Bariloche y El Calafate como primeras localidades. 🇦🇷":"Recorriste las 21 ciudades y llenaste tu pasaporte entero.<br>¡Gracias por jugar el Mapa de Uruguay! 🧉";
+  if(ps[0])ps[0].innerHTML=esPrueba?"Cruzaste el Río de la Plata y se abrió el mapa de prueba.<br>Probá Buenos Aires, Córdoba, Mendoza, Salta, Bariloche y El Calafate como primeras localidades. 🇦🇷":"Recorriste las 21 ciudades y llenaste tu pasaporte entero.<br>¡Gracias por jugar el Mapa de Uruguay! 🧉";
   if(ps[1])ps[1].textContent=esPrueba?"Tocá el botón para entrar al mapa Argentina.":"🔒 Muy pronto vas a poder cruzar el Río de la Plata y jugar en Argentina.";
   $("bVolverDeArgentina").textContent=esPrueba?"Entrar al mapa Argentina":"Volver a Uruguay";
 }
