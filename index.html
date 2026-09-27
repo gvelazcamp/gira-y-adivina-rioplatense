@@ -2542,6 +2542,11 @@ const hechos=id=>progreso[id]||0;
 const METAK="gya_mundo_meta",VIDA_MS=30*60*1000,VIDAS_MAX=5;
 function cargarMeta(){
   let m;try{m=JSON.parse(localStorage.getItem(METAK));}catch(e){}
+  /* Un perfil que YA tenía meta guardada (aunque sea de antes de que
+     existiera este campo) no es "usuario nuevo": no le regalamos la
+     protección del primer giro retroactivamente. Solo un dispositivo
+     sin ningún meta previo (instalación realmente nueva) la recibe. */
+  const yaTeniaMeta=!!m&&typeof m==="object";
   if(!m||typeof m!=="object")m={};
   if(typeof m.vidas!=="number")m.vidas=VIDAS_MAX;
   if(typeof m.monedas!=="number")m.monedas=500;
@@ -2549,7 +2554,7 @@ function cargarMeta(){
   if(typeof m.ultimaRuleta!=="number")m.ultimaRuleta=0;
   if(!Number.isSafeInteger(m.girosExtraGratis)||m.girosExtraGratis<0)m.girosExtraGratis=0;
   if(!Number.isSafeInteger(m.ticketsTorneo)||m.ticketsTorneo<0)m.ticketsTorneo=0;
-  if(typeof m.primerGiroHecho!=="boolean")m.primerGiroHecho=false;
+  if(typeof m.primerGiroHecho!=="boolean")m.primerGiroHecho=yaTeniaMeta;
   if(!Number.isSafeInteger(m.torneoTemporadaVista))m.torneoTemporadaVista=-1;
   if(typeof m.ultimaGratisDiaria!=="number")m.ultimaGratisDiaria=0;
   if(typeof m.monedasGanadasTotal!=="number")m.monedasGanadasTotal=m.monedas;
@@ -7698,9 +7703,15 @@ let pruebaEscudosForzar=false;
 let pruebaChatForzar=false;
 let escudoTiendaUsadoEnPartida=false;
 let escudoTiempoUsadoEnPartida=false,escudoTiempoActivoTurno=false,escudoTossUsadoEnPartida=false;
+/* Ojo: no llamar a esto desde adentro de hostGirar() usando la variable
+   "destino" directamente — esa función tiene su propia "let destino"
+   local (el ángulo del giro) que tapa a esta global (la ciudad elegida
+   del mapa), así que cualquier chequeo ahí adentro necesita pasar por
+   esta función en vez de leer "destino" a mano. */
+function esJugarAhora(){return modo==="bot"&&destino!==null&&!enTorneo&&!vinoDeJugarOnline;}
 function escudosDisponiblesAqui(){
   if(pruebaEscudosForzar)return true;
-  return esEventoCiudad||(modo==="bot"&&destino!==null&&!enTorneo&&!vinoDeJugarOnline);
+  return esEventoCiudad||esJugarAhora();
 }
 function quierePreguntarEscudo(cual){
   if(!S||S.turno!==miJug||!escudosDisponiblesAqui()||escudoTiendaUsadoEnPartida)return false;
@@ -7773,13 +7784,15 @@ function hostGirar(){
     intentos++;
   }while((enTutorial&&s.t&&intentos<40)||(s.t==="PIERDE"&&(S.pierdeSeguidas||0)>=2&&intentos<40)||
     (pruebaEscudosForzar&&s.t!=="PIERDE"&&s.t!=="QUIEBRA"&&intentos<200)||
-    (!meta.primerGiroHecho&&modo==="bot"&&destino!==null&&!enTorneo&&!vinoDeJugarOnline&&(s.t==="PIERDE"||s.t==="QUIEBRA")&&intentos<40));
+    (!meta.primerGiroHecho&&esJugarAhora()&&(s.t==="PIERDE"||s.t==="QUIEBRA")&&intentos<40));
   S.pierdeSeguidas=s.t==="PIERDE"?(S.pierdeSeguidas||0)+1:0;
   /* Regla del primer giro: en ¡Jugar ahora! (Mapa de Uruguay), el
      primerísimo giro que hace un usuario nuevo en toda la vida del
      juego nunca puede ser Pierde turno ni Quiebra — se marca como
-     usado la primera vez que gira ahí, sea cual sea el resultado. */
-  if(!meta.primerGiroHecho&&modo==="bot"&&destino!==null&&!enTorneo&&!vinoDeJugarOnline){
+     usado la primera vez que gira ahí, sea cual sea el resultado.
+     esJugarAhora() (no "destino" a mano) porque acá adentro "destino"
+     es el ángulo del giro, tapa a la variable global de la ciudad. */
+  if(!meta.primerGiroHecho&&esJugarAhora()){
     meta.primerGiroHecho=true;guardarMeta();
   }
   if(modo!=="local"&&modo!=="bot")enviar({tipo:"giro",destino});
