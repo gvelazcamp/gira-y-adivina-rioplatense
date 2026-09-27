@@ -109,6 +109,19 @@ Reglas obligatorias de composición:
 5. **R (rojo + corona)** "El Guía de Hielo" — señor/señora con ropa de
    frío, grampones y piolet, sonriendo frente al glaciar de fondo.
 
+### Buenos Aires (ya generado)
+
+1. **(azul)** "El Obelisco" — la avenida 9 de Julio con el Obelisco de
+   fondo, tránsito y edificios alrededor.
+2. **(azul)** "Caminito" — la calle de La Boca con las casas de chapa
+   pintadas de colores y una pareja bailando tango.
+3. **(marrón)** "Teatro Colón" — la fachada del teatro con su entrada
+   clásica.
+4. **(verde)** "Bosques de Palermo" — el lago de los bosques con
+   botes cisne y jacarandás en flor.
+5. **R (rojo + corona)** "El Tanguero" — un bailarín de tango con
+   sombrero y pañuelo rojo, con el Obelisco de fondo.
+
 ---
 
 ## Después de generarlos (proceso técnico, no hace falta pedírselo a ChatGPT)
