@@ -10215,15 +10215,17 @@ $("fBoton").onclick=()=>{
   else revancha();
 };
 (function splash(){
-  const MIN_ESPERA=1200;
+  const MIN_ESPERA=1800,MIN_SPLASH_GRANDE=1200;
   const barra=$("splashBarra").firstElementChild,cap=$("splash");
   const splashPrincipal=matchMedia("(min-width:900px)").matches?"assets/splash-tv.webp?v=1":"assets/splash.webp?v=3";
   const urls=[splashPrincipal].concat(MUNDO.map(d=>d.bg).filter(Boolean));
-  let hechas=0,yaCerrado=false;const t0=performance.now();
-  const paso=u=>{if(u===splashPrincipal)cap.classList.add("img-lista");hechas++;if(hechas>=urls.length)cerrar();};
+  let hechas=0,yaCerrado=false,tSplashGrande=0;const t0=performance.now();
+  const paso=u=>{if(u===splashPrincipal){cap.classList.add("img-lista");tSplashGrande=performance.now();}hechas++;if(hechas>=urls.length)cerrar();};
   const cerrar=()=>{
     if(yaCerrado)return;yaCerrado=true;
-    const espera=Math.max(0,MIN_ESPERA-(performance.now()-t0));
+    const desdeInicio=performance.now()-t0;
+    const desdeSplash=tSplashGrande?performance.now()-tSplashGrande:0;
+    const espera=Math.max(0,MIN_ESPERA-desdeInicio,MIN_SPLASH_GRANDE-desdeSplash);
     setTimeout(()=>{cap.classList.add("ido");setTimeout(()=>cap.remove(),800);mostrarPromptIOS();
       /* Debug para revisar el video promo y el tutorial en una cuenta ya
          creada (que normalmente nunca los vuelve a ver): abrir el juego
