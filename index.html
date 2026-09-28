@@ -1477,14 +1477,6 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="tn-comprar-real" data-producto="sin_publicidad">$2.99</button>
   </div>
   </div>
-  <h3 class="tn-subtitulo" data-fijo="1">🌎 Expansiones</h3>
-  <div class="tn-grid">
-  <div class="tn-item tn-card">
-  <div class="tn-card-img" id="tnExpansionImg" style="background-image:url('assets/expansion/expansion-3-argentina.webp')"></div>
-  <div class="tn-card-info"><b id="tnExpansionTitulo">Expansión Argentina</b><span id="tnExpansionDesc">Desbloquea el mapa Argentina y sus ciudades</span></div>
-  <button class="tn-comprar" data-tipo="expansion_cruzada" data-precio="75000" data-real-agregado="1" data-nombre="la Expansión Argentina">🪙 75000</button>
-  </div>
-  </div>
   <h3 class="tn-subtitulo" data-fijo="1">🎁 Packs</h3>
   <div class="tn-item tn-pack-img" style="background-image:url('assets/shop/pack-explorador.webp')">
   <button class="tn-comprar" data-tipo="pack_explorador" data-precio="2200" data-real-agregado="1" data-nombre="el Pack Explorador">❤️ Vidas llenas</button>
@@ -3705,10 +3697,6 @@ $("svPedirAmigo").onclick=async()=>{
 $("svCerrar").onclick=()=>$("capaSinVidas").classList.remove("ver");
 function tnPuedeComprar(tipo){
   if(tipo==="recarga")return meta.vidas<VIDAS_MAX;
-  if(tipo==="expansion_cruzada"){
-    const origen=paisPerfilGuardado(),destino=paisContrario(origen);
-    return !expansionCompradaPais(destino)&&!mapaCompletoPais(origen);
-  }
   if(tipo.indexOf("sobre_")===0)return sobrePuedeComprar(tipo.slice(6));
   if(tipo==="oferta_gratis")return gratisDiariaPuedeReclamar();
   if(tipo.indexOf("marco_")===0)return!framesComprados.has(tipo.slice(6));
@@ -3718,7 +3706,6 @@ function tnPuedeComprar(tipo){
 }
 function tnRazonBloqueo(tipo){
   if(tipo==="recarga")return"❤️ Vidas llenas";
-  if(tipo==="expansion_cruzada")return"✅ Desbloqueada";
   if(tipo.indexOf("sobre_")===0)return sobreTextoEspera(tipo.slice(6));
   if(tipo==="oferta_gratis")return gratisDiariaTextoEspera();
   if(tipo.indexOf("marco_")===0)return"✅ Ya lo tenés";
@@ -3740,17 +3727,8 @@ function otorgarSobreSorpresa(garantizado){
   if(cm){cm.sobres++;if(garantizado)cm.sobresGarantizados=(cm.sobresGarantizados||0)+1;guardarColeccionMeta();}
   return cual;
 }
-function actualizarTarjetaExpansionTienda(){
-  const origen=paisPerfilGuardado(),destino=paisContrario(origen),assets=expansionAssets(destino),nombre=nombrePais(destino),bandera=banderaPais(destino);
-  const img=$("tnExpansionImg"),titulo=$("tnExpansionTitulo"),desc=$("tnExpansionDesc"),btn=document.querySelector('[data-tipo="expansion_cruzada"]');
-  if(img)img.style.backgroundImage="url('"+assets[2]+"')";
-  if(titulo)titulo.textContent="Expansión "+nombre;
-  if(desc)desc.textContent="Desbloquea el mapa "+nombre+" y sus ciudades";
-  if(btn){btn.dataset.nombre="la Expansión "+nombre;btn.title=bandera+" "+nombre;}
-}
 function tnActualizar(){
   regenerarVidas();
-  actualizarTarjetaExpansionTienda();
   $("tnMonedas").textContent=meta.monedas;
   document.querySelectorAll(".tn-comprar").forEach(b=>{
     const tipo=b.dataset.tipo,precio=+b.dataset.precio,puede=tnPuedeComprar(tipo),alcanza=puedePagarMonedas(precio);
@@ -4054,11 +4032,6 @@ function tnEjecutarCompra(tipo,precio){
       {texto:"Tablero",html:packPreviewTablero("fondo-ovni")}
     ]);
 
-  }else if(tipo==="expansion_cruzada"){
-    const destinoExp=paisContrario(paisPerfilGuardado());
-    comprarExpansionPais(destinoExp);
-    actualizarBotonExpansion();
-    mostrarToast(banderaPais(destinoExp),"Expansión "+nombrePais(destinoExp)+" desbloqueada");
   }else if(tipo.indexOf("marco_")===0){
     const idMarco=tipo.slice(6);
     framesComprados.add(idMarco);guardarFramesComprados();
@@ -6384,6 +6357,22 @@ function expansionCompradaPais(pais){return pais==="argentina"?!!meta.expansionA
 function comprarExpansionPais(pais){if(pais==="argentina")meta.expansionArgentinaComprada=true;else meta.expansionUruguayComprada=true;}
 function expansionAssets(destino){return EXPANSION_ASSETS[destino]||EXPANSION_ASSETS.argentina;}
 function expansionDestinoActual(){return paisContrario(mapaPaisActual);}
+const EXPANSION_PRECIO=75000;
+function monedasFaltantesExpansion(){return Math.max(0,EXPANSION_PRECIO-meta.monedas);}
+function comprarExpansionDesdeBoton(destino){
+  if(!puedePagarMonedas(EXPANSION_PRECIO)){
+    mostrarToast("🪙","Te faltan "+monedasFaltantesExpansion()+" monedas para continuar la expansión.");
+    return false;
+  }
+  gastarMonedas(EXPANSION_PRECIO);
+  comprarExpansionPais(destino);
+  guardarMeta();
+  mundoActualizarHud();
+  tnActualizar();
+  actualizarBotonExpansion();
+  mostrarToast(banderaPais(destino),"Expansión "+nombrePais(destino)+" desbloqueada");
+  return true;
+}
 /* Gonzalo puede entrar a probar cualquier cruce sin completar mapas. */
 function esPerfilGonzalo(){return(perfil.nombre||"").trim().toLowerCase()===AVATAR_EXCLUSIVO.nombre;}
 function expansionDesbloqueada(){
@@ -6393,7 +6382,7 @@ function expansionDesbloqueada(){
 function actualizarBotonExpansion(){
   const b=$("bExpansion");if(!b)return;
   const destino=expansionDestinoActual(),listo=expansionDesbloqueada();
-  b.textContent=listo?banderaPais(destino)+" Ver mapa "+nombrePais(destino):"🔒 Continuar expansión";
+  b.textContent=listo?banderaPais(destino)+" Ver mapa "+nombrePais(destino):"🪙 "+EXPANSION_PRECIO+" Continuar expansión";
   b.classList.toggle("bloqueado-exp",!listo&&!esPerfilGonzalo());
 }
 function textoBienvenidaExpansion(destino){
@@ -6430,10 +6419,8 @@ function jugarAnimacionExpansion(){
   setTimeout(paso,950);
 }
 $("bExpansion").onclick=()=>{
-  if(!expansionDesbloqueada()){
-    mostrarToast("🔒","Comprá la expansión en la Tienda por 75.000 monedas o completá el mapa.");
-    return;
-  }
+  const destino=expansionDestinoActual();
+  if(!expansionDesbloqueada()&&!comprarExpansionDesdeBoton(destino))return;
   jugarAnimacionExpansion();
 };
 $("bVolverDeArgentina").onclick=()=>{
