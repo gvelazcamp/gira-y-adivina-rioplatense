@@ -6373,17 +6373,16 @@ function comprarExpansionDesdeBoton(destino){
   mostrarToast(banderaPais(destino),"Expansión "+nombrePais(destino)+" desbloqueada");
   return true;
 }
-/* Gonzalo puede entrar a probar cualquier cruce sin completar mapas. */
 function esPerfilGonzalo(){return(perfil.nombre||"").trim().toLowerCase()===AVATAR_EXCLUSIVO.nombre;}
 function expansionDesbloqueada(){
   const destino=expansionDestinoActual();
-  return destino===paisPerfilGuardado()||mapaCompletoPais(mapaPaisActual)||expansionCompradaPais(destino)||esPerfilGonzalo();
+  return destino===paisPerfilGuardado()||mapaCompletoPais(mapaPaisActual)||expansionCompradaPais(destino);
 }
 function actualizarBotonExpansion(){
   const b=$("bExpansion");if(!b)return;
   const destino=expansionDestinoActual(),listo=expansionDesbloqueada();
-  b.textContent=listo?banderaPais(destino)+" Ver mapa "+nombrePais(destino):"🪙 "+EXPANSION_PRECIO+" Continuar expansión";
-  b.classList.toggle("bloqueado-exp",!listo&&!esPerfilGonzalo());
+  b.textContent=listo?banderaPais(destino)+" Continuar expansión":"🪙 "+EXPANSION_PRECIO+" Continuar expansión";
+  b.classList.toggle("bloqueado-exp",!listo);
 }
 function textoBienvenidaExpansion(destino){
   if(destino==="argentina")return"Cruzaste el Río de la Plata y se abrió el mapa de Argentina.<br>Probá Buenos Aires, Mar del Plata, Córdoba, Mendoza, Salta, Bariloche y El Calafate como primeras localidades. 🇦🇷";
