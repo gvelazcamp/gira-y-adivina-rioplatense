@@ -1477,6 +1477,14 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <button class="tn-comprar-real" data-producto="sin_publicidad">$2.99</button>
   </div>
   </div>
+  <h3 class="tn-subtitulo" data-fijo="1">🌎 Expansiones</h3>
+  <div class="tn-grid">
+  <div class="tn-item tn-card">
+  <div class="tn-card-img" style="background-image:url('assets/expansion/expansion-3-argentina.webp')"></div>
+  <div class="tn-card-info"><b>Expansión Argentina</b><span>Desbloquea el mapa Argentina y sus ciudades</span></div>
+  <button class="tn-comprar" data-tipo="expansion_argentina" data-precio="75000" data-real-agregado="1" data-nombre="la Expansión Argentina">🪙 75000</button>
+  </div>
+  </div>
   <h3 class="tn-subtitulo" data-fijo="1">🎁 Packs</h3>
   <div class="tn-item tn-pack-img" style="background-image:url('assets/shop/pack-explorador.webp')">
   <button class="tn-comprar" data-tipo="pack_explorador" data-precio="2200" data-real-agregado="1" data-nombre="el Pack Explorador">❤️ Vidas llenas</button>
@@ -2621,6 +2629,7 @@ function cargarMeta(){
   if(typeof m.pistasGratis!=="number")m.pistasGratis=0;
   if(typeof m.vidasInfinitasHasta!=="number")m.vidasInfinitasHasta=0;
   if(typeof m.sinAnuncios!=="boolean")m.sinAnuncios=false;
+  if(typeof m.expansionArgentinaComprada!=="boolean")m.expansionArgentinaComprada=false;
   if(typeof m.ultimaVidaAmigo!=="number")m.ultimaVidaAmigo=0;
   return m;
 }
@@ -3694,6 +3703,7 @@ $("svPedirAmigo").onclick=async()=>{
 $("svCerrar").onclick=()=>$("capaSinVidas").classList.remove("ver");
 function tnPuedeComprar(tipo){
   if(tipo==="recarga")return meta.vidas<VIDAS_MAX;
+  if(tipo==="expansion_argentina")return !meta.expansionArgentinaComprada&&!uruguayCompleto();
   if(tipo.indexOf("sobre_")===0)return sobrePuedeComprar(tipo.slice(6));
   if(tipo==="oferta_gratis")return gratisDiariaPuedeReclamar();
   if(tipo.indexOf("marco_")===0)return!framesComprados.has(tipo.slice(6));
@@ -3703,6 +3713,7 @@ function tnPuedeComprar(tipo){
 }
 function tnRazonBloqueo(tipo){
   if(tipo==="recarga")return"❤️ Vidas llenas";
+  if(tipo==="expansion_argentina")return"✅ Desbloqueada";
   if(tipo.indexOf("sobre_")===0)return sobreTextoEspera(tipo.slice(6));
   if(tipo==="oferta_gratis")return gratisDiariaTextoEspera();
   if(tipo.indexOf("marco_")===0)return"✅ Ya lo tenés";
@@ -4029,6 +4040,10 @@ function tnEjecutarCompra(tipo,precio){
       {texto:"Tablero",html:packPreviewTablero("fondo-ovni")}
     ]);
 
+  }else if(tipo==="expansion_argentina"){
+    meta.expansionArgentinaComprada=true;
+    actualizarBotonExpansion();
+    mostrarToast("🇦🇷","Expansión Argentina desbloqueada");
   }else if(tipo.indexOf("marco_")===0){
     const idMarco=tipo.slice(6);
     framesComprados.add(idMarco);guardarFramesComprados();
@@ -6343,23 +6358,24 @@ function uruguayCompleto(){try{const g=new Set(JSON.parse(localStorage.getItem("
 /* Gonzalo puede entrar a probar el mapa de expansión sin completar
    Uruguay, para poder pensar el flujo Uruguay ↔ Argentina. */
 function esPerfilGonzalo(){return(perfil.nombre||"").trim().toLowerCase()===AVATAR_EXCLUSIVO.nombre;}
-function expansionDesbloqueada(){return uruguayCompleto()||esPerfilGonzalo();}
+function expansionDesbloqueada(){return uruguayCompleto()||!!meta.expansionArgentinaComprada||esPerfilGonzalo();}
 function actualizarBotonExpansion(){
   const b=$("bExpansion");if(!b)return;
   const listo=expansionDesbloqueada();
   if(esPerfilGonzalo())b.textContent=mapaPaisActual==="argentina"?"🇺🇾 Ver mapa Uruguay":"⛵ Continuar expansión";
-  else b.textContent=listo?"⛵ Continuar expansión":"🔒 Continuar expansión";
+  else b.textContent=listo?(mapaPaisActual==="argentina"?"🇺🇾 Ver mapa Uruguay":"⛵ Continuar expansión"):"🔒 Continuar expansión";
   b.classList.toggle("bloqueado-exp",!listo&&!esPerfilGonzalo());
 }
 function prepararCartelExpansion(){
   const esPrueba=esPerfilGonzalo();
   const caja=$("mundoArgentina");
   if(!caja)return;
-  caja.querySelector("h1").textContent=esPrueba?"¡BIENVENIDO A ARGENTINA!":"¡COMPLETASTE URUGUAY!";
+  const porCompra=!!meta.expansionArgentinaComprada&&!uruguayCompleto();
+  caja.querySelector("h1").textContent=esPrueba||porCompra?"¡BIENVENIDO A ARGENTINA!":"¡COMPLETASTE URUGUAY!";
   const ps=caja.querySelectorAll("p.sub");
-  if(ps[0])ps[0].innerHTML=esPrueba?"Cruzaste el Río de la Plata y se abrió el mapa de prueba.<br>Probá Buenos Aires, Mar del Plata, Córdoba, Mendoza, Salta, Bariloche y El Calafate como primeras localidades. 🇦🇷":"Recorriste las 21 ciudades y llenaste tu pasaporte entero.<br>¡Gracias por jugar el Mapa de Uruguay! 🧉";
-  if(ps[1])ps[1].textContent=esPrueba?"Tocá el botón para entrar al mapa Argentina.":"🔒 Muy pronto vas a poder cruzar el Río de la Plata y jugar en Argentina.";
-  $("bVolverDeArgentina").textContent=esPrueba?"Entrar al mapa Argentina":"Volver a Uruguay";
+  if(ps[0])ps[0].innerHTML=esPrueba||porCompra?"Cruzaste el Río de la Plata y se abrió el mapa de Argentina.<br>Probá Buenos Aires, Mar del Plata, Córdoba, Mendoza, Salta, Bariloche y El Calafate como primeras localidades. 🇦🇷":"Recorriste las 21 ciudades y llenaste tu pasaporte entero.<br>¡Gracias por jugar el Mapa de Uruguay! 🧉";
+  if(ps[1])ps[1].textContent=esPrueba||porCompra?"Tocá el botón para entrar al mapa Argentina.":"🔒 Muy pronto vas a poder cruzar el Río de la Plata y jugar en Argentina.";
+  $("bVolverDeArgentina").textContent=esPrueba||porCompra?"Entrar al mapa Argentina":"Volver a Uruguay";
 }
 function jugarAnimacionExpansion(){
   const imgs=[$("expImg1"),$("expImg2"),$("expImg3")];
@@ -6389,11 +6405,17 @@ $("bExpansion").onclick=()=>{
     return;
   }
   if(!expansionDesbloqueada()){mostrarToast("🔒","Ganá las 21 ciudades de Uruguay para desbloquear la expansión.");return;}
+  if(mapaPaisActual==="argentina"){
+    mapaPaisForzado="uruguay";
+    sincronizarMundoActivo();
+    verMundo();
+    return;
+  }
   jugarAnimacionExpansion();
 };
 $("bVolverDeArgentina").onclick=()=>{
   $("mundoArgentina").classList.remove("ver");
-  if(esPerfilGonzalo()){
+  if(expansionDesbloqueada()){
     mapaPaisForzado="argentina";
     sincronizarMundoActivo();
   }
