@@ -1,4 +1,4 @@
-const CACHE_NAME = "gya-cache-v33";
+const CACHE_NAME = "gya-cache-v34";
 const APP_SHELL = ["./", "./index.html", "./manifest.json", "./icono-192.png", "./icono-512.png", "./assets/logo.webp"];
 
 self.addEventListener("install", (e) => {
@@ -72,3 +72,4 @@ self.addEventListener("fetch", (e) => {
       .catch(() => caches.match(e.request))
   );
 });
+
