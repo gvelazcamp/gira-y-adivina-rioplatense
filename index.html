@@ -6534,7 +6534,11 @@ function renderAvatarGrid(){
     cont.appendChild(b);
   });
 }
+function perfilPaisBloqueado(){return paisPerfilValido(perfil.pais)&&!previsualizandoPerfil;}
 function renderPaisPerfil(){
+  if(perfilPaisBloqueado())paisElegido=perfil.pais;
+  const wrap=$("perfilPaisWrap");
+  if(wrap)wrap.style.display=perfilPaisBloqueado()?"none":"";
   document.querySelectorAll(".perfil-pais-btn").forEach(b=>b.classList.toggle("elegido",b.dataset.pais===paisElegido));
   const ayuda=$("perfilPaisAyuda");
   if(ayuda)ayuda.textContent=paisPerfilValido(paisElegido)?("Tu expansión sugerida será "+paisExpansionPerfil(paisElegido)+"."):"Elegí tu país para habilitar el perfil.";
@@ -6578,7 +6582,7 @@ function previsualizarPerfilVacio(){
   renderAvatarGrid();actualizarBotonPerfil();perfilMostrarPaso("nombre");
 }
 $("perfilNombre").addEventListener("input",actualizarBotonPerfil);
-document.querySelectorAll(".perfil-pais-btn").forEach(b=>b.onclick=()=>{paisElegido=b.dataset.pais;actualizarBotonPerfil();});
+document.querySelectorAll(".perfil-pais-btn").forEach(b=>b.onclick=()=>{if(perfilPaisBloqueado())return;paisElegido=b.dataset.pais;actualizarBotonPerfil();});
 $("perfilNombre").addEventListener("keydown",e=>{if(e.key==="Enter"&&!$("perfilNombreOk").disabled)$("perfilNombreOk").click();});
 $("perfilNombreOk").onclick=async()=>{
   const n=$("perfilNombre").value.trim().slice(0,12);
