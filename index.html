@@ -37,19 +37,10 @@
 <style>
 :root{--noche:#160B24;--noche2:#241239;--oro:#F5B301;--magenta:#E5197C;--agua:#37D6C0;--crema:#F6EFE2;--tinta:#1A1024}
 *{box-sizing:border-box;margin:0;padding:0}
-#splash{position:fixed;inset:0;z-index:50;background:
- radial-gradient(700px 360px at 50% 18%,#4E1A78 0%,#241239 48%,#100719 100%);
+#splash{position:fixed;inset:0;z-index:50;background-image:url('assets/splash.webp?v=3');
+ background-size:contain;background-repeat:no-repeat;background-position:center;background-color:#160B24;
  display:grid;place-items:center;transition:opacity .7s ease;overflow:hidden}
 #splash.ido{opacity:0;pointer-events:none}
-#splashCargando{position:relative;z-index:1;display:grid;place-items:center;gap:12px;text-align:center;color:var(--crema);
- text-shadow:0 2px 12px #000000AA;animation:splashPulso 1.7s ease-in-out infinite}
-.splash-logo-fallback{width:112px;height:112px;border-radius:30px;display:grid;place-items:center;
- background:radial-gradient(circle at 50% 35%,#FFE685 0 10%,#F5B301 11% 34%,#E5197C 35% 57%,#3B1BFF 58% 100%);
- box-shadow:0 18px 48px #00000088,0 0 34px #F5B30155;border:3px solid #FFE39B;color:#fff;
- font-family:'Archivo Black',system-ui,sans-serif;font-size:2.35rem;letter-spacing:-.09em}
-.splash-marca{font-family:'Archivo Black',system-ui,sans-serif;font-size:1.1rem;line-height:1.05;letter-spacing:.02em;text-transform:uppercase}
-.splash-marca small{display:block;font-family:'Outfit',system-ui,sans-serif;font-size:.78rem;letter-spacing:.08em;color:#F5D97A;margin-top:5px}
-@keyframes splashPulso{0%,100%{transform:scale(1);opacity:.92}50%{transform:scale(1.035);opacity:1}}
 .pios-ico{width:56px;height:56px;border-radius:15px;box-shadow:0 8px 18px -6px #000000AA;margin-bottom:10px}
 .pios-intro{margin:0 0 14px;opacity:.78;font-size:.9rem;line-height:1.45}
 .pios-pasos{display:flex;flex-direction:column;gap:9px;text-align:left}
@@ -69,16 +60,10 @@
 .tuto-item p{font-size:.82rem;line-height:1.4;color:var(--crema);opacity:.9;margin:4px 0}
 .tuto-item ul{margin:2px 0 6px;padding-left:18px;font-size:.82rem;line-height:1.4;color:var(--crema);opacity:.9}
 .tuto-item li{margin-bottom:2px}
-#splashFondo{position:absolute;inset:-40px;z-index:0;background-image:url('assets/splash.webp?v=3');
- background-size:cover;background-position:center;filter:blur(34px) brightness(.45)}
-#splashArte{position:absolute;inset:0;z-index:2;background-image:url('assets/splash.webp?v=3');
- background-size:contain;background-repeat:no-repeat;background-position:center;
- animation:respira 9s ease-in-out infinite}
-@keyframes respira{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
 /* En pantallas anchas (PC/tele) el splash usa la versión horizontal en vez
    de la vertical del celular, para que se vea completa y no en tira. */
 @media(min-width:900px){
-  #splashFondo,#splashArte{background-image:url('assets/splash-tv.webp?v=1')}
+  #splash{background-image:url('assets/splash-tv.webp?v=1')}
 }
 #splashBarra{position:absolute;z-index:3;left:50%;transform:translateX(-50%);width:min(62vw,300px);bottom:5%;height:8px;border-radius:99px;
  background:#160B2499;border:1px solid #F5B30155;overflow:hidden}
@@ -1313,12 +1298,6 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
 </section>
 
 <div id="splash">
-  <div id="splashFondo"></div>
-  <div id="splashCargando" aria-label="Cargando Girá y Adiviná">
-    <div class="splash-logo-fallback">GA</div>
-    <div class="splash-marca">Girá y Adiviná<small>Cargando el juego</small></div>
-  </div>
-  <div id="splashArte"></div>
   <div id="splashBarra"><i></i></div>
 </div>
 
