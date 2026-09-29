@@ -1,0 +1,6 @@
+{
+  "name": "gira-y-adivina-rioplatense-tests",
+  "private": true,
+  "scripts": { "test:tv": "node tests/sala-tv.cjs" },
+  "devDependencies": { "playwright": "1.62.1" }
+}

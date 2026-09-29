@@ -1,0 +1,14 @@
+/* Test mode is entered only through tvhost=1 or tv=CODE. */
+.tv-screen #setup,.tv-screen #jgHud,.tv-screen #capaBienvenida,
+.tv-screen #capaPerfil,.tv-screen #capaPromoVideo,.tv-screen #iosPrompt,
+.tv-phone #capaBienvenida,.tv-phone #capaPerfil,.tv-phone #capaPromoVideo{display:none!important}
+.tv-screen button:focus-visible,.tv-screen a:focus-visible{outline:5px solid #37d6c0!important;outline-offset:5px;box-shadow:0 0 24px #37d6c0!important}
+.tv-screen{padding:3vh 4vw 70px!important}
+.tv-screen #juego{max-width:1500px;margin:auto}
+.tv-screen.tvhost #juego .acciones,.tv-screen.tvhost #juego .teclado,.tv-screen #tossBuzz{display:none!important}
+.tv-screen #tvJoinAddress{font-size:clamp(15px,2vw,26px);overflow-wrap:anywhere;margin:12px auto;color:#f6efe2}
+#tvConnection:empty{display:none}
+#tvConnection{position:fixed;left:3%;right:3%;top:8px;z-index:9999;background:#542d00;color:white;padding:10px;border-radius:10px;text-align:center}
+#tvTestExit{position:fixed;bottom:12px;right:16px;z-index:40;background:#241239;color:#f6efe2;border:1px solid #f5b301;border-radius:10px;padding:10px 18px}
+.tv-screen .bvtv-btn,.tv-screen .rtv-cartelito-btn{background:#f5b301!important;color:#160b24;font-weight:bold;border-radius:12px;border:2px solid white;font-size:clamp(14px,1.6vw,24px)}
+.tv-phone #tvControl{padding-bottom:70px}

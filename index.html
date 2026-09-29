@@ -1145,6 +1145,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
+<link rel="stylesheet" href="sala-tv.css?v=1">
 </head>
 <body>
 
@@ -2528,14 +2529,22 @@ const BROKERS=["wss://broker.emqx.io:8084/mqtt","wss://broker.hivemq.com:8884/mq
    "mq", la de la sala de juego activa). El listener de invitaciones usa
    su propia conexión aparte ("mqInv") para no pisar la de una partida. */
 function conectar(alConectar,alFallar,asignar,i){
-  asignar=asignar||(c=>{mq=c;});
-  i=i||0;
-  if(i>=BROKERS.length)return alFallar();
+  const esTV=(modo==="tvhost"||modo==="tvguest")&&!asignar;
+  const asignarCliente=asignar||(c=>{mq=c;});
+  const fijo=esTV&&modo==="tvguest"&&/^[0-2][A-Z2-9]{5}$/.test(sala)?Number(sala[0]):null;
+  i=i===undefined?(fijo===null?0:fijo):i;
+  if(typeof mqtt==="undefined"||i>=BROKERS.length||(fijo!==null&&i!==fijo))return alFallar();
   let listo=false,muerto=false;
   const c=mqtt.connect(BROKERS[i],{clientId:"lr"+Math.random().toString(16).slice(2),
     connectTimeout:7000,reconnectPeriod:0,clean:true});
   const siguiente=()=>{if(listo||muerto)return;muerto=true;try{c.end(true);}catch(e){}conectar(alConectar,alFallar,asignar,i+1);};
-  c.on("connect",()=>{if(muerto)return;listo=true;asignar(c);c.options.reconnectPeriod=2500;alConectar();});
+  c.on("connect",()=>{
+    if(muerto)return;
+    if(listo){if(esTV&&window.gyaTVReconnect)window.gyaTVReconnect();return;}
+    listo=true;asignarCliente(c);c.options.reconnectPeriod=2500;
+    if(esTV)window.gyaTVBroker=i;
+    alConectar();
+  });
   c.on("error",siguiente);
   c.on("close",()=>{if(!listo)siguiente();});
 }
@@ -7058,6 +7067,8 @@ function crearSalaTV(){
   $("setup").style.display="none";
   $("capaBienvenidaTV").classList.add("ver");
   conectar(()=>{
+    // The first digit pins all phones to the broker chosen by this TV.
+    sala=String(window.gyaTVBroker||0)+Array.from({length:5},()=>"ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[Math.floor(Math.random()*32)]).join("");
     mq.subscribe(tema("tvaccion"));
     mq.on("message",(t,pl)=>{if(t===tema("tvaccion")){try{recibirTVHost(JSON.parse(pl.toString()));}catch(e){}}});
     $("tvEstado").textContent="Sala lista · esperando celulares…";renderTVLobby();
@@ -7082,7 +7093,10 @@ function unirseTV(cod){
   conectar(()=>{
     mq.subscribe(tema("tvestado"));
     mq.on("message",(t,pl)=>{if(t===tema("tvestado")){try{recibirTVGuest(JSON.parse(pl.toString()));}catch(e){}}});
-    const hola=()=>enviar({a:"tv_hola",n,av:perfil.avatar||null,frame:frameEquipado||null});hola();holaTimer=setInterval(hola,1800);
+    const hola=()=>enviar({a:"tv_hola",n,av:perfil.avatar||null,frame:frameEquipado||null});
+    if(holaTimer)clearInterval(holaTimer);
+    mq.subscribe(tema("tvestado"),()=>hola());
+    holaTimer=setInterval(hola,4000);
     $("estado").textContent="Buscando Sala TV "+sala+"…";
   },()=>{$("estado").textContent="No se pudo conectar con la TV. Revisá el código o la conexión.";});
 }
@@ -7117,7 +7131,6 @@ function recibirTVGuest(d){
     return;
   }
   if(d.tipo==="estado"){
-    if(holaTimer){clearInterval(holaTimer);holaTimer=null;}
     V=d.v;tvMiIndex=(V.jug||[]).findIndex(j=>j.id===tvId);miJug=tvMiIndex;
     $("lobby").style.display="none";$("tvControl").style.display="block";armarTecladoTV();renderTVControl();return;
   }
@@ -7620,8 +7633,7 @@ if(tvEnLink){
   document.querySelector("#setup p.sub").textContent="Te invitaron a una Sala TV. Escribí tu nombre y entrá.";
   $("bEntrarTV").className="btn-grande";$("bEntrarTV").style.display="";$("bEntrarTV").textContent="Entrar a Sala TV "+tvEnLink;
   $("bEntrarTV").onclick=()=>{
-    if(!perfilExiste()){abrirPerfil(()=>$("bEntrarTV").click());return;}
-    const n=$("miNombre").value.trim();if(!n){$("miNombre").focus();return;}try{localStorage.setItem("larueda_nombre",n);}catch(e){}unirseTV(tvEnLink);
+    const n=$("miNombre").value.trim();if(!n){$("miNombre").focus();return;}unirseTV(tvEnLink);
   };
 }
 const salaEnLink=(new URLSearchParams(location.search).get("sala")||"").toUpperCase();
@@ -7645,7 +7657,7 @@ if(salaEnLink){
    Sala TV, sin pasar por el menú principal (pensado para un dispositivo
    sin pantalla táctil, como Android TV). */
 if(new URLSearchParams(location.search).get("tvhost")==="1"){
-  setTimeout(crearSalaTV,50);
+  window.addEventListener("DOMContentLoaded",crearSalaTV,{once:true});
 }
 
 function recibirHost(d){
@@ -8634,6 +8646,10 @@ function hostResolver(txt,jugadorToss){
   if(animando)return;
   if(S&&S.fase==="tossup"){hostResolverToss(txt,jugadorToss);return;}
   if(S&&(S.fase==="bonus_resolver"||S.fase==="bonus_elegir")){hostResolverBonus(txt);return;}
+  if(modo==="tvhost"){
+    if(!S||!["girar","consonante","vocal"].includes(S.fase))return;
+    S.fase="tv_resultado";
+  }
   if(enTutorial||norm(txt)===norm(S.frase)){
     bip(1318,.25,"sine",.08);[...S.frase].forEach(c=>S.abiertas.add(c));
     const j=S.jug[S.turno];const gano=j.ronda;j.tot+=gano;j.rg++;
@@ -10439,6 +10455,7 @@ document.addEventListener("keydown",e=>{
   if(e.code==="Space"&&!$("bGirar").disabled){e.preventDefault();$("bGirar").click();}
 });
 </script>
+<script src="sala-tv.js?v=1"></script>
 </body>
 </html>
 

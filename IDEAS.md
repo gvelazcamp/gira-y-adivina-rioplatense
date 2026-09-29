@@ -1,59 +1,17 @@
 # Ideas a futuro
 
-## PENDIENTE — Ocultar Sala TV del menú temporalmente
+## Sala TV — versión de prueba preparada (29/09/2026)
 
-Plan de Gonzalo, **solo hasta que se solucione el tema de Sala TV**
-(no es un cambio permanente):
-
-- Ocultar la tarjeta grande "Sala TV / Familia" (`bTV`) del menú
-  principal mientras el problema sigue sin resolver.
-- Pasar **Social** (hoy en la fila chica de abajo: Ruleta, Ranking,
-  Objetivos, Social) al lugar que deja libre Sala TV, como tarjeta
-  grande.
-- Pasar **Logros** (hoy escondido dentro de otro menú, botón `bLogros`)
-  al lugar que deja libre Social en la fila chica.
-- Cuando se resuelva lo de Sala TV, volver todo para atrás (reaparece
-  Sala TV, Social y Logros vuelven a como estaban).
-
-No implementado todavía — Gonzalo pidió guardarlo acá primero.
-
-## PENDIENTE — Terminar app de Android TV (retomar el lunes en una PC)
-
-Ya está la parte que se podía hacer sin una compu con internet normal.
-Falta terminar el build desde una PC (el entorno de esta sesión tiene
-bloqueado el acceso a los servidores de Android, así que no se pudo
-compilar el archivo final acá).
-
-**Ya hecho:**
-- En el juego (ya en producción): parámetro `?tvhost=1` — abre la web
-  directo como anfitrión de Sala TV, sin pasar por el menú (pensado
-  para un dispositivo sin pantalla táctil).
-- Repo nuevo `gvelazcamp/gira-y-adivina-tv` con `twa-manifest.json` ya
-  configurado (apunta a esa URL) y un `README.md` con los pasos
-  exactos para terminarlo.
-
-**Falta (desde una PC con internet normal, siguiendo el README del
-repo `gira-y-adivina-tv`):**
-1. Instalar Node.js, correr `bubblewrap init` con el manifest del
-   juego, y `bubblewrap build` — genera el proyecto Android completo y
-   el `.aab`.
-2. Editar a mano el `AndroidManifest.xml` generado para agregar
-   soporte de TV (`android.software.leanback`, marcar
-   `android.hardware.touchscreen` como no obligatorio, agregar el
-   segundo `intent-filter` con `LEANBACK_LAUNCHER`, y el banner de
-   320×180px) — Bubblewrap no lo hace solo, hay que agregarlo.
-3. Decidir: ¿app nueva (`packageId` nuevo, más simple, no necesita el
-   keystore original) o la misma app ya publicada (necesita el
-   keystore original, que no está guardado en ningún repo)?
-4. Subir el `.aab` a Play Console, probar en un emulador de Android TV
-   o una tele real antes de mandar a producción.
-
-Contexto: la razón de todo esto es poder tener el juego como app
-instalable en la Play Store de la TV (hoy no aparece ahí porque el
-paquete actual no está armado para TV). Mientras tanto, ya se puede
-jugar en la tele hoy mismo abriendo el navegador de la TV y usando
-Sala TV — eso no necesita nada de lo de arriba.
-
+- La tarjeta sigue oculta en el menú general; Social mantiene su lugar.
+- Acceso de pantalla: `index.html?tvhost=1`; celulares: `tv.html`.
+- La TV mantiene la partida y los celulares envían acciones y respuestas.
+- Se corrigieron reconexión, selección de broker, respuestas duplicadas y manejo
+  con mando. Ver `SALA_TV_PRUEBA.md` para detalles y pruebas.
+- `gvelazcamp/gira-y-adivina-tv` contiene el proyecto Android WebView y un workflow
+  que compila y publica un APK de prueba en GitHub Releases.
+- Sustituye la preparación Bubblewrap/TWA, que dependía de un navegador compatible.
+- Pendiente: TV física el fin de semana, correcciones que aparezcan y decisión de
+  distribución final en Play Console. No se ha configurado un dominio propio.
 
 Borrador de cosas pensadas para más adelante — nada de esto está
 empezado ni decidido en firme, es una lista para no perder la idea.
