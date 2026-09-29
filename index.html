@@ -2584,7 +2584,7 @@ const MUNDO_ARGENTINA=[
  {id:"purmamarca",pasos:[[24, 18], [42, 30], [28, 48], [46, 66]],nx:46,ny:58,bg:"assets/worlds/purmamarca.webp",n:"Purmamarca",r:"La Quebradeña",rondas:4,cats:["Viaje","Lugar"]},
  {id:"san-miguel-de-tucuman",pasos:[[24, 18], [42, 30], [28, 48], [46, 66]],nx:50,ny:58,bg:"assets/worlds/san-miguel-de-tucuman.webp",n:"San Miguel de Tucumán",r:"La Tucumana",rondas:4,cats:["Historia de Uruguay","Lugar"]},
  {id:"corrientes",pasos:[[24, 18], [42, 30], [28, 48], [46, 66]],nx:52,ny:58,bg:"assets/worlds/corrientes.webp",n:"Corrientes",r:"El Chamamecero",rondas:4,cats:["Musica y fiesta","Lugar"]},
- {id:"puerto-iguazu",pasos:[[24, 18], [42, 30], [28, 48], [46, 66]],nx:48,ny:58,bg:"assets/worlds/puerto-iguazu.webp",n:"Puerto Iguazú",r:"La Guardaparque",rondas:4,cats:["Viaje","Animales"]}
+ {id:"puerto-iguazu",pasos:[[24, 18], [42, 30], [28, 48], [46, 66]],nx:48,ny:58,bg:"assets/worlds/puerto-iguazu.webp",n:"Puerto Iguazú",r:"La Guardaparque",rondas:4,cats:["Viaje","Animales"],rica:true}
 ];
 let mapaPaisForzado=null;
 function esGonzaloGuardado(){try{return(localStorage.getItem("gya_nombre")||"").trim().toLowerCase()==="gonzalo";}catch(e){return false;}}
@@ -6046,6 +6046,22 @@ const CIUDAD_RICA={
       {img:"assets/passport/el-calafate-sello-3.webp",nombre:"Laguna Nimez"},
       {img:"assets/passport/el-calafate-sello-4.webp",nombre:"Témpanos"},
       {img:"assets/passport/el-calafate-sello-rival.webp",nombre:"El Guía del Glaciar"}
+    ]
+  },
+  "puerto-iguazu":{
+    nodos:[
+      {tipo:"paso",x:24,y:18},
+      {tipo:"paso",x:42,y:30},
+      {tipo:"paso",x:28,y:48},
+      {tipo:"paso",x:46,y:66},
+      {tipo:"rival",x:32,y:88}
+    ],
+    sellos:[
+      {img:"assets/passport/puerto-iguazu-sello-1.webp",nombre:"Cataratas del Iguazú"},
+      {img:"assets/passport/puerto-iguazu-sello-2.webp",nombre:"Garganta del Diablo"},
+      {img:"assets/passport/puerto-iguazu-sello-3.webp",nombre:"Hito Tres Fronteras"},
+      {img:"assets/passport/puerto-iguazu-sello-4.webp",nombre:"Selva Misionera"},
+      {img:"assets/passport/puerto-iguazu-sello-rival.webp",nombre:"El Guardaparque"}
     ]
   }
 };
