@@ -1181,7 +1181,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
       <span class="stat-pill stat-racha" id="setupRacha" title="Racha de días jugados">🔥 <b>0</b></span>
       <span class="stat-pill stat-monedas" id="setupMonedas" title="Monedas: se ganan jugando y sirven para comprar en la Tienda">🪙 <b>0</b> monedas</span>
       <span class="stat-pill stat-vidas" id="setupVidas">❤️ <b>0</b></span>
-      <button id="btnMusica" type="button" title="Silenciar música">🔊</button>
+      <button id="btnMusica" type="button" title="Silenciar todo el sonido">🔊</button>
       <button id="bMasOpciones" type="button" title="Más opciones">⚙️</button>
     </div>
   </div>
@@ -2247,6 +2247,26 @@ const VOCALES="AEIOU", LETRAS="ABCDEFGHIJKLMNÑOPQRSTUVWXYZ".split("");
 const $=id=>document.getElementById(id);
 let matchToken=0;
 let botPausado=0;
+/* Reloj y esperas de la partida: se congelan juntos, sin tocar las fechas
+   de premios diarios, vidas o sincronización. Las salas nunca se pausan. */
+const tiempoPartida={pausa:null,descuento:0,esperas:new Set(),
+  ahora(){return (this.pausa===null?Date.now():this.pausa)-this.descuento;},
+  armar(e){e.timer=setTimeout(()=>{if(this.pausa!==null)return;
+    this.esperas.delete(e);if(e.token===matchToken)e.fn();
+  },Math.max(0,e.fin-this.ahora()));},
+  esperar(fn,ms=0){const e={fn,fin:this.ahora()+ms,token:matchToken,timer:null};
+    this.esperas.add(e);if(this.pausa===null)this.armar(e);return e;},
+  cancelar(e){if(!e)return;clearTimeout(e.timer);this.esperas.delete(e);},
+  pausar(){if(this.pausa!==null)return;this.pausa=Date.now();
+    this.esperas.forEach(e=>clearTimeout(e.timer));},
+  reanudar(){if(this.pausa===null)return;this.descuento+=Date.now()-this.pausa;
+    this.pausa=null;this.esperas.forEach(e=>this.armar(e));},
+  limpiar(){this.esperas.forEach(e=>clearTimeout(e.timer));this.esperas.clear();
+    this.pausa=null;this.descuento=0;}
+};
+const ahoraPartida=()=>tiempoPartida.ahora();
+const esperarPartida=(fn,ms)=>tiempoPartida.esperar(fn,ms);
+const cancelarEsperaPartida=e=>tiempoPartida.cancelar(e);
 function tk(fn){
   const t=matchToken;
   botPausado++;
@@ -2258,7 +2278,7 @@ function tk(fn){
 }
 const norm=s=>s.toUpperCase().normalize("NFD").replace(/[\u0300-\u0304\u0306-\u036f]/g,"").replace(/\s+/g," ").trim();
 
-let modo="local", miJug=0, mq=null, sala="", rondasElegidas=3, holaTimer=null, serie=[0,0], arranca=0, ultGanador=-1, racha=0, relojID=null, relojOculto=null;
+let modo="local", miJug=0, mq=null, sala="", rondasElegidas=3, holaTimer=null, serie=[0,0], arranca=0, ultGanador=-1, racha=0, relojID=null;
 let mqInv=null, invPendiente=null;
 let familiaJugadores=[],tvPartidaIniciada=false,tvMiIndex=-1;
 let tvPruebaBotsActiva=false,tvPruebaBotT=null,tvPruebaWatchdogI=null,marcadorTurnoCentrado=-1;
@@ -2278,7 +2298,8 @@ const BONUS_BASE="RSTLNE", BONUS_DURACION=10000, BONUS_PREMIO=2000, BONUS_TV_DUR
 let bonusTimer=null;
 
 let ac=null;
-function bip(f,d,tipo="sine",g=.06){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+function bip(f,d,tipo="sine",g=.06){if(!sonidoPermitido())return;try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+ if(ac.state==="suspended")ac.resume().catch(()=>{});
  const o=ac.createOscillator(),v=ac.createGain();o.type=tipo;o.frequency.value=f;
  v.gain.setValueAtTime(g,ac.currentTime);v.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);
  o.connect(v);v.connect(ac.destination);o.start();o.stop(ac.currentTime+d);}catch(e){}}
@@ -2297,7 +2318,14 @@ const guardarMusica=()=>{try{localStorage.setItem("gya_musica",musicaOn?"on":"of
 let audioMusica=null;
 let musicaCompartida=false;
 let audioRuletaGiro=null;
+function sonidoPermitido(){return musicaOn&&document.visibilityState!=="hidden";}
+function silenciarTodo(){
+  detenerMusica();cortarSFX();
+  try{if(audioRuletaGiro){audioRuletaGiro.pause();audioRuletaGiro.currentTime=0;}}catch(e){}
+  try{if(ac){const anterior=ac;ac=null;anterior.close().catch(()=>{});}}catch(e){}
+}
 function sonarRuletaGiro(){
+  if(!sonidoPermitido())return;
   try{
     if(!audioRuletaGiro){audioRuletaGiro=new Audio("assets/audio/ruido-ruleta.mp3");audioRuletaGiro.volume=.55;}
     audioRuletaGiro.currentTime=0;audioRuletaGiro.play().catch(()=>{});
@@ -2311,6 +2339,7 @@ const SFX={
 };
 const audioSFX={};
 function sonarSFX(id){
+  if(!sonidoPermitido())return;
   try{
     if(!audioSFX[id]){audioSFX[id]=new Audio(SFX[id]);audioSFX[id].volume=.7;}
     const a=audioSFX[id];
@@ -2322,6 +2351,7 @@ function sonarSFX(id){
   }catch(e){}
 }
 function hablarLetra(letra,veces){
+  if(!sonidoPermitido())return;
   try{
     if(!("speechSynthesis" in window))return;
     speechSynthesis.cancel();
@@ -2370,7 +2400,7 @@ function duckMusica(silenciar){
 try{
   if("mediaSession" in navigator){
     navigator.mediaSession.setActionHandler("pause",()=>{
-      musicaOn=false;guardarMusica();detenerMusica();actualizarBotonMusica();
+      musicaOn=false;guardarMusica();silenciarTodo();actualizarBotonMusica();
     });
     navigator.mediaSession.setActionHandler("play",()=>{
       musicaOn=true;guardarMusica();sincronizarMusica();actualizarBotonMusica();
@@ -2411,29 +2441,38 @@ $("cerrarInstalarIOS").onclick=()=>$("capaInstalarIOS").classList.remove("ver");
 function actualizarBotonMusica(){
   const b=$("btnMusica");if(!b)return;
   b.textContent=musicaOn?"🔊":"🔇";
-  b.title=musicaOn?"Silenciar música":"Activar música";
+  b.title=musicaOn?"Silenciar todo el sonido":"Activar sonido";
+  b.setAttribute("aria-label",b.title);
 }
 $("btnMusica").onclick=()=>{
   musicaOn=!musicaOn;guardarMusica();
-  if(musicaOn)sincronizarMusica();else detenerMusica();
+  if(musicaOn)sincronizarMusica();else silenciarTodo();
   actualizarBotonMusica();
 };
 actualizarBotonMusica();
 ["pointerdown","touchend","click","keydown"].forEach(ev=>
   document.addEventListener(ev,()=>sincronizarMusica(),{once:true,passive:true}));
+function suspenderJuego(){
+  silenciarTodo();
+  if(S&&S.fase!=="fin"&&(modo==="bot"||modo==="local"))tiempoPartida.pausar();
+}
+function recuperarSala(){
+  if(!mq||!mq.connected||!sala)return;
+  if(modo==="guest"){
+    mq.subscribe(tema("estado"),()=>enviar({a:"sincronizar"}));
+  }else if(modo==="host"){
+    mq.subscribe(tema("accion"));if(S)publicar(V.aviso,null,true);
+  }else if((modo==="tvhost"||modo==="tvguest")&&window.gyaTVReconnect)window.gyaTVReconnect();
+}
+function reanudarJuego(){
+  if(document.visibilityState==="hidden")return;
+  tiempoPartida.reanudar();sincronizarMusica();recuperarSala();
+}
 document.addEventListener("visibilitychange",()=>{
-  if(document.visibilityState==="visible"){
-    sincronizarMusica();
-    /* El reloj de la ronda usa Date.now(), que sigue corriendo aunque el
-       celular esté bloqueado o la app en segundo plano. Sin este ajuste,
-       al volver el tiempo ya estaba "cumplido" y el turno pasaba solo
-       (el bot jugaba en silencio mientras el jugador no miraba). */
-    if(relojOculto!=null&&S&&S.tFin){S.tFin=Date.now()+relojOculto;if(typeof V!=="undefined"&&V)V.seg=Math.max(1,Math.round(relojOculto/1000));relojOculto=null;if(typeof pintarTodo==="function")pintarTodo();}
-  }else{
-    detenerMusica();
-    if(relojID&&S&&S.tFin)relojOculto=Math.max(0,S.tFin-Date.now());
-  }
+  if(document.visibilityState==="hidden")suspenderJuego();else reanudarJuego();
 });
+window.addEventListener("pagehide",suspenderJuego);
+window.addEventListener("pageshow",reanudarJuego);
 /* Los videos de fondo (Durazno, Montevideo, etc.) traen loop nativo,
    pero el navegador reinicia recién cuando llega justo al último
    frame, y ese reinicio se nota como un traboncito — más notorio
@@ -2500,11 +2539,24 @@ function animarRueda(destino,alFinal){
   cortarSFX();
   sonarRuletaGiro();
   duckMusica(true);
-  const paso=360/SEG.length,ini=giroActual,dur=4200,t0=performance.now();
+  const paso=360/SEG.length,ini=giroActual,dur=4200,t0=ahoraPartida();
   const ag=document.querySelector(".aguja");
-  let ult=-1,tAnt=t0,gAnt=ini;
-  requestAnimationFrame(function frame(t){
-    if(token!==matchToken)return;
+  let ult=-1,tAnt=t0,gAnt=ini,terminado=false;
+  // El resultado no depende de requestAnimationFrame: en salas la pantalla
+  // puede dejar de dibujarse en segundo plano mientras el juego sigue.
+  esperarPartida(()=>{
+    terminado=true;giroActual=destino;
+    cv.style.transform="rotate("+destino.toFixed(2)+"deg) translateZ(0)";
+    ag.style.transform="translateX(-50%)";bip(190,.16,"triangle",.07);
+    const sg=segmentoDe(destino);
+    $("salioGiro").textContent=sg.t?ETI[sg.t]:"$"+sg.v;
+    esperarPartida(()=>{$("capaRueda").classList.remove("ver");
+      animando=false;duckMusica(false);pintar();if(alFinal)alFinal();},1100);
+  },dur);
+  requestAnimationFrame(function frame(){
+    const t=ahoraPartida();
+    if(token!==matchToken||terminado)return;
+    if(tiempoPartida.pausa!==null){requestAnimationFrame(frame);return;}
     const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3.2);
     giroActual=ini+(destino-ini)*e;
     cv.style.transform="rotate("+giroActual.toFixed(2)+"deg) translateZ(0)";
@@ -2514,16 +2566,11 @@ function animarRueda(destino,alFinal){
         const vel=Math.min((giroActual-gAnt)/Math.max(t-tAnt,1)/paso,1.6);
         const r=vel/1.6;
         if(r<.55){ag.style.transform="translateX(-50%) rotate("+(9-r*9).toFixed(1)+"deg)";
-          setTimeout(()=>ag.style.transform="translateX(-50%)",70);}
+          esperarPartida(()=>ag.style.transform="translateX(-50%)",70);}
       }
       ult=k;tAnt=t;gAnt=giroActual;
     }
     if(p<1)requestAnimationFrame(frame);
-    else{ag.style.transform="translateX(-50%)";bip(190,.16,"triangle",.07);
-      const sg=segmentoDe(destino);
-      $("salioGiro").textContent=sg.t?ETI[sg.t]:"$"+sg.v;
-      setTimeout(()=>{if(token!==matchToken)return;$("capaRueda").classList.remove("ver");
-        animando=false;duckMusica(false);pintar();if(alFinal)alFinal();},1100);}
   });
 }
 
@@ -2552,7 +2599,7 @@ function conectar(alConectar,alFallar,asignar,i){
   const siguiente=()=>{if(listo||muerto)return;muerto=true;try{c.end(true);}catch(e){}conectar(alConectar,alFallar,asignar,i+1);};
   c.on("connect",()=>{
     if(muerto)return;
-    if(listo){if(esTV&&window.gyaTVReconnect)window.gyaTVReconnect();return;}
+    if(listo){if(!asignar)recuperarSala();return;}
     listo=true;asignarCliente(c);c.options.reconnectPeriod=2500;
     if(esTV)window.gyaTVBroker=i;
     alConectar();
@@ -3292,7 +3339,7 @@ function entrenamientoBonusPasoResuelto(gano){
   entrenamientoBonusActual++;
   S.finYa=false;S.finalPendiente=null;
   publicar("Intento "+entrenamientoBonusActual+" de "+ENTRENO_RONDAS+" — allá va la próxima Ronda Bonus.");
-  setTimeout(tk(()=>iniciarBonus(0,{entrenamiento:true})),1400);
+  esperarPartida(tk(()=>iniciarBonus(0,{entrenamiento:true})),1400);
 }
 function finalizarEntrenamientoBonus(){
   const ganadas=entrenamientoBonusGanados,pasa=ganadas>ENTRENO_RONDAS/2;
@@ -6943,9 +6990,9 @@ function botSuavePrimerDurazno(){
   return null;
 }
 function programarBot(){
-  clearTimeout(botT);
+  cancelarEsperaPartida(botT);
   if(enPruebaPunteros||modo!=="bot"||!S||S.turno!==1||S.fase==="fin"||animando||botPausado>0)return;
-  botT=setTimeout(jugarBot,1200+Math.random()*1400);
+  botT=esperarPartida(jugarBot,1200+Math.random()*1400);
 }
 function jugarBot(){
   if(modo!=="bot"||S.turno!==1||animando||botPausado>0)return;
@@ -7019,9 +7066,9 @@ function generarBotTossPlan(){
   };
 }
 function programarBotToss(){
-  clearTimeout(botTossT);
+  cancelarEsperaPartida(botTossT);
   if(modo!=="bot"||!S||S.fase!=="tossup")return;
-  botTossT=setTimeout(jugarBotToss,220);
+  botTossT=esperarPartida(jugarBotToss,220);
 }
 function jugarBotToss(){
   if(modo!=="bot"||!S||S.fase!=="tossup")return;
@@ -7040,12 +7087,12 @@ function jugarBotToss(){
      faltan<=plan.ultimaChanceFaltan&&faltan>=0){
     plan.ultimaChanceUsada=true;plan.reaccionProgramada=true;
     const esperaUC=500+Math.random()*900;
-    botTossReaccionT=setTimeout(()=>{
+    botTossReaccionT=esperarPartida(()=>{
       botTossReaccionT=null;
       if(!S||S.fase!=="tossup")return;
       if(S.tossPausado){plan.reaccionProgramada=false;programarBotToss();return;}
       if(!pausarToss(1)){plan.reaccionProgramada=false;programarBotToss();return;}
-      botTossPensarT=setTimeout(()=>{
+      botTossPensarT=esperarPartida(()=>{
         botTossPensarT=null;
         if(!S||S.fase!=="tossup"||S.tossRespondedor!==1)return;
         plan.intentos++;
@@ -7065,7 +7112,7 @@ function jugarBotToss(){
      "humano pensando", no una tirada de dados nueva. */
   plan.reaccionProgramada=true;
   const espera=plan.reaccionMin+Math.random()*(plan.reaccionMax-plan.reaccionMin);
-  botTossReaccionT=setTimeout(()=>{
+  botTossReaccionT=esperarPartida(()=>{
     botTossReaccionT=null;
     if(!S||S.fase!=="tossup")return;
     if(S.tossPausado){
@@ -7074,7 +7121,7 @@ function jugarBotToss(){
       plan.reaccionProgramada=false;programarBotToss();return;
     }
     if(!pausarToss(1)){plan.reaccionProgramada=false;programarBotToss();return;}
-    botTossPensarT=setTimeout(()=>{
+    botTossPensarT=esperarPartida(()=>{
       botTossPensarT=null;
       if(!S||S.fase!=="tossup"||S.tossRespondedor!==1)return;
       plan.intentos++;
@@ -7695,6 +7742,11 @@ if(new URLSearchParams(location.search).get("tvhost")==="1"){
 }
 
 function recibirHost(d){
+  if(d.a==="sincronizar"){
+    if(S){publicar(V.aviso,null,true);
+      if(S.fase==="fin")enviar({tipo:"fin",tit:$("fTitulo").textContent,txt:$("fTexto").textContent});}
+    return;
+  }
   if(d.a==="hola"){
     if(S){publicar(V.aviso,null,true);return;}
     $("lobby").style.display="none";$("juego").style.display="block";armarTeclado();
@@ -7732,7 +7784,7 @@ function recibirGuest(d){
   else if(d.tipo==="giro")animarRueda(d.destino,null);
   else if(d.tipo==="reaccion")volar(d.e);
   else if(d.tipo==="chat")chatAgregarMensaje("otro",String(d.txt||"").slice(0,200));
-  else if(d.tipo==="fin")mostrarFin(d.tit||"Se terminó",d.txt);
+  else if(d.tipo==="fin"&&!$("modalFin").classList.contains("ver"))mostrarFin(d.tit||"Se terminó",d.txt);
 }
 
 let vistas=(()=>{try{return new Set(JSON.parse(localStorage.getItem("larueda_vistas")||"[]"));}catch(e){return new Set();}})();
@@ -7796,7 +7848,7 @@ function nuevaRonda(){
 
   S.ronda++;
   if(S.ronda>S.rondas){
-    if($("capaResuelto").classList.contains("ver")){setTimeout(tk(nuevaRonda2),900);S.ronda--;return;}
+    if($("capaResuelto").classList.contains("ver")){esperarPartida(tk(nuevaRonda2),900);S.ronda--;return;}
     return finDelJuego();
   }
   if(!S.mazo.length)S.mazo=nuevoMazo(S.cats);
@@ -7816,22 +7868,23 @@ function nuevaRonda(){
   publicar("Le toca a <b>"+S.jug[S.turno].n+"</b>. Girá para pedir una consonante.");
 }
 function nuevaRonda2(){S.ronda++;
-  if($("capaResuelto").classList.contains("ver")){setTimeout(tk(nuevaRonda2),600);S.ronda--;return;}
+  if($("capaResuelto").classList.contains("ver")){esperarPartida(tk(nuevaRonda2),600);S.ronda--;return;}
   finDelJuego();}
 function limpiarToss(){
   if(tossTimer){clearInterval(tossTimer);tossTimer=null;}
-  if(tossRespuestaTimer){clearTimeout(tossRespuestaTimer);tossRespuestaTimer=null;}
-  if(botTossT){clearTimeout(botTossT);botTossT=null;}
-  if(botTossReaccionT){clearTimeout(botTossReaccionT);botTossReaccionT=null;}
-  if(botTossPensarT){clearTimeout(botTossPensarT);botTossPensarT=null;}
+  if(tossRespuestaTimer){cancelarEsperaPartida(tossRespuestaTimer);tossRespuestaTimer=null;}
+  if(botTossT){cancelarEsperaPartida(botTossT);botTossT=null;}
+  if(botTossReaccionT){cancelarEsperaPartida(botTossReaccionT);botTossReaccionT=null;}
+  if(botTossPensarT){cancelarEsperaPartida(botTossPensarT);botTossPensarT=null;}
   if(S){S.tossPausado=false;S.tossRespondedor=null;S.tossRestante=0;S.tossHastaProx=0;S.botTossPlan=null;}
 }
 function arrancarIntervaloToss(){
   if(tossTimer)clearInterval(tossTimer);
   tossTimer=setInterval(()=>{
+    if(tiempoPartida.pausa!==null)return;
     if(!S||S.fase!=="tossup"){limpiarToss();return;}
     if(S.tossPausado)return;
-    const ahora=Date.now();
+    const ahora=ahoraPartida();
     let cambio=false;
     while(S.tossOrden.length&&ahora>=S.tossProx){S.tossPos.add(S.tossOrden.shift());S.tossProx+=TOSS_PASO;cambio=true;}
     if(!S.tossOrden.length){
@@ -7859,7 +7912,7 @@ function iniciarTossUp(f){
   S.fase="tossup";S.tossPos=new Set();S.tossBloq=Array(S.jug.length).fill(false);
   S.tossPausado=false;S.tossRespondedor=null;S.tossRestante=TOSS_DURACION;S.tossHastaProx=TOSS_PASO;
   S.tossOrden=[...S.frase].map((c,i)=>c===" "?null:i).filter(i=>i!==null).sort(()=>Math.random()-.5);
-  S.tossFin=Date.now()+TOSS_DURACION;S.tossProx=Date.now()+TOSS_PASO;S.tossTodoDesde=null;
+  S.tossFin=ahoraPartida()+TOSS_DURACION;S.tossProx=ahoraPartida()+TOSS_PASO;S.tossTodoDesde=null;
   S.cat=S.modoVelocidad?("⚡ Ronda "+S.ronda+" de "+S.rondas+" · "+f.c):
     ((destino!==null&&modo==="bot"?MUNDO[destino].n+" · ":"")+"⚡ Prueba de velocidad · "+f.c);
   publicar("<b>PRUEBA DE VELOCIDAD</b> — las letras aparecen solas. Resolvé antes de que se terminen los 20 segundos.");
@@ -7875,20 +7928,20 @@ function pausarToss(jugador){
      verdad contra la Máquina (Jugar ahora Uruguay), si el humano erró ya
      queda afuera como en cualquier otro modo. */
   if(S.tossBloq&&S.tossBloq[jugador]&&!(modo==="bot"&&(jugador===1||esEntrenamientoToss)))return false;
-  const ahora=Date.now();
+  const ahora=ahoraPartida();
   S.tossRestante=Math.max(0,S.tossFin-ahora);
   S.tossHastaProx=Math.max(0,S.tossProx-ahora);
   S.tossPausado=true;S.tossRespondedor=jugador;S.tossRespuestaFin=ahora+TOSS_RESPUESTA_DURACION;
   if(tossTimer){clearInterval(tossTimer);tossTimer=null;}
-  if(tossRespuestaTimer)clearTimeout(tossRespuestaTimer);
-  tossRespuestaTimer=setTimeout(()=>finRespuestaToss(jugador),TOSS_RESPUESTA_DURACION);
+  if(tossRespuestaTimer)cancelarEsperaPartida(tossRespuestaTimer);
+  tossRespuestaTimer=esperarPartida(()=>finRespuestaToss(jugador),TOSS_RESPUESTA_DURACION);
   publicar("<b>"+S.jug[jugador].n+" apretó RESOLVER</b> — tablero y reloj congelados. Tiene 9 segundos para responder.");
   return true;
 }
 function reanudarToss(mensaje){
   if(!S||S.fase!=="tossup"||!S.tossPausado)return;
-  if(tossRespuestaTimer){clearTimeout(tossRespuestaTimer);tossRespuestaTimer=null;}
-  const ahora=Date.now(),restante=Math.max(0,S.tossRestante||0);
+  if(tossRespuestaTimer){cancelarEsperaPartida(tossRespuestaTimer);tossRespuestaTimer=null;}
+  const ahora=ahoraPartida(),restante=Math.max(0,S.tossRestante||0);
   S.tossPausado=false;S.tossRespondedor=null;
   if(restante<=0){finTossTiempo();return;}
   S.tossFin=ahora+restante;
@@ -7910,7 +7963,7 @@ function cancelarPausaToss(jugador){
 function tossTerminarPorError(mensajeFinal){
   limpiarToss();abrirTodoToss();S.fase="toss_fin";
   publicar(mensajeFinal,"error");
-  setTimeout(tk(nuevaRonda),3600);
+  esperarPartida(tk(nuevaRonda),3600);
 }
 function finRespuestaToss(jugador){
   if(!S||S.fase!=="tossup"||!S.tossPausado||S.tossRespondedor!==jugador)return;
@@ -7924,7 +7977,7 @@ function finRespuestaToss(jugador){
   tossTerminarPorError("<b>"+S.jug[jugador].n+" no respondió en 9 segundos</b>. La respuesta queda revelada.");
 }
 function premioToss(){
-  const ms=S.tossPausado?Math.max(0,S.tossRestante||0):Math.max(0,S.tossFin-Date.now());
+  const ms=S.tossPausado?Math.max(0,S.tossRestante||0):Math.max(0,S.tossFin-ahoraPartida());
   const resto=ms/TOSS_DURACION;
   return Math.max(300,Math.round((300+1200*resto)/50)*50);
 }
@@ -7933,7 +7986,7 @@ function finTossTiempo(){
   if(!S||S.fase!=="tossup")return;
   limpiarToss();abrirTodoToss();
   S.fase="toss_fin";publicar("Se terminó el tiempo. Nadie resolvió la Prueba de Velocidad.","error");
-  setTimeout(tk(nuevaRonda),3600);
+  esperarPartida(tk(nuevaRonda),3600);
 }
 function hostResolverToss(txt,jugador){
   if(!S||S.fase!=="tossup")return;
@@ -7941,13 +7994,13 @@ function hostResolverToss(txt,jugador){
   if(S.tossBloq&&S.tossBloq[jugador]&&!(modo==="bot"&&(jugador===1||esEntrenamientoToss)))return;
   if(!S.tossPausado){if(!pausarToss(jugador))return;}
   if(S.tossRespondedor!==jugador)return;
-  if(tossRespuestaTimer){clearTimeout(tossRespuestaTimer);tossRespuestaTimer=null;}
+  if(tossRespuestaTimer){cancelarEsperaPartida(tossRespuestaTimer);tossRespuestaTimer=null;}
   if(norm(txt)===norm(S.frase)){
     const premio=premioToss();limpiarToss();abrirTodoToss();
     const j=S.jug[jugador];j.ronda=premio;j.tot+=premio;j.rg++;S.turno=jugador;S.fase="toss_fin";
     publicar("¡Correcto! <b>"+j.n+"</b> resolvió la Prueba de Velocidad y gana $"+premio+".","resuelto");
     if(jugador===miJug&&destino!==null)sumarRondaColeccion(MUNDO[destino].id);
-    setTimeout(tk(nuevaRonda),5200);
+    esperarPartida(tk(nuevaRonda),5200);
   }else{
     bip(140,.35,"square",.07);
     if(modo==="bot"&&esEntrenamientoToss){
@@ -7990,11 +8043,12 @@ function iniciarBonus(ganador,finalPendiente){
        a SU propio puntaje, así el orden final se puede mover — el 2do
        puede pasar al 1ro, o hasta el 3ro puede terminar ganando. */
     S.bonusListos=Array(S.jug.length).fill(false);S.bonusGanadores=[];
-    S.fase="bonus_resolver";S.bonusFin=Date.now()+BONUS_TV_DURACION;
+    S.fase="bonus_resolver";S.bonusFin=ahoraPartida()+BONUS_TV_DURACION;
     publicar("<b>RONDA BONUS</b> — ya aparecen R S T L N E. Todos pueden resolver desde su celular: el que acierta suma $"+BONUS_PREMIO+".");
     bonusTimer=setInterval(()=>{
+    if(tiempoPartida.pausa!==null)return;
       if(!S||S.fase!=="bonus_resolver"){limpiarBonus();return;}
-      if(Date.now()>=S.bonusFin)finBonusTV();
+      if(ahoraPartida()>=S.bonusFin)finBonusTV();
     },120);
     return;
   }
@@ -8025,7 +8079,7 @@ function finBonusTV(){
   const ok=(S.bonusGanadores||[]).map(i=>S.jug[i]&&S.jug[i].n).filter(Boolean);
   publicar(ok.length?"<b>RONDA BONUS</b> — "+ok.join(", ")+" acertaron y sumaron $"+BONUS_PREMIO+" cada uno. La frase era <b>"+S.frase+"</b>.":
     "Nadie acertó la Ronda Bonus. La frase era <b>"+S.frase+"</b>.","resuelto");
-  setTimeout(tk(()=>finalizarPartidaPendiente((S.bonusGanadores||[]).length>0)),5200);
+  esperarPartida(tk(()=>finalizarPartidaPendiente((S.bonusGanadores||[]).length>0)),5200);
 }
 function hostLetraBonus(l){
   if(!S||S.fase!=="bonus_elegir"||S.usadas.has(l))return;
@@ -8035,11 +8089,12 @@ function hostLetraBonus(l){
   resaltarLetraElegida(l);
   S.usadas.add(l);S.abiertas.add(l);bip(1046,.12,"sine",.055);
   if(S.bonusCons.length===3&&S.bonusVocal){
-    S.fase="bonus_resolver";S.bonusFin=Date.now()+BONUS_DURACION;
+    S.fase="bonus_resolver";S.bonusFin=ahoraPartida()+BONUS_DURACION;
     publicar("Elegiste <b>"+S.bonusCons.join(" · ")+"</b> y la vocal <b>"+S.bonusVocal+"</b>. Tenés <b>10 segundos</b> para resolver.");
     bonusTimer=setInterval(()=>{
+    if(tiempoPartida.pausa!==null)return;
       if(!S||S.fase!=="bonus_resolver"){limpiarBonus();return;}
-      if(Date.now()>=S.bonusFin)finBonusTiempo();
+      if(ahoraPartida()>=S.bonusFin)finBonusTiempo();
     },120);
   }else publicar("<b>RONDA BONUS</b> — "+textoEleccionBonus()+". Elegí las letras que faltan.");
 }
@@ -8051,7 +8106,7 @@ function hostResolverBonus(txt){
     const j=S.jug[S.bonusGanador];j.ronda=BONUS_PREMIO;j.tot+=BONUS_PREMIO;
     S.fase="bonus_fin";
     publicar("¡BONUS RESUELTO! <b>"+j.n+"</b> gana $"+BONUS_PREMIO+" extra.","resuelto");
-    setTimeout(tk(()=>finalizarPartidaPendiente(true)),5200);
+    esperarPartida(tk(()=>finalizarPartidaPendiente(true)),5200);
   }else{
     /* Elegir Resolver es jugado: si te equivocás, sea que ya habías
        elegido las 4 letras o que probaste de arranque, se acabó la
@@ -8059,7 +8114,7 @@ function hostResolverBonus(txt){
     bip(140,.35,"square",.07);
     limpiarBonus();abrirTodoBonus();S.fase="bonus_fin";
     publicar("«"+txt.toUpperCase()+"» no era. El desafío principal ya está ganado; esta Ronda Bonus queda sin premio extra. La frase era <b>"+S.frase+"</b>.","error");
-    setTimeout(tk(()=>finalizarPartidaPendiente(false)),3600);
+    esperarPartida(tk(()=>finalizarPartidaPendiente(false)),3600);
   }
 }
 function finBonusTiempo(){
@@ -8067,7 +8122,7 @@ function finBonusTiempo(){
   limpiarBonus();abrirTodoBonus();S.fase="bonus_fin";
   $("modalResolver").classList.remove("ver");
   publicar("Se terminó el tiempo. El desafío principal ya está ganado; esta Ronda Bonus queda sin premio extra. La respuesta era <b>"+S.frase+"</b>.","error");
-  setTimeout(tk(()=>finalizarPartidaPendiente(false)),3600);
+  esperarPartida(tk(()=>finalizarPartidaPendiente(false)),3600);
 }
 function calcularGanador(){
   if(!S||!S.jug.length)return -1;
@@ -8176,13 +8231,14 @@ let fxN=0;
 function pararReloj(){if(relojID){clearInterval(relojID);relojID=null;}if(S)S.tFin=0;}
 function arrancarReloj(){
   if(escudoTiempoActivoTurno){pararReloj();return;}
-  S.tFin=Date.now()+25000;
+  S.tFin=ahoraPartida()+25000;
   if(relojID)clearInterval(relojID);
   relojID=setInterval(()=>{
+    if(tiempoPartida.pausa!==null)return;
     if(!S||!S.tFin)return;
-    if(Date.now()>=S.tFin){pararReloj();
+    if(ahoraPartida()>=S.tFin){pararReloj();
       publicar("Se acabó el tiempo de "+S.jug[S.turno].n+". Pasa el turno.","error");
-      setTimeout(tk(cambiarTurno),1600);}
+      esperarPartida(tk(cambiarTurno),1600);}
   },250);
 }
 function publicar(txt,fx,mantenerReloj){
@@ -8200,12 +8256,12 @@ function publicar(txt,fx,mantenerReloj){
      embarrado y sigue corriendo mientras limpia, para que sienta la presión del tiempo. */
   const vivo=(S.fase==="girar"||S.fase==="consonante"||S.fase==="vocal"||S.fase==="lodo")&&!animando&&!enTutorial&&!enPruebaPunteros;
   if(vivo){if(!mantenerReloj)arrancarReloj();}else pararReloj();
-  const tossMs=esToss?(S.tossPausado?Math.max(0,(S.tossRespuestaFin||Date.now())-Date.now()):Math.max(0,S.tossFin-Date.now())):0;
+  const tossMs=esToss?(S.tossPausado?Math.max(0,(S.tossRespuestaFin||ahoraPartida())-ahoraPartida()):Math.max(0,S.tossFin-ahoraPartida())):0;
   V.seg=escudoTiempoActivoTurno?0:(esToss?Math.max(1,Math.ceil(tossMs/1000)):
-    (esBonusReloj?Math.max(1,Math.ceil((S.bonusFin-Date.now())/1000)):(vivo?Math.max(1,Math.round((S.tFin-Date.now())/1000)):0)));
+    (esBonusReloj?Math.max(1,Math.ceil((S.bonusFin-ahoraPartida())/1000)):(vivo?Math.max(1,Math.round((S.tFin-ahoraPartida())/1000)):0)));
   V.relojMax=esToss?(S.tossPausado?Math.ceil(TOSS_RESPUESTA_DURACION/1000):15):(esBonusReloj?(modo==="tvhost"?Math.ceil(BONUS_TV_DURACION/1000):10):25);
-  if(modo==="bot")setTimeout(programarBot,0);
-  if(tvPruebaBotsActiva)setTimeout(programarTVBotsPrueba,0);
+  if(modo==="bot")esperarPartida(programarBot,0);
+  if(tvPruebaBotsActiva)esperarPartida(programarTVBotsPrueba,0);
   if(modo!=="local"&&modo!=="bot")enviar({tipo:"estado",v:V});
   pintarTodo();
 }
@@ -8253,11 +8309,11 @@ function mostrarConfirmEscudo(cual){
     if(cual==="quiebra"){
       bip(120,.5,"sawtooth",.09);S.jug[S.turno].ronda=0;
       publicar("<b>QUIEBRA</b> — "+S.jug[S.turno].n+" pierde la plata de la ronda.","quiebra");
-      setTimeout(tk(cambiarTurno),1800);
+      esperarPartida(tk(cambiarTurno),1800);
     }else{
       bip(200,.35,"triangle",.07);
       publicar("<b>Pierde turno</b> — pasa al siguiente jugador.","pierde");
-      setTimeout(tk(cambiarTurno),1600);
+      esperarPartida(tk(cambiarTurno),1600);
     }
   };
 }
@@ -8322,28 +8378,28 @@ function hostGirar(){
       if(quierePreguntarEscudo("quiebra")){mostrarConfirmEscudo("quiebra");return;}
       bip(120,.5,"sawtooth",.09);S.jug[S.turno].ronda=0;
       publicar("<b>QUIEBRA</b> — "+S.jug[S.turno].n+" pierde la plata de la ronda.","quiebra");
-      setTimeout(tk(cambiarTurno),1800);return;}
+      esperarPartida(tk(cambiarTurno),1800);return;}
     if(s.t==="PIERDE"){
       if(quierePreguntarEscudo("pierde")){mostrarConfirmEscudo("pierde");return;}
       bip(200,.35,"triangle",.07);
       publicar("<b>Pierde turno</b> — pasa al siguiente jugador.","pierde");
-      setTimeout(tk(cambiarTurno),1600);return;}
+      esperarPartida(tk(cambiarTurno),1600);return;}
     if(s.t==="COMODIN"){
       const ocultas=[...new Set(S.frase.replace(/ /g,""))].filter(c=>!S.abiertas.has(c));
       const cons=ocultas.filter(c=>!VOCALES.includes(c));
       const bolsa=cons.length?cons:ocultas;
       const l=bolsa[Math.floor(Math.random()*bolsa.length)];
       S.abiertas.add(l);S.usadas.add(l);
-      [0,110,220].forEach((m,k)=>setTimeout(()=>bip([784,1046,1318][k],.2,"sine",.07),m));
+      [0,110,220].forEach((m,k)=>esperarPartida(()=>bip([784,1046,1318][k],.2,"sine",.07),m));
       if(fraseCompleta()){
         const j=S.jug[S.turno];j.tot+=j.ronda;j.rg++;S.fase="girar";
         publicar("<b>COMODÍN</b> te regaló la «"+l+"» y completó la frase. "+j.n+" se lleva $"+j.ronda+".","comodin");
         if(S.turno===miJug&&destino!==null)sumarRondaColeccion(MUNDO[destino].id);
-        setTimeout(tk(nuevaRonda),3000);return;}
+        esperarPartida(tk(nuevaRonda),3000);return;}
       S.fase="girar";
       const sinCons=consRestantes()===0;
       publicar("<b>COMODÍN</b> — te regala la letra «"+l+"». "+(sinCons?"No quedan consonantes: resolvé la frase para seguir.":"Seguís vos."),"comodin");
-      if(sinCons&&S.turno===miJug&&(modo==="bot"||modo==="local"||modo==="host")){setTimeout(()=>{if(S&&S.fase==="girar"&&consRestantes()===0&&!$("modalResolver").classList.contains("ver"))abrirResolver(null);},650);}
+      if(sinCons&&S.turno===miJug&&(modo==="bot"||modo==="local"||modo==="host")){esperarPartida(()=>{if(S&&S.fase==="girar"&&consRestantes()===0&&!$("modalResolver").classList.contains("ver"))abrirResolver(null);},650);}
       return;
     }
     if(s.t==="X2"){S.doble=true;S.fase="girar";
@@ -8389,13 +8445,13 @@ function aplicarPoderEnHost(jugIdx,id){
       const jj=S.jug[S.turno];const gano=jj.ronda;jj.tot+=gano;jj.rg++;
       publicar(j.n+" usó 💡 Pista. ¡Frase completa! <b>"+jj.n+"</b> se lleva $"+gano+".","resuelto");
       if(S.turno===miJug&&destino!==null)sumarRondaColeccion(MUNDO[destino].id);
-      setTimeout(tk(nuevaRonda),5200);
+      esperarPartida(tk(nuevaRonda),5200);
     }else publicar(j.n+" usó 💡 Pista: se reveló una letra.");
     return;
   }
   if(id==="mate"){
     publicar(j.n+" usó 🧉 Mate: +5 segundos en el reloj.");
-    if(S.tFin){S.tFin+=5000;V.seg=Math.max(1,Math.round((S.tFin-Date.now())/1000));verReloj();}
+    if(S.tFin){S.tFin+=5000;V.seg=Math.max(1,Math.round((S.tFin-ahoraPartida())/1000));verReloj();}
     return;
   }
   if(id==="comodin"){
@@ -8450,7 +8506,7 @@ function avisarResolverAbierto(jugIdx){
      se eligieron las 4 letras se seguía comiendo mientras el jugador
      escribía, y podía perder por quedarse sin tiempo escribiendo en
      vez de por errar la respuesta. */
-  if(S.fase==="bonus_resolver"){S.bonusFin=Date.now()+BONUS_DURACION;publicar(V.aviso||"",null,true);return;}
+  if(S.fase==="bonus_resolver"){S.bonusFin=ahoraPartida()+BONUS_DURACION;publicar(V.aviso||"",null,true);return;}
   if(S.fase!=="girar"&&S.fase!=="consonante"&&S.fase!=="vocal")return;
   publicar(V.aviso||"");
 }
@@ -8635,7 +8691,7 @@ function hostPista(){
     const j=S.jug[S.turno];j.tot+=j.ronda;j.rg++;
     publicar("💡 Pista: se reveló la «"+l+"». ¡Frase completa! <b>"+j.n+"</b> se lleva $"+j.ronda+".","resuelto");
     if(S.turno===miJug&&destino!==null)sumarRondaColeccion(MUNDO[destino].id);
-    setTimeout(tk(nuevaRonda),5200);
+    esperarPartida(tk(nuevaRonda),5200);
   }else{
     publicar("💡 Pista: se reveló la «"+l+"».");
   }
@@ -8659,7 +8715,7 @@ function hostLetra(l){
       const j=S.jug[S.turno];const gano=j.ronda;j.tot+=gano;j.rg++;
       publicar("¡Frase completa! <b>"+j.n+"</b> se lleva $"+gano+".","resuelto");
       if(S.turno===miJug&&destino!==null)sumarRondaColeccion(MUNDO[destino].id);
-      setTimeout(tk(nuevaRonda),5200);return;
+      esperarPartida(tk(nuevaRonda),5200);return;
     }
     S.fase="girar";
     publicar("Hay <b>"+veces+"</b> «"+l+"». Sigue "+S.jug[S.turno].n+
@@ -8673,7 +8729,7 @@ function hostLetra(l){
   }else{
     bip(160,.3,"square",.06);
     publicar("No hay «"+l+"». Pasa el turno.","error");
-    setTimeout(tk(cambiarTurno),1500);
+    esperarPartida(tk(cambiarTurno),1500);
   }
 }
 function hostResolver(txt,jugadorToss){
@@ -8689,11 +8745,11 @@ function hostResolver(txt,jugadorToss){
     const j=S.jug[S.turno];const gano=j.ronda;j.tot+=gano;j.rg++;
     publicar("¡Correcto! <b>"+j.n+"</b> resolvió y suma $"+gano+".","resuelto");
     if(S.turno===miJug&&destino!==null)sumarRondaColeccion(MUNDO[destino].id);
-    setTimeout(tk(nuevaRonda),5200);
+    esperarPartida(tk(nuevaRonda),5200);
   }else{
     bip(140,.35,"square",.07);
     publicar("«"+txt.toUpperCase()+"» no era. Pasa el turno.","error");
-    setTimeout(tk(cambiarTurno),1700);
+    esperarPartida(tk(cambiarTurno),1700);
   }
 }
 function cambiarTurno(){
@@ -9396,9 +9452,10 @@ function eventoTiempoRestanteTxt(){
 }
 // Invalida callbacks de la partida anterior y detiene sus temporizadores.
 function detenerPartidaAnterior(){
+  tiempoPartida.limpiar();silenciarTodo();
   matchToken++;botPausado=0;pruebaEscudosForzar=false;pruebaChatForzar=false;escudoTiendaUsadoEnPartida=false;
   escudoTiempoUsadoEnPartida=false;escudoTiempoActivoTurno=false;escudoTossUsadoEnPartida=false;
-  clearTimeout(botT);botT=null;clearTimeout(tvPruebaBotT);tvPruebaBotT=null;tvPruebaBotsActiva=false;
+  cancelarEsperaPartida(botT);botT=null;clearTimeout(tvPruebaBotT);tvPruebaBotT=null;tvPruebaBotsActiva=false;
   clearInterval(tvPruebaWatchdogI);tvPruebaWatchdogI=null;
   /* Si venías de Sala TV (real o de prueba) y arrancás otro modo (Mundo,
      1v1, etc.) sin recargar la página, estas clases del body quedaban
@@ -9736,12 +9793,12 @@ function verReloj(){
     if(relojInt){clearInterval(relojInt);relojInt=null;}return;
   }
   RELOJ_INSTANCIAS.forEach(([wrapId])=>{const el=$(wrapId);if(el)el.style.display="block";});
-  relojBase=V.seg;relojT0=performance.now();ultSeg=-1;
+  relojBase=V.seg;relojT0=ahoraPartida();ultSeg=-1;
   if(!relojInt)relojInt=setInterval(dibujarReloj,200);
   dibujarReloj();
 }
 function dibujarReloj(){
-  const q=Math.max(0,relojBase-(performance.now()-relojT0)/1000),n=Math.ceil(q);
+  const q=Math.max(0,relojBase-(ahoraPartida()-relojT0)/1000),n=Math.ceil(q);
   RELOJ_INSTANCIAS.forEach(([wrapId,barId,numId])=>{
     const wrapEl=$(wrapId),barEl=$(barId),numEl=$(numId);
     if(!wrapEl||!barEl||!numEl)return;
