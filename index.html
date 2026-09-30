@@ -6683,7 +6683,7 @@ function empezarDestino(i,paso){
   modo="bot";miJug=0;rondasElegidas=(pasoActual===null?d.rondas:3);
   $("mundo").style.display="none";$("pantDurazno").style.display="none";$("juego").style.display="block";
   armarTeclado();iniciarPartida($("miNombre").value.trim()||"Vos",
-    pasoActual===null?d.r:"Máquina",categoriasAlAzar(pasoActual===null?2:1),perfil.avatar||null,null,frameEquipado||null,null);
+    d.r,categoriasAlAzar(pasoActual===null?2:1),perfil.avatar||null,null,frameEquipado||null,null);
 }
 
 let botT=null,botTossT=null,botTossReaccionT=null,botTossPensarT=null;
