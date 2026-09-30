@@ -1,7 +1,7 @@
 /* Catálogo de minijuegos. Cada entrada habilitada aporta su función abrir. */
 const EXTENSIONES=[
   {id:"sopa-fugaz",nombre:"Sopa Fugaz",descripcion:"Buscá las palabras antes de que se muden",icono:"logo-sopa-fugaz.svg",estado:"disponible",abrir:contenedor=>SopaFugaz.abrir(contenedor),record:()=>SopaFugaz.mejorPuntaje()+" puntos"},
-  {id:"rueda-de-letras",nombre:"Rueda de Letras",descripcion:"Próximamente",icono:"logo-rueda-de-letras.svg",estado:"proximamente"},
+  {id:"rueda-de-letras",nombre:"Rueda de Letras",descripcion:"Uní letras antes de que se acabe el tiempo",icono:"logo-rueda-de-letras.svg",estado:RUEDA_HABILITADA?"disponible":"proximamente",abrir:contenedor=>RuedaDeLetras.abrir(contenedor),record:()=>RuedaDeLetras.mejorPuntaje()+" puntos"},
   {id:"palabra-secreta",nombre:"Palabra Secreta",descripcion:"Próximamente",icono:"logo-palabra-secreta.svg",estado:"proximamente"}
 ];
 window.EXTENSIONES=EXTENSIONES;
@@ -24,7 +24,7 @@ const Extensiones=(()=>{
   function mostrar(){asegurar();shell.hidden=false;document.body.classList.add("ext-abierta");}
   function abrirLobby(){
     if(!EXTENSIONES_HABILITADAS)return;
-    if(window.SopaFugaz)SopaFugaz.salir();
+    salirJuego();
     mostrar();vista="lobby";
     shell.querySelector("#extTitulo").textContent="Extensiones Girá y Adiviná";
     contenido.innerHTML='<div class="ext-hero"><span>✦ MÁS JUEGOS, MÁS DESAFÍOS</span><h2>Extensiones</h2><p>Elegí un juego del universo Girá y Adiviná. Jugá gratis, sin gastar vidas ni monedas.</p></div><div class="ext-lista"></div>';
@@ -50,7 +50,8 @@ const Extensiones=(()=>{
     shell.querySelector("#extTitulo").textContent=ext.nombre;
     ext.abrir(contenido);shell.scrollTop=0;
   }
-  function cerrar(){if(!shell)return;if(window.SopaFugaz)SopaFugaz.salir();shell.hidden=true;document.body.classList.remove("ext-abierta");vista="";}
+  function salirJuego(){for(const juego of [window.SopaFugaz,window.RuedaDeLetras,window.PalabraSecreta])if(juego)juego.salir();}
+  function cerrar(){if(!shell)return;salirJuego();shell.hidden=true;document.body.classList.remove("ext-abierta");vista="";}
   return{abrirLobby,abrirJuego,cerrar};
 })();
 window.Extensiones=Extensiones;

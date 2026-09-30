@@ -2770,6 +2770,7 @@ function textoProxima(){
   return"Próxima vida en "+mm+":"+String(ss).padStart(2,"0");
 }
 const EXTENSIONES_HABILITADAS=true; // Apagar acá para ocultar el lobby y sus objetivos/logros.
+const RUEDA_HABILITADA=true;
 const OBJETIVOS=[
   {id:"partidas",nombre:"Jugá 2 partidas",icono:"🎮",meta:2,premio:60},
   {id:"rankingUnirse",nombre:"Unite al ranking de amigos",icono:"🤝",meta:1,premio:50},
@@ -2781,9 +2782,11 @@ const OBJETIVOS=[
   {id:"rachaPartidas",nombre:"Ganá 4 partidas seguidas",icono:"🔥",meta:4,premio:100},
   {id:"rankingTop",nombre:"Entrá al Top 3 del ranking de amigos",icono:"🥉",meta:1,premio:150},
   {id:"sopaRonda",nombre:"Jugá una ronda de Sopa Fugaz",icono:"🔎",meta:1,premio:0},
-  {id:"sopaPalabras",nombre:"Encontrá 10 palabras en Sopa Fugaz",icono:"🔤",meta:10,premio:0}
-].filter(d=>EXTENSIONES_HABILITADAS||!d.id.startsWith("sopa"));
-const OBJETIVOS_DIARIOS=OBJETIVOS.filter(d=>d.id!=="rankingUnirse"&&d.id!=="rankingTop"&&!d.id.startsWith("sopa"));
+  {id:"sopaPalabras",nombre:"Encontrá 10 palabras en Sopa Fugaz",icono:"🔤",meta:10,premio:0},
+  {id:"ruedaRonda",nombre:"Jugá una Rueda de Letras",icono:"🎡",meta:1,premio:0},
+  {id:"ruedaPalabras",nombre:"Encontrá 15 palabras en Rueda de Letras",icono:"🔤",meta:15,premio:0}
+].filter(d=>(EXTENSIONES_HABILITADAS||!d.id.startsWith("sopa"))&&(EXTENSIONES_HABILITADAS&&RUEDA_HABILITADA||!d.id.startsWith("rueda")));
+const OBJETIVOS_DIARIOS=OBJETIVOS.filter(d=>d.id!=="rankingUnirse"&&d.id!=="rankingTop"&&!d.id.startsWith("sopa")&&!d.id.startsWith("rueda"));
 const OBJ_PREMIO_TODOS=200;
 // Estos dos objetivos no se reinician a medianoche. Migramos el progreso
 // anterior, incluso si pertenecía a otro día, para no volver a pagar premios.
@@ -4218,8 +4221,11 @@ const LOGROS=[
   {id:"rankingTop1",nombre:"En la cima",desc:"Llegá al 1er puesto del ranking de amigos",icono:"🥇",premio:200},
   {id:"sopaPrimera",nombre:"Primer hallazgo fugaz",desc:"Encontrá una palabra en Sopa Fugaz",icono:"🔎",premio:0},
   {id:"sopaDiez",nombre:"Ojo de lince",desc:"Encontrá 10 palabras en Sopa Fugaz",icono:"👀",premio:0},
-  {id:"sopaRapida",nombre:"Contra el reloj",desc:"Superá una ronda de Sopa Fugaz con 10 segundos de sobra",icono:"⏱️",premio:0}
-].filter(l=>EXTENSIONES_HABILITADAS||!l.id.startsWith("sopa"));
+  {id:"sopaRapida",nombre:"Contra el reloj",desc:"Superá una ronda de Sopa Fugaz con 10 segundos de sobra",icono:"⏱️",premio:0},
+  {id:"ruedaPrimera",nombre:"Primera palabra en rueda",desc:"Encontrá una palabra en Rueda de Letras",icono:"🎡",premio:0},
+  {id:"ruedaBaseRapida",nombre:"Base veloz",desc:"Encontrá la palabra base en menos de 10 segundos",icono:"⚡",premio:0},
+  {id:"ruedaPerfecta",nombre:"Rueda perfecta",desc:"Completá una rueda sin errores",icono:"✨",premio:0}
+].filter(l=>(EXTENSIONES_HABILITADAS||!l.id.startsWith("sopa"))&&(EXTENSIONES_HABILITADAS&&RUEDA_HABILITADA||!l.id.startsWith("rueda")));
 function cargarLogros(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_logros")||"[]"));}catch(e){return new Set();}
 }
@@ -4280,6 +4286,7 @@ function recAbrir(){
     {icono:"🏅",nombre:"Logros desbloqueados",desc:logrosGanados.size+" / "+LOGROS.length}
   ];
   if(window.SopaFugaz)filas.push({icono:"🔎",nombre:"Sopa Fugaz",desc:"Mejor puntaje: "+window.SopaFugaz.mejorPuntaje()+" puntos"});
+  if(window.RuedaDeLetras)filas.push({icono:"🎡",nombre:"Rueda de Letras",desc:"Mejor puntaje: "+window.RuedaDeLetras.mejorPuntaje()+" puntos"});
   filas.forEach(l=>{
     const d=document.createElement("div");
     d.className="lg-item";
@@ -10675,6 +10682,8 @@ document.addEventListener("keydown",e=>{
 </script>
 <script src="sopa-fugaz-datos.js?v=1"></script>
 <script src="sopa-fugaz.js?v=1"></script>
+<script src="rueda-de-letras-datos.js?v=1"></script>
+<script src="rueda-de-letras.js?v=1"></script>
 <script src="extensiones.js?v=1"></script>
 <script src="sala-tv.js?v=1"></script>
 </body>
