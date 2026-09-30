@@ -2661,6 +2661,21 @@ function cargarMeta(){
   if(typeof m.expansionArgentinaComprada!=="boolean")m.expansionArgentinaComprada=false;
   if(typeof m.expansionUruguayComprada!=="boolean")m.expansionUruguayComprada=false;
   if(typeof m.ultimaVidaAmigo!=="number")m.ultimaVidaAmigo=0;
+  /* Regalo autorizado para el perfil existente de Valeria (Vale).
+     Saldo y recibo se guardan juntos y viajan en el respaldo completo:
+     recargar o restaurar un respaldo que ya lo recibió no lo duplica. */
+  if(yaTeniaMeta&&!m.regaloVale48000_20260930){
+    try{
+      const nombre=(localStorage.getItem("gya_nombre")||"").trim().toLowerCase();
+      const rk=JSON.parse(localStorage.getItem("gya_ranking_perfil")||"null");
+      if(nombre==="vale"&&(rk?.apodo||"").trim().toLowerCase()==="vale"){
+        const regalo={...m,monedas:m.monedas+48000,
+          monedasGanadasTotal:m.monedasGanadasTotal+48000,regaloVale48000_20260930:true};
+        localStorage.setItem(METAK,JSON.stringify(regalo));
+        m=regalo;
+      }
+    }catch(e){}
+  }
   return m;
 }
 let meta=cargarMeta();
@@ -4247,7 +4262,7 @@ async function reportarFraseActual(){
 }
 $("btnReportarFrase").onclick=reportarFraseActual;
 const RK_GRUPO="global";
-const RK_APODOS_OCULTOS=["vale","nuevo","testuser"];
+const RK_APODOS_OCULTOS=["nuevo","testuser"];
 function cargarRkPerfil(){
   try{return JSON.parse(localStorage.getItem("gya_ranking_perfil"));}catch(e){return null;}
 }
