@@ -2771,6 +2771,7 @@ function textoProxima(){
 }
 const EXTENSIONES_HABILITADAS=true; // Apagar acá para ocultar el lobby y sus objetivos/logros.
 const RUEDA_HABILITADA=true;
+const PALABRA_HABILITADA=true;
 const OBJETIVOS=[
   {id:"partidas",nombre:"Jugá 2 partidas",icono:"🎮",meta:2,premio:60},
   {id:"rankingUnirse",nombre:"Unite al ranking de amigos",icono:"🤝",meta:1,premio:50},
@@ -2784,9 +2785,10 @@ const OBJETIVOS=[
   {id:"sopaRonda",nombre:"Jugá una ronda de Sopa Fugaz",icono:"🔎",meta:1,premio:0},
   {id:"sopaPalabras",nombre:"Encontrá 10 palabras en Sopa Fugaz",icono:"🔤",meta:10,premio:0},
   {id:"ruedaRonda",nombre:"Jugá una Rueda de Letras",icono:"🎡",meta:1,premio:0},
-  {id:"ruedaPalabras",nombre:"Encontrá 15 palabras en Rueda de Letras",icono:"🔤",meta:15,premio:0}
-].filter(d=>(EXTENSIONES_HABILITADAS||!d.id.startsWith("sopa"))&&(EXTENSIONES_HABILITADAS&&RUEDA_HABILITADA||!d.id.startsWith("rueda")));
-const OBJETIVOS_DIARIOS=OBJETIVOS.filter(d=>d.id!=="rankingUnirse"&&d.id!=="rankingTop"&&!d.id.startsWith("sopa")&&!d.id.startsWith("rueda"));
+  {id:"ruedaPalabras",nombre:"Encontrá 15 palabras en Rueda de Letras",icono:"🔤",meta:15,premio:0},
+  {id:"palabraDiaria",nombre:"Resolvé la Palabra Secreta de hoy",icono:"🟩",meta:1,premio:0}
+].filter(d=>(EXTENSIONES_HABILITADAS||!d.id.startsWith("sopa"))&&(EXTENSIONES_HABILITADAS&&RUEDA_HABILITADA||!d.id.startsWith("rueda"))&&(EXTENSIONES_HABILITADAS&&PALABRA_HABILITADA||!d.id.startsWith("palabra")));
+const OBJETIVOS_DIARIOS=OBJETIVOS.filter(d=>d.id!=="rankingUnirse"&&d.id!=="rankingTop"&&!d.id.startsWith("sopa")&&!d.id.startsWith("rueda")&&!d.id.startsWith("palabra"));
 const OBJ_PREMIO_TODOS=200;
 // Estos dos objetivos no se reinician a medianoche. Migramos el progreso
 // anterior, incluso si pertenecía a otro día, para no volver a pagar premios.
@@ -4224,8 +4226,11 @@ const LOGROS=[
   {id:"sopaRapida",nombre:"Contra el reloj",desc:"Superá una ronda de Sopa Fugaz con 10 segundos de sobra",icono:"⏱️",premio:0},
   {id:"ruedaPrimera",nombre:"Primera palabra en rueda",desc:"Encontrá una palabra en Rueda de Letras",icono:"🎡",premio:0},
   {id:"ruedaBaseRapida",nombre:"Base veloz",desc:"Encontrá la palabra base en menos de 10 segundos",icono:"⚡",premio:0},
-  {id:"ruedaPerfecta",nombre:"Rueda perfecta",desc:"Completá una rueda sin errores",icono:"✨",premio:0}
-].filter(l=>(EXTENSIONES_HABILITADAS||!l.id.startsWith("sopa"))&&(EXTENSIONES_HABILITADAS&&RUEDA_HABILITADA||!l.id.startsWith("rueda")));
+  {id:"ruedaPerfecta",nombre:"Rueda perfecta",desc:"Completá una rueda sin errores",icono:"✨",premio:0},
+  {id:"palabraPrimera",nombre:"Palabra descubierta",desc:"Ganá tu primera Palabra Secreta",icono:"🟩",premio:0},
+  {id:"palabraRapida",nombre:"Intuición veloz",desc:"Descubrí la palabra en dos intentos",icono:"⚡",premio:0},
+  {id:"palabraRacha",nombre:"Siete días seguidos",desc:"Ganá Palabra Secreta siete días seguidos",icono:"🔥",premio:0}
+].filter(l=>(EXTENSIONES_HABILITADAS||!l.id.startsWith("sopa"))&&(EXTENSIONES_HABILITADAS&&RUEDA_HABILITADA||!l.id.startsWith("rueda"))&&(EXTENSIONES_HABILITADAS&&PALABRA_HABILITADA||!l.id.startsWith("palabra")));
 function cargarLogros(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_logros")||"[]"));}catch(e){return new Set();}
 }
@@ -4287,6 +4292,7 @@ function recAbrir(){
   ];
   if(window.SopaFugaz)filas.push({icono:"🔎",nombre:"Sopa Fugaz",desc:"Mejor puntaje: "+window.SopaFugaz.mejorPuntaje()+" puntos"});
   if(window.RuedaDeLetras)filas.push({icono:"🎡",nombre:"Rueda de Letras",desc:"Mejor puntaje: "+window.RuedaDeLetras.mejorPuntaje()+" puntos"});
+  if(window.PalabraSecreta)filas.push({icono:"🟩",nombre:"Palabra Secreta",desc:"Racha actual: "+window.PalabraSecreta.rachaActual()+" días"});
   filas.forEach(l=>{
     const d=document.createElement("div");
     d.className="lg-item";
@@ -10684,6 +10690,8 @@ document.addEventListener("keydown",e=>{
 <script src="sopa-fugaz.js?v=1"></script>
 <script src="rueda-de-letras-datos.js?v=1"></script>
 <script src="rueda-de-letras.js?v=1"></script>
+<script src="palabra-secreta-datos.js?v=1"></script>
+<script src="palabra-secreta.js?v=1"></script>
 <script src="extensiones.js?v=1"></script>
 <script src="sala-tv.js?v=1"></script>
 </body>

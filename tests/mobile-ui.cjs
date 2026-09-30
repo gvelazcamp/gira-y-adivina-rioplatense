@@ -36,7 +36,7 @@ for (const file of ['ui-icons.js', 'sw.js', 'sala-tv.js']) new vm.Script(fs.read
           const errors = [];
           page.on('pageerror', e => errors.push(e.message));
           await page.route('**/*', r => r.request().url().startsWith(base) ? r.continue() : r.fulfill({status:200, body:''}));
-          await page.addInitScript(() => {localStorage.setItem('gya_nombre','Prueba');localStorage.setItem('gya_avatar','mate');localStorage.setItem('gya_pais','UY');});
+          await page.addInitScript(() => {localStorage.setItem('gya_nombre','Prueba');localStorage.setItem('gya_avatar','mate');localStorage.setItem('gya_pais','UY');localStorage.setItem('gya_bienvenida_vista','1');const d=new Date();localStorage.setItem('gya_dia_alta',d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'));});
           await page.goto(base, {waitUntil:'load'});
           // Desktop WebKit does not emulate hardware safe areas: inject the
           // reported iPhone insets to exercise the actual responsive rules.

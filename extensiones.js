@@ -2,7 +2,7 @@
 const EXTENSIONES=[
   {id:"sopa-fugaz",nombre:"Sopa Fugaz",descripcion:"Buscá las palabras antes de que se muden",icono:"logo-sopa-fugaz.svg",estado:"disponible",abrir:contenedor=>SopaFugaz.abrir(contenedor),record:()=>SopaFugaz.mejorPuntaje()+" puntos"},
   {id:"rueda-de-letras",nombre:"Rueda de Letras",descripcion:"Uní letras antes de que se acabe el tiempo",icono:"logo-rueda-de-letras.svg",estado:RUEDA_HABILITADA?"disponible":"proximamente",abrir:contenedor=>RuedaDeLetras.abrir(contenedor),record:()=>RuedaDeLetras.mejorPuntaje()+" puntos"},
-  {id:"palabra-secreta",nombre:"Palabra Secreta",descripcion:"Próximamente",icono:"logo-palabra-secreta.svg",estado:"proximamente"}
+  {id:"palabra-secreta",nombre:"Palabra Secreta",descripcion:"Una palabra nueva cada día",icono:"logo-palabra-secreta.svg",estado:PALABRA_HABILITADA?"disponible":"proximamente",abrir:contenedor=>PalabraSecreta.abrir(contenedor),record:()=>"Racha: "+PalabraSecreta.rachaActual()+" días"}
 ];
 window.EXTENSIONES=EXTENSIONES;
 const Extensiones=(()=>{
@@ -18,6 +18,7 @@ const Extensiones=(()=>{
     document.addEventListener("keydown",e=>{
       if(shell.hidden)return;
       if(e.key==="Escape"){e.preventDefault();e.stopImmediatePropagation();vista==="lobby"?cerrar():abrirLobby();return;}
+      if(vista==="palabra-secreta"&&window.PalabraSecreta){if(e.key!=="Tab")e.preventDefault();PalabraSecreta.tecla(e.key);}
       if(e.key!=="Tab")e.stopImmediatePropagation();
     },true);
   }
