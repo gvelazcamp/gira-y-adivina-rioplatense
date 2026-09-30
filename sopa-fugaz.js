@@ -22,14 +22,16 @@ const SopaFugaz=(()=>{
   const azar=n=>Math.floor(Math.random()*n);
   let datos=cargar(),raiz=null,gridEl=null,chipsEl=null,celdas=[],tablero=[],objetivos=[],halladas=new Set();
   let nivel=1,puntaje=0,tiempoMs=0,duracionMs=0,mudanzaMs=0,proximaMudanza=0,ultimaMarca=0;
-  let jugando=false,mudando=false,arrastre=null,camino=[],intervalo=null,trasladoTimer=null,token=0,ultimoTic=0,ocultoDesde=0,categoria="";
+  let jugando=false,mudando=false,arrastre=null,camino=[],intervalo=null,trasladoTimer=null,token=0,ultimoTic=0,ocultoDesde=0,categoria="",repetirConocidas=false;
 
   function cargar(){
     try{const d=JSON.parse(localStorage.getItem(CLAVE)||"null");if(d&&typeof d==="object")return{
       mejor:Number(d.mejor)||0,palabrasTotal:Number(d.palabrasTotal)||0,nivelMax:Number(d.nivelMax)||1,
-      palabras:Array.isArray(d.palabras)?d.palabras:[],niveles:d.niveles&&typeof d.niveles==="object"?d.niveles:{}
+      palabras:Array.isArray(d.palabras)?d.palabras:[],
+      descubiertas:[...new Set((Array.isArray(d.descubiertas)?d.descubiertas:(Array.isArray(d.palabras)?d.palabras.map(p=>p&&p.palabra):[])).filter(w=>typeof w==="string"))],
+      niveles:d.niveles&&typeof d.niveles==="object"?d.niveles:{}
     };}catch(e){}
-    return{mejor:0,palabrasTotal:0,nivelMax:1,palabras:[],niveles:{}};
+    return{mejor:0,palabrasTotal:0,nivelMax:1,palabras:[],descubiertas:[],niveles:{}};
   }
   function guardar(){try{localStorage.setItem(CLAVE,JSON.stringify(datos));}catch(e){}}
   function mejorPuntaje(){return datos.mejor;}
@@ -45,13 +47,19 @@ const SopaFugaz=(()=>{
   function elegirPalabras(c){
     const fuente=nivel<=2?SOPA_DATOS.inicial:SOPA_DATOS.categorias[(nivel-3)%SOPA_DATOS.categorias.length];
     categoria=fuente.nombre;
-    const validas=fuente.palabras.filter(w=>w.length>=c.min&&w.length<=Math.min(c.max,c.n));
+    const descubiertas=new Set(datos.descubiertas);
+    const elegible=w=>w.length>=c.min&&w.length<=Math.min(c.max,c.n)&&(repetirConocidas||!descubiertas.has(w));
+    const preferidas=fuente.palabras.filter(elegible);
+    const todas=[...new Set([SOPA_DATOS.inicial,...SOPA_DATOS.categorias].flatMap(f=>f.palabras))].filter(elegible);
     const elegidas=[];
-    for(const w of mezclar(validas)){
+    for(const w of [...mezclar(preferidas),...mezclar(todas)]){
+      if(elegidas.includes(w))continue;
       if(elegidas.some(x=>x.includes(w)||w.includes(x)))continue;
       elegidas.push(w);if(elegidas.length===c.palabras)break;
     }
-    if(elegidas.length!==c.palabras)throw new Error("Faltan palabras para Sopa Fugaz, nivel "+nivel);
+    if(elegidas.some(w=>!fuente.palabras.includes(w)))categoria="Palabras variadas";
+    if(!elegidas.length)categoria="Todas encontradas";
+    else if(elegidas.length<c.palabras)categoria="Últimas palabras nuevas";
     return elegidas;
   }
   function colocar(palabra,matriz,n,direcciones){
@@ -73,7 +81,7 @@ const SopaFugaz=(()=>{
     for(let intento=0;intento<SOPA_CONFIG.intentosTablero;intento++){
       const matriz=Array(n*n).fill("");
       const orden=mezclar(restantes).sort((a,b)=>b.length-a.length);
-      if(!orden.every(w=>colocar(w,matriz,n,direcciones)))continue;
+      if(!orden.every((w,i)=>colocar(w,matriz,n,nivel<=2&&restantes.length>=2&&i<2?[direcciones[i]]:direcciones)))continue;
       const relleno=("AAEEIIOOUUBCDFGLMNPRSTVZ"+restantes.join("")).split("");
       tablero=matriz.map(letra=>letra||relleno[azar(relleno.length)]);
       dibujarTablero(n);return;
@@ -89,6 +97,13 @@ const SopaFugaz=(()=>{
     chipsEl.replaceChildren();objetivos.forEach(palabra=>{
       const chip=document.createElement("span");chip.className="sf-chip"+(halladas.has(palabra)?" hecho":"");chip.textContent=palabra;chipsEl.appendChild(chip);
     });
+  }
+  function dibujarHistorial(){
+    if(!raiz)return;
+    raiz.querySelector("#sfHistorialTitulo").textContent="📖 Mis palabras encontradas ("+datos.descubiertas.length+")";
+    const lista=raiz.querySelector("#sfHistorialLista");lista.replaceChildren();
+    if(!datos.descubiertas.length){lista.textContent="Todavía no encontraste ninguna.";return;}
+    [...datos.descubiertas].reverse().forEach(w=>{const chip=document.createElement("span");chip.className="sf-historial-chip";chip.textContent=w;lista.appendChild(chip);});
   }
   function actualizarHUD(){
     if(!raiz)return;
@@ -138,6 +153,7 @@ const SopaFugaz=(()=>{
     token++;clearTimeout(trasladoTimer);mudando=false;arrastre=null;camino=[];halladas.clear();
     const c=configNivel(nivel);
     objetivos=elegirPalabras(c);
+    if(!objetivos.length){jugando=false;dibujarHistorial();mostrarPanel("¡Encontraste todas!","Ya descubriste todas las palabras disponibles para esta dificultad. Podés volver a jugarlas para practicar.","Rejugar conocidas",()=>{repetirConocidas=true;iniciarRonda();});return;}
     duracionMs=Math.round(objetivos.reduce((sum,w)=>sum+SOPA_CONFIG.segundosBasePalabra+SOPA_CONFIG.segundosPorLetra*w.length,0)
       *SOPA_CONFIG.factorMudanzas*(c.n/SOPA_CONFIG.grillaBase)*c.margen*1000);
     tiempoMs=duracionMs;mudanzaMs=c.mudanza*1000;
@@ -232,9 +248,10 @@ const SopaFugaz=(()=>{
       datos.palabrasTotal++;
       const ahora=performance.now();
       datos.palabras.push({nivel,palabra:acierto,ms:Math.round(ahora-ultimaMarca),fecha:new Date().toISOString()});
+      if(!datos.descubiertas.includes(acierto))datos.descubiertas.push(acierto);
       if(datos.palabras.length>SOPA_CONFIG.registroPalabrasMax)datos.palabras.splice(0,datos.palabras.length-SOPA_CONFIG.registroPalabrasMax);
       ultimaMarca=ahora;guardar();
-      dibujarChips();actualizarHUD();
+      dibujarChips();dibujarHistorial();actualizarHUD();
       seleccion.forEach(k=>celdas[k].classList.add("found"));
       tac();vibrar(35);objSumar("sopaPalabras",1);
       logroDesbloquear("sopaPrimera");
@@ -247,21 +264,22 @@ const SopaFugaz=(()=>{
     csCompartirImagen(generarCanvasCompartirJuego,"sopa-fugaz.png",texto,texto,boton);
   }
   function abrir(contenedor){
-    salir();datos=cargar();nivel=SOPA_CONFIG.primerNivel;puntaje=0;raiz=document.createElement("div");raiz.className="sf-game";
-    raiz.innerHTML='<h2>🔎 Sopa Fugaz</h2><p class="sf-sub">Categoría: <b id="sfCategoria">Sabores y lugares conocidos</b></p><div class="sf-hud"><div><small>Nivel</small><b id="sfNivel">1</b></div><div><small>Puntos</small><b id="sfPuntos">0</b></div><div><small>Mejor</small><b id="sfMejor">0</b></div><div><small>Tiempo</small><b id="sfTiempo">0</b></div></div><div class="sf-bar"><i id="sfTiempoBarra"></i></div><div class="sf-chips" id="sfChips"></div><div class="sf-grid" id="sfGrid" aria-label="Sopa de letras"></div><p class="sf-mudanza-texto" id="sfMudanzaTexto">Las letras se mudan cada pocos segundos</p><div class="sf-bar mudanza"><i id="sfMudanzaBarra"></i></div><div class="sf-acciones"><button type="button" id="sfAyuda">¿Cómo se juega?</button></div><div class="sf-panel-capa" id="sfPanel"></div>';
+    salir();datos=cargar();nivel=SOPA_CONFIG.primerNivel;puntaje=0;repetirConocidas=false;raiz=document.createElement("div");raiz.className="sf-game";
+    raiz.innerHTML='<h2>🔎 Sopa Fugaz</h2><p class="sf-sub">Categoría: <b id="sfCategoria">Sabores y lugares conocidos</b></p><div class="sf-hud"><div><small>Nivel</small><b id="sfNivel">1</b></div><div><small>Puntos</small><b id="sfPuntos">0</b></div><div><small>Mejor</small><b id="sfMejor">0</b></div><div><small>Tiempo</small><b id="sfTiempo">0</b></div></div><div class="sf-bar"><i id="sfTiempoBarra"></i></div><div class="sf-chips" id="sfChips"></div><div class="sf-grid" id="sfGrid" aria-label="Sopa de letras"></div><p class="sf-mudanza-texto" id="sfMudanzaTexto">Las letras se mudan cada pocos segundos</p><div class="sf-bar mudanza"><i id="sfMudanzaBarra"></i></div><details class="sf-historial"><summary id="sfHistorialTitulo">📖 Mis palabras encontradas (0)</summary><div class="sf-historial-lista" id="sfHistorialLista"></div></details><div class="sf-acciones"><button type="button" id="sfAyuda">¿Cómo se juega?</button></div><div class="sf-panel-capa" id="sfPanel"></div>';
     contenedor.appendChild(raiz);gridEl=raiz.querySelector("#sfGrid");chipsEl=raiz.querySelector("#sfChips");
     gridEl.addEventListener("pointerdown",punteroAbajo);
     gridEl.addEventListener("pointermove",punteroMueve);
     gridEl.addEventListener("pointerup",punteroArriba);
     gridEl.addEventListener("pointercancel",cancelarArrastre);
     raiz.querySelector("#sfAyuda").onclick=()=>{
-      if(jugando){mostrarToast("🔎","Arrastrá el dedo en línea recta sobre las letras de una palabra.");return;}
-      mostrarPanel("¿Cómo se juega?","Arrastrá el dedo en línea recta sobre las letras para marcar las palabras de arriba. Cada pocos segundos la sopa gira y las letras se mudan. Si estás marcando una palabra, espera hasta 2,5 segundos.","Jugar",iniciarRonda);
+      if(jugando){mostrarToast("🔎","Marcá en línea recta: horizontal o vertical; desde el nivel 3, también diagonal y al revés.");return;}
+      mostrarPanel("¿Cómo se juega?","Arrastrá el dedo en línea recta sobre las letras para marcar las palabras de arriba. En niveles 1 y 2 aparecen horizontal o vertical; después también diagonal o al revés. Cada pocos segundos la sopa gira y las letras se mudan. Si estás marcando una palabra, espera hasta 2,5 segundos.","Jugar",iniciarRonda);
     };
     intervalo=setInterval(tic,SOPA_CONFIG.ticMs);
     document.addEventListener("visibilitychange",alVolver);
     raiz.querySelector("#sfMejor").textContent=datos.mejor;
-    mostrarPanel("Sopa Fugaz","Encontrá las palabras arrastrando el dedo. Las letras giran y se mudan durante la ronda. Jugá gratis y superá tu récord.","Jugar",iniciarRonda);
+    dibujarHistorial();
+    mostrarPanel("Sopa Fugaz","Encontrá las palabras arrastrando el dedo. Las letras giran y se mudan durante la ronda. Las que descubrís quedan en Mis palabras y no vuelven a salir mientras haya nuevas.","Jugar",iniciarRonda);
   }
   function salir(){
     jugando=false;mudando=false;arrastre=null;token++;clearInterval(intervalo);clearTimeout(trasladoTimer);

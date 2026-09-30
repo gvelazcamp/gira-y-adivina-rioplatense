@@ -59,6 +59,11 @@ async function arrastrar(page,indices){
       assert(layout.scrollWidth<=layout.innerWidth,'horizontal overflow '+JSON.stringify(layout));
       assert(layout.gridWidth<=Math.min(500,viewport.width));
       const words=await page.locator('.sf-chip').allTextContents();
+      assert.equal(await page.locator('#sfHistorialTitulo').textContent(),'📖 Mis palabras encontradas (0)');
+      const inicial=await page.locator('.sf-celda').allTextContents();
+      const horizontal=words.some(w=>{try{const ks=encontrarPalabra(inicial,10,w);return ks[1]-ks[0]===1;}catch{return false;}});
+      const vertical=words.some(w=>{try{const ks=encontrarPalabra(inicial,10,w);return ks[1]-ks[0]===10;}catch{return false;}});
+      assert(horizontal&&vertical,'nivel inicial tiene palabras horizontales y verticales');
       for(const word of words){
         const letras=await page.locator('.sf-celda').allTextContents();
         const indices=encontrarPalabra(letras,10,word);
@@ -72,6 +77,13 @@ async function arrastrar(page,indices){
       await page.locator('.sf-panel .sf-principal').click();
       assert.equal(await page.locator('.sf-celda').count(),100);
       const words2=await page.locator('.sf-chip').allTextContents();
+      assert(words2.every(w=>!words.includes(w)),'la segunda ronda no repite palabras resueltas');
+      await page.locator('.sf-historial summary').click();
+      const historial=await page.locator('#sfHistorialLista').textContent();
+      assert(words.every(w=>historial.includes(w)),'historial muestra las palabras descubiertas');
+      assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'historial sin desborde horizontal');
+      if(process.env.UI_SCREENSHOTS)await page.screenshot({path:path.join(process.env.UI_SCREENSHOTS,'historial-sopa-'+viewport.width+'.png'),fullPage:true});
+      await page.locator('.sf-historial summary').click();
       for(const word of words2){
         const letras=await page.locator('.sf-celda').allTextContents();
         await arrastrar(page,encontrarPalabra(letras,10,word));
@@ -90,6 +102,7 @@ async function arrastrar(page,indices){
       await page.waitForFunction(()=>window.sfGiros>0);
       await page.waitForFunction(()=>!document.querySelector('#sfGrid').classList.contains('spin'));
       const palabra3=(await page.locator('.sf-chip').allTextContents())[0];
+      assert(!words.includes(palabra3)&&!words2.includes(palabra3));
       const letras3=await page.locator('.sf-celda').allTextContents();
       await arrastrar(page,encontrarPalabra(letras3,10,palabra3).reverse());
       assert.equal(await page.locator('.sf-chip').first().getAttribute('class'),'sf-chip hecho','acepta lectura al revés desde nivel 3');
@@ -98,9 +111,30 @@ async function arrastrar(page,indices){
       const ultimoMejor=await page.evaluate(()=>JSON.parse(localStorage.getItem('gya_sopa_fugaz')).mejor);
       await page.locator('#extAtras').click();
       assert.match(await page.locator('.ext-tarjeta').first().textContent(),new RegExp(String(ultimoMejor)));
+      await page.locator('.ext-tarjeta').first().click();
+      assert.equal(await page.locator('#sfHistorialTitulo').textContent(),'📖 Mis palabras encontradas (7)');
+      await page.locator('.sf-panel .sf-principal').click();
+      const wordsNuevas=await page.locator('.sf-chip').allTextContents();
+      assert(wordsNuevas.every(w=>![...words,...words2,palabra3].includes(w)),'al volver a abrir no repite palabras resueltas');
       await page.locator('#extCerrar').click();
       await page.evaluate(()=>recAbrir());
       assert.match(await page.locator('#recLista').textContent(),/Sopa Fugaz/);
+      if(viewport.width===360){
+        await page.evaluate(()=>{
+          $('capaRecords').classList.remove('ver');
+          const todas=[...new Set([SOPA_DATOS.inicial,...SOPA_DATOS.categorias].flatMap(f=>f.palabras))];
+          localStorage.setItem('gya_sopa_fugaz',JSON.stringify({mejor:0,palabrasTotal:0,nivelMax:1,palabras:[],descubiertas:todas.filter(w=>w!=='MATE'&&w!=='ASADO'),niveles:{}}));
+          Extensiones.abrirJuego('sopa-fugaz');
+        });
+        await page.locator('.sf-panel .sf-principal').click();
+        assert.deepEqual((await page.locator('.sf-chip').allTextContents()).sort(),['ASADO','MATE']);
+        for(const word of ['ASADO','MATE']){const letras=await page.locator('.sf-celda').allTextContents();await arrastrar(page,encontrarPalabra(letras,10,word));}
+        await page.locator('.sf-panel .sf-principal').click();
+        assert.match(await page.locator('.sf-panel h3').textContent(),/Encontraste todas/);
+        await page.locator('.sf-panel .sf-principal').click();
+        assert.equal(await page.locator('.sf-chip').count(),3,'el repaso sólo comienza con elección explícita');
+        await page.locator('#extCerrar').click();
+      }
       assert.deepEqual(errors,[]);
       console.log('PASS Sopa Fugaz',viewport.width,'rondas, mudanza, arrastre, reverso, récord, economía, layout');
       await context.close();
