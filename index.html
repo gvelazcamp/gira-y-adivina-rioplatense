@@ -33,6 +33,7 @@
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Outfit:wght@400;500;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Outfit:wght@400;500;700&display=swap"></noscript>
 <script src="ui-icons.js?v=1" defer></script>
+<link rel="stylesheet" href="extensiones.css?v=1">
 <script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" defer></script>
 <style>
@@ -1206,6 +1207,10 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <button class="menu-card mc-naranja" id="bTorneos"><span class="mc-ico">🏆</span><span class="mc-txt"><span class="mc-tit">Torneos</span><span class="mc-sub">Competí contra otros jugadores</span></span><span class="mc-flecha">›</span><span id="bTorneosBadge" class="rw-badge torneo-badge"></span></button>
     <button class="menu-card mc-celeste" id="bMenuEventosPrueba"><span class="mc-ico"><img src="assets/eventos/icono-evento.webp" alt="" style="width:100%;height:100%;object-fit:contain"></span><span class="mc-txt"><span class="mc-tit">Eventos</span><span class="mc-sub">Volvé cada día por algo nuevo</span></span><span class="mc-flecha">›</span></button>
   </div>
+  <button class="btn-grande cta-jugar ext-cta" id="bExtensiones" type="button" hidden>
+    <span class="cta-play">✦</span>
+    <span class="cta-txt"><b>Extensiones Girá y Adiviná</b><small>Más juegos para descubrir</small></span>
+  </button>
   <div class="mini-tit-fila">
     <img src="assets/decor/mas-disfrutar.png" alt="Más para disfrutar" class="deco-mas-disfrutar">
     <img src="assets/decor/pequenos-desafios.png" alt="Pequeños desafíos, grandes momentos" class="deco-pequenos-desafios">
@@ -2764,6 +2769,7 @@ function textoProxima(){
   const mm=Math.floor(rest/60000),ss=Math.floor(rest%60000/1000);
   return"Próxima vida en "+mm+":"+String(ss).padStart(2,"0");
 }
+const EXTENSIONES_HABILITADAS=true; // Apagar acá para ocultar el lobby y sus objetivos/logros.
 const OBJETIVOS=[
   {id:"partidas",nombre:"Jugá 2 partidas",icono:"🎮",meta:2,premio:60},
   {id:"rankingUnirse",nombre:"Unite al ranking de amigos",icono:"🤝",meta:1,premio:50},
@@ -2773,9 +2779,11 @@ const OBJETIVOS=[
   {id:"sobre",nombre:"Abrí 1 sobre de colección",icono:"🎁",meta:1,premio:70},
   {id:"coleccion",nombre:"Completá una colección",icono:"📚",meta:1,premio:150},
   {id:"rachaPartidas",nombre:"Ganá 4 partidas seguidas",icono:"🔥",meta:4,premio:100},
-  {id:"rankingTop",nombre:"Entrá al Top 3 del ranking de amigos",icono:"🥉",meta:1,premio:150}
-];
-const OBJETIVOS_DIARIOS=OBJETIVOS.filter(d=>d.id!=="rankingUnirse"&&d.id!=="rankingTop");
+  {id:"rankingTop",nombre:"Entrá al Top 3 del ranking de amigos",icono:"🥉",meta:1,premio:150},
+  {id:"sopaRonda",nombre:"Jugá una ronda de Sopa Fugaz",icono:"🔎",meta:1,premio:0},
+  {id:"sopaPalabras",nombre:"Encontrá 10 palabras en Sopa Fugaz",icono:"🔤",meta:10,premio:0}
+].filter(d=>EXTENSIONES_HABILITADAS||!d.id.startsWith("sopa"));
+const OBJETIVOS_DIARIOS=OBJETIVOS.filter(d=>d.id!=="rankingUnirse"&&d.id!=="rankingTop"&&!d.id.startsWith("sopa"));
 const OBJ_PREMIO_TODOS=200;
 // Estos dos objetivos no se reinician a medianoche. Migramos el progreso
 // anterior, incluso si pertenecía a otro día, para no volver a pagar premios.
@@ -2847,7 +2855,7 @@ function objReclamar(id){
   if(id==="rankingUnirse"){objetivosRanking.unionReclamada=true;guardarObjetivosRanking();}
   if(id==="rankingTop"){objetivosRanking.topPendiente=false;objetivosRanking.topReclamado=true;guardarObjetivosRanking();}
   o.reclamados.push(id);guardarObjetivos();
-  sumarMonedas(def.premio);mundoActualizarHud();
+  if(def.premio){sumarMonedas(def.premio);mundoActualizarHud();}
   objRender();objActualizarBadge();
 }
 function objReclamarTodos(){
@@ -2905,7 +2913,7 @@ function objRender(){
         val+' / '+d.meta)+'</span>'+
       '<div class="dz-barra"><i style="width:'+Math.round(val/d.meta*100)+'%"></i></div></div>'+
       '<button class="obj-reclamar '+(hecho?"hecho":(lista?"listo":""))+'" data-id="'+d.id+'" '+(hecho||!lista?"disabled":"")+'>'+
-      (hecho?"✓ Listo":"🪙 "+d.premio)+'</button>';
+      (hecho?"✓ Listo":d.premio?"🪙 "+d.premio:"✓ Completar")+'</button>';
     cont.appendChild(el);
   });
 }
@@ -4207,21 +4215,24 @@ const LOGROS=[
   {id:"jackpot",nombre:"¡Pozo grande!",desc:"Ganá el premio mayor de la ruleta",icono:"💰",premio:100},
   {id:"tienda",nombre:"Comprador",desc:"Comprá algo en la tienda",icono:"🛍️",premio:30},
   {id:"monedas1000",nombre:"Ahorrista",desc:"Juntá 1000 monedas",icono:"🪙",premio:50},
-  {id:"rankingTop1",nombre:"En la cima",desc:"Llegá al 1er puesto del ranking de amigos",icono:"🥇",premio:200}
-];
+  {id:"rankingTop1",nombre:"En la cima",desc:"Llegá al 1er puesto del ranking de amigos",icono:"🥇",premio:200},
+  {id:"sopaPrimera",nombre:"Primer hallazgo fugaz",desc:"Encontrá una palabra en Sopa Fugaz",icono:"🔎",premio:0},
+  {id:"sopaDiez",nombre:"Ojo de lince",desc:"Encontrá 10 palabras en Sopa Fugaz",icono:"👀",premio:0},
+  {id:"sopaRapida",nombre:"Contra el reloj",desc:"Superá una ronda de Sopa Fugaz con 10 segundos de sobra",icono:"⏱️",premio:0}
+].filter(l=>EXTENSIONES_HABILITADAS||!l.id.startsWith("sopa"));
 function cargarLogros(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_logros")||"[]"));}catch(e){return new Set();}
 }
 let logrosGanados=cargarLogros();
 const guardarLogros=()=>{try{localStorage.setItem("gya_logros",JSON.stringify([...logrosGanados]));}catch(e){}};
 let logroToastTimer=null;
-function logroToast(l){mostrarToast(l.icono,l.nombre+" +"+l.premio+" 🪙","¡Logro desbloqueado!");}
+function logroToast(l){mostrarToast(l.icono,l.nombre+(l.premio?" +"+l.premio+" 🪙":""),"¡Logro desbloqueado!");}
 function logroDesbloquear(id){
   if(logrosGanados.has(id))return;
   logrosGanados.add(id);guardarLogros();
   const l=LOGROS.find(x=>x.id===id);
   if(!l)return;
-  sumarMonedas(l.premio);mundoActualizarHud();
+  if(l.premio){sumarMonedas(l.premio);mundoActualizarHud();}
   if($("pantDurazno").style.display==="block")dzActualizarHud();
   logroToast(l);
   empujarRanking();
@@ -4268,6 +4279,7 @@ function recAbrir(){
     )),
     {icono:"🏅",nombre:"Logros desbloqueados",desc:logrosGanados.size+" / "+LOGROS.length}
   ];
+  if(window.SopaFugaz)filas.push({icono:"🔎",nombre:"Sopa Fugaz",desc:"Mejor puntaje: "+window.SopaFugaz.mejorPuntaje()+" puntos"});
   filas.forEach(l=>{
     const d=document.createElement("div");
     d.className="lg-item";
@@ -10661,6 +10673,9 @@ document.addEventListener("keydown",e=>{
   if(e.code==="Space"&&!$("bGirar").disabled){e.preventDefault();$("bGirar").click();}
 });
 </script>
+<script src="sopa-fugaz-datos.js?v=1"></script>
+<script src="sopa-fugaz.js?v=1"></script>
+<script src="extensiones.js?v=1"></script>
 <script src="sala-tv.js?v=1"></script>
 </body>
 </html>

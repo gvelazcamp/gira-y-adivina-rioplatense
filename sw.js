@@ -1,5 +1,5 @@
-const CACHE_NAME = "gya-cache-v37";
-const APP_SHELL = ["./", "./index.html", "./manifest.json", "./icono-192.png", "./icono-512.png", "./assets/logo.webp", "./ui-icons.js?v=1", "./assets/ui/coin.svg", "./assets/ui/shield.svg"];
+const CACHE_NAME = "gya-cache-v38";
+const APP_SHELL = ["./", "./index.html", "./manifest.json", "./icono-192.png", "./icono-512.png", "./assets/logo.webp", "./ui-icons.js?v=1", "./assets/ui/coin.svg", "./assets/ui/shield.svg", "./extensiones.css?v=1", "./extensiones.js?v=1", "./sopa-fugaz-datos.js?v=1", "./sopa-fugaz.js?v=1", "./logo-sopa-fugaz.svg"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(
