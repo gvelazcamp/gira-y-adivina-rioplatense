@@ -1,6 +1,6 @@
-# Palabra Secreta: vocabulario de cinco letras
+# Vocabularios de Palabra Secreta y Rueda de Letras
 
-La lista de intentos válidos y parte de las palabras secretas se adaptaron de [an-array-of-spanish-words](https://github.com/words/an-array-of-spanish-words) (se quitaron tildes, palabras con Ñ y entradas de largo distinto a cinco letras). Su licencia es MIT:
+La lista de intentos válidos y parte de las palabras secretas de Palabra Secreta se adaptaron de [an-array-of-spanish-words](https://github.com/words/an-array-of-spanish-words) (se quitaron tildes, palabras con Ñ y entradas de largo distinto a cinco letras). Rueda de Letras usa un subconjunto de la misma fuente: palabras de 3 a 7 letras formables con alguna rueda actual, sin tildes ni Ñ. Su licencia es MIT:
 
 > (The MIT License)
 >

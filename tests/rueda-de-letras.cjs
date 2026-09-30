@@ -30,14 +30,28 @@ async function arrastrarTouch(page,palabra){
     await page.locator('#bExtensiones').click();await page.locator('.ext-tarjeta').nth(1).click();await page.locator('#rlPanel button').click();
     const c=await page.evaluate(()=>({ronda:RuedaDeLetras.elegir(1),ms:RuedaDeLetras.tiempoRonda(RuedaDeLetras.elegir(1).palabras,1)}));assert(c.ms>0);
     const datosValidos=await page.evaluate(()=>{for(let n=1;n<=24;n++){const c=RuedaDeLetras.configNivel(n),r=RuedaDeLetras.elegir(n);if(r.palabras.length!==c.palabras)return n;for(const w of r.palabras){const letras=[...r.base];for(const l of w){const i=letras.indexOf(l);if(i<0)return n;letras.splice(i,1);}}}return 0;});assert.equal(datosValidos,0,'nivel con datos inválidos');
+    const diccionarioValido=await page.evaluate(()=>{if(RUEDA_DICCIONARIO.size<1000||!RUEDA_DICCIONARIO.has('OBRA')||RUEDA_DICCIONARIO.has('TBM'))return false;for(const word of RUEDA_DICCIONARIO){if(!/^[A-Z]{3,7}$/.test(word)||!RUEDA_DATOS.some(({base})=>{const letters=[...base];for(const letter of word){const index=letters.indexOf(letter);if(index<0)return false;letters.splice(index,1);}return true;}))return false;}return true;});assert(diccionarioValido,'diccionario inválido');
     assert.equal(await page.locator('.rl-letra').count(),6);
     await page.locator('#rlGirar').click();await page.waitForTimeout(800);
     if(process.env.UI_SCREENSHOTS){fs.mkdirSync(process.env.UI_SCREENSHOTS,{recursive:true});await page.screenshot({path:path.join(process.env.UI_SCREENSHOTS,'rueda-'+viewport.width+'.png')});}
+    assert(!c.ronda.palabras.includes('OBRA'));
+    await arrastrar(page,'OBRA');
+    assert.equal(await page.locator('#rlPuntos').textContent(),'20');
+    assert.equal(await page.locator('#rlExtrasCount').textContent(),'1');
+    await page.locator('.rl-extras summary').click();
+    assert.equal(await page.locator('.rl-extra-chip').textContent(),'OBRA');
+    assert.equal(await page.locator('.rl-pista.hecho').count(),0,'la extra no completa palabras ocultas');
+    if(process.env.UI_SCREENSHOTS)await page.screenshot({path:path.join(process.env.UI_SCREENSHOTS,'rueda-extra-'+viewport.width+'.png'),fullPage:true});
+    await arrastrar(page,'OBRA');
+    assert.equal(await page.locator('#rlPuntos').textContent(),'20','la extra repetida no suma');
+    await arrastrar(page,'TBM');
+    assert.equal(await page.locator('#rlPuntos').textContent(),'20','la palabra inválida no suma');
     for(const word of c.ronda.palabras)await arrastrar(page,word);
     await page.locator('#rlPanel h3').waitFor();assert.match(await page.locator('#rlPanel h3').textContent(),/completada/);
     assert.equal(await page.evaluate(()=>objObtenerHoy().ruedaRonda),1);
     assert.equal(await page.evaluate(()=>objObtenerHoy().ruedaPalabras),6);
     await page.locator('#rlPanel button').click();assert.equal(await page.locator('.rl-letra').count(),6);
+    assert.equal(await page.locator('#rlExtrasCount').textContent(),'0','las extras se reinician en la nueva ronda');
     await arrastrarTouch(page,'SALADO');assert.equal(await page.locator('.rl-pista.hecho').count(),1,'touch con letra repetida y corrección');
     assert(await page.evaluate(()=>JSON.parse(localStorage.getItem('gya_rueda_de_letras')).mejor)>0);
     assert.deepEqual(await page.evaluate(()=>({monedas:meta.monedas,vidas:meta.vidas,tickets:meta.tickets})),economia);
