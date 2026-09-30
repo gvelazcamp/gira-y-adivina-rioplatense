@@ -1,6 +1,7 @@
 #bExtensiones[hidden],.ext-shell[hidden]{display:none!important}
-.ext-cta{margin:16px 0 6px;background:linear-gradient(135deg,#7B3FE4,#4C1C9C);box-shadow:0 6px 0 #321167}
-.ext-cta:active{box-shadow:0 2px 0 #321167}
+#bExtensiones{margin:16px 0 6px;background:linear-gradient(135deg,#633CCB 0%,#385DC3 52%,#148C9B 100%);box-shadow:0 6px 0 #174F71}
+#bExtensiones:active{box-shadow:0 2px 0 #174F71}
+#bExtensiones .cta-play{background:#FFFFFF30;color:#F6D77A}
 .ext-cta .cta-txt b{font-size:clamp(.96rem,4.2vw,1.2rem)}
 body.ext-abierta{overflow:hidden}
 .ext-shell{position:fixed;inset:0;z-index:45;overflow-y:auto;background:radial-gradient(600px 350px at 50% -5%,#46206B 0%,transparent 70%),#160B24;color:#F6EFE2;padding:max(12px,var(--safe-top)) max(14px,var(--safe-right)) max(18px,var(--safe-bottom)) max(14px,var(--safe-left));-webkit-overflow-scrolling:touch}
