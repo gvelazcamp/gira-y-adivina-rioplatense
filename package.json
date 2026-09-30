@@ -1,6 +1,6 @@
 {
   "name": "gira-y-adivina-rioplatense-tests",
   "private": true,
-  "scripts": { "test:tv": "node tests/sala-tv.cjs", "test:mobile": "node tests/mobile-ui.cjs", "test:background": "node tests/background.cjs" },
+  "scripts": { "test:tv": "node tests/sala-tv.cjs", "test:mobile": "node tests/mobile-ui.cjs", "test:background": "node tests/background.cjs", "test:escudos": "node tests/emergency-shields.cjs" },
   "devDependencies": { "playwright": "1.62.1" }
 }

@@ -1520,7 +1520,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   </div>
   </div>
   <h3 class="tn-subtitulo" data-fijo="1">🛡️ Escudos de la ruleta</h3>
-  <p class="tn-desc-seccion" style="margin:-4px 0 10px;font-size:.78rem;color:#B49FCE">Solo sirven en Eventos y en ¡Jugar ahora!. Si tenés uno guardado, cuando caigas en Quiebra o Pierde turno vas a poder usarlo para salvarte.</p>
+  <p class="tn-desc-seccion" style="margin:-4px 0 10px;font-size:.78rem;color:#B49FCE">Solo sirven en Eventos y en ¡Jugar ahora!. Si tenés uno guardado, cuando caigas en Quiebra o Pierde turno vas a poder usarlo para salvarte. Si no tenés, podés salvarte en el momento pagando monedas.</p>
   <div class="tn-grid">
   <div class="tn-item tn-card">
   <div class="tn-card-img">🛡️</div>
@@ -8274,6 +8274,7 @@ let pruebaEscudosForzar=false;
 let pruebaChatForzar=false;
 let escudoTiendaUsadoEnPartida=false;
 let escudoTiempoUsadoEnPartida=false,escudoTiempoActivoTurno=false,escudoTossUsadoEnPartida=false;
+const ESCUDO_RULETA_PRECIO={pierde:750,quiebra:1250};
 /* Ojo: no llamar a esto desde adentro de hostGirar() usando la variable
    "destino" directamente — esa función tiene su propia "let destino"
    local (el ángulo del giro) que tapa a esta global (la ciudad elegida
@@ -8286,35 +8287,51 @@ function escudosDisponiblesAqui(){
 }
 function quierePreguntarEscudo(cual){
   if(!S||S.turno!==miJug||!escudosDisponiblesAqui()||escudoTiendaUsadoEnPartida)return false;
-  return(cual==="quiebra"?(meta.escudosQuiebra||0):(meta.escudosPierde||0))>0;
+  const cant=cual==="quiebra"?(meta.escudosQuiebra||0):(meta.escudosPierde||0);
+  return cant>0||puedePagarMonedas(ESCUDO_RULETA_PRECIO[cual]||0);
+}
+function aplicarCastigoRuleta(cual){
+  if(cual==="quiebra"){
+    bip(120,.5,"sawtooth",.09);S.jug[S.turno].ronda=0;
+    publicar("<b>QUIEBRA</b> — "+S.jug[S.turno].n+" pierde la plata de la ronda.","quiebra");
+    esperarPartida(tk(cambiarTurno),1800);
+  }else{
+    bip(200,.35,"triangle",.07);
+    publicar("<b>Pierde turno</b> — pasa al siguiente jugador.","pierde");
+    esperarPartida(tk(cambiarTurno),1600);
+  }
 }
 function mostrarConfirmEscudo(cual){
   const nombre=cual==="quiebra"?"QUIEBRA":"PIERDE TURNO";
   const cant=cual==="quiebra"?meta.escudosQuiebra:meta.escudosPierde;
-  $("confirmEscudoTxt").innerHTML="Salió <b>"+nombre+"</b>. Tenés <b>"+cant+" 🛡️</b>. ¿Usar el escudo y salvarte?"+
+  const precio=ESCUDO_RULETA_PRECIO[cual],tiene=cant>0;
+  $("confirmEscudoTxt").innerHTML=tiene?
+    "Salió <b>"+nombre+"</b>. Tenés <b>"+cant+" 🛡️</b>. ¿Usar el escudo y salvarte?"+
     "<br><small style='opacity:.75'>Si lo usás, te quedan: <s>"+cant+"</s> → "+(cant-1)+" 🛡️</small>"+
-    "<br><small style='opacity:.6'>Se puede usar 1 escudo por partida.</small>";
+    "<br><small style='opacity:.6'>Se puede usar 1 escudo por partida.</small>":
+    "Salió <b>"+nombre+"</b>. No tenés escudo guardado, pero podés salvarte ahora por <b>🪙 "+precio+"</b>."+
+    "<br><small style='opacity:.75'>Tus monedas: "+meta.monedas+" 🪙</small>"+
+    "<br><small style='opacity:.6'>Se puede usar 1 salvada por partida.</small>";
+  $("confirmEscudoSi").textContent=tiene?"🛡️ Usar escudo":"🪙 Salvarme ahora";
+  $("confirmEscudoSi").disabled=!tiene&&!puedePagarMonedas(precio);
   $("confirmEscudo").style.display="flex";
   $("confirmEscudoSi").onclick=()=>{
     $("confirmEscudo").style.display="none";
-    if(cual==="quiebra")meta.escudosQuiebra--;else meta.escudosPierde--;
+    if(tiene){
+      if(cual==="quiebra")meta.escudosQuiebra--;else meta.escudosPierde--;
+    }else{
+      if(!puedePagarMonedas(precio)){mostrarToast("🪙","No te alcanzan las monedas.");aplicarCastigoRuleta(cual);return;}
+      gastarMonedas(precio);
+    }
     escudoTiendaUsadoEnPartida=true;
     guardarMeta();mundoActualizarHud();
     bip(1046,.16,"sine",.07);
-    publicar("🛡️ "+S.jug[S.turno].n+" usó un escudo y se salvó de "+nombre+".","comodin");
+    publicar("🛡️ "+S.jug[S.turno].n+" se salvó de "+nombre+(tiene?" usando un escudo.":" por 🪙 "+precio+"."),"comodin");
     S.fase="girar";
   };
   $("confirmEscudoNo").onclick=()=>{
     $("confirmEscudo").style.display="none";
-    if(cual==="quiebra"){
-      bip(120,.5,"sawtooth",.09);S.jug[S.turno].ronda=0;
-      publicar("<b>QUIEBRA</b> — "+S.jug[S.turno].n+" pierde la plata de la ronda.","quiebra");
-      esperarPartida(tk(cambiarTurno),1800);
-    }else{
-      bip(200,.35,"triangle",.07);
-      publicar("<b>Pierde turno</b> — pasa al siguiente jugador.","pierde");
-      esperarPartida(tk(cambiarTurno),1600);
-    }
+    aplicarCastigoRuleta(cual);
   };
 }
 function quierePreguntarEscudoToss(){
@@ -8326,6 +8343,8 @@ function mostrarConfirmEscudoToss(fToss){
   $("confirmEscudoTxt").innerHTML="Arranca una <b>Prueba de Velocidad</b>. Tenés <b>"+cant+" 🛡️</b>. ¿Usar el escudo y saltearla?"+
     "<br><small style='opacity:.75'>Si lo usás, te quedan: <s>"+cant+"</s> → "+(cant-1)+" 🛡️. Nadie juega esa prueba, se pasa directo a la siguiente ronda.</small>"+
     "<br><small style='opacity:.6'>Se puede usar 1 escudo por partida.</small>";
+  $("confirmEscudoSi").textContent="🛡️ Usar escudo";
+  $("confirmEscudoSi").disabled=false;
   $("confirmEscudo").style.display="flex";
   $("confirmEscudoSi").onclick=()=>{
     $("confirmEscudo").style.display="none";
