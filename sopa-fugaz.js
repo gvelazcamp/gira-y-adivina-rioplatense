@@ -2,7 +2,7 @@
    comparten estado con las partidas de Ruleta. */
 const SOPA_CONFIG={
   primerNivel:1,maxGrillaCelular:12,
-  segundosBasePalabra:4,segundosPorLetra:1.2,factorMudanzas:1.15,grillaBase:10,
+  segundosBasePalabra:4,segundosPorLetra:1.2,factorMudanzas:1.15,factorTiempoExtra:1.1,grillaBase:10,
   puntosPalabra:100,puntosSegundo:5,graciaArrastreMs:2500,giroMs:1100,
   ticMs:50,registroPalabrasMax:100,intentosTablero:30,intentosColocacion:500,
   niveles:{
@@ -155,7 +155,7 @@ const SopaFugaz=(()=>{
     objetivos=elegirPalabras(c);
     if(!objetivos.length){jugando=false;dibujarHistorial();mostrarPanel("¡Encontraste todas!","Ya descubriste todas las palabras disponibles para esta dificultad. Podés volver a jugarlas para practicar.","Rejugar conocidas",()=>{repetirConocidas=true;iniciarRonda();});return;}
     duracionMs=Math.round(objetivos.reduce((sum,w)=>sum+SOPA_CONFIG.segundosBasePalabra+SOPA_CONFIG.segundosPorLetra*w.length,0)
-      *SOPA_CONFIG.factorMudanzas*(c.n/SOPA_CONFIG.grillaBase)*c.margen*1000);
+      *SOPA_CONFIG.factorMudanzas*SOPA_CONFIG.factorTiempoExtra*(c.n/SOPA_CONFIG.grillaBase)*c.margen*1000);
     tiempoMs=duracionMs;mudanzaMs=c.mudanza*1000;
     construir();dibujarChips();
     raiz.querySelector("#sfCategoria").textContent=categoria;
