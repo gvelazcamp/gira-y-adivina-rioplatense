@@ -5386,7 +5386,7 @@ function iniciarPruebaEscudos(){
   esEventoFinde=false;eventoFindePartida=null;eventoFindeResultado=false;entrenamientoLimpiarFlags();
   destino=null;pasoActual=null;fSiguientePaso=null;vinoDeJugarOnline=false;modoVelocidadElegido=false;
   enTorneo=false;
-  meta.escudosPierde=(meta.escudosPierde||0)+10;meta.escudosQuiebra=(meta.escudosQuiebra||0)+10;
+  meta.escudosPierde=0;meta.escudosQuiebra=0;meta.monedas=Math.max(meta.monedas||0,5000);
   meta.escudosTiempo=(meta.escudosTiempo||0)+10;meta.escudosToss=(meta.escudosToss||0)+10;
   guardarMeta();mundoActualizarHud();
   modo="bot";miJug=0;rondasElegidas=3;arranca=0;
@@ -5403,7 +5403,7 @@ function iniciarPruebaEscudos(){
   iniciarPartida(perfil.nombre||"Gonzalo",rival.n,undefined,perfil.avatar||null,rival.a,frameEquipado||null,null);
   pruebaEscudosForzar=true;
   S.cat="Prueba de escudos — siempre cae Quiebra o Pierde turno";
-  publicar("<b>Prueba de escudos</b>: te sumé 10 de cada uno para probar. Cada giro va a caer en Quiebra o Pierde turno.");
+  publicar("<b>Prueba de escudos</b>: dejé Pierde/Quiebra sin escudos guardados para probar <b>Salvarme ahora</b>. Cada giro va a caer en Quiebra o Pierde turno.");
 }
 function iniciarPruebaChat(){
   if(!esGonzalo())return;
