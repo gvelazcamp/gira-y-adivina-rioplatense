@@ -33,7 +33,7 @@
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Outfit:wght@400;500;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Outfit:wght@400;500;700&display=swap"></noscript>
 <script src="ui-icons.js?v=1" defer></script>
-<link rel="stylesheet" href="extensiones.css?v=9">
+<link rel="stylesheet" href="extensiones.css?v=10">
 <script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" defer></script>
 <style>
@@ -2779,6 +2779,7 @@ function textoProxima(){
 const EXTENSIONES_HABILITADAS=true; // Apagar acá para ocultar el lobby y sus objetivos/logros.
 const RUEDA_HABILITADA=true;
 const PALABRA_HABILITADA=true;
+const ROSCO_HABILITADO=true;
 const OBJETIVOS=[
   {id:"partidas",nombre:"Jugá 2 partidas",icono:"🎮",meta:2,premio:60},
   {id:"rankingUnirse",nombre:"Unite al ranking de amigos",icono:"🤝",meta:1,premio:50},
@@ -2793,9 +2794,10 @@ const OBJETIVOS=[
   {id:"sopaPalabras",nombre:"Encontrá 10 palabras en Sopa Fugaz",icono:"🔤",meta:10,premio:0},
   {id:"ruedaRonda",nombre:"Jugá una Rueda de Letras",icono:"🎡",meta:1,premio:0},
   {id:"ruedaPalabras",nombre:"Encontrá 15 palabras en Rueda de Letras",icono:"🔤",meta:15,premio:0},
-  {id:"palabraDiaria",nombre:"Resolvé la Palabra Secreta de hoy",icono:"🟩",meta:1,premio:0}
-].filter(d=>(EXTENSIONES_HABILITADAS||!d.id.startsWith("sopa"))&&(EXTENSIONES_HABILITADAS&&RUEDA_HABILITADA||!d.id.startsWith("rueda"))&&(EXTENSIONES_HABILITADAS&&PALABRA_HABILITADA||!d.id.startsWith("palabra")));
-const OBJETIVOS_DIARIOS=OBJETIVOS.filter(d=>d.id!=="rankingUnirse"&&d.id!=="rankingTop"&&!d.id.startsWith("sopa")&&!d.id.startsWith("rueda")&&!d.id.startsWith("palabra"));
+  {id:"palabraDiaria",nombre:"Resolvé la Palabra Secreta de hoy",icono:"🟩",meta:1,premio:0},
+  {id:"roscoLetras",nombre:"Respondé 10 letras del Rosco",icono:"🎡",meta:10,premio:0}
+].filter(d=>(EXTENSIONES_HABILITADAS||!d.id.startsWith("sopa"))&&(EXTENSIONES_HABILITADAS&&RUEDA_HABILITADA||!d.id.startsWith("rueda"))&&(EXTENSIONES_HABILITADAS&&PALABRA_HABILITADA||!d.id.startsWith("palabra"))&&(EXTENSIONES_HABILITADAS&&ROSCO_HABILITADO||!d.id.startsWith("rosco")));
+const OBJETIVOS_DIARIOS=OBJETIVOS.filter(d=>d.id!=="rankingUnirse"&&d.id!=="rankingTop"&&!d.id.startsWith("sopa")&&!d.id.startsWith("rueda")&&!d.id.startsWith("palabra")&&!d.id.startsWith("rosco"));
 const OBJ_PREMIO_TODOS=200;
 // Estos dos objetivos no se reinician a medianoche. Migramos el progreso
 // anterior, incluso si pertenecía a otro día, para no volver a pagar premios.
@@ -4236,8 +4238,11 @@ const LOGROS=[
   {id:"ruedaPerfecta",nombre:"Rueda perfecta",desc:"Completá una rueda sin errores",icono:"✨",premio:0},
   {id:"palabraPrimera",nombre:"Palabra descubierta",desc:"Ganá tu primera Palabra Secreta",icono:"🟩",premio:0},
   {id:"palabraRapida",nombre:"Intuición veloz",desc:"Descubrí la palabra en dos intentos",icono:"⚡",premio:0},
-  {id:"palabraRacha",nombre:"Siete días seguidos",desc:"Ganá Palabra Secreta siete días seguidos",icono:"🔥",premio:0}
-].filter(l=>(EXTENSIONES_HABILITADAS||!l.id.startsWith("sopa"))&&(EXTENSIONES_HABILITADAS&&RUEDA_HABILITADA||!l.id.startsWith("rueda"))&&(EXTENSIONES_HABILITADAS&&PALABRA_HABILITADA||!l.id.startsWith("palabra")));
+  {id:"palabraRacha",nombre:"Siete días seguidos",desc:"Ganá Palabra Secreta siete días seguidos",icono:"🔥",premio:0},
+  {id:"roscoPrimera",nombre:"Primera letra del Rosco",desc:"Acertá una palabra en El Rosco",icono:"🎡",premio:0},
+  {id:"roscoPerfecto",nombre:"Vuelta perfecta",desc:"Acertá todas las letras de un Rosco",icono:"✨",premio:0},
+  {id:"roscoVeloz",nombre:"Rosco relámpago",desc:"Acertá todo el Rosco con más de 30 segundos de sobra",icono:"⚡",premio:0}
+].filter(l=>(EXTENSIONES_HABILITADAS||!l.id.startsWith("sopa"))&&(EXTENSIONES_HABILITADAS&&RUEDA_HABILITADA||!l.id.startsWith("rueda"))&&(EXTENSIONES_HABILITADAS&&PALABRA_HABILITADA||!l.id.startsWith("palabra"))&&(EXTENSIONES_HABILITADAS&&ROSCO_HABILITADO||!l.id.startsWith("rosco")));
 function cargarLogros(){
   try{return new Set(JSON.parse(localStorage.getItem("gya_logros")||"[]"));}catch(e){return new Set();}
 }
@@ -10758,7 +10763,9 @@ document.addEventListener("keydown",e=>{
 <script src="frases-en-giro-datos.js?v=1"></script>
 <script src="frases-en-giro.js?v=3"></script>
 <script src="memoria-en-giro.js?v=2"></script>
-<script src="extensiones.js?v=4"></script>
+<script src="rosco-rioplatense-datos.js?v=1"></script>
+<script src="rosco-rioplatense.js?v=1"></script>
+<script src="extensiones.js?v=5"></script>
 <script src="sala-tv.js?v=1"></script>
 </body>
 </html>

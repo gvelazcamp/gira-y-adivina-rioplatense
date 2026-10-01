@@ -40,13 +40,13 @@ async function arrastrar(page,indices){
       const page=await context.newPage(),errors=[];
       page.on('pageerror',e=>errors.push(e.message));
       await page.route('**/*',r=>r.request().url().startsWith(base)?r.continue():r.fulfill({status:200,body:''}));
-      await page.addInitScript(()=>{localStorage.setItem('gya_nombre','Prueba');localStorage.setItem('gya_avatar','mate');localStorage.setItem('gya_pais','UY');localStorage.setItem('gya_bienvenida_vista','1');const d=new Date();localStorage.setItem('gya_dia_alta',d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'));});
+      await page.addInitScript(()=>{localStorage.setItem('gya_nombre','Prueba');localStorage.setItem('gya_avatar','avatar-01');localStorage.setItem('gya_pais','uruguay');localStorage.setItem('gya_bienvenida_vista','1');const d=new Date();localStorage.setItem('gya_dia_alta',d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'));});
       await page.goto(base,{waitUntil:'load'});
       await page.evaluate(()=>{document.querySelector('#splash')?.remove();document.querySelectorAll('.capa.ver').forEach(el=>el.classList.remove('ver'));});
       assert.equal(await page.locator('#bExtensiones').isVisible(),true);
       const economiaAntes=await page.evaluate(()=>({monedas:meta.monedas,vidas:meta.vidas,tickets:meta.tickets}));
       await page.locator('#bExtensiones').click();
-      assert.equal(await page.locator('.ext-tarjeta').count(),5);
+      assert.equal(await page.locator('.ext-tarjeta').count(),6);
       if(process.env.UI_SCREENSHOTS){fs.mkdirSync(process.env.UI_SCREENSHOTS,{recursive:true});await page.screenshot({path:path.join(process.env.UI_SCREENSHOTS,'lobby-'+viewport.width+'.png')});}
       await page.locator('.ext-tarjeta').first().click();
       await page.locator('.sf-panel .sf-principal').click();

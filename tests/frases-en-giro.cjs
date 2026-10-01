@@ -9,16 +9,16 @@ const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg'
 async function preparar(page,base){
   await page.route('**/*',r=>r.request().url().startsWith(base)?r.continue():r.fulfill({status:200,body:''}));
   await page.addInitScript(()=>{
-    localStorage.setItem('gya_nombre','Prueba');localStorage.setItem('gya_avatar','mate');
-    localStorage.setItem('gya_pais','UY');localStorage.setItem('gya_bienvenida_vista','1');
+    localStorage.setItem('gya_nombre','Prueba');localStorage.setItem('gya_avatar','avatar-01');
+    localStorage.setItem('gya_pais','uruguay');localStorage.setItem('gya_bienvenida_vista','1');
     const d=new Date();localStorage.setItem('gya_dia_alta',d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'));
   });
   await page.goto(base,{waitUntil:'load'});
   await page.evaluate(()=>{document.querySelector('#splash')?.remove();document.querySelectorAll('.capa.ver').forEach(el=>el.classList.remove('ver'));});
   await page.locator('#bExtensiones').click();
-  assert.equal(await page.locator('.ext-tarjeta').count(),5);
-  assert.match(await page.locator('.ext-tarjeta').last().textContent(),/Memoria en Giro[\s\S]*Mejor: 0 puntos/);
-  assert(await page.locator('.ext-tarjeta').last().isEnabled());
+  assert.equal(await page.locator('.ext-tarjeta').count(),6);
+  assert.match(await page.locator('.ext-tarjeta').filter({hasText:'Memoria en Giro'}).textContent(),/Memoria en Giro[\s\S]*Mejor: 0 puntos/);
+  assert(await page.locator('.ext-tarjeta').filter({hasText:'Memoria en Giro'}).isEnabled());
   if(process.env.UI_SCREENSHOTS){fs.mkdirSync(process.env.UI_SCREENSHOTS,{recursive:true});await page.screenshot({path:path.join(process.env.UI_SCREENSHOTS,'frases-lobby-'+page.viewportSize().width+'.png')});}
   await page.locator('.ext-tarjeta').filter({hasText:'Frases en Giro'}).click();
 }
