@@ -56,6 +56,7 @@ body.ext-abierta{overflow:hidden}
 .fg-hud>div{background:#29193D;border:1px solid #FFFFFF1A;border-radius:11px;padding:5px 3px}
 .fg-hud small{display:block;color:#BFAFD1;font-size:.62rem}
 .fg-hud b{display:block;font-family:'Archivo Black',sans-serif;font-size:clamp(.88rem,4vw,1.12rem)}
+.fg-hud b.peligro{color:#FF81A8}
 .fg-bar{height:9px;border-radius:99px;background:#0E0717;overflow:hidden;margin:4px 0 8px}
 .fg-bar i{display:block;height:100%;width:100%;background:#37D6C0;transition:width .1s linear}
 .fg-bar.giro i{background:#E5197C}
@@ -69,14 +70,12 @@ body.ext-abierta{overflow:hidden}
 .fg-espacio{min-width:57px;color:#F6EFE2;background:#43304F;border:1px solid #BFAFD177;box-shadow:0 3px 0 #160B24}
 .fg-espacio.vacio{background:#2C1B3D;color:#9E88B0;border-style:dashed}
 .fg-espacio.lleno{background:#EFE7CF;color:#25143A;border-color:#FFFFFF}
-.fg-espacio.bien{background:#37D6C0;color:#160B24;border-color:#9EFFF3}
-.fg-espacio.mal{background:#E85C87;color:#fff;border-color:#FFC1D5}
-.fg-espacio.senuelo{background:#E59B22;color:#160B24;border-color:#FFE296}
 .fg-ficha{background:#F6EFE2;color:#241237;border:1px solid #fff;box-shadow:0 4px 0 #AFA3B8;transition:transform .14s,box-shadow .14s}
 .fg-ficha:not(:disabled):active{transform:translateY(3px);box-shadow:0 1px 0 #AFA3B8}
 .fg-ficha:disabled,.fg-espacio:disabled{opacity:.8}
 .fg-banco.gira{animation:fgGirar .65s ease-in-out}
 .fg-mensaje{min-height:26px;color:#F5B301;font-size:.78rem;font-weight:800;line-height:1.3;margin:8px 0 2px}
+.fg-mensaje.fallo{color:#FF81A8}
 .fg-acciones{display:flex;gap:8px;margin:4px auto 8px}
 .fg-acciones button{min-height:46px;border-radius:12px;padding:9px 12px;background:#E5197C;color:#fff;font-size:.86rem;font-weight:900}
 .fg-acciones button:first-child{flex:2}.fg-acciones button:last-child{flex:1;background:#4C315F}

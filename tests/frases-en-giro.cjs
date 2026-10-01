@@ -41,10 +41,10 @@ async function resolver(page,malPrimero=false){
     };
     let resultado=null;
     if(malPrimero){
+      const tiempoAntes=Number(document.querySelector('#fgTiempo').textContent);
       [palabras[1],palabras[0],...palabras.slice(2)].forEach(tocar);
       document.querySelector('#fgComprobar').click();
-      resultado={mensaje:document.querySelector('#fgMensaje').textContent,intentos:document.querySelector('#fgIntentos').textContent,marcas:[...document.querySelectorAll('#fgEspacios button')].map(b=>b.className)};
-      document.querySelector('#fgVaciar').click();
+      resultado={mensaje:document.querySelector('#fgMensaje').textContent,intentos:document.querySelector('#fgIntentos').textContent,marcas:[...document.querySelectorAll('#fgEspacios button')].map(b=>b.className),tiempoAntes,tiempoDespues:Number(document.querySelector('#fgTiempo').textContent)};
     }
     palabras.forEach(tocar);
     document.querySelector('#fgComprobar').click();
@@ -109,9 +109,11 @@ async function resolver(page,malPrimero=false){
       const segunda=await fraseActual(page);
       assert.equal(await page.locator('#fgBanco button').count(),segunda.palabras.length+1,'nivel 2 agrega señuelo');
       const error=await resolver(page,true);
-      assert.match(error.mensaje,/de .* en su lugar/);
+      assert.match(error.mensaje,/Perdiste un intento y 10 segundos/);
+      assert.match(error.mensaje,/de \d+ palabras estaban en su lugar/);
       assert.equal(error.intentos,'2');
-      assert(error.marcas.some(c=>c.includes('mal')),'marca las posiciones incorrectas');
+      assert(error.marcas.every(c=>c.includes('vacio')),'el error obliga a rearmar la frase sin revelar posiciones');
+      assert(error.tiempoAntes-error.tiempoDespues>=9,'el error quita unos 10 segundos');
       assert.match(await page.locator('.fg-panel h3').textContent(),/Frase armada/);
       const efectosAntesDeSilenciar=await page.evaluate(()=>window.__efectosFrases.length);
       assert(efectosAntesDeSilenciar>=1,'una frase correcta mantiene el efecto de festejo disponible');
@@ -140,19 +142,32 @@ async function resolver(page,malPrimero=false){
       await page.locator('.ext-tarjeta').last().click();
       assert.match(await page.locator('.fg-panel .fg-principal').textContent(),/nivel 6/);
       await page.locator('.fg-panel .fg-principal').click();
+      await resolver(page);
+      await page.locator('.fg-panel .fg-principal').click();
+      const puntosEnJuego=Number(await page.locator('#fgPuntos').textContent());
+      assert(puntosEnJuego>0,'la derrota debe tener puntos en juego');
       await page.evaluate(()=>{
         const pista=document.querySelector('#fgPista').textContent.replace(/^Escena: /,'');
         const palabras=FRASES_EN_GIRO_DATOS.find(x=>x.pista===pista).texto.split(' ');
-        for(const palabra of [palabras[1],palabras[0],...palabras.slice(2)]){
-          const b=[...document.querySelectorAll('#fgBanco button')].find(x=>x.textContent===palabra);
-          if(!b)throw Error('Falta ficha '+palabra);
-          b.click();
+        for(let i=0;i<3;i++){
+          for(const palabra of [palabras[1],palabras[0],...palabras.slice(2)]){
+            const b=[...document.querySelectorAll('#fgBanco button')].find(x=>x.textContent===palabra);
+            if(!b)throw Error('Falta ficha '+palabra);
+            b.click();
+          }
+          document.querySelector('#fgComprobar').click();
         }
-        for(let i=0;i<3;i++)document.querySelector('#fgComprobar').click();
       });
-      assert.match(await page.locator('.fg-panel h3').textContent(),/se escapó/);
+      assert.match(await page.locator('.fg-panel h3').textContent(),/Perdiste esta frase/);
+      assert.match(await page.locator('.fg-panel p').textContent(),/Agotaste los 3 intentos/);
+      assert.match(await page.locator('.fg-panel p').textContent(),new RegExp('perdiste '+puntosEnJuego+' puntos'));
+      assert.equal(await page.locator('#fgPuntos').textContent(),'0','la derrota reinicia los puntos de la partida');
+      if(process.env.UI_SCREENSHOTS){await page.waitForTimeout(750);await page.screenshot({path:path.join(process.env.UI_SCREENSHOTS,'frases-derrota-'+viewport.width+'.png')});}
+      await page.evaluate(()=>{FRASES_GIRO_CONFIG.niveles[7]={...FrasesEnGiro.configNivel(7),segundos:.2};});
       await page.locator('.fg-panel .fg-principal').click();
-      assert.equal(await page.locator('#fgNivel').textContent(),'6','un fallo permite otra frase del mismo nivel');
+      assert.equal(await page.locator('#fgNivel').textContent(),'7','un fallo permite otra frase del mismo nivel');
+      await page.locator('.fg-panel h3').filter({hasText:'Perdiste esta frase'}).waitFor();
+      assert.match(await page.locator('.fg-panel p').textContent(),/Se terminó el tiempo/);
       assert.deepEqual(errors,[]);
       console.log('PASS Frases en Giro',viewport.width,'giro, señuelos, error, progresión, persistencia y economía');
       await context.close();
