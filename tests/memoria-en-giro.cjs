@@ -35,8 +35,8 @@ const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg'
       assert(await tarjeta.locator('img').evaluate(img=>img.complete&&img.naturalWidth>0),'carga el logo');
       await tarjeta.click();
       assert.match(await page.locator('.mg-panel h3').textContent(),/Memoria en Giro/);
-      assert.match(await page.locator('.mg-panel p').textContent(),/No gastás monedas ni vidas/);
-      await page.evaluate(()=>{MEMORIA_GIRO_NIVELES[1].vista=.8;MEMORIA_GIRO_NIVELES[1].giro=3;});
+      assert.match(await page.locator('.mg-panel p').textContent(),/no gastan vidas del juego principal/);
+      await page.evaluate(()=>{MEMORIA_GIRO_NIVELES[1].vista=.8;MEMORIA_GIRO_NIVELES[1].vistaGiro=.5;MEMORIA_GIRO_NIVELES[1].giro=3;});
       await page.locator('.mg-panel .mg-principal').click();
       const vista=await page.locator('#mgTablero .mg-carta').evaluateAll(botones=>botones.map(b=>({id:b.dataset.id,simbolo:b.querySelector('.mg-carta-cara').textContent})));
       assert.equal(vista.length,6);assert.equal(new Set(vista.map(x=>x.simbolo)).size,3);
@@ -55,10 +55,18 @@ const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg'
       assert.equal(await page.locator('#mgPares').textContent(),'1/3');
       const fijos=await page.locator('#mgTablero .mg-carta.encontrada').evaluateAll(botones=>botones.map(b=>b.dataset.id));
       assert.equal(fijos.length,2);
-      await page.locator('#mgTablero.girando').waitFor({timeout:10000});
-      await page.waitForFunction(()=>!document.querySelector('#mgTablero')?.classList.contains('girando'));
+      await page.locator('#mgTablero .mg-carta.girando').first().waitFor({timeout:10000});
+      assert.equal(await page.locator('#mgTablero .mg-carta.girando').count(),4,'giran solo las cartas pendientes');
+      assert.equal(await page.locator('#mgTablero .mg-carta.encontrada.girando').count(),0,'los pares resueltos no giran');
+      assert.match(await page.locator('#mgFallas').textContent(),/2 giros con pista/);
+      if(process.env.UI_SCREENSHOTS){await page.waitForTimeout(160);await page.screenshot({path:path.join(process.env.UI_SCREENSHOTS,'memoria-giro-'+motor+'-'+viewport.width+'.png')});}
+      await page.waitForFunction(()=>document.querySelector('#mgGiroTexto')?.textContent.startsWith('Nueva oportunidad'));
+      assert.equal(await page.locator('#mgTablero .mg-carta.abierta').count(),6,'el giro vuelve a mostrar las cartas pendientes');
+      if(process.env.UI_SCREENSHOTS)await page.screenshot({path:path.join(process.env.UI_SCREENSHOTS,'memoria-pista-'+motor+'-'+viewport.width+'.png')});
+      await page.waitForFunction(()=>document.querySelector('#mgGiroTexto')?.textContent.startsWith('Próximo giro'));
+      assert.equal(await page.locator('#mgTablero .mg-carta.abierta').count(),2,'la pista termina y vuelve a tapar las pendientes');
       const despues=await page.locator('#mgTablero .mg-carta').evaluateAll(botones=>botones.map(b=>b.dataset.id));
-      assert(pareja.every(i=>fijos.includes(despues[i])),'los pares encontrados no se mueven');
+      assert(pareja.every(i=>fijos.includes(despues[i])&&despues[i]===vista[i].id),'los pares encontrados no se mueven');
       assert(despues.some((id,i)=>id!==vista[i].id),'los pendientes cambian de posición');
       const simboloPorId=Object.fromEntries(vista.map(x=>[x.id,x.simbolo]));
       await page.evaluate(simbolos=>{
@@ -85,7 +93,7 @@ const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg'
       await page.locator('#extCerrar').click();
       await page.evaluate(()=>{
         const d=JSON.parse(localStorage.getItem('gya_memoria_en_giro'));d.nivelMax=4;localStorage.setItem('gya_memoria_en_giro',JSON.stringify(d));
-        MEMORIA_GIRO_NIVELES[4].vista=.3;MEMORIA_GIRO_NIVELES[4].giro=100;
+        MEMORIA_GIRO_NIVELES[4].vista=.3;MEMORIA_GIRO_NIVELES[4].vistaGiro=.15;MEMORIA_GIRO_NIVELES[4].giro=.3;
       });
       await page.locator('#bExtensiones').click();
       await page.locator('.ext-tarjeta').filter({hasText:'Memoria en Giro'}).click();
@@ -93,6 +101,10 @@ const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg'
       assert.equal(await page.locator('#mgTablero .mg-carta').count(),16,'nivel avanzado tiene cuadrícula de 4 por 4');
       if(process.env.UI_SCREENSHOTS)await page.screenshot({path:path.join(process.env.UI_SCREENSHOTS,'memoria-nivel4-'+viewport.width+'.png')});
       await page.waitForFunction(()=>document.querySelector('#mgGiroTexto')?.textContent.startsWith('Próximo giro'));
+      await page.waitForFunction(()=>document.querySelector('#mgFallas')?.textContent.includes('0 giros con pista'),null,{timeout:10000});
+      await page.waitForFunction(()=>document.querySelector('#mgGiroTexto')?.textContent.startsWith('Sin más giros'));
+      await page.waitForTimeout(500);
+      assert.equal(await page.locator('#mgTablero .mg-carta.girando').count(),0,'sin corazones no hay más giros');
       await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,get:()=>true});document.dispatchEvent(new Event('visibilitychange'));});
       const tiempoPausado=await page.locator('#mgTiempo').textContent();
       await page.waitForTimeout(650);
