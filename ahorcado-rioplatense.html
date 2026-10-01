@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ahorcado Rioplatense</title>
+<style>
+:root{--bg:#160B24;--bar:#2a1646;--tile:#f6f0dc;--ink:#160B24;--ok:#2fbf71;--no:#e5484d;--cur:#e8337a;--y:#ffd23f;--mut:#b9a6d9;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:#fff;font-family:'Arial Black',Impact,system-ui,sans-serif;display:flex;justify-content:center;min-height:100vh}
+.app{width:100%;max-width:440px;padding:12px;text-align:center}
+h1{font-size:clamp(22px,7vw,30px);margin:2px 0 8px}
+.hud{display:flex;gap:6px;margin-bottom:6px}
+.hud div{flex:1;background:var(--bar);border-radius:10px;padding:5px}
+.hud small{display:block;color:var(--mut);font:600 11px system-ui}
+.hud b{font-size:17px}
+.top{display:flex;gap:10px;align-items:center;justify-content:center;margin:18px 0 8px}
+#wrap{position:relative;width:min(42vw,175px);aspect-ratio:1;flex:none}
+#wrap:before{content:"▼";position:absolute;left:50%;top:-17px;transform:translateX(-50%);color:var(--y);font-size:20px;z-index:2}
+#disc{position:absolute;inset:0;border-radius:50%;border:5px solid var(--bar);transition:transform 1.8s cubic-bezier(.17,.67,.2,1)}
+.c{position:absolute;left:50%;top:50%;width:38%;text-align:center;font:700 clamp(9px,2.6vw,11px)/1.15 system-ui;text-shadow:0 1px 3px #000;transition:transform 1.8s cubic-bezier(.17,.67,.2,1)}
+#hub{position:absolute;left:50%;top:50%;width:24%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:var(--bg);border:3px solid var(--tile)}
+#gal{width:min(42vw,175px);flex:none}
+#fig>*{opacity:0;transition:opacity .3s}#fig>.on{opacity:1}#fig.x{stroke:var(--no)}
+#q{background:var(--bar);border-radius:14px;padding:10px 12px;min-height:70px;font:600 16px/1.35 system-ui;text-align:left}
+#q small{display:block;color:var(--y);font:800 13px system-ui;margin-bottom:3px}
+#wd{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:12px 0 4px}
+.w{width:clamp(26px,8vw,36px);height:clamp(36px,11vw,46px);border-bottom:4px solid var(--y);font-size:clamp(20px,6vw,28px);display:grid;place-items:center}
+.w.x{color:var(--no)}
+#fb{height:22px;margin:2px 0;font-size:15px}
+#kb{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;margin-top:6px}
+button{font:inherit;border:0;border-radius:10px;cursor:pointer}
+#kb button{padding:10px 0;font-size:16px;background:var(--tile);color:var(--ink)}
+#kb button.ok{background:var(--ok);color:#fff}#kb button.no{background:var(--no);color:#fff}
+#kb button:disabled{cursor:default}
+button.go{width:100%;margin-top:10px;padding:12px;font-size:16px;background:var(--ok);color:#fff}
+[hidden]{display:none!important}
+button:focus-visible{outline:3px solid var(--y);outline-offset:2px}
+.ov{position:fixed;inset:0;background:rgba(10,4,20,.9);display:flex;align-items:center;justify-content:center;padding:20px}
+.ov.h{display:none}
+.card{background:var(--tile);color:var(--ink);border-radius:16px;padding:22px;max-width:380px}
+.card h2{margin:0 0 8px;font-size:26px}
+.card p{margin:0 0 14px;font:600 16px/1.4 system-ui;text-align:left}
+.card button{background:var(--cur);color:#fff;padding:12px 16px;font-size:16px}
+.ov:not(.h) .card{animation:ruleta .7s cubic-bezier(.2,.8,.3,1)}
+@keyframes ruleta{0%{transform:rotate(-270deg) scale(.2);opacity:0}100%{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){#disc,.c,#fig>*{transition:none}.ov:not(.h) .card{animation:none}}
+</style>
+</head>
+<body>
+<main class="app">
+  <h1>Ahorcado Rioplatense</h1>
+  <div class="hud"><div><small>Palabra</small><b id="pn">0/5</b></div><div><small>Puntos</small><b id="pt">0</b></div><div><small>Mejor</small><b id="bs">0</b></div></div>
+  <div class="top"><div id="wrap"><div id="disc"></div><div id="hub"></div></div>
+  <svg id="gal" viewBox="0 0 120 130" aria-label="Muñeco del ahorcado"><path d="M10 122H80M30 122V10H85V26" stroke="#f6f0dc" stroke-width="4" stroke-linecap="round" fill="none"/><g id="fig" stroke="#ffd23f" stroke-width="4" stroke-linecap="round" fill="none"><circle id="p0" cx="85" cy="36" r="10"/><path id="p1" d="M85 46V80"/><path id="p2" d="M85 54L68 68"/><path id="p3" d="M85 54L102 68"/><path id="p4" d="M85 80L70 102"/><path id="p5" d="M85 80L100 102"/></g></svg></div>
+  <div id="q"></div>
+  <div id="wd"></div>
+  <div id="fb"></div>
+  <div id="kb"></div>
+  <button class="go" id="nx" hidden>Siguiente palabra ▶</button>
+</main>
+<div class="ov" id="ov"><div class="card"><h2 id="ot">Ahorcado Rioplatense</h2><p id="op">Adiviná la palabra rioplatense letra por letra. La ruleta gira y la categoría donde cae es la de la palabra. Tenés 6 errores: cada uno dibuja una parte del muñeco, y si se completa, perdiste la palabra. Son 5 palabras, todas difíciles y sin pistas: solo sabés la categoría y cuántas letras tiene. Cuantos menos errores, más puntos.</p><button id="ob">Jugar</button></div></div>
+<script>
+const CFG={palabras:5,vidas:6,ptsPalabra:150,ptsVida:20,giroMs:1800,pausaMs:500};
+const CATS=[['Comida','🍖','#e8337a'],['Carnaval','🥁','#7c4dff'],['Fútbol','⚽','#2fbf71'],['Costumbres','🧉','#e8851f'],['Lunfardo','💬','#2b8cd6'],['Ciudades','🏙️','#c9a100']];
+// Formato: categoria|PALABRA. Sin pistas, sin tildes ni Ñ/W/X. Todas difíciles. Muestra: ampliar.
+const DATA=`Comida|FAINA
+Comida|CHAJA
+Comida|CHIMICHURRI
+Comida|MONDONGO
+Comida|PASCUALINA
+Carnaval|REPIQUE
+Carnaval|CUPLE
+Carnaval|GRAMILLERO
+Carnaval|ESCOBERO
+Carnaval|ESTANDARTE
+Fútbol|ZAGUERO
+Fútbol|DESCENSO
+Fútbol|CHILENA
+Fútbol|MARACANAZO
+Fútbol|GAMBETA
+Costumbres|SOBREMESA
+Costumbres|QUINCHO
+Costumbres|CEBADOR
+Costumbres|TERTULIA
+Lunfardo|MANYAR
+Lunfardo|CHAMUYO
+Lunfardo|YIRAR
+Lunfardo|FIACA
+Lunfardo|PIOLA
+Lunfardo|MORFI
+Ciudades|TACUAREMBO
+Ciudades|CHUY
+Ciudades|FRAYBENTOS
+Ciudades|PIRIAPOLIS
+Ciudades|PAYSANDU
+Ciudades|TREINTAYTRES`;
+const $=s=>document.querySelector(s),RM=matchMedia('(prefers-reduced-motion:reduce)').matches,N=CATS.length,wrap=$('#wrap'),disc=$('#disc');
+const norm=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z]/g,'');
+const D=DATA.split('\n').map(l=>{const[c,w]=l.split('|');return{c:CATS.findIndex(x=>x[0]===c),w}});
+const LET="ABCDEFGHIJKLMNOPQRSTUVYZ";
+let word=null,guessed=new Set(),errs=0,score=0,n=0,used=[],best=0,lock=true,playing=false,W=0,els=[];
+try{best=+localStorage.getItem('gya_ahorcado_best')||0}catch(e){}
+$('#bs').textContent=best;
+disc.style.background='conic-gradient('+CATS.map((c,i)=>`${c[2]} ${i*360/N}deg ${(i+1)*360/N}deg`).join(',')+')';
+CATS.forEach(([t,e])=>{const d=document.createElement('div');d.className='c';d.innerHTML=e+'<br>'+t;disc.appendChild(d);els.push(d)});
+function place(){const R=wrap.clientWidth*.31;els.forEach((d,i)=>{const a=i*360/N+180/N;d.style.transform=`translate(-50%,-50%) rotate(${a}deg) translateY(${-R}px) rotate(${-a}deg) rotate(${-W}deg)`});disc.style.transform=`rotate(${W}deg)`}
+addEventListener('resize',place);
+function spin(i,cb){const a=i*360/N+180/N,need=((-a-W)%360+360)%360;W+=RM?need:1080+need;place();setTimeout(cb,RM?30:CFG.giroMs)}
+$('#kb').innerHTML=LET.split('').map(c=>`<button data-l="${c}">${c}</button>`).join('');
+function draw(reveal){$('#wd').innerHTML=word.w.split('').map(c=>{const s=guessed.has(c);return `<div class="w${!s&&reveal?' x':''}">${s||reveal?c:''}</div>`}).join('')}
+function hud(){$('#pn').textContent=n+'/'+CFG.palabras;$('#pt').textContent=score}
+function startGame(){score=0;n=0;used=[];playing=true;$('#ov').classList.add('h');nextWord()}
+function nextWord(){
+  n++;errs=0;guessed=new Set();lock=true;$('#nx').hidden=true;$('#fb').textContent='';
+  document.querySelectorAll('#fig>*').forEach(e=>e.classList.remove('on'));$('#fig').classList.remove('x');
+  document.querySelectorAll('#kb button').forEach(b=>{b.className='';b.disabled=false});
+  $('#wd').innerHTML='';$('#q').innerHTML='<small>Girando...</small>';hud();
+  const pl=D.filter(x=>!used.includes(x));
+  const cats=[...new Set(pl.map(x=>x.c))],ci=cats[Math.random()*cats.length|0],pool=pl.filter(x=>x.c===ci);
+  word=pool[Math.random()*pool.length|0];used.push(word);
+  spin(ci,()=>{$('#q').innerHTML=`<small>Categoría</small>${CATS[ci][1]} ${CATS[ci][0]} · ${word.w.length} letras`;draw(false);lock=false});
+}
+function err(){$('#p'+errs).classList.add('on');errs++;if(errs>=CFG.vidas)end(false)}
+function guess(L){
+  if(!playing||lock||guessed.has(L))return;guessed.add(L);
+  const b=document.querySelector(`#kb [data-l="${L}"]`);b.disabled=true;
+  if(word.w.includes(L)){b.className='ok';draw(false);if(word.w.split('').every(c=>guessed.has(c)))end(true)}
+  else{b.className='no';err()}
+}
+function end(win){
+  lock=true;const f=$('#fb');
+  if(win){const p=CFG.ptsPalabra+CFG.ptsVida*(CFG.vidas-errs);score+=p;f.textContent='¡Bien! +'+p+' 🧉';f.style.color='#2fbf71'}
+  else{$('#fig').classList.add('x');draw(true);f.textContent='Era '+word.w;f.style.color='#ff8a8a'}
+  hud();
+  if(n<CFG.palabras)setTimeout(()=>{$('#nx').hidden=false},CFG.pausaMs);else setTimeout(finish,1500);
+}
+function finish(){
+  playing=false;if(score>best){best=score;$('#bs').textContent=best;try{localStorage.setItem('gya_ahorcado_best',best)}catch(e){}}
+  $('#ot').textContent='¡Se terminó!';$('#op').innerHTML=`Puntos: <b>${score}</b><br>Mejor: <b>${best}</b>`;$('#ob').textContent='Jugar de nuevo';$('#ov').classList.remove('h');
+}
+$('#kb').addEventListener('click',e=>{const l=e.target.dataset&&e.target.dataset.l;if(l)guess(l)});
+addEventListener('keydown',e=>{if(e.ctrlKey||e.metaKey||e.altKey)return;const c=norm(e.key);if(c.length===1&&LET.includes(c))guess(c)});
+$('#nx').addEventListener('click',nextWord);$('#ob').addEventListener('click',startGame);
+place();hud();
+</script>
+</body>
+</html>
