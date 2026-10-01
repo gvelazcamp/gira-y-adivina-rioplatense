@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>El Rosco Rioplatense</title>
+<style>
+:root{--bg:#160B24;--bar:#2a1646;--tile:#f6f0dc;--ink:#160B24;--ok:#2fbf71;--no:#e5484d;--cur:#e8337a;--y:#ffd23f;--mut:#b9a6d9;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:#fff;font-family:'Arial Black',Impact,system-ui,sans-serif;display:flex;justify-content:center;min-height:100vh}
+.app{width:100%;max-width:440px;padding:12px;text-align:center}
+h1{font-size:clamp(22px,7vw,30px);margin:2px 0 8px}
+.hud{display:flex;gap:6px;margin-bottom:8px}
+.hud div{flex:1;background:var(--bar);border-radius:10px;padding:5px}
+.hud small{display:block;color:var(--mut);font:600 11px system-ui}
+.hud b{font-size:18px}
+.bar{height:8px;background:var(--bar);border-radius:6px;overflow:hidden;margin-bottom:6px}
+.bar i{display:block;height:100%;width:100%;background:var(--y)}
+#wrap{position:relative;width:min(80vw,330px);aspect-ratio:1;margin:12px auto 8px}
+#wrap:before{content:"▼";position:absolute;left:50%;top:-14px;transform:translateX(-50%);color:var(--y);font-size:18px;z-index:2}
+#disc{position:absolute;inset:0;border-radius:50%;background:var(--bar);transition:transform 1.5s cubic-bezier(.17,.67,.2,1)}
+.l{position:absolute;left:50%;top:50%;width:9.4%;aspect-ratio:1;border-radius:50%;background:var(--tile);color:var(--ink);display:grid;place-items:center;font-size:clamp(11px,3.4vw,16px);transition:transform 1.5s cubic-bezier(.17,.67,.2,1),background .3s}
+.l.ok{background:var(--ok);color:#fff}.l.no{background:var(--no);color:#fff}.l.cur{background:var(--cur);color:#fff}
+#big{position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(60px,22vw,100px);color:var(--y);pointer-events:none}
+#def{background:var(--bar);border-radius:14px;padding:10px 12px;min-height:74px;font:600 16px/1.35 system-ui;text-align:left}
+#def small{display:block;color:var(--y);font:800 13px system-ui;margin-bottom:3px}
+#fb{height:24px;margin:6px 0 2px;font-size:15px}
+.row{display:flex;gap:8px}
+input{flex:1;min-width:0;font:700 20px system-ui;text-transform:uppercase;padding:12px;border-radius:10px;border:2px solid var(--mut);background:var(--tile);color:var(--ink)}
+button{font:inherit;background:var(--cur);color:#fff;border:0;border-radius:10px;padding:12px 16px;font-size:16px;cursor:pointer}
+button.s{background:var(--bar);color:var(--mut);width:100%;margin-top:8px;border:1px solid var(--mut)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--y);outline-offset:2px}
+.ov{position:fixed;inset:0;background:rgba(10,4,20,.9);display:flex;align-items:center;justify-content:center;padding:20px}
+.ov.h{display:none}
+.card{background:var(--tile);color:var(--ink);border-radius:16px;padding:22px;max-width:380px}
+.card h2{margin:0 0 8px;font-size:26px}
+.card p{margin:0 0 14px;font:600 16px/1.4 system-ui;text-align:left}
+.ov:not(.h) .card{animation:ruleta .7s cubic-bezier(.2,.8,.3,1)}
+@keyframes ruleta{0%{transform:rotate(-270deg) scale(.2);opacity:0}100%{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){#disc,.l{transition:none}.ov:not(.h) .card{animation:none}}
+</style>
+</head>
+<body>
+<main class="app">
+  <h1>El Rosco Rioplatense</h1>
+  <div class="hud"><div><small>Aciertos</small><b id="ac">0</b></div><div><small>Errores</small><b id="er">0</b></div><div><small>Tiempo</small><b id="tt">150</b></div><div><small>Mejor</small><b id="bs">0</b></div></div>
+  <div class="bar"><i id="tb"></i></div>
+  <div id="wrap"><div id="disc"></div><div id="big"></div></div>
+  <div id="def"></div>
+  <div id="fb"></div>
+  <div class="row"><input id="in" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Escribí la palabra"><button id="en">Enviar</button></div>
+  <button class="s" id="pa">Cambiar letra</button>
+</main>
+<div class="ov" id="ov"><div class="card"><h2 id="ot">El Rosco Rioplatense</h2><p id="op">La rueda gira y cae en una letra al azar. Leé la definición, escribí la palabra y mandala. Después la rueda gira sola a otra letra. Si no sabés, tocá "Cambiar letra" y esa queda para más tarde. Tenés 150 segundos para resolver las 24.</p><button id="ob">Jugar</button></div></div>
+<script>
+const ROSCO_CONFIG={tiempo:150,puntosAcierto:100,bonoSegundo:2,giroMs:1500,pausaMs:800};
+const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
+const DICC=`A|ASADO|Comida de domingo: carne cocinada a las brasas.
+A|ALFAJOR|Dulce de dos tapas con dulce de leche en el medio.
+B|BOMBILLA|Caño de metal con el que se toma el mate.
+B|BIZCOCHO|Masa horneada que acompaña al mate en la merienda.
+C|CANDOMBE|Ritmo de tambores que se baila y desfila en Montevideo.
+C|CHIVITO|Sándwich uruguayo con bife, jamón, huevo y más.
+D|DURAZNO|Fruta de verano, y también nombre de un departamento uruguayo.
+E|EMPANADA|Masa rellena y horneada, típica de las reuniones.
+E|ESQUINA|Lugar donde se cruzan dos calles.
+F|FERNET|Bebida amarga que se toma con cola.
+F|FUTBOL|El deporte más popular del Río de la Plata.
+G|GAUCHO|Jinete de la llanura rioplatense.
+G|GUITARRA|Instrumento de seis cuerdas que acompaña al cantor.
+H|HELADO|Postre frío que se compra en cucurucho.
+H|HARINA|Polvo de trigo con el que se hace el pan.
+I|ISLA|Tierra rodeada de agua por todos lados.
+J|JAMON|Fiambre rosado, infaltable en el chivito.
+K|KIOSCO|Negocio chiquito de barrio donde se compran golosinas.
+L|LLAMADAS|Desfile de comparsas de candombe que recorre Montevideo.
+L|LECHE|Líquido blanco que da la vaca.
+M|MATE|Infusión de yerba que se toma con bombilla.
+M|MURGA|Grupo que canta y critica en el Carnaval uruguayo.
+N|NOQUIS|Pasta de papa que se come el día 29.
+N|NARANJA|Fruta cítrica, del mismo color que su nombre.
+O|OMBU|Árbol enorme de la pampa, símbolo del paisaje rioplatense.
+O|OLLA|Recipiente de cocina para hervir guisos.
+P|PUNTA|Balneario más famoso de Maldonado, con una escultura de una mano.
+P|PAYADOR|Cantor que improvisa versos con su guitarra.
+Q|QUESO|Producto lácteo que se funde en la pizza.
+R|ROCHA|Departamento uruguayo con playas como La Paloma y Cabo Polonio.
+R|RAMBLA|Avenida costera de Montevideo donde se toma mate.
+S|SALTO|Ciudad uruguaya sobre el río Uruguay, famosa por sus termas.
+S|SOL|Estrella que ilumina el día; está en la bandera uruguaya.
+T|TANGO|Música y baile que nació en el Río de la Plata.
+T|TAMBOR|Instrumento de percusión del candombe.
+U|URUGUAY|País rioplatense donde está Montevideo.
+V|VINO|Bebida de uva fermentada.
+V|VEREDA|Camino al costado de la calle para caminar.
+Y|YERBA|Hojas secas con las que se prepara el mate.
+Z|ZAPALLO|Hortaliza naranja grande, ideal para el puré.`.split('\n').map(x=>{const[l,w,d]=x.split('|');return{l,w,d}});
+const LETRAS="ABCDEFGHIJKLMNOPQRSTUVYZ",N=LETRAS.length,$=s=>document.querySelector(s),wrap=$('#wrap'),disc=$('#disc');
+const norm=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z]/g,'');
+let items=[],st=[],cur=-1,W=0,lock=true,playing=false,tl=0,best=0,last=performance.now(),els=[];
+try{best=+localStorage.getItem('rosco-best')||0}catch(e){}
+$('#bs').textContent=best;
+LETRAS.split('').forEach(c=>{const d=document.createElement('div');d.className='l';d.textContent=c;disc.appendChild(d);els.push(d)});
+function place(){const R=wrap.clientWidth*0.4;els.forEach((d,i)=>{const a=i*360/N;d.style.transform=`translate(-50%,-50%) rotate(${a}deg) translateY(${-R}px) rotate(${-a}deg) rotate(${-W}deg)`});disc.style.transform=`rotate(${W}deg)`}
+addEventListener('resize',place);
+const pend=()=>st.map((s,i)=>s==='p'?i:-1).filter(i=>i>=0);
+function hud(){const ok=st.filter(s=>s==='ok').length,no=st.filter(s=>s==='no').length;$('#ac').textContent=ok;$('#er').textContent=no}
+function spinTo(i){
+  lock=true;if(cur>=0)els[cur].classList.remove('cur');cur=-1;$('#big').textContent='';$('#def').innerHTML='<small>Girando...</small>';$('#fb').textContent='';
+  const need=((-i*360/N-W)%360+360)%360;W+=RM?need:360*3+need;place();
+  setTimeout(()=>{if(!playing)return;cur=i;els[i].classList.add('cur');$('#big').textContent=LETRAS[i];
+    $('#def').innerHTML=`<small>Empieza con ${LETRAS[i]}</small>${items[i].d}`;lock=false;$('#in').focus()},RM?30:ROSCO_CONFIG.giroMs);
+}
+function next(){const p=pend();if(!p.length){end();return}const o=p.length>1?p.filter(i=>i!==cur):p;spinTo(o[Math.random()*o.length|0])}
+function startGame(){
+  items=LETRAS.split('').map(L=>{const o=DICC.filter(e=>e.l===L);return o[Math.random()*o.length|0]});
+  st=Array(N).fill('p');els.forEach(e=>e.className='l');cur=-1;tl=ROSCO_CONFIG.tiempo;playing=true;hud();
+  $('#in').value='';$('#ov').classList.add('h');next();
+}
+function send(){
+  if(!playing||lock||cur<0)return;const a=norm($('#in').value);if(!a)return;
+  lock=true;const ok=a===items[cur].w;st[cur]=ok?'ok':'no';els[cur].classList.remove('cur');els[cur].classList.add(ok?'ok':'no');
+  $('#fb').textContent=ok?'¡Bien! 🧉':'Era '+items[cur].w;$('#fb').style.color=ok?'#2fbf71':'#ff8a8a';
+  $('#in').value='';hud();setTimeout(()=>{if(playing)next()},ROSCO_CONFIG.pausaMs);
+}
+function pasar(){if(!playing||lock||cur<0)return;$('#in').value='';next()}
+function end(){
+  playing=false;lock=true;const ok=st.filter(s=>s==='ok').length,no=st.filter(s=>s==='no').length,fal=st.filter(s=>s==='p').length;
+  const sc=ok*ROSCO_CONFIG.puntosAcierto+(fal===0?Math.ceil(tl)*ROSCO_CONFIG.bonoSegundo:0);
+  if(sc>best){best=sc;$('#bs').textContent=best;try{localStorage.setItem('rosco-best',best)}catch(e){}}
+  $('#ot').textContent=fal?'Se acabó el tiempo':'¡Rosco completo!';
+  $('#op').innerHTML=`Aciertos: <b>${ok}</b> · Errores: <b>${no}</b> · Sin responder: <b>${fal}</b><br>Puntos: <b>${sc}</b>`;
+  $('#ob').textContent='Jugar de nuevo';$('#ov').classList.remove('h');
+}
+setInterval(()=>{const n=performance.now(),dt=(n-last)/1000;last=n;if(!playing)return;
+  if(!(lock&&cur<0))tl-=dt;$('#tt').textContent=Math.max(0,Math.ceil(tl));$('#tb').style.width=Math.max(0,tl/ROSCO_CONFIG.tiempo*100)+'%';
+  if(tl<=0)end()},100);
+$('#en').addEventListener('click',send);$('#pa').addEventListener('click',pasar);
+$('#in').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();send()}});
+$('#ob').addEventListener('click',startGame);
+place();
+</script>
+</body>
+</html>
