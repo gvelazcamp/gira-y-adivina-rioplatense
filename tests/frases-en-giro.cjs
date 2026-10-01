@@ -16,9 +16,11 @@ async function preparar(page,base){
   await page.goto(base,{waitUntil:'load'});
   await page.evaluate(()=>{document.querySelector('#splash')?.remove();document.querySelectorAll('.capa.ver').forEach(el=>el.classList.remove('ver'));});
   await page.locator('#bExtensiones').click();
-  assert.equal(await page.locator('.ext-tarjeta').count(),4);
+  assert.equal(await page.locator('.ext-tarjeta').count(),5);
+  assert.match(await page.locator('.ext-tarjeta').last().textContent(),/Memoria en Giro[\s\S]*Próximamente/);
+  assert(await page.locator('.ext-tarjeta').last().isDisabled());
   if(process.env.UI_SCREENSHOTS){fs.mkdirSync(process.env.UI_SCREENSHOTS,{recursive:true});await page.screenshot({path:path.join(process.env.UI_SCREENSHOTS,'frases-lobby-'+page.viewportSize().width+'.png')});}
-  await page.locator('.ext-tarjeta').last().click();
+  await page.locator('.ext-tarjeta').filter({hasText:'Frases en Giro'}).click();
 }
 
 async function fraseActual(page){
@@ -138,8 +140,8 @@ async function resolver(page,malPrimero=false){
       assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'sin desborde horizontal');
       if(process.env.UI_SCREENSHOTS){fs.mkdirSync(process.env.UI_SCREENSHOTS,{recursive:true});await page.locator('.fg-panel .fg-principal').click();await page.screenshot({path:path.join(process.env.UI_SCREENSHOTS,'frases-'+viewport.width+'.png'),fullPage:true});}
       await page.locator('#extAtras').click();
-      assert.match(await page.locator('.ext-tarjeta').last().textContent(),new RegExp(String(almacen.mejor)));
-      await page.locator('.ext-tarjeta').last().click();
+      assert.match(await page.locator('.ext-tarjeta').filter({hasText:'Frases en Giro'}).textContent(),new RegExp(String(almacen.mejor)));
+      await page.locator('.ext-tarjeta').filter({hasText:'Frases en Giro'}).click();
       assert.match(await page.locator('.fg-panel .fg-principal').textContent(),/nivel 6/);
       await page.locator('.fg-panel .fg-principal').click();
       await resolver(page);

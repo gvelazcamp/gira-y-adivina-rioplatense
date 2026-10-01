@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Memoria en Giro">
+  <defs>
+    <linearGradient id="fondo" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#542579"/><stop offset="1" stop-color="#160B24"/></linearGradient>
+    <linearGradient id="dorso" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FF5CA9"/><stop offset="1" stop-color="#A91575"/></linearGradient>
+    <linearGradient id="cara" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFF9E9"/><stop offset="1" stop-color="#EADCC8"/></linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#fondo)"/>
+  <path d="M104 84a210 210 0 0 1 285-9" fill="none" stroke="#37D6C0" stroke-width="15" stroke-linecap="round"/>
+  <path d="m378 53 30 29-42 7" fill="none" stroke="#37D6C0" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M407 427a210 210 0 0 1-284 8" fill="none" stroke="#F5B301" stroke-width="15" stroke-linecap="round"/>
+  <path d="m134 455-30-29 42-7" fill="none" stroke="#F5B301" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+  <g stroke-width="8">
+    <g transform="rotate(-7 161 185)"><rect x="93" y="113" width="136" height="145" rx="25" fill="url(#cara)" stroke="#37D6C0"/><path d="m161 137 12 28 31 3-23 19 8 29-28-16-28 16 8-29-23-19 31-3z" fill="#F5B301" stroke="#D98C10" stroke-width="4"/></g>
+    <g transform="rotate(7 351 185)"><rect x="283" y="113" width="136" height="145" rx="25" fill="url(#dorso)" stroke="#FFC0DF"/><circle cx="351" cy="185" r="34" fill="none" stroke="#FFF1F7" stroke-width="8"/><path d="M351 160v50m-25-25h50" stroke="#FFF1F7" stroke-width="9" stroke-linecap="round"/></g>
+    <g transform="rotate(7 161 345)"><rect x="93" y="273" width="136" height="145" rx="25" fill="url(#dorso)" stroke="#FFC0DF"/><circle cx="161" cy="345" r="34" fill="none" stroke="#FFF1F7" stroke-width="8"/><path d="M161 320v50m-25-25h50" stroke="#FFF1F7" stroke-width="9" stroke-linecap="round"/></g>
+    <g transform="rotate(-7 351 345)"><rect x="283" y="273" width="136" height="145" rx="25" fill="url(#cara)" stroke="#37D6C0"/><path d="m351 297 12 28 31 3-23 19 8 29-28-16-28 16 8-29-23-19 31-3z" fill="#F5B301" stroke="#D98C10" stroke-width="4"/></g>
+  </g>
+  <circle cx="256" cy="265" r="26" fill="#160B24" stroke="#F5B301" stroke-width="8"/>
+  <path d="M247 264h18m-9-9v18" stroke="#F6EFE2" stroke-width="7" stroke-linecap="round"/>
+</svg>
