@@ -1,3 +1,28 @@
+/* Lectura en voz alta de las pistas/preguntas, compartida entre los
+   juegos de palabras. Usa la voz nativa del celular (Web Speech API):
+   no hay backend ni archivos de audio que mantener. Intenta elegir una
+   voz masculina en español por nombre (no todos los motores exponen el
+   género de forma confiable) y, aparte, baja un poco el tono para que
+   suene más grave de entrada, pase lo que pase con la voz elegida. */
+function obtenerVozMasculina(){
+  if(!("speechSynthesis" in window))return null;
+  const voces=speechSynthesis.getVoices();if(!voces.length)return null;
+  const es=voces.filter(v=>/^es/i.test(v.lang));
+  const pool=es.length?es:voces;
+  const masculina=pool.find(v=>/male|hombre|var[oó]n|jorge|diego|carlos|pablo|juan|miguel|enrique|pedro|andr[eé]s/i.test(v.name));
+  return masculina||pool[0]||null;
+}
+function hablar(texto){
+  try{
+    if(!("speechSynthesis" in window)||!texto)return;
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(texto);
+    u.lang="es-UY";u.pitch=.8;u.rate=.97;
+    const voz=obtenerVozMasculina();if(voz)u.voice=voz;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+window.hablar=hablar;
 /* Catálogo de minijuegos. Cada entrada habilitada aporta su función abrir. */
 const EXTENSIONES=[
   {id:"sopa-fugaz",nombre:"Sopa Fugaz",descripcion:"Buscá las palabras antes de que se muden",icono:"logo-sopa-fugaz.svg",estado:"disponible",abrir:contenedor=>SopaFugaz.abrir(contenedor),record:()=>SopaFugaz.mejorPuntaje()+" puntos"},

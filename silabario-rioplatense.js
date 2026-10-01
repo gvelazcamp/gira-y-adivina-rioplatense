@@ -140,6 +140,7 @@ const SilabarioRioplatense=(()=>{
     fase="jugando";elegidas=[];tiempoPregunta=0;bloqueado=true;mensaje("");
     $("#sbPista").textContent=items[actual].pista;
     $("#sbSilabasCant").textContent="("+items[actual].silabas.length+(items[actual].silabas.length===1?" sílaba)":" sílabas)");
+    if(typeof hablar==="function")hablar(items[actual].pista);
     renderRespuesta(items[actual]);hud();
     reordenar(()=>{bloqueado=false;hud();});
   }
@@ -186,15 +187,17 @@ const SilabarioRioplatense=(()=>{
   function abrir(contenedor){
     salir();datos=cargar();nivel=datos.nivelMax;config=configNivel(nivel);fase="inicio";
     raiz=document.createElement("div");raiz.className="sb-game";
-    raiz.innerHTML='<div class="sb-titulo"><img src="logo-silabario-rioplatense.svg" alt=""><div><h2>Silabario Rioplatense</h2><p>Un tablero con todas las sílabas. Armá cada respuesta con las que estén.</p></div></div><div id="sbJuego" hidden><div class="sf-hud"><div><small>Nivel</small><b id="sbNivel"></b></div><div><small>Aciertos</small><b id="sbAciertos"></b></div><div><small>Errores</small><b id="sbErrores"></b></div><div><small>Tiempo</small><b id="sbTiempo"></b></div></div><div class="sf-bar"><i id="sbBarra"></i></div><div class="sb-pista" role="status" aria-live="polite"><p id="sbPista"></p><small id="sbSilabasCant"></small></div><div class="sb-respuesta" id="sbRespuesta"></div><p id="sbMensaje" class="sb-mensaje" role="status"></p><div class="sb-tablero" id="sbTablero"></div><div class="sf-acciones"><button type="button" id="sbBorrar">⌫ Borrar</button><button type="button" id="sbPasar">Pasar ↻</button></div></div><div class="sf-panel-capa" id="sbPanel" hidden></div>';
+    raiz.innerHTML='<div class="sb-titulo"><img src="logo-silabario-rioplatense.svg" alt=""><div><h2>Silabario Rioplatense</h2><p>Un tablero con todas las sílabas. Armá cada respuesta con las que estén.</p></div></div><div id="sbJuego" hidden><div class="sf-hud"><div><small>Nivel</small><b id="sbNivel"></b></div><div><small>Aciertos</small><b id="sbAciertos"></b></div><div><small>Errores</small><b id="sbErrores"></b></div><div><small>Tiempo</small><b id="sbTiempo"></b></div></div><div class="sf-bar"><i id="sbBarra"></i></div><div class="sb-pista" role="status" aria-live="polite"><div class="voz-fila"><p id="sbPista"></p><button type="button" class="voz-btn" id="sbEscuchar" aria-label="Escuchar la pista">🔊</button></div><small id="sbSilabasCant"></small></div><div class="sb-respuesta" id="sbRespuesta"></div><p id="sbMensaje" class="sb-mensaje" role="status"></p><div class="sb-tablero" id="sbTablero"></div><div class="sf-acciones"><button type="button" id="sbBorrar">⌫ Borrar</button><button type="button" id="sbPasar">Pasar ↻</button></div></div><div class="sf-panel-capa" id="sbPanel" hidden></div>';
     contenedor.appendChild(raiz);
     $("#sbBorrar").onclick=borrar;$("#sbPasar").onclick=pasar;
+    $("#sbEscuchar").onclick=()=>{if(actual>=0&&typeof hablar==="function")hablar(items[actual].pista);};
     document.addEventListener("visibilitychange",visibilidad);ultimo=performance.now();intervalo=setInterval(tic,SILABARIO_CONFIG.ticMs);
     const acciones=[["Jugar nivel "+nivel,iniciar]];if(nivel>1)acciones.push(["Practicar desde el nivel 1",()=>{nivel=1;iniciar();}]);
     panel("Silabario Rioplatense","Un tablero de "+config.columnas+"×"+config.columnas+" con todas las sílabas de las respuestas de este nivel. Tocá en orden las sílabas que arman cada respuesta, estén donde estén — las que ya usaste quedan marcadas. El tablero se reordena entre pregunta y pregunta, y también si te quedás trabado mucho rato. Si no sabés, tocá Pasar. Respondé bien la mayoría para avanzar de nivel. Jugás gratis, sin gastar vidas ni monedas. Mejor: "+datos.mejor+" puntos.",acciones);
   }
   function salir(){
     clearInterval(intervalo);intervalo=null;document.removeEventListener("visibilitychange",visibilidad);
+    if("speechSynthesis" in window)speechSynthesis.cancel();
     raiz=null;fase="inicio";items=[];estados=[];fichas=[];elegidas=[];
   }
   return{abrir,salir,configNivel,mejorPuntaje:()=>cargar().mejor};
