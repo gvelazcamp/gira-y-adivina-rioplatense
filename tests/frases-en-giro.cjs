@@ -79,6 +79,20 @@ async function resolver(page,malPrimero=false){
       }
       const economiaAntes=await page.evaluate(()=>({monedas:meta.monedas,vidas:meta.vidas,tickets:meta.tickets}));
       assert.match(await page.locator('.fg-panel h3').textContent(),/Frases en Giro/);
+      await page.evaluate(()=>{
+        window.__efectosFrases=[];
+        window.__notasAcierto=[];
+        const bipOriginal=window.bip;
+        window.bip=function(f,...rest){
+          if(f===720&&sonidoPermitido())window.__notasAcierto.push(f);
+          return bipOriginal(f,...rest);
+        };
+        const reproducir=HTMLMediaElement.prototype.play;
+        HTMLMediaElement.prototype.play=function(){
+          if(this.src.includes('festejo-frase.mp3'))window.__efectosFrases.push(this.src);
+          return reproducir.call(this);
+        };
+      });
       await page.evaluate(()=>{FRASES_GIRO_CONFIG.niveles[1].giro=1.2;FRASES_GIRO_CONFIG.giroAnimacionMs=180;window.fgGiros=0;new MutationObserver(()=>{if(document.querySelector('#fgBanco')?.classList.contains('gira'))window.fgGiros++;}).observe(document.querySelector('#fgBanco'),{attributes:true,attributeFilter:['class']});});
       await page.locator('.fg-panel .fg-principal').click();
       const primera=await fraseActual(page);
@@ -88,6 +102,8 @@ async function resolver(page,malPrimero=false){
       await page.waitForFunction(()=>!document.querySelector('#fgBanco').classList.contains('gira'));
       await resolver(page);
       assert.match(await page.locator('.fg-panel h3').textContent(),/Frase armada/);
+      assert.equal(await page.evaluate(()=>window.__efectosFrases.length),1,'una frase correcta reproduce su festejo');
+      assert.equal(await page.evaluate(()=>window.__notasAcierto.length),1,'cada acierto inicia una señal corta');
       assert.equal(await page.locator('#fgNivel').textContent(),'1','el tablero terminado conserva el nivel jugado');
       await page.locator('.fg-panel .fg-principal').click();
       const segunda=await fraseActual(page);
@@ -97,12 +113,21 @@ async function resolver(page,malPrimero=false){
       assert.equal(error.intentos,'2');
       assert(error.marcas.some(c=>c.includes('mal')),'marca las posiciones incorrectas');
       assert.match(await page.locator('.fg-panel h3').textContent(),/Frase armada/);
+      const efectosAntesDeSilenciar=await page.evaluate(()=>window.__efectosFrases.length);
+      assert(efectosAntesDeSilenciar>=1,'una frase correcta mantiene el efecto de festejo disponible');
+      assert.equal(await page.evaluate(()=>window.__notasAcierto.length),2,'la señal corta suena aunque el festejo anterior continúe');
       for(let n=3;n<=5;n++){
         await page.locator('.fg-panel .fg-principal').click();
         const actual=await fraseActual(page);
         assert.equal(await page.locator('#fgBanco button').count(),actual.palabras.length+actual.config.senuelos);
+        if(n===3)await page.evaluate(()=>{musicaOn=false;silenciarTodo();});
         await resolver(page);
         assert.match(await page.locator('.fg-panel h3').textContent(),/Frase armada/);
+        if(n===3){
+          assert.equal(await page.evaluate(()=>window.__efectosFrases.length),efectosAntesDeSilenciar,'con el sonido apagado no reproduce el festejo');
+          assert.equal(await page.evaluate(()=>window.__notasAcierto.length),2,'con el sonido apagado no suena la señal corta');
+          await page.evaluate(()=>{musicaOn=true;});
+        }
       }
       const almacen=await page.evaluate(()=>JSON.parse(localStorage.getItem('gya_frases_en_giro')));
       assert.equal(almacen.nivelMax,6);assert.equal(almacen.ganadas,5);assert(almacen.mejor>0);

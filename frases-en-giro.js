@@ -42,6 +42,13 @@ const FrasesEnGiro=(()=>{
     return (libres.length?libres:posibles)[azar((libres.length?libres:posibles).length)];
   }
   function sonido(f=750){if(typeof bip==="function")bip(f,.075,"sine",.05);}
+  function sonidoAcierto(){
+    if(typeof bip==="function"){
+      bip(720,.13,"triangle",.08);
+      setTimeout(()=>{if(raiz)bip(980,.22,"sine",.09);},120);
+    }
+    if(typeof sonarSFX==="function")sonarSFX("festejo");
+  }
   function hud(){
     if(!raiz)return;
     raiz.querySelector("#fgNivel").textContent=nivel;
@@ -124,7 +131,8 @@ const FrasesEnGiro=(()=>{
     jugando=false;girando=false;token++;clearTimeout(giroTimer);raiz.querySelector("#fgBanco").classList.remove("gira");
     if(gano){
       racha++;puntos+=FRASES_GIRO_CONFIG.puntosBase+Math.ceil(tiempoMs/1000)*FRASES_GIRO_CONFIG.puntosPorSegundo+racha*FRASES_GIRO_CONFIG.puntosPorRacha;
-      datos.ganadas++;datos.nivelMax=Math.max(datos.nivelMax,nivel+1);sonido(1000);
+      datos.ganadas++;datos.nivelMax=Math.max(datos.nivelMax,nivel+1);
+      sonidoAcierto();
       if(typeof vibrar==="function")vibrar([30,40,55]);
     }else{racha=0;sonido(260);if(typeof vibrar==="function")vibrar(85);}
     datos.mejor=Math.max(datos.mejor,puntos);guardar();dibujar();
