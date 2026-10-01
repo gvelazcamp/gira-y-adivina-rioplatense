@@ -30,5 +30,31 @@ const SILABARIO_DATOS=[
   ["Cosecha de la uva, destinada entre otras cosas a hacer vino.",["VEN","DI","MIA"],"costumbres",3],
   ["Canto del truco que apuesta a los puntos de la mano.",["EN","VI","DO"],"costumbres",3],
   ["Instrumento de fuelle que acompaña al tango.",["BAN","DO","NE","ÓN"],"costumbres",3],
-  ["Capital de Uruguay, a orillas del Río de la Plata.",["MON","TE","VI","DE","O"],"ciudades",3]
+  ["Capital de Uruguay, a orillas del Río de la Plata.",["MON","TE","VI","DE","O"],"ciudades",3],
+
+  /* Segunda tanda de pistas, para sumar variedad al tablero. */
+  ["Lugar donde se compran medicamentos.",["FAR","MA","CIA"],"costumbres",1],
+  ["Fruta amarilla y curva, rica en potasio.",["BA","NA","NA"],"comida",1],
+  ["Prenda que te ponés en los pies para jugar al fútbol.",["BO","TÍN"],"futbol",1],
+  ["Vehículo de transporte público que recorre la ciudad.",["ÓM","NI","BUS"],"costumbres",1],
+  ["Animal doméstico que ladra y mueve la cola.",["PE","RRO"],"general",1],
+  ["Fruta roja pequeña con semillas por fuera.",["FRU","TI","LLA"],"comida",1],
+  ["Mueble en el que se guarda la ropa.",["AR","MA","RIO"],"costumbres",1],
+  ["Objeto que usás para peinarte el pelo.",["PEI","NE"],"general",1],
+  ["Fiesta popular con baile, pasacalles y disfraces, previa a la Cuaresma.",["CAR","NA","VAL"],"carnaval",2],
+  ["Instrumento de percusión que marca el ritmo de la murga.",["BOM","BO"],"carnaval",2],
+  ["Comercio de barrio donde se compran frutas y verduras.",["VER","DU","LE","RÍ","A"],"comida",2],
+  ["Campito de tierra donde los chicos juegan al fútbol improvisado.",["PO","TRE","RO"],"futbol",2],
+  ["Instrumento de fuelle, hermano menor del bandoneón, muy usado en el litoral.",["A","COR","DE","ÓN"],"costumbres",2],
+  ["Vendedor callejero que pregona los diarios.",["CA","NI","LLI","TA"],"lunfardo",2],
+  ["Lugar de la cuadra donde se juntan los vecinos a charlar.",["ES","QUI","NA"],"costumbres",2],
+  ["Jugador que patea mejor con la pierna izquierda.",["ZUR","DO"],"futbol",2],
+  ["Forma coloquial y rioplatense de decir lío o desorden.",["QUI","LOM","BO"],"lunfardo",3],
+  ["Persona de barrios humildes cercana al río, asociada al tango arrabalero.",["O","RI","LLE","RO"],"lunfardo",3],
+  ["Institución que administra un departamento uruguayo.",["IN","TEN","DEN","CIA"],"ciudades",3],
+  ["Conjunto de músicos que toca en un baile o una murga.",["OR","QUES","TA"],"costumbres",3],
+  ["Antiguo comercio rural que también servía como lugar de reunión.",["PUL","PE","RÍ","A"],"costumbres",3],
+  ["Lugar al que uno siente que pertenece y desea volver.",["QUE","REN","CIA"],"costumbres",3],
+  ["Desfile de comparsas por las calles de Montevideo al ritmo de los tambores.",["LLA","MA","DAS"],"carnaval",3],
+  ["Vocabulario popular rioplatense con palabras como laburo y morfi.",["LUN","FAR","DO"],"lunfardo",3]
 ].map(([pista,silabas,categoria,nivel])=>({pista,silabas,respuesta:silabas.join(""),categoria,nivel}));
