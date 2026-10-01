@@ -4,7 +4,7 @@ const EXTENSIONES=[
   {id:"rueda-de-letras",nombre:"Rueda de Letras",descripcion:"Uní letras antes de que se acabe el tiempo",icono:"logo-rueda-de-letras.svg",estado:RUEDA_HABILITADA?"disponible":"proximamente",abrir:contenedor=>RuedaDeLetras.abrir(contenedor),record:()=>RuedaDeLetras.mejorPuntaje()+" puntos"},
   {id:"palabra-secreta",nombre:"Palabra Secreta",descripcion:"Una palabra nueva cada día",icono:"logo-palabra-secreta.svg",estado:PALABRA_HABILITADA?"disponible":"proximamente",abrir:contenedor=>PalabraSecreta.abrir(contenedor),record:()=>"Racha: "+PalabraSecreta.rachaActual()+" días"},
   {id:"frases-en-giro",nombre:"Frases en Giro",descripcion:"Ordená frases entre giros y señuelos",icono:"logo-frases-en-giro.svg",estado:"disponible",abrir:contenedor=>FrasesEnGiro.abrir(contenedor),record:()=>FrasesEnGiro.mejorPuntaje()+" puntos"},
-  {id:"memoria-en-giro",nombre:"Memoria en Giro",descripcion:"Encontrá los pares antes de que giren",icono:"logo-memoria-en-giro.svg",estado:"proximamente"}
+  {id:"memoria-en-giro",nombre:"Memoria en Giro",descripcion:"Encontrá los pares antes de que giren",icono:"logo-memoria-en-giro.svg",estado:"disponible",abrir:contenedor=>MemoriaEnGiro.abrir(contenedor),record:()=>MemoriaEnGiro.mejorPuntaje()+" puntos"}
 ];
 window.EXTENSIONES=EXTENSIONES;
 const Extensiones=(()=>{
@@ -53,7 +53,7 @@ const Extensiones=(()=>{
     shell.querySelector("#extTitulo").textContent=ext.nombre;
     ext.abrir(contenido);shell.scrollTop=0;
   }
-  function salirJuego(){for(const juego of [window.SopaFugaz,window.RuedaDeLetras,window.PalabraSecreta,window.FrasesEnGiro])if(juego)juego.salir();}
+  function salirJuego(){for(const juego of [window.SopaFugaz,window.RuedaDeLetras,window.PalabraSecreta,window.FrasesEnGiro,window.MemoriaEnGiro])if(juego)juego.salir();}
   function cerrar(){if(!shell)return;salirJuego();shell.hidden=true;document.body.classList.remove("ext-abierta");vista="";}
   return{abrirLobby,abrirJuego,cerrar};
 })();
