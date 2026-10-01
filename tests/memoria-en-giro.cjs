@@ -30,7 +30,7 @@ const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg'
       const economiaAntes=await page.evaluate(()=>({monedas:meta.monedas,vidas:meta.vidas,tickets:meta.tickets}));
       await page.locator('#bExtensiones').click();
       const tarjeta=page.locator('.ext-tarjeta').filter({hasText:'Memoria en Giro'});
-      assert.equal(await page.locator('.ext-tarjeta').count(),6);
+      assert.equal(await page.locator('.ext-tarjeta').count(),8);
       assert(await tarjeta.isEnabled());
       assert(await tarjeta.locator('img').evaluate(img=>img.complete&&img.naturalWidth>0),'carga el logo');
       await tarjeta.click();

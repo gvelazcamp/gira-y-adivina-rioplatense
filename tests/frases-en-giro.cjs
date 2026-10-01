@@ -16,7 +16,7 @@ async function preparar(page,base){
   await page.goto(base,{waitUntil:'load'});
   await page.evaluate(()=>{document.querySelector('#splash')?.remove();document.querySelectorAll('.capa.ver').forEach(el=>el.classList.remove('ver'));});
   await page.locator('#bExtensiones').click();
-  assert.equal(await page.locator('.ext-tarjeta').count(),6);
+  assert.equal(await page.locator('.ext-tarjeta').count(),8);
   assert.match(await page.locator('.ext-tarjeta').filter({hasText:'Memoria en Giro'}).textContent(),/Memoria en Giro[\s\S]*Mejor: 0 puntos/);
   assert(await page.locator('.ext-tarjeta').filter({hasText:'Memoria en Giro'}).isEnabled());
   if(process.env.UI_SCREENSHOTS){fs.mkdirSync(process.env.UI_SCREENSHOTS,{recursive:true});await page.screenshot({path:path.join(process.env.UI_SCREENSHOTS,'frases-lobby-'+page.viewportSize().width+'.png')});}

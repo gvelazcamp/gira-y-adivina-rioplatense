@@ -46,7 +46,7 @@ async function arrastrar(page,indices){
       assert.equal(await page.locator('#bExtensiones').isVisible(),true);
       const economiaAntes=await page.evaluate(()=>({monedas:meta.monedas,vidas:meta.vidas,tickets:meta.tickets}));
       await page.locator('#bExtensiones').click();
-      assert.equal(await page.locator('.ext-tarjeta').count(),6);
+      assert.equal(await page.locator('.ext-tarjeta').count(),8);
       if(process.env.UI_SCREENSHOTS){fs.mkdirSync(process.env.UI_SCREENSHOTS,{recursive:true});await page.screenshot({path:path.join(process.env.UI_SCREENSHOTS,'lobby-'+viewport.width+'.png')});}
       await page.locator('.ext-tarjeta').first().click();
       await page.locator('.sf-panel .sf-principal').click();
