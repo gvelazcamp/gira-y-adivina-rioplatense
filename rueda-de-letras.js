@@ -12,7 +12,7 @@ const RuedaDeLetras=(()=>{
   function mejorPuntaje(){return datos.mejor;}
   function configNivel(n){if(RUEDA_CONFIG.niveles[n])return RUEDA_CONFIG.niveles[n];const a=RUEDA_CONFIG.avanzado,p=n-5;return{letras:a.letras,palabras:Math.min(a.palabrasMax,a.palabrasBase+Math.floor(Math.max(0,p)/2)),min:a.min,max:a.max,margen:Math.max(a.margenPiso,a.margenInicial-p*a.margenPaso)};}
   function mezclar(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=azar(i+1);[b[i],b[j]]=[b[j],b[i]];}return b;}
-  function elegir(n){const c=configNivel(n),fuentes=RUEDA_DATOS.filter(d=>d.base.length===c.letras),fuente=fuentes[(n-1)%fuentes.length];const candidatas=fuente.palabras.filter(w=>w!==fuente.base&&w.length>=c.min&&w.length<=c.max);if(candidatas.length<c.palabras-1)throw Error("Faltan palabras en "+fuente.base);return{base:fuente.base,ciudad:fuente.ciudad,palabras:[fuente.base,...candidatas.slice(0,c.palabras-1)]};}
+  function elegir(n){const c=configNivel(n),fuentes=RUEDA_DATOS.filter(d=>d.base.length===c.letras),fuente=fuentes[azar(fuentes.length)];const candidatas=fuente.palabras.filter(w=>w!==fuente.base&&w.length>=c.min&&w.length<=c.max);if(candidatas.length<c.palabras-1)throw Error("Faltan palabras en "+fuente.base);return{base:fuente.base,ciudad:fuente.ciudad,palabras:[fuente.base,...candidatas.slice(0,c.palabras-1)]};}
   function tiempoRonda(palabras,n){const c=configNivel(n),largo=palabras.reduce((s,w)=>s+w.length,0)/palabras.length;return Math.round(palabras.length*(RUEDA_CONFIG.segundosBase+RUEDA_CONFIG.segundosPorLetra*largo)*c.margen*1000);}
   function sonido(){try{if(typeof sonarRuletaGiro==="function")sonarRuletaGiro();}catch(e){}}
   function feedback(){try{if(typeof vibrar==="function")vibrar(20);}catch(e){}}

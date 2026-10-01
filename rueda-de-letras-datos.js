@@ -10,5 +10,18 @@ const RUEDA_DATOS=[
   {base:"PESCADO",ciudad:"piriapolis",palabras:["PESCADO","PESCA","PESO","PASEO","PASE","COPA","SECO","CASO","PASO","SAPO","POSE","PECA","SOPA","SEDA","COPAS","SACO"]},
   {base:"COMARCA",ciudad:"tacuarembo",palabras:["COMARCA","MARCA","ARCO","CARA","CAMA","AMOR","RAMO","COMA","ROCA","CARO","ARMA","MACRO"]},
   {base:"COSTERA",ciudad:"punta",palabras:["COSTERA","COSTA","CORTA","CORTES","CORTE","CERO","CERA","ROCA","ROSA","SACO","SECO","SERA","TACO","SOTA","ARTE","RESTO","ESTAR"]},
-  {base:"PAISANO",ciudad:"salto",palabras:["PAISANO","PASAN","PASA","PISO","PINO","SOPA","PANA","PIANO","SANO","SANA","SAPO","PISAN","ASIA","PASO"]}
+  {base:"PAISANO",ciudad:"salto",palabras:["PAISANO","PASAN","PASA","PISO","PINO","SOPA","PANA","PIANO","SANO","SANA","SAPO","PISAN","ASIA","PASO"]},
+  {base:"CASERO",ciudad:"rivera",palabras:["CASERO","ARCO","ROSCA","CARO","SECO","CERO","ROCE","CASE","ACOSE"]},
+  {base:"CARETA",ciudad:"montevideo",palabras:["CARETA","CARA","RATA","TARA","CATAR","CARTA","AREA","ACTA","RETA"]},
+  {base:"PALOMA",ciudad:"colonia",palabras:["PALOMA","PALO","MAPA","LAMA","PALA","LOMA","MALO","MALA"]},
+  {base:"PLANTA",ciudad:"salto",palabras:["PLANTA","PLATA","PATA","TAPA","LATA","NATA","PLAN","ALTA"]},
+  {base:"ASADOR",ciudad:"piriapolis",palabras:["ASADOR","ROSA","SODA","ASADO","RASO","OSAR","ASAR","DORA"]},
+  {base:"CANTOR",ciudad:"tacuarembo",palabras:["CANTOR","CARO","CANTO","ROCA","RATO","CORTA","TOCAR","ROTAN"]},
+  {base:"TOMATE",ciudad:"punta",palabras:["TOMATE","MATE","TEMA","META","TOME","MOTA","TOMA","TOTEM"]},
+  {base:"BANDERA",ciudad:"artigas",palabras:["BANDERA","NADA","BANDA","RANA","ARENA","ANDAR","NADAR","ARDE","DABA","ANDE","ANDA","BARDA"]},
+  {base:"MOCHILA",ciudad:"rivera",palabras:["MOCHILA","CHAL","COLA","HOLA","LIMA","MALO","MACHO","LIMO","CLIMA","LOCA","HILO","MICA"]},
+  {base:"ALFAJOR",ciudad:"maldonado",palabras:["ALFAJOR","FAJA","RAJA","FLOR","FAROL","FLOJA","ROJA","AJAR","LOAR","FARO","OJAL","JARA"]},
+  {base:"CAMINOS",ciudad:"durazno",palabras:["CAMINOS","MANO","SANO","MISA","MONA","CASI","MINA","COSA","CAMION","CAMINO","MOSCA","SOCIA"]},
+  {base:"MERCADO",ciudad:"montevideo",palabras:["MERCADO","CARO","MORA","ARCO","ROCA","DAME","CEDRO","RAMO","CERDO","MODA","CAREO","CARDO"]},
+  {base:"CANTINA",ciudad:"colonia",palabras:["CANTINA","CANA","NATA","TINA","ANCA","CITA","CANTA","ATAN","CIAN","INCA","ANTA","CITAN"]}
 ];
