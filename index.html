@@ -1238,8 +1238,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <div class="caja" style="max-width:420px;padding:16px">
     <img src="assets/social/promo-redes.webp" alt="Girá y Adiviná Rioplatense en redes" style="width:100%;border-radius:14px;display:block;margin-bottom:14px">
     <p class="sub" id="socialCiudadInfo" style="margin:0 0 8px"></p>
-    <button class="no" id="socialEditarCiudad" style="width:100%;border-radius:12px;padding:10px;font-weight:700;margin-bottom:10px">📍 Indicar mi ciudad</button>
-    <button class="btn-grande" id="socialContinuar" style="margin-bottom:10px">Ver jugadores y ciudades</button>
+    <button class="btn-grande" id="socialContinuar" style="margin-bottom:10px">Ver el avance de los jugadores</button>
     <button class="no" id="socialCerrar" style="width:100%;border-radius:12px;padding:13px;font-weight:700">Cerrar</button>
   </div>
 </div>
@@ -1316,7 +1315,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
       </div>
       <small class="perfil-pais-ayuda" id="perfilPaisAyuda">Elegí tu país para habilitar el perfil. La expansión sugerida queda cruzada al otro lado del Río de la Plata.</small>
     </div>
-    <div class="campo perfil-ciudad"><span>Ciudad (opcional)</span><input id="perfilCiudad" placeholder="Ej.: Montevideo" maxlength="40" autocomplete="address-level2"><small class="perfil-ciudad-ayuda">Se mostrará junto a tu nombre en Social y en el ranking. No usa tu ubicación del celular.</small></div>
+    <input id="perfilCiudad" type="hidden">
   </div>
   <div id="perfilPasoAvatar" style="display:none">
     <p class="sub" id="avatarTitulo" style="margin:8px 0 4px">Ahora elegí tu avatar</p>
@@ -1847,7 +1846,6 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <div id="rkSetup">
     <p class="sub" style="margin:6px 0 14px">Elegí un apodo para aparecer en el ranking junto a todos los que jueguen.</p>
     <p class="sub" id="rkMiCiudadSetup" style="margin:0 0 10px"></p>
-    <button class="no" id="rkEditarCiudadSetup" style="width:100%;border-radius:10px;padding:9px;font-size:.78rem;font-weight:700;margin-bottom:12px">📍 Editar mi ciudad</button>
     <div class="campo"><span>Tu apodo</span><input id="rkApodo" placeholder="ej: Fede" maxlength="14" autocomplete="off"></div>
     <button class="btn-grande" id="rkCrear" style="margin-top:6px">Entrar al ranking</button>
   </div>
@@ -1857,7 +1855,6 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
       <button class="no" id="rkCompartir">📤 Invitar amigos</button>
       <button class="no" id="rkSalir">✏️ Cambiar apodo</button>
     </div>
-    <button class="no" id="rkEditarCiudad" style="width:100%;border-radius:10px;padding:9px;font-size:.78rem;font-weight:700;margin-bottom:12px">📍 Editar mi ciudad</button>
     <div class="rk-lista" id="rkLista"></div>
     <p class="estado" id="rkEstado" style="margin-top:8px"></p>
   </div>
@@ -2676,6 +2673,7 @@ function paisMapaActivo(){try{if(mapaPaisForzado)return mapaPaisForzado;return p
 let mapaPaisActual=paisMapaActivo();
 let MUNDO=mapaPaisActual==="argentina"?MUNDO_ARGENTINA:MUNDO_URUGUAY;
 function claveMundo(base){return mapaPaisActual==="argentina"?base+"_argentina":base;}
+function registrarMapaVisitado(){try{localStorage.setItem("gya_mapa_pais_social",mapaPaisActual);}catch(e){}}
 function cargarGanadosMapa(){try{return new Set(JSON.parse(localStorage.getItem(claveMundo("larueda_mundo"))||"[]"));}catch(e){return new Set();}}
 function cargarProgresoMapa(){try{return JSON.parse(localStorage.getItem(claveMundo("larueda_pasos"))||"{}");}catch(e){return {};}}
 let ganados=cargarGanadosMapa();
@@ -2686,9 +2684,10 @@ const guardarPasos=()=>{try{localStorage.setItem(claveMundo("larueda_pasos"),JSO
 const hechos=id=>progreso[id]||0;
 function sincronizarMundoActivo(){
   const pais=paisMapaActivo();
-  if(pais===mapaPaisActual)return;
+  if(pais===mapaPaisActual){registrarMapaVisitado();return;}
   mapaPaisActual=pais;MUNDO=mapaPaisActual==="argentina"?MUNDO_ARGENTINA:MUNDO_URUGUAY;
   ganados=cargarGanadosMapa();progreso=cargarProgresoMapa();destino=null;pasoActual=null;fSiguientePaso=null;
+  registrarMapaVisitado();
 }
 
 /* ---- Vidas y monedas (metaprogreso) ---- */
@@ -4349,16 +4348,44 @@ function cargarRkPerfil(){
 }
 function guardarRkPerfil(p){try{localStorage.setItem("gya_ranking_perfil",JSON.stringify(p));}catch(e){}}
 function rkEsc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
-function ciudadDeFila(f){
+function avanceMapaDeFila(f){
   let estado=f&&f.estado_juego;
   if(typeof estado==="string"){try{estado=JSON.parse(estado);}catch(e){estado=null;}}
   const guardado=estado&&estado.localStorage||{};
-  return ciudadPerfilTexto(guardado.gya_ciudad);
+  const presencia=estado&&estado.presenciaMapa||{};
+  const pais=[presencia.pais,guardado.gya_mapa_pais_social,guardado.gya_pais].find(x=>x==="argentina"||x==="uruguay")||"uruguay";
+  const mundo=pais==="argentina"?MUNDO_ARGENTINA:MUNDO_URUGUAY;
+  const bandera=pais==="argentina"?"🇦🇷":"🇺🇾";
+  const clave=pais==="argentina"?"larueda_mundo_argentina":"larueda_mundo";
+  const clavePasos=pais==="argentina"?"larueda_pasos_argentina":"larueda_pasos";
+  const tieneGanadas=Object.prototype.hasOwnProperty.call(guardado,clave);
+  let ganadas=[];try{ganadas=JSON.parse(guardado[clave]||"[]");}catch(e){}
+  const ganadasSet=new Set(Array.isArray(ganadas)?ganadas:[]);
+  const totalAnterior=Math.max(0,Math.min(mundo.length,Number(f&&f.ciudades_ganadas)||0));
+  const resumen={pais,ganadas:tieneGanadas?ganadasSet.size:totalAnterior,total:mundo.length};
+  const actualizado=Date.parse(f&&f.actualizado_en||"");
+  const reciente=Number.isFinite(actualizado)&&Date.now()-actualizado<3*60*1000&&Date.now()-actualizado>=-30000;
+  const ciudadActiva=presencia.jugando&&reciente&&mundo.find(d=>d.id===presencia.ciudadId);
+  if(ciudadActiva)return{...resumen,texto:"🎮 Jugando en "+ciudadActiva.n+" · "+bandera,jugando:true,conDatos:true};
+  let ultima=null;try{ultima=JSON.parse(guardado.gya_ultima_ciudad_social||"null");}catch(e){}
+  const hayAvance=tieneGanadas||Object.prototype.hasOwnProperty.call(guardado,clavePasos)||ultima&&ultima.pais===pais||totalAnterior>0;
+  if(!hayAvance)return{...resumen,texto:"🗺️ Todavía no empezó el mapa · "+bandera,jugando:false,conDatos:false};
+  const siguiente=tieneGanadas||Object.prototype.hasOwnProperty.call(guardado,clavePasos)||ultima&&ultima.pais===pais?
+    mundo.find(d=>!ganadasSet.has(d.id)):mundo[totalAnterior];
+  return{...resumen,texto:siguiente?"🗺️ Va por "+siguiente.n+" · "+bandera:"🏁 Completó el mapa · "+bandera,jugando:false,conDatos:true};
 }
+function presenciaMapaActual(){
+  const jugando=document.visibilityState==="visible"&&modo==="bot"&&destino!==null&&!!MUNDO[destino]&&
+    $("juego").style.display==="block"&&!!S&&!S.finYa;
+  return{pais:mapaPaisActual,ciudadId:jugando?MUNDO[destino].id:null,jugando,visible:document.visibilityState==="visible"};
+}
+function sincronizarPresenciaMapa(){empujarUsuario();empujarRanking();}
+function miAvanceMapa(){return avanceMapaDeFila({estado_juego:capturarEstadoJuego(),actualizado_en:new Date().toISOString()}).texto;}
 /* Respaldo completo del progreso: guarda una copia fiel de todo lo persistente
    (gya_* y larueda_*) en Supabase (columna estado_juego), aparte de los campos
    resumen ya existentes, para poder restaurar un perfil exacto en otro dispositivo. */
 const ESTADO_JUEGO_EXCLUIR=new Set([
+  "gya_ciudad", // ciudad real heredada: Social ahora muestra solo destinos del juego
   "gya_backup_antes_restaurar_gonzalo",
   "gya_admin_tienda_removidos_pendientes",
   "gya_fichas_prueba_limpiada",
@@ -4377,7 +4404,7 @@ function capturarEstadoJuego(){
       datos[clave]=localStorage.getItem(clave);
     }
   }catch(e){}
-  return{version:1,guardado_en:new Date().toISOString(),localStorage:datos};
+  return{version:1,guardado_en:new Date().toISOString(),localStorage:datos,presenciaMapa:presenciaMapaActual()};
 }
 async function empujarRanking(){
   const rkPerfil=cargarRkPerfil(),supa=obtenerSupa();
@@ -4530,12 +4557,13 @@ async function rkCargarTabla(){
   if(miPos===0)logroDesbloquear("rankingTop1");
   (data||[]).forEach((f,i)=>{
     const d=document.createElement("div");
+    const avance=avanceMapaDeFila(f);
     d.className="rk-fila"+(f.apodo===rkPerfil.apodo?" yo":"");
     d.innerHTML='<div class="rk-puesto">'+(i+1)+'</div>'+
       (f.avatar?'<img class="rk-avatar" src="assets/avatars/'+rkEsc(f.avatar)+'.webp" alt="">':'')+
       '<div class="rk-info"><b>'+rkEsc(f.apodo)+(f.apodo===rkPerfil.apodo?" (vos)":"")+'</b>'+
-      '<span class="rk-ciudad">📍 '+rkEsc(ciudadDeFila(f))+'</span>'+
-      '<span>🗺️ '+f.ciudades_ganadas+'/9 · 🏆 racha '+f.mejor_racha+' · 🏅 '+f.logros+'</span></div>'+
+      '<span class="rk-ciudad">'+rkEsc(avance.texto)+'</span>'+
+      '<span>🗺️ '+avance.ganadas+'/'+avance.total+' · 🏆 racha '+f.mejor_racha+' · 🏅 '+f.logros+'</span></div>'+
       '<div class="rk-monedas">🪙 '+f.monedas_totales+'</div>';
     d.onclick=()=>{
       $("seccionTiendaTitulo").textContent=f.apodo+(f.apodo===rkPerfil.apodo?" (vos)":"");
@@ -4561,7 +4589,7 @@ function rkMostrarTabla(){
   const rkPerfil=cargarRkPerfil();
   $("rkSetup").style.display="none";
   $("rkTabla").style.display="block";
-  $("rkGrupoTxt").textContent="Vos: "+rkPerfil.apodo+" · 📍 "+ciudadPerfilTexto(perfil.ciudad);
+  $("rkGrupoTxt").textContent="Vos: "+rkPerfil.apodo+" · "+miAvanceMapa();
   empujarRanking().then(rkCargarTabla);
 }
 function rkMostrarSetup(){
@@ -4569,7 +4597,7 @@ function rkMostrarSetup(){
   $("rkSetup").style.display="block";
   const rkPerfil=cargarRkPerfil();
   $("rkApodo").value=(rkPerfil&&rkPerfil.apodo)||perfil.nombre||"";
-  $("rkMiCiudadSetup").textContent="📍 Tu ciudad: "+ciudadPerfilTexto(perfil.ciudad);
+  $("rkMiCiudadSetup").textContent="Tu avance: "+miAvanceMapa();
 }
 function rkAbrir(){
   if(!obtenerSupa()){alert("El ranking no está disponible ahora mismo.");return;}
@@ -4578,8 +4606,8 @@ function rkAbrir(){
   if(rkPerfil&&rkPerfil.apodo)rkMostrarTabla();else rkMostrarSetup();
 }
 $("bRanking").onclick=rkAbrir;
-/* Social muestra el listado de jugadores y la ciudad que cada uno indicó
-   en su perfil; no infiere ubicación a partir del mapa ni del dispositivo. */
+/* Social muestra el avance por los mapas del juego y las partidas activas.
+   Las ciudades son destinos del juego, nunca ubicaciones reales. */
 function esGonzalo(){try{return(perfil&&perfil.nombre||"").trim().toLowerCase()==="gonzalo";}catch(e){return false;}}
 function actualizarModoAdminGonzalo(){try{document.body.classList.toggle("gonzalo-admin",esGonzalo());}catch(e){}}
 const TIENDA_REMOVIDOS_PUBLICADOS=new Set([
@@ -4625,8 +4653,7 @@ function tiendaAdminPrepararItemsFijos(){
   });
 }
 $("bSocial").onclick=$("bSocialGrande").onclick=()=>{
-  $("socialCiudadInfo").textContent="Tu ciudad: "+ciudadPerfilTexto(perfil.ciudad);
-  $("socialEditarCiudad").textContent=perfil.ciudad?"📍 Editar mi ciudad":"📍 Indicar mi ciudad";
+  $("socialCiudadInfo").textContent="Tu avance: "+miAvanceMapa()+". Acá ves por qué ciudad del juego va cada persona, no dónde vive.";
   $("capaSocial").classList.add("ver");
 };
 $("bLogrosMini").onclick=lgAbrir;
@@ -4635,14 +4662,6 @@ $("torneosCerrar").onclick=()=>$("capaTorneos").classList.remove("ver");
 $("torneosEntrar").onclick=torneoEntrar;
 $("socialCerrar").onclick=()=>$("capaSocial").classList.remove("ver");
 $("socialContinuar").onclick=()=>{$("capaSocial").classList.remove("ver");usrAbrir();};
-function abrirPerfilDesdeUbicacion(){
-  $("capaSocial").classList.remove("ver");$("capaRanking").classList.remove("ver");
-  abrirPerfil(null);
-  if(perfilExiste())setTimeout(()=>$("perfilCiudad").focus(),0);
-}
-$("socialEditarCiudad").onclick=abrirPerfilDesdeUbicacion;
-$("rkEditarCiudad").onclick=abrirPerfilDesdeUbicacion;
-$("rkEditarCiudadSetup").onclick=abrirPerfilDesdeUbicacion;
 async function usrCargarLista(){
   const supa=obtenerSupa();
   $("usrEstado").textContent="Cargando…";
@@ -4656,7 +4675,7 @@ async function usrCargarLista(){
       const clave=String(f.apodo||"").trim().toLowerCase();
       if(!clave||nombrePerfilAutomatico(clave)||RK_APODOS_OCULTOS.includes(clave))return;
       const anterior=vistos.get(clave);
-      const calidad=x=>(ciudadDeFila(x)==="Ciudad no indicada"?0:2)+(x.grupo===USR_GRUPO?1:0);
+      const calidad=x=>{const a=avanceMapaDeFila(x);return(a.jugando?4:0)+(a.conDatos?2:0)+(x.grupo===USR_GRUPO?1:0);};
       if(!anterior||calidad(f)>calidad(anterior))vistos.set(clave,f);
     });
     data=[...vistos.values()];
@@ -4670,14 +4689,16 @@ async function usrCargarLista(){
   const rkPerfil=cargarRkPerfil();
   const misClaves=[normApodo(perfil.nombre),rkPerfil&&rkPerfil.apodo?normApodo(rkPerfil.apodo):null];
   (data||[]).forEach(f=>{
-    const online=f.actualizado_en&&(AHORA-new Date(f.actualizado_en).getTime())<VENTANA_ONLINE_MS;
+    let estado=f.estado_juego;if(typeof estado==="string"){try{estado=JSON.parse(estado);}catch(e){estado=null;}}
+    const online=f.actualizado_en&&(AHORA-new Date(f.actualizado_en).getTime())<VENTANA_ONLINE_MS&&estado?.presenciaMapa?.visible!==false;
+    const avance=avanceMapaDeFila(f);
     const soyYo=misClaves.includes(normApodo(f.apodo));
     const d=document.createElement("div");
     d.className="rk-fila";
     d.innerHTML=(f.avatar?'<span class="rk-avatar-wrap"><img class="rk-avatar" src="assets/avatars/'+rkEsc(f.avatar)+'.webp" alt="">'+(online?'<span class="rk-online-dot"></span>':'')+'</span>':'')+
       '<div class="rk-info"><b>'+rkEsc(f.apodo)+(soyYo?" (vos)":"")+'</b>'+
-      '<span class="rk-ciudad">📍 '+rkEsc(ciudadDeFila(f))+'</span>'+
-      '<span>🗺️ '+f.ciudades_ganadas+'/9 · 🏆 racha '+f.mejor_racha+' · 🏅 '+f.logros+'</span></div>';
+      '<span class="rk-ciudad">'+rkEsc(avance.texto)+'</span>'+
+      '<span>🗺️ '+avance.ganadas+'/'+avance.total+' · 🏆 racha '+f.mejor_racha+' · 🏅 '+f.logros+'</span></div>';
     if(!soyYo){
       const b=document.createElement("button");
       b.className="no";b.textContent="Invitar";
@@ -6541,6 +6562,7 @@ function abrirCiudadRica(idx){
   $("fondoMundo").classList.remove("ver");
   $("setup").style.display="none";$("juego").style.display="none";$("mundo").style.display="none";
   $("pantDurazno").style.display="block";
+  sincronizarPresenciaMapa();
   $("dzCiudadTitulo").textContent=dzCiudad().n.toUpperCase();
   $("dzPasaporte").title="Pasaporte de "+dzCiudad().n;
   $("dzColeccionBtn").title="Colección "+dzCiudad().n;
@@ -6596,6 +6618,7 @@ function verMundo(){
   $("fondoMundo").classList.remove("ver");
   $("setup").style.display="none";$("juego").style.display="none";$("pantDurazno").style.display="none";
   $("mundo").style.display="block";
+  sincronizarPresenciaMapa();
   mundoActualizarHud();
   if($("mundoTitulo"))$("mundoTitulo").textContent=mapaPaisActual==="argentina"?"ARGENTINA":"URUGUAY";
   $("subMundo").textContent="";
@@ -6828,11 +6851,13 @@ function empezarDestino(i,paso){
   detenerPartidaAnterior();
   $("setup").style.display="none";$("eventos").style.display="none";
   destino=i;pasoActual=(paso===undefined?null:paso);const d=MUNDO[i];
+  try{localStorage.setItem("gya_ultima_ciudad_social",JSON.stringify({pais:mapaPaisActual,id:d.id}));}catch(e){}
   if(d.bg){$("fondoMundo").style.backgroundImage="url('"+d.bg+"')";$("fondoMundo").classList.add("ver");}
   modo="bot";miJug=0;rondasElegidas=(pasoActual===null?d.rondas:3);
   $("mundo").style.display="none";$("pantDurazno").style.display="none";$("juego").style.display="block";
   armarTeclado();iniciarPartida($("miNombre").value.trim()||"Vos",
     d.r,categoriasAlAzar(pasoActual===null?2:1),perfil.avatar||null,null,frameEquipado||null,null);
+  sincronizarPresenciaMapa();
 }
 
 let botT=null,botTossT=null,botTossReaccionT=null,botTossPensarT=null;
@@ -6847,10 +6872,6 @@ function cargarPerfil(){
 }
 let perfil=cargarPerfil();
 function normalizarCiudad(valor){return typeof valor==="string"?valor.replace(/[\u0000-\u001F\u007F]/g," ").replace(/\s+/g," ").trim().slice(0,40):"";}
-function ciudadPerfilTexto(ciudad){
-  const nombre=normalizarCiudad(ciudad);
-  return nombre||"Ciudad no indicada";
-}
 /* Versiones viejas podían dejar nombres de respaldo como "Explorer 1"
    o "Jugador 2" cuando el alta quedaba incompleta. No cuentan como una
    identidad elegida: al volver, el usuario debe definir nombre y avatar. */
@@ -7033,8 +7054,8 @@ window.addEventListener("load",()=>{
   /* Late para "conectado ahora": no hay presencia en tiempo real, así que
      se aproxima con un latido cada 90s mientras el juego está abierto y
      visible — actualizado_en se usa después como "online" si es reciente. */
-  setInterval(()=>{if(document.visibilityState==="visible")empujarUsuario();},90000);
-  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")empujarUsuario();});
+  setInterval(()=>{if(document.visibilityState==="visible")sincronizarPresenciaMapa();},90000);
+  document.addEventListener("visibilitychange",sincronizarPresenciaMapa);
 });
 mundoActualizarHud();
 chequearRachaDiaria();
@@ -8946,6 +8967,7 @@ function cambiarTurno(){
   publicar("Le toca a <b>"+S.jug[S.turno].n+"</b>.");}
 function finDelJuego(){
   if(S.finYa)return;S.finYa=true;mapaUltimaConquista=null;ciudadUltima100=null;
+  if(modo==="bot"&&destino!==null)setTimeout(sincronizarPresenciaMapa,0);
   if(enTutorial){finalizarTutorial();return;}
   const [a,b]=S.jug;
   // El dinero acumulado decide primero. Las rondas ganadas quedan como desempate y estadística.
@@ -9097,6 +9119,7 @@ function revancha(){
   const continuar2=()=>nuevaRonda();
   if(sobrePendienteCual){const c=sobrePendienteCual;sobrePendienteCual=null;accionTrasSobre=continuar2;colMostrarSobreConseguido(c);}
   else continuar2();
+  if(modo==="bot"&&destino!==null)sincronizarPresenciaMapa();
 }
 function mostrarFin(tit,txt,selloImg){
   if(!enPruebaPunteros&&!tit.startsWith("Partida abandonada")){objSumar("partidas",1);peChequearAutoPopup();}
@@ -10189,6 +10212,7 @@ $("fSalir").onclick=()=>{
   modo="local";sala="";S=null;
   $("juego").style.display="none";
   $("setup").style.display="block";
+  sincronizarPresenciaMapa();
   if(vinoDeTorneo){vinoDeTorneo=false;torneosAbrir();return;}
   /* El día que alguien recién ve el tutorial, no lo encadenamos a la
      Partida Diaria — ese día solo tiene que ver el tutorial. Desde el

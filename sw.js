@@ -1,4 +1,4 @@
-const CACHE_NAME = "gya-cache-v48";
+const CACHE_NAME = "gya-cache-v49";
 const APP_SHELL = ["./", "./index.html", "./manifest.json", "./icono-192.png", "./icono-512.png", "./assets/logo.webp", "./ui-icons.js?v=1", "./assets/ui/coin.svg", "./assets/ui/shield.svg", "./extensiones.css?v=6", "./extensiones.js?v=2", "./sopa-fugaz-datos.js?v=1", "./sopa-fugaz.js?v=4", "./logo-sopa-fugaz.svg", "./rueda-de-letras-datos.js?v=1", "./rueda-de-letras-diccionario.js?v=1", "./rueda-de-letras.js?v=3", "./logo-rueda-de-letras.svg", "./palabra-secreta-datos.js?v=1", "./palabra-secreta.js?v=1", "./logo-palabra-secreta.svg", "./frases-en-giro-datos.js?v=1", "./frases-en-giro.js?v=1", "./logo-frases-en-giro.svg"];
 
 self.addEventListener("install", (e) => {
