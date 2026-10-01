@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>100 Rioplatenses Dicen</title>
+<style>
+:root{--bg:#160B24;--bar:#2a1646;--tile:#f6f0dc;--ink:#160B24;--ok:#2fbf71;--no:#e5484d;--cur:#e8337a;--y:#ffd23f;--mut:#b9a6d9;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:#fff;font-family:'Arial Black',Impact,system-ui,sans-serif;display:flex;justify-content:center;min-height:100vh}
+.app{width:100%;max-width:440px;padding:12px;text-align:center}
+h1{font-size:clamp(22px,7vw,30px);margin:2px 0 8px}
+.hud{display:flex;gap:6px;margin-bottom:6px}
+.hud div{flex:1;background:var(--bar);border-radius:10px;padding:5px}
+.hud small{display:block;color:var(--mut);font:600 11px system-ui}
+.hud b{font-size:17px}
+#sk{font-size:22px;letter-spacing:6px;margin:2px 0}
+#sk i{font-style:normal;opacity:.25}#sk i.on{opacity:1;color:var(--no)}
+#wrap{position:relative;width:min(58vw,240px);aspect-ratio:1;margin:14px auto 8px}
+#wrap:before{content:"▼";position:absolute;left:50%;top:-16px;transform:translateX(-50%);color:var(--y);font-size:20px;z-index:2}
+#disc{position:absolute;inset:0;border-radius:50%;border:6px solid var(--bar);transition:transform 1.8s cubic-bezier(.17,.67,.2,1)}
+.c{position:absolute;left:50%;top:50%;width:34%;font:700 clamp(10px,3vw,12px)/1.15 system-ui;text-shadow:0 1px 3px #000;transition:transform 1.8s cubic-bezier(.17,.67,.2,1)}
+#hub{position:absolute;left:50%;top:50%;width:27%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:var(--bg);border:3px solid var(--tile);display:grid;place-items:center;color:var(--y);font-size:clamp(14px,5vw,20px)}
+#q{background:var(--bar);border-radius:14px;padding:10px 12px;min-height:70px;font:600 16px/1.35 system-ui;text-align:left}
+#q small{display:block;color:var(--y);font:800 13px system-ui;margin-bottom:3px}
+#board{display:grid;gap:5px;margin:8px 0}
+.s{display:flex;align-items:center;gap:8px;background:var(--bar);border-radius:10px;padding:8px 10px;font:700 15px system-ui;text-align:left;color:var(--mut)}
+.s b{width:22px;height:22px;border-radius:50%;background:var(--cur);color:#fff;display:grid;place-items:center;font-size:12px}
+.s span{flex:1}.s em{font-style:normal;min-width:30px;text-align:right}
+.s.r{background:var(--tile);color:var(--ink);animation:flip .5s}.s.r b{background:var(--ok)}
+.s.m{opacity:.6;color:var(--y)}
+@keyframes flip{0%{transform:rotateX(90deg)}100%{transform:none}}
+#fb{height:22px;margin:2px 0;font-size:15px}
+.row{display:flex;gap:8px}
+input{flex:1;min-width:0;font:700 20px system-ui;text-transform:uppercase;padding:12px;border-radius:10px;border:2px solid var(--mut);background:var(--tile);color:var(--ink)}
+button{font:inherit;background:var(--cur);color:#fff;border:0;border-radius:10px;padding:12px 16px;font-size:16px;cursor:pointer}
+button.s2{background:var(--bar);color:var(--mut);width:100%;margin-top:8px;border:1px solid var(--mut)}
+button.go{width:100%;margin-top:8px;background:var(--ok)}
+[hidden]{display:none!important}
+button:focus-visible,input:focus-visible{outline:3px solid var(--y);outline-offset:2px}
+.ov{position:fixed;inset:0;background:rgba(10,4,20,.9);display:flex;align-items:center;justify-content:center;padding:20px}
+.ov.h{display:none}
+.card{background:var(--tile);color:var(--ink);border-radius:16px;padding:22px;max-width:380px}
+.card h2{margin:0 0 8px;font-size:26px}
+.card p{margin:0 0 14px;font:600 16px/1.4 system-ui;text-align:left}
+.ov:not(.h) .card{animation:ruleta .7s cubic-bezier(.2,.8,.3,1)}
+@keyframes ruleta{0%{transform:rotate(-270deg) scale(.2);opacity:0}100%{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){#disc,.c{transition:none}.s.r,.ov:not(.h) .card{animation:none}}
+</style>
+</head>
+<body>
+<main class="app">
+  <h1>100 Rioplatenses Dicen</h1>
+  <div class="hud"><div><small>Ronda</small><b id="ro">0/3</b></div><div><small>Puntos</small><b id="pt">0</b></div><div><small>Mejor</small><b id="bs">0</b></div></div>
+  <div id="sk"></div>
+  <div id="wrap"><div id="disc"></div><div id="hub">100</div></div>
+  <div id="q"></div>
+  <div id="board"></div>
+  <div id="fb"></div>
+  <div class="row"><input id="in" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="¿Qué dijo la gente?"><button id="en">Mandar</button></div>
+  <button class="s2" id="pa">Me rindo (mostrar respuestas)</button>
+  <button class="go" id="nx" hidden>Girar la ruleta ▶</button>
+</main>
+<div class="ov" id="ov"><div class="card"><h2 id="ot">100 Rioplatenses Dicen</h2><p id="op">Le preguntamos a 100 rioplatenses. La ruleta gira y elige el tema. Adiviná las respuestas más dichas: cuanto más la dijo la gente, más puntos. Con 3 errores se termina la ronda. Son 3 rondas y los puntos se multiplican: x1, x2 y x3.</p><button id="ob">Jugar</button></div></div>
+<script>
+const CFG={rondas:3,mult:[1,2,3],maxErr:3,giroMs:1800,pausaMs:700};
+const CATS=[['Comida','🍖','#e8337a'],['Carnaval','🥁','#7c4dff'],['Fútbol','⚽','#2fbf71'],['Costumbres','🧉','#e8851f'],['Lunfardo','💬','#2b8cd6'],['Ciudades','🏙️','#c9a100']];
+// Formato: categoria|pregunta|respuesta:puntos:alias,alias;...  (puntos de MUESTRA: reemplazar con encuesta real)
+const DATA=`Comida|Algo que no puede faltar en un asado|Chorizo:34:chori;Achuras:22:achura,mollejas,chinchulines;Ensalada:16;Vino:14;Pan:9:pancito
+Carnaval|Un personaje del candombe|Mama Vieja:38:mamavieja;Gramillero:27;Escobero:20;Bailarina:9:vedette;Tambor:6:tamborilero
+Fútbol|Un cuadro de fútbol del Río de la Plata|Boca:29:boca juniors;River:24:river plate;Peñarol:19;Nacional:17;Racing:6
+Costumbres|Algo que se lleva a la playa|Mate:31:termo;Reposera:19:silla;Sombrilla:17:parasol;Protector:14:bronceador,protector solar;Conservadora:9:heladera,hielera
+Lunfardo|Una palabra para decir "dinero"|Plata:35;Guita:28;Mango:14:mangos;Billete:9:billetes;Luca:5:lucas
+Ciudades|Un lugar para pasar el verano en Uruguay|Punta del Este:37:punta;Piriapolis:18;Rocha:17:la paloma,cabo polonio;Colonia:14;Atlantida:8`;
+const $=s=>document.querySelector(s),norm=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z]/g,'');
+const RM=matchMedia('(prefers-reduced-motion:reduce)').matches,N=CATS.length,wrap=$('#wrap'),disc=$('#disc');
+const Q=DATA.split('\n').map(l=>{const[c,q,a]=l.split('|');return{c:CATS.findIndex(x=>x[0]===c),q,a:a.split(';').map(x=>{const[t,p,al='']=x.split(':');return{t,p:+p,k:[t,...al.split(',')].map(norm).filter(Boolean)}})}});
+let W=0,els=[],best=0,total=0,round=0,usedQ=[],cq=null,rev=[],strikes=0,rp=0,lock=true,playing=false;
+try{best=+localStorage.getItem('gya_100rio_best')||0}catch(e){}
+$('#bs').textContent=best;
+disc.style.background='conic-gradient('+CATS.map((c,i)=>`${c[2]} ${i*360/N}deg ${(i+1)*360/N}deg`).join(',')+')';
+CATS.forEach(([n,e])=>{const d=document.createElement('div');d.className='c';d.innerHTML=e+'<br>'+n;d.style.textAlign='center';disc.appendChild(d);els.push(d)});
+function place(){const R=wrap.clientWidth*.3;els.forEach((d,i)=>{const a=i*360/N+180/N;d.style.transform=`translate(-50%,-50%) rotate(${a}deg) translateY(${-R}px) rotate(${-a}deg) rotate(${-W}deg)`});disc.style.transform=`rotate(${W}deg)`}
+addEventListener('resize',place);
+function spin(i,cb){const a=i*360/N+180/N,need=((-a-W)%360+360)%360;W+=RM?need:1080+need;place();setTimeout(cb,RM?30:CFG.giroMs)}
+function hud(){$('#ro').textContent=round+'/'+CFG.rondas;$('#pt').textContent=total+rp;$('#sk').innerHTML=Array.from({length:CFG.maxErr},(_,i)=>`<i class="${i<strikes?'on':''}">✖</i>`).join('')}
+function board(){$('#board').innerHTML=cq.a.map((x,i)=>`<div class="s" id="s${i}"><b>${i+1}</b><span>· · · · ·</span><em></em></div>`).join('')}
+function reveal(i,miss){const s=$('#s'+i);s.classList.add(miss?'m':'r');s.querySelector('span').textContent=cq.a[i].t.toUpperCase();s.querySelector('em').textContent=cq.a[i].p}
+function nextRound(){
+  round++;lock=true;strikes=0;rp=0;$('#nx').hidden=true;$('#fb').textContent='';$('#board').innerHTML='';
+  const pool=Q.filter(x=>!usedQ.includes(x));cq=pool[Math.random()*pool.length|0];usedQ.push(cq);rev=cq.a.map(()=>false);
+  $('#q').innerHTML='<small>Girando...</small>';hud();
+  spin(cq.c,()=>{$('#q').innerHTML=`<small>${CATS[cq.c][1]} ${CATS[cq.c][0]} · puntos x${CFG.mult[round-1]}</small>Le preguntamos a 100 rioplatenses: ${cq.q}`;board();lock=false;$('#in').focus()});
+}
+function startGame(){total=0;round=0;usedQ=[];playing=true;$('#in').value='';$('#ov').classList.add('h');nextRound()}
+function send(){
+  if(!playing||lock)return;const a=norm($('#in').value);if(!a)return;$('#in').value='';
+  const i=cq.a.findIndex(x=>x.k.includes(a)),f=$('#fb');
+  if(i>=0&&rev[i]){f.textContent='Esa ya la dijiste';f.style.color='#ffd23f';return}
+  if(i>=0){rev[i]=true;rp+=cq.a[i].p*CFG.mult[round-1];reveal(i);f.textContent='¡Está en el panel! 🧉';f.style.color='#2fbf71'}
+  else{strikes++;f.textContent='✖ Nadie dijo eso';f.style.color='#ff8a8a'}
+  hud();
+  if(rev.every(Boolean)||strikes>=CFG.maxErr)endRound();
+}
+function endRound(){
+  lock=true;cq.a.forEach((_,i)=>{if(!rev[i])reveal(i,true)});total+=rp;rp=0;hud();
+  if(round<CFG.rondas){$('#nx').textContent=`Girar la ruleta (x${CFG.mult[round]}) ▶`;$('#nx').hidden=false}
+  else setTimeout(finish,1800);
+}
+function finish(){
+  playing=false;if(total>best){best=total;$('#bs').textContent=best;try{localStorage.setItem('gya_100rio_best',best)}catch(e){}}
+  $('#ot').textContent='¡Se terminó la encuesta!';$('#op').innerHTML=`Puntos: <b>${total}</b><br>Mejor: <b>${best}</b>`;
+  $('#ob').textContent='Jugar de nuevo';$('#ov').classList.remove('h');
+}
+$('#en').addEventListener('click',send);$('#pa').addEventListener('click',()=>{if(playing&&!lock)endRound()});
+$('#nx').addEventListener('click',nextRound);$('#ob').addEventListener('click',startGame);
+$('#in').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();send()}});
+place();hud();
+</script>
+</body>
+</html>
