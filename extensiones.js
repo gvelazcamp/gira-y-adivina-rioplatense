@@ -1,24 +1,41 @@
 /* Lectura en voz alta de las pistas/preguntas, compartida entre los
    juegos de palabras. Usa la voz nativa del celular (Web Speech API):
-   no hay backend ni archivos de audio que mantener. Intenta elegir una
-   voz masculina en español por nombre (no todos los motores exponen el
-   género de forma confiable) y, aparte, baja un poco el tono para que
-   suene más grave de entrada, pase lo que pase con la voz elegida. */
+   no hay backend ni archivos de audio que mantener.
+
+   Elegir "la voz masculina" no es 100% controlable: la Web Speech API no
+   expone el género como dato, así que hay dos intentos (por nombre
+   explícito tipo "Jorge"/"Diego", típico de voces de escritorio; y por el
+   sufijo -B/-D de las voces de red de Google —Standard/Wavenet/Neural2—
+   que en Android suele ser el motor detrás de Chrome, donde -A/-C son
+   femeninas y -B/-D masculinas) y, además, se baja bastante el tono para
+   que suene más grave de entrada, pase lo que pase con la voz que el
+   celular tenga disponible. Si ningún celular del grupo tiene una voz
+   realmente masculina instalada, no hay forma de forzarla desde acá. */
 function obtenerVozMasculina(){
   if(!("speechSynthesis" in window))return null;
   const voces=speechSynthesis.getVoices();if(!voces.length)return null;
   const es=voces.filter(v=>/^es/i.test(v.lang));
   const pool=es.length?es:voces;
-  const masculina=pool.find(v=>/male|hombre|var[oó]n|jorge|diego|carlos|pablo|juan|miguel|enrique|pedro|andr[eé]s/i.test(v.name));
-  return masculina||pool[0]||null;
+  const porNombre=pool.find(v=>/\b(male|hombre|var[oó]n|jorge|diego|carlos|pablo|juan|miguel|enrique|pedro|andr[eé]s|[aá]lvaro|ra[uú]l)\b/i.test(v.name));
+  if(porNombre)return porNombre;
+  const esSufijoMasculino=v=>/-(?:Standard|Wavenet|Neural2)-[BD]$/i.test(v.name)||/-(?:Standard|Wavenet|Neural2)-[BD]$/i.test(v.voiceURI||"");
+  return pool.find(esSufijoMasculino)||null;
 }
+/* Si no se dejó elegir una voz masculina real, igual bajamos el tono para
+   que no quede una voz aguda — no cambia el género percibido del todo,
+   pero suena más grave que la voz por defecto del celular. */
 function hablar(texto){
   try{
     if(!("speechSynthesis" in window)||!texto)return;
     speechSynthesis.cancel();
+    if(typeof detenerMusica==="function")detenerMusica();
     const u=new SpeechSynthesisUtterance(texto);
-    u.lang="es-UY";u.pitch=.8;u.rate=.97;
-    const voz=obtenerVozMasculina();if(voz)u.voice=voz;
+    u.lang="es-UY";u.rate=.97;
+    const voz=obtenerVozMasculina();
+    u.pitch=voz?.75:.6;
+    if(voz)u.voice=voz;
+    const reanudarMusica=()=>{if(typeof sincronizarMusica==="function")sincronizarMusica();};
+    u.onend=reanudarMusica;u.onerror=reanudarMusica;
     speechSynthesis.speak(u);
   }catch(e){}
 }

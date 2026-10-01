@@ -187,6 +187,7 @@ const RoscoRioplatense=(()=>{
     window.visualViewport?.removeEventListener("resize",ajustarPantalla);window.visualViewport?.removeEventListener("scroll",ajustarPantalla);window.removeEventListener("resize",ajustarPantalla);
     shell?.classList.remove("rr-abierta");shell?.style.removeProperty("--rr-alto");shell?.style.removeProperty("--rr-arriba");
     if("speechSynthesis" in window)speechSynthesis.cancel();
+    if(typeof sincronizarMusica==="function")sincronizarMusica();
     raiz=null;shell=null;fase="inicio";items=[];estados=[];
   }
   return{abrir,salir,enviar,configNivel,mejorPuntaje:()=>cargar().mejor};

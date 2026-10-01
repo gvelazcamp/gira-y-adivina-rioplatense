@@ -198,6 +198,7 @@ const SilabarioRioplatense=(()=>{
   function salir(){
     clearInterval(intervalo);intervalo=null;document.removeEventListener("visibilitychange",visibilidad);
     if("speechSynthesis" in window)speechSynthesis.cancel();
+    if(typeof sincronizarMusica==="function")sincronizarMusica();
     raiz=null;fase="inicio";items=[];estados=[];fichas=[];elegidas=[];
   }
   return{abrir,salir,configNivel,mejorPuntaje:()=>cargar().mejor};
