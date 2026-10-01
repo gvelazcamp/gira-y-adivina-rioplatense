@@ -124,14 +124,15 @@ body.ext-abierta{overflow:hidden}
 .rr-compacto .rr-titulo{display:none}.rr-compacto .sf-hud{margin:3px 0}.rr-compacto .sf-hud>div{padding:3px}.rr-compacto .sf-bar{margin:4px 0;height:5px}.rr-compacto .rr-pista{padding:7px 10px;min-height:60px}.rr-compacto .rr-pista p{font-size:.84rem}.rr-compacto .rr-mensaje{font-size:.76rem;margin:3px 0;min-height:18px}
 @media(prefers-reduced-motion:reduce){#rrDisco,.rr-letra span{transition:none}}
 
-/* Silabario Rioplatense: tablero de sílabas que gira entre palabra y palabra. */
-.sb-game{max-width:480px;margin:0 auto;text-align:center}.sb-game [hidden]{display:none!important}
+/* Silabario Rioplatense: un solo tablero con todas las sílabas, que se
+   reordena entre pregunta y pregunta (o si te quedás trabado). */
+.sb-game{max-width:560px;margin:0 auto;text-align:center}.sb-game [hidden]{display:none!important}
 .sb-titulo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px}.sb-titulo img{width:52px;height:52px;border-radius:14px}.sb-titulo h2{font-family:'Archivo Black',sans-serif;color:#F5B301;font-size:1.4rem;margin:0}.sb-titulo p{font-size:.76rem;color:#D7C8E5;margin:4px 0 0}
 .sb-pista{background:#2A1A3C;border:1px solid #FFFFFF22;border-radius:15px;padding:12px 14px;margin:8px 0 6px;min-height:70px;text-align:left}.sb-pista p{margin:0;font-size:.94rem;font-weight:700;color:#F6EFE2;line-height:1.35}.sb-pista small{display:block;margin-top:5px;color:#F5B301;font-size:.75rem;font-weight:900}
 .sb-respuesta{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:8px 0}
 .sb-slot{min-width:48px;min-height:36px;border-radius:9px;border:2px dashed #BFAFD177;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.9rem;color:#F6EFE2;padding:0 6px}.sb-slot.lleno{border-style:solid;border-color:#37D6C0;background:#0B514A}
 .sb-mensaje{min-height:22px;margin:6px 0;color:#D7C8E5;font-size:.84rem;font-weight:800}.sb-mensaje.acierto{color:#37D6C0}.sb-mensaje.error{color:#FF9DA7}
-.sb-tablero{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0;transition:transform .32s ease,opacity .32s ease}.sb-tablero.girando{transform:rotate(10deg) scale(.88);opacity:.3}
-.sb-ficha{min-height:50px;border-radius:12px;background:#F6EFE2;color:#241237;font-weight:900;font-size:clamp(.78rem,3.6vw,.94rem);border:1px solid #fff;box-shadow:0 4px 0 #AFA3B8;transition:transform .14s,box-shadow .14s}.sb-ficha:not(:disabled):active{transform:translateY(3px);box-shadow:0 1px 0 #AFA3B8}.sb-ficha:disabled{cursor:default}.sb-ficha.usada{opacity:.3}.sb-ficha.ok{background:#37D6C0;color:#0B2E29}.sb-ficha.no{background:#FF7E8B;color:#3A0A12}
+.sb-tablero{display:grid;grid-template-columns:repeat(auto-fill,minmax(56px,1fr));gap:7px;margin:10px 0;transition:transform .28s ease,opacity .28s ease}.sb-tablero.girando{transform:rotate(8deg) scale(.88);opacity:.3}
+.sb-ficha{min-height:48px;border-radius:11px;background:#F6EFE2;color:#241237;font-weight:900;font-size:clamp(.72rem,3.2vw,.88rem);border:1px solid #fff;box-shadow:0 4px 0 #AFA3B8;transition:transform .14s,box-shadow .14s,opacity .2s}.sb-ficha:not(:disabled):active{transform:translateY(3px);box-shadow:0 1px 0 #AFA3B8}.sb-ficha:disabled{cursor:default}.sb-ficha.elegida{outline:3px solid #37D6C0;outline-offset:1px}.sb-ficha.usada{opacity:.28;box-shadow:none}
 .sb-game button:disabled{opacity:.55;cursor:default}.sb-game button:focus-visible{outline:3px solid #F5B301;outline-offset:2px}
 @media(prefers-reduced-motion:reduce){.sb-tablero{transition:none}}
