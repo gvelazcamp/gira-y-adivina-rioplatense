@@ -8,12 +8,12 @@ const SILABARIO_CONFIG={
   segundosPorPalabra:16,puntosAcierto:100,bonoSegundo:2,
   mezclaMs:550,pausaMs:900,ticMs:50,proporcionAvance:.7,distraccionMs:14000,
   margenMinimo:.75,descensoMargen:.05,
-  niveles:{1:{palabras:8,margen:1.6},2:{palabras:10,margen:1.4},3:{palabras:12,margen:1.2}}
+  niveles:{1:{fichas:25,columnas:5,margen:1.6},2:{fichas:36,columnas:6,margen:1.4},3:{fichas:49,columnas:7,margen:1.2}}
 };
 const SilabarioRioplatense=(()=>{
   const CLAVE="gya_silabario_rioplatense";
   let datos=cargar(),raiz=null,items=[],estados=[],fichas=[],elegidas=[],actual=-1,bloqueado=false,tiempoPregunta=0;
-  let nivel=1,config=null,fase="inicio",tiempo=0,espera=0,ultimo=0,intervalo=null;
+  let nivel=1,config=null,fase="inicio",tiempo=0,tiempoTotal=0,espera=0,ultimo=0,intervalo=null;
   const $=s=>raiz?.querySelector(s);
   const numero=(v,base=0)=>Number.isFinite(v)&&v>=0?v:base;
   function cargar(){
@@ -24,18 +24,39 @@ const SilabarioRioplatense=(()=>{
   }
   function guardar(){try{localStorage.setItem(CLAVE,JSON.stringify(datos));}catch(e){}}
   function configNivel(n){
-    const c=SILABARIO_CONFIG.niveles[n]||{palabras:12,margen:Math.max(SILABARIO_CONFIG.margenMinimo,1-(n-3)*SILABARIO_CONFIG.descensoMargen)};
-    return{...c,segundos:Math.round(c.palabras*SILABARIO_CONFIG.segundosPorPalabra*c.margen)};
+    const c=SILABARIO_CONFIG.niveles[n];
+    if(c)return{...c};
+    const columnas=n+4;
+    return{fichas:columnas*columnas,columnas,margen:Math.max(SILABARIO_CONFIG.margenMinimo,1-(n-3)*SILABARIO_CONFIG.descensoMargen)};
   }
   function mezclar(lista){const a=[...lista];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+  /* El tablero siempre tiene que quedar un cuadrado completo (5x5, 6x6...),
+     nunca con la última fila a medias. Por eso elegimos palabras cuyas
+     sílabas sumen EXACTO la cantidad de fichas del nivel, probando varias
+     combinaciones al azar. Si ninguna cierra justo (dataset chico, puede
+     pasar), se completa con alguna sílaba repetida como relleno inerte. */
   function armarRonda(){
     const preferidas=SILABARIO_DATOS.filter(d=>nivel<3?d.nivel<=2:d.nivel>=2);
-    const base=preferidas.length?preferidas:SILABARIO_DATOS;
-    return mezclar(base).slice(0,config.palabras);
+    const pool=preferidas.length?preferidas:SILABARIO_DATOS;
+    for(let intento=0;intento<80;intento++){
+      const candidatas=mezclar(pool),elegidas=[];let suma=0;
+      for(const palabra of candidatas){
+        const n=palabra.silabas.length;
+        if(suma+n<=config.fichas){elegidas.push(palabra);suma+=n;}
+        if(suma===config.fichas)return elegidas;
+      }
+    }
+    const candidatas=mezclar(pool),elegidas=[];let suma=0;
+    for(const palabra of candidatas){const n=palabra.silabas.length;if(suma+n<=config.fichas){elegidas.push(palabra);suma+=n;}}
+    return elegidas;
   }
-  function construirFichas(){
+  function construirFichas(objetivo){
     let id=0;const todas=[];
-    items.forEach((item,palabraIdx)=>item.silabas.forEach(texto=>todas.push({id:id++,texto,palabraIdx,el:null})));
+    items.forEach((item,palabraIdx)=>item.silabas.forEach(texto=>todas.push({id:id++,texto,palabraIdx,relleno:false,el:null})));
+    while(todas.length<objetivo){
+      const texto=todas[Math.floor(Math.random()*todas.length)].texto;
+      todas.push({id:id++,texto,palabraIdx:-1,relleno:true,el:null});
+    }
     return mezclar(todas);
   }
   function pendientes(){return estados.map((s,i)=>s==="pendiente"?i:-1).filter(i=>i>=0);}
@@ -43,7 +64,7 @@ const SilabarioRioplatense=(()=>{
   function hud(){
     $("#sbNivel").textContent=nivel;$("#sbAciertos").textContent=conteo("acierto")+"/"+items.length;
     $("#sbErrores").textContent=conteo("error");$("#sbTiempo").textContent=Math.max(0,Math.ceil(tiempo/1000));
-    $("#sbBarra").style.width=Math.max(0,tiempo/(config.segundos*1000)*100)+"%";
+    $("#sbBarra").style.width=Math.max(0,tiempo/tiempoTotal*100)+"%";
     $("#sbBorrar").disabled=fase!=="jugando"||bloqueado||!elegidas.length;
     $("#sbPasar").disabled=fase!=="jugando"||bloqueado;
   }
@@ -56,9 +77,12 @@ const SilabarioRioplatense=(()=>{
   }
   function renderTablero(){
     const tablero=$("#sbTablero");tablero.replaceChildren();
+    tablero.style.gridTemplateColumns="repeat("+config.columnas+",1fr)";
     fichas.forEach(f=>{
-      const b=document.createElement("button");b.type="button";b.className="sb-ficha";b.textContent=f.texto;
-      b.onclick=()=>tocarFicha(f);f.el=b;tablero.appendChild(b);
+      const b=document.createElement("button");b.type="button";b.className="sb-ficha"+(f.relleno?" relleno":"");b.textContent=f.texto;
+      b.disabled=f.relleno;
+      if(!f.relleno)b.onclick=()=>tocarFicha(f);
+      f.el=b;tablero.appendChild(b);
     });
   }
   function reordenar(cb){
@@ -120,8 +144,9 @@ const SilabarioRioplatense=(()=>{
     reordenar(()=>{bloqueado=false;hud();});
   }
   function iniciar(){
-    config=configNivel(nivel);items=armarRonda();estados=items.map(()=>"pendiente");fichas=construirFichas();
-    actual=-1;tiempo=config.segundos*1000;ultimo=performance.now();bloqueado=false;
+    config=configNivel(nivel);items=armarRonda();estados=items.map(()=>"pendiente");fichas=construirFichas(config.fichas);
+    actual=-1;tiempoTotal=Math.round(items.length*SILABARIO_CONFIG.segundosPorPalabra*config.margen)*1000;tiempo=tiempoTotal;
+    ultimo=performance.now();bloqueado=false;
     $("#sbPanel").hidden=true;$("#sbJuego").hidden=false;
     renderTablero();siguiente();
   }
@@ -166,7 +191,7 @@ const SilabarioRioplatense=(()=>{
     $("#sbBorrar").onclick=borrar;$("#sbPasar").onclick=pasar;
     document.addEventListener("visibilitychange",visibilidad);ultimo=performance.now();intervalo=setInterval(tic,SILABARIO_CONFIG.ticMs);
     const acciones=[["Jugar nivel "+nivel,iniciar]];if(nivel>1)acciones.push(["Practicar desde el nivel 1",()=>{nivel=1;iniciar();}]);
-    panel("Silabario Rioplatense",config.palabras+" preguntas sobre un mismo tablero con todas sus sílabas mezcladas. Tocá en orden las sílabas que arman cada respuesta, estén donde estén — las que ya usaste quedan marcadas. El tablero se reordena entre pregunta y pregunta, y también si te quedás trabado mucho rato. Si no sabés, tocá Pasar. Acertá al menos "+Math.ceil(config.palabras*SILABARIO_CONFIG.proporcionAvance)+" y respondé todas para avanzar. Jugás gratis, sin gastar vidas ni monedas. Mejor: "+datos.mejor+" puntos.",acciones);
+    panel("Silabario Rioplatense","Un tablero de "+config.columnas+"×"+config.columnas+" con todas las sílabas de las respuestas de este nivel. Tocá en orden las sílabas que arman cada respuesta, estén donde estén — las que ya usaste quedan marcadas. El tablero se reordena entre pregunta y pregunta, y también si te quedás trabado mucho rato. Si no sabés, tocá Pasar. Respondé bien la mayoría para avanzar de nivel. Jugás gratis, sin gastar vidas ni monedas. Mejor: "+datos.mejor+" puntos.",acciones);
   }
   function salir(){
     clearInterval(intervalo);intervalo=null;document.removeEventListener("visibilitychange",visibilidad);
