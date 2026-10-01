@@ -2,6 +2,17 @@
 const CIEN_CONFIG={rondas:3,multiplicadores:[1,2,3],maxErrores:3,giroMs:2400,vueltas:3,seleccionMs:750,ticMs:50};
 const CienRioplatenses=(()=>{
   const CLAVE="gya_cien_rioplatenses",norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+  /* Adem\u00e1s de los alias cargados a mano, aceptamos singular/plural autom\u00e1ticamente
+     (p.ej. "disfraz" vale como "disfraces") probando las formas t\u00edpicas del espa\u00f1ol
+     en vez de una sola regla fija, porque "panes" y "llaves" singularizan distinto. */
+  function formasSingulares(s){
+    const f=new Set([s]);
+    if(s.length>4&&s.endsWith("CES"))f.add(s.slice(0,-3)+"Z");
+    if(s.length>3&&s.endsWith("ES")){f.add(s.slice(0,-2));f.add(s.slice(0,-1));}
+    else if(s.length>2&&s.endsWith("S"))f.add(s.slice(0,-1));
+    return f;
+  }
+  function mismaPalabra(a,b){const fa=formasSingulares(a);for(const x of formasSingulares(b))if(fa.has(x))return true;return false;}
   let datos=cargar(),raiz=null,shell=null,fase="inicio",ronda=0,puntos=0,errores=0,pregunta=null,encontradas=[];
   let usadasPartida=[],resumen=[],angulo=0,espera=0,ultimo=0,tacMs=0,intervalo=null,categoriaActual=null;
   const $=s=>raiz?.querySelector(s);
@@ -108,7 +119,7 @@ const CienRioplatenses=(()=>{
     if(!raiz||fase!=="responder"||document.hidden)return;
     const valor=norm($("#crEntrada").value);if(!valor){mostrarMensaje("Escribí una respuesta para probar.");enfocar();return;}
     $("#crEntrada").value="";
-    const i=pregunta.respuestas.findIndex(r=>[r.texto,...r.alias].some(a=>norm(a)===valor));
+    const i=pregunta.respuestas.findIndex(r=>[r.texto,...r.alias].some(a=>{const an=norm(a);return an===valor||mismaPalabra(an,valor);}));
     if(i>=0&&encontradas[i]){mostrarMensaje("¡Esa ya está! Probá con otra.","repetida");enfocar();return;}
     if(i>=0){
       encontradas[i]=true;const valor=pregunta.respuestas[i].puntos*CIEN_CONFIG.multiplicadores[ronda-1];puntos+=valor;revelar(i);
