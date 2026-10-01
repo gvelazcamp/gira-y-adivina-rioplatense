@@ -33,7 +33,7 @@
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Outfit:wght@400;500;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Outfit:wght@400;500;700&display=swap"></noscript>
 <script src="ui-icons.js?v=1" defer></script>
-<link rel="stylesheet" href="extensiones.css?v=5">
+<link rel="stylesheet" href="extensiones.css?v=6">
 <script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" defer></script>
 <style>
@@ -4301,6 +4301,7 @@ function recAbrir(){
   if(window.SopaFugaz)filas.push({icono:"🔎",nombre:"Sopa Fugaz",desc:"Mejor puntaje: "+window.SopaFugaz.mejorPuntaje()+" puntos"});
   if(window.RuedaDeLetras)filas.push({icono:"🎡",nombre:"Rueda de Letras",desc:"Mejor puntaje: "+window.RuedaDeLetras.mejorPuntaje()+" puntos"});
   if(window.PalabraSecreta)filas.push({icono:"🟩",nombre:"Palabra Secreta",desc:"Racha actual: "+window.PalabraSecreta.rachaActual()+" días"});
+  if(window.FrasesEnGiro)filas.push({icono:"🌀",nombre:"Frases en Giro",desc:"Mejor puntaje: "+window.FrasesEnGiro.mejorPuntaje()+" puntos"});
   filas.forEach(l=>{
     const d=document.createElement("div");
     d.className="lg-item";
@@ -10729,7 +10730,9 @@ document.addEventListener("keydown",e=>{
 <script src="rueda-de-letras.js?v=3"></script>
 <script src="palabra-secreta-datos.js?v=1"></script>
 <script src="palabra-secreta.js?v=1"></script>
-<script src="extensiones.js?v=1"></script>
+<script src="frases-en-giro-datos.js?v=1"></script>
+<script src="frases-en-giro.js?v=1"></script>
+<script src="extensiones.js?v=2"></script>
 <script src="sala-tv.js?v=1"></script>
 </body>
 </html>

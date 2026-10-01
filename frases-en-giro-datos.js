@@ -1,0 +1,42 @@
+/* Frases originales, breves y con una pista de escena que no revela el orden. */
+const FRASES_EN_GIRO_DATOS=[
+  {nivel:1,pista:"Castillo en apuros",texto:"El dragón perdió sus llaves mágicas",trampas:["encontró","doradas","voló"]},
+  {nivel:1,pista:"Turismo espacial",texto:"La luna pidió vacaciones en Marte",trampas:["sol","compró","Venus"]},
+  {nivel:1,pista:"Visita inesperada",texto:"Un robot aprendió a tomar mate",trampas:["astronauta","servir","café"]},
+  {nivel:1,pista:"Problemas de vestuario",texto:"El fantasma olvidó su sábana favorita",trampas:["sombrero","perdió","nueva"]},
+  {nivel:1,pista:"Concierto cósmico",texto:"La vaca tocó cumbia en Saturno",trampas:["cantó","Marte","guitarra"]},
+  {nivel:1,pista:"Tesoro insólito",texto:"Un pirata escondió oro en pantuflas",trampas:["mapa","encontró","botas"]},
+  {nivel:1,pista:"Ocho problemas",texto:"El pulpo pidió ocho guantes nuevos",trampas:["zapatos","siete","compró"]},
+  {nivel:1,pista:"Moda prehistórica",texto:"Un dinosaurio compró zapatos para bailar",trampas:["sombrero","correr","vendió"]},
+  {nivel:1,pista:"Pronóstico mágico",texto:"El mago convirtió lluvia en pochoclo",trampas:["nieve","chocolate","perdió"]},
+  {nivel:1,pista:"Transporte submarino",texto:"La sirena encontró una bicicleta submarina",trampas:["barco","perdió","nueva"]},
+  {nivel:1,pista:"Colección de otro mundo",texto:"El extraterrestre colecciona figuritas de pingüinos",trampas:["robots","vende","postales"]},
+  {nivel:1,pista:"Desayuno real",texto:"El rey desayunó helado con dragones",trampas:["cenó","galletas","piratas"]},
+
+  {nivel:2,pista:"Escoba fuera de servicio",texto:"La bruja cambió su escoba por patines voladores",trampas:["compró","botas","rápidos"]},
+  {nivel:2,pista:"Negocio fuera de órbita",texto:"El conejo abrió una heladería en la luna",trampas:["cerró","panadería","Marte"]},
+  {nivel:2,pista:"Camuflaje en el cielo",texto:"Una nube se disfrazó de oveja para descansar",trampas:["estrella","vistió","volar"]},
+  {nivel:2,pista:"Cartografía diminuta",texto:"El pirata usó un mapa dibujado por hormigas",trampas:["tesoro","perdió","gigantes"]},
+  {nivel:2,pista:"Carrera imposible",texto:"La abuela le ganó una carrera al cometa",trampas:["abuelo","perdió","tren"]},
+  {nivel:2,pista:"Susto burocrático",texto:"Un fantasma pidió permiso para asustar al espejo",trampas:["duende","compró","castillo"]},
+  {nivel:2,pista:"Partida bajo el agua",texto:"El pulpo jugó al ajedrez contra una medusa",trampas:["sirena","damas","ganó"]},
+  {nivel:2,pista:"Tecnología con problemas",texto:"Un robot perdió la contraseña de su nave",trampas:["encontró","batería","cohete"]},
+  {nivel:2,pista:"Circo celestial",texto:"La estrella aprendió a hacer malabares con planetas",trampas:["luna","cometas","olvidó"]},
+  {nivel:2,pista:"Correo extraordinario",texto:"El cartero entregó una carta escrita por dragones",trampas:["pirata","recibió","nubes"]},
+  {nivel:2,pista:"Partido en el bosque",texto:"Un zorro escondió la pelota detrás del arcoíris",trampas:["conejo","encontró","árbol"]},
+  {nivel:2,pista:"Concierto nocturno",texto:"La lechuza dirigió una orquesta de grillos dormidos",trampas:["cantó","ranas","despiertos"]},
+
+  {nivel:3,pista:"Emergencia en el castillo",texto:"El dragón guardó su último fuego dentro de un termo",trampas:["primero","mate","apagó"]},
+  {nivel:3,pista:"Milonga submarina",texto:"La sirena invitó al tiburón a bailar tango bajo agua",trampas:["pulpo","cumbia","rechazó"]},
+  {nivel:3,pista:"Arquitectura de naipes",texto:"El rey construyó un castillo con cartas de truco",trampas:["pirata","derribó","ajedrez"]},
+  {nivel:3,pista:"Plan B espacial",texto:"Un astronauta cambió su cohete por una bicicleta lunar",trampas:["robot","vendió","nave"]},
+  {nivel:3,pista:"Caza de estrellas",texto:"La abuela atrapó un cometa usando su viejo paraguas",trampas:["abuelo","perdió","sombrero"]},
+  {nivel:3,pista:"Clase de estrategia",texto:"El pulpo le enseñó ajedrez a siete peces distraídos",trampas:["ocho","sirenas","damas"]},
+  {nivel:3,pista:"Objeto perdido",texto:"Un fantasma encontró su sábana en el museo lunar",trampas:["perdió","sombrero","castillo"]},
+  {nivel:3,pista:"Viaje de medianoche",texto:"El tren de medianoche llevaba pasajeros de otro planeta",trampas:["barco","traía","ciudad"]},
+  {nivel:3,pista:"Dulce tormenta",texto:"La bruja convirtió la lluvia en caramelos para dragones",trampas:["nieve","galletas","piratas"]},
+  {nivel:3,pista:"Estreno prehistórico",texto:"Un dinosaurio pidió permiso para entrar al cine espacial",trampas:["robot","compró","teatro"]},
+  {nivel:3,pista:"Sombrero viajero",texto:"La luna le robó el sombrero al mago distraído",trampas:["sol","devolvió","pirata"]},
+  {nivel:3,pista:"Intercambio sospechoso",texto:"El pirata cambió su tesoro por un mapa invisible",trampas:["encontró","cofre","mágico"]}
+];
+window.FRASES_EN_GIRO_DATOS=FRASES_EN_GIRO_DATOS;

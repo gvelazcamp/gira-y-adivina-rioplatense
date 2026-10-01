@@ -1,0 +1,195 @@
+/* Frases en Giro: extensión local, independiente de las monedas y vidas. */
+const FRASES_GIRO_CONFIG={
+  primerNivel:1,intentos:3,penalidadErrorMs:6000,puntosBase:100,puntosPorSegundo:3,
+  puntosPorRacha:20,giroAnimacionMs:650,ticMs:50,recientesMax:24,
+  niveles:{
+    1:{grupo:1,segundos:65,giro:18,senuelos:0},
+    2:{grupo:1,segundos:60,giro:15,senuelos:1},
+    3:{grupo:2,segundos:70,giro:14,senuelos:1},
+    4:{grupo:2,segundos:65,giro:12,senuelos:2},
+    5:{grupo:3,segundos:75,giro:11,senuelos:2}
+  }
+};
+const FrasesEnGiro=(()=>{
+  const CLAVE="gya_frases_en_giro";
+  const azar=n=>Math.floor(Math.random()*n);
+  let datos=cargar(),raiz=null,frase=null,fichas=[],ordenBanco=[],espacios=[];
+  let nivel=1,puntos=0,racha=0,errores=0,tiempoMs=0,duracionMs=0,giroMs=0,proximoGiro=0;
+  let jugando=false,girando=false,intervalo=null,giroTimer=null,ultimoTic=0,ocultoDesde=0,token=0,feedback=[];
+
+  function cargar(){
+    try{const d=JSON.parse(localStorage.getItem(CLAVE)||"null");if(d&&typeof d==="object")return{
+      mejor:Math.max(0,Number(d.mejor)||0),nivelMax:Math.max(1,Number(d.nivelMax)||1),
+      ganadas:Math.max(0,Number(d.ganadas)||0),recientes:Array.isArray(d.recientes)?d.recientes.filter(Number.isInteger).slice(-FRASES_GIRO_CONFIG.recientesMax):[]
+    };}catch(e){}
+    return{mejor:0,nivelMax:1,ganadas:0,recientes:[]};
+  }
+  function guardar(){try{localStorage.setItem(CLAVE,JSON.stringify(datos));}catch(e){}}
+  function mejorPuntaje(){return datos.mejor;}
+  function configNivel(n){
+    if(FRASES_GIRO_CONFIG.niveles[n])return FRASES_GIRO_CONFIG.niveles[n];
+    const paso=n-5;
+    return{grupo:3,segundos:Math.max(60,75-paso*2),giro:Math.max(8,11-paso*.5),senuelos:Math.min(3,2+Math.floor(paso/2))};
+  }
+  function mezclar(lista){
+    const a=[...lista];for(let i=a.length-1;i>0;i--){const j=azar(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;
+  }
+  function elegir(n){
+    const grupo=configNivel(n).grupo;
+    const posibles=FRASES_EN_GIRO_DATOS.map((d,id)=>({...d,id})).filter(d=>d.nivel===grupo);
+    const recientes=new Set(datos.recientes.slice(-Math.min(8,posibles.length-1)));
+    const libres=posibles.filter(d=>!recientes.has(d.id));
+    return (libres.length?libres:posibles)[azar((libres.length?libres:posibles).length)];
+  }
+  function sonido(f=750){if(typeof bip==="function")bip(f,.075,"sine",.05);}
+  function hud(){
+    if(!raiz)return;
+    raiz.querySelector("#fgNivel").textContent=nivel;
+    raiz.querySelector("#fgPuntos").textContent=puntos;
+    raiz.querySelector("#fgIntentos").textContent=FRASES_GIRO_CONFIG.intentos-errores;
+    raiz.querySelector("#fgTiempo").textContent=Math.max(0,Math.ceil(tiempoMs/1000));
+    raiz.querySelector("#fgTiempoBarra").style.width=Math.max(0,tiempoMs/duracionMs*100)+"%";
+    raiz.querySelector("#fgGiroBarra").style.width=girando?"0%":Math.max(0,(proximoGiro-performance.now())/giroMs*100)+"%";
+    raiz.querySelector("#fgGiroTexto").textContent=girando?"¡Las palabras giran!":"Próximo giro en "+Math.max(0,Math.ceil((proximoGiro-performance.now())/1000))+" s";
+    raiz.querySelector("#fgRacha").textContent=racha>1?"🔥 Racha de "+racha+" frases":"Armá la frase antes de que se acabe el tiempo";
+  }
+  function avisar(texto){if(raiz)raiz.querySelector("#fgMensaje").textContent=texto;}
+  function ficha(id){return fichas.find(f=>f.id===id);}
+  function dibujarEspacios(){
+    const zona=raiz.querySelector("#fgEspacios");zona.replaceChildren();
+    espacios.forEach((id,i)=>{
+      const b=document.createElement("button");b.type="button";b.className="fg-espacio"+(id===null?" vacio":" lleno")+(feedback[i]?" "+feedback[i]:"");
+      b.textContent=id===null?String(i+1):ficha(id).palabra;
+      b.setAttribute("aria-label",id===null?"Lugar "+(i+1)+" vacío":"Lugar "+(i+1)+": "+ficha(id).palabra+". Tocar para quitar");
+      b.disabled=!jugando||girando||id===null;
+      b.onclick=()=>{espacios[i]=null;feedback=[];avisar("Elegí la palabra que va en el lugar "+(i+1)+".");dibujar();};
+      zona.appendChild(b);
+    });
+  }
+  function dibujarBanco(){
+    const zona=raiz.querySelector("#fgBanco");zona.replaceChildren();
+    const seleccionadas=new Set(espacios.filter(id=>id!==null));
+    ordenBanco.filter(id=>!seleccionadas.has(id)).forEach(id=>{
+      const b=document.createElement("button");b.type="button";b.className="fg-ficha";
+      b.textContent=ficha(id).palabra;
+      b.disabled=!jugando||girando;
+      b.onclick=()=>{
+        const lugar=espacios.indexOf(null);if(lugar<0)return;
+        espacios[lugar]=id;feedback=[];avisar(espacios.includes(null)?"Tocá una ficha para sumarla. Tocá una colocada para cambiarla.":"Frase completa. ¿La comprobamos?");
+        sonido(590);dibujar();
+      };
+      zona.appendChild(b);
+    });
+  }
+  function dibujar(){
+    if(!raiz)return;
+    dibujarEspacios();dibujarBanco();
+    raiz.querySelector("#fgComprobar").disabled=!jugando||girando||espacios.includes(null);
+    raiz.querySelector("#fgVaciar").disabled=!jugando||girando||espacios.every(id=>id===null);
+    hud();
+  }
+  function panel(titulo,detalle,principal,accion,secundario){
+    const capa=raiz.querySelector("#fgPanel");capa.replaceChildren();capa.hidden=false;
+    const tarjeta=document.createElement("div");tarjeta.className="fg-panel";
+    const h=document.createElement("h3");h.textContent=titulo;
+    const p=document.createElement("p");p.textContent=detalle;
+    const acciones=document.createElement("div");acciones.className="fg-panel-acciones";
+    const b=document.createElement("button");b.type="button";b.className="fg-principal";b.textContent=principal;b.onclick=accion;acciones.appendChild(b);
+    if(secundario){const otro=document.createElement("button");otro.type="button";otro.textContent=secundario.texto;otro.onclick=secundario.accion;acciones.appendChild(otro);}
+    tarjeta.append(h,p,acciones);capa.appendChild(tarjeta);
+  }
+  function prepararFichas(c){
+    const palabras=frase.texto.split(" ");
+    fichas=palabras.map((palabra,id)=>({id,palabra}));
+    frase.trampas.slice(0,c.senuelos).forEach(palabra=>fichas.push({id:fichas.length,palabra}));
+    ordenBanco=mezclar(fichas.map(f=>f.id));
+    if(ordenBanco.every((id,i)=>id===i)&&ordenBanco.length>1)ordenBanco.push(ordenBanco.shift());
+    espacios=Array(palabras.length).fill(null);
+  }
+  function comenzar(){
+    token++;clearTimeout(giroTimer);
+    const c=configNivel(nivel);
+    frase=elegir(nivel);datos.recientes.push(frase.id);datos.recientes=datos.recientes.slice(-FRASES_GIRO_CONFIG.recientesMax);guardar();
+    prepararFichas(c);errores=0;feedback=[];girando=false;duracionMs=c.segundos*1000;tiempoMs=duracionMs;giroMs=c.giro*1000;
+    ultimoTic=performance.now();proximoGiro=ultimoTic+giroMs;ocultoDesde=0;jugando=true;
+    raiz.querySelector("#fgPista").textContent="Escena: "+frase.pista;
+    raiz.querySelector("#fgPanel").hidden=true;
+    raiz.querySelector("#fgBanco").classList.remove("gira");
+    raiz.closest(".ext-shell")?.scrollTo(0,0);
+    avisar(c.senuelos?"Ojo: hay "+c.senuelos+" palabra"+(c.senuelos===1?" señuelo.":"s señuelo."):"Tocá las palabras en orden. Podés quitar cualquiera.");
+    dibujar();
+  }
+  function terminar(gano){
+    if(!jugando)return;
+    jugando=false;girando=false;token++;clearTimeout(giroTimer);raiz.querySelector("#fgBanco").classList.remove("gira");
+    if(gano){
+      racha++;puntos+=FRASES_GIRO_CONFIG.puntosBase+Math.ceil(tiempoMs/1000)*FRASES_GIRO_CONFIG.puntosPorSegundo+racha*FRASES_GIRO_CONFIG.puntosPorRacha;
+      datos.ganadas++;datos.nivelMax=Math.max(datos.nivelMax,nivel+1);sonido(1000);
+      if(typeof vibrar==="function")vibrar([30,40,55]);
+    }else{racha=0;sonido(260);if(typeof vibrar==="function")vibrar(85);}
+    datos.mejor=Math.max(datos.mejor,puntos);guardar();dibujar();
+    if(gano){nivel++;panel("¡Frase armada!","“"+frase.texto+"” · "+puntos+" puntos · mejor: "+datos.mejor,"Siguiente nivel",comenzar);}
+    else panel("Esta se escapó","La frase era: “"+frase.texto+"”. Tu mejor puntaje: "+datos.mejor+".","Otra frase del nivel "+nivel,()=>{puntos=0;comenzar();});
+  }
+  function comprobar(){
+    if(!jugando||girando||espacios.includes(null))return;
+    const correctas=frase.texto.split(" ");
+    const elegidas=espacios.map(id=>ficha(id).palabra);
+    if(elegidas.every((palabra,i)=>palabra===correctas[i])){terminar(true);return;}
+    errores++;tiempoMs=Math.max(0,tiempoMs-FRASES_GIRO_CONFIG.penalidadErrorMs);
+    feedback=elegidas.map((palabra,i)=>palabra===correctas[i]?"bien":ficha(espacios[i]).id>=correctas.length?"senuelo":"mal");
+    const aciertos=feedback.filter(v=>v==="bien").length;
+    avisar(aciertos+" de "+correctas.length+" en su lugar · -6 segundos · "+(FRASES_GIRO_CONFIG.intentos-errores)+" intento(s)");
+    sonido(340);if(typeof vibrar==="function")vibrar(50);
+    if(errores>=FRASES_GIRO_CONFIG.intentos||tiempoMs<=0){terminar(false);return;}
+    dibujar();
+  }
+  function girar(){
+    if(!jugando||girando)return;
+    girando=true;dibujar();
+    const t=++token,zona=raiz.querySelector("#fgBanco");zona.classList.add("gira");
+    giroTimer=setTimeout(()=>{
+      if(t!==token||!jugando)return;
+      const elegidas=new Set(espacios.filter(id=>id!==null));
+      const activas=ordenBanco.filter(id=>!elegidas.has(id));
+      const nuevas=mezclar(activas);
+      if(nuevas.length>1&&nuevas.every((id,i)=>id===activas[i]))nuevas.push(nuevas.shift());
+      ordenBanco=[...nuevas,...ordenBanco.filter(id=>elegidas.has(id))];
+      dibujarBanco();
+      giroTimer=setTimeout(()=>{
+        if(t!==token||!jugando)return;
+        zona.classList.remove("gira");girando=false;proximoGiro=performance.now()+giroMs;dibujar();
+      },FRASES_GIRO_CONFIG.giroAnimacionMs/2);
+    },FRASES_GIRO_CONFIG.giroAnimacionMs/2);
+  }
+  function tic(){
+    const ahora=performance.now();
+    if(!jugando){ultimoTic=ahora;return;}
+    if(document.hidden){if(!ocultoDesde)ocultoDesde=ahora;ultimoTic=ahora;return;}
+    tiempoMs-=Math.max(0,ahora-ultimoTic);ultimoTic=ahora;
+    if(tiempoMs<=0){tiempoMs=0;terminar(false);return;}
+    if(!girando&&ahora>=proximoGiro)girar();
+    hud();
+  }
+  function visibilidad(){
+    if(document.hidden){if(jugando&&!ocultoDesde)ocultoDesde=performance.now();return;}
+    if(ocultoDesde){proximoGiro+=performance.now()-ocultoDesde;ultimoTic=performance.now();ocultoDesde=0;}
+  }
+  function abrir(contenedor){
+    salir();datos=cargar();nivel=datos.nivelMax;puntos=0;racha=0;
+    raiz=document.createElement("div");raiz.className="fg-game";
+    raiz.innerHTML='<h2>🌀 Frases en Giro</h2><p class="fg-sub">Ordená palabras, esquivá señuelos y ganale al reloj.</p><div class="fg-hud"><div><small>Nivel</small><b id="fgNivel">1</b></div><div><small>Puntos</small><b id="fgPuntos">0</b></div><div><small>Intentos</small><b id="fgIntentos">3</b></div><div><small>Tiempo</small><b id="fgTiempo">0</b></div></div><div class="fg-bar"><i id="fgTiempoBarra"></i></div><div class="fg-escena" id="fgPista"></div><p class="fg-racha" id="fgRacha"></p><div class="fg-espacios" id="fgEspacios" aria-label="Frase en construcción"></div><p class="fg-etiqueta">Palabras disponibles</p><div class="fg-banco" id="fgBanco" aria-label="Palabras para elegir"></div><p class="fg-mensaje" id="fgMensaje" role="status" aria-live="polite"></p><div class="fg-acciones"><button type="button" id="fgComprobar">Comprobar frase</button><button type="button" id="fgVaciar">Vaciar</button></div><p class="fg-giro-texto" id="fgGiroTexto"></p><div class="fg-bar giro"><i id="fgGiroBarra"></i></div><div class="fg-panel-capa" id="fgPanel"></div>';
+    contenedor.appendChild(raiz);
+    raiz.querySelector("#fgComprobar").onclick=comprobar;
+    raiz.querySelector("#fgVaciar").onclick=()=>{espacios.fill(null);feedback=[];avisar("Empezá de nuevo: tocá las palabras en orden.");dibujar();};
+    intervalo=setInterval(tic,FRASES_GIRO_CONFIG.ticMs);document.addEventListener("visibilitychange",visibilidad);
+    panel("Frases en Giro","Armá frases disparatadas tocando las palabras en orden. Cada giro mezcla las fichas libres; lo que ya colocaste queda seguro. Desde el nivel 2 aparecen palabras señuelo. Tenés tres intentos por frase.","Jugar nivel "+nivel,comenzar,
+      nivel>1?{texto:"Empezar desde el nivel 1",accion:()=>{nivel=1;puntos=0;comenzar();}}:null);
+  }
+  function salir(){
+    jugando=false;girando=false;token++;clearInterval(intervalo);clearTimeout(giroTimer);intervalo=null;giroTimer=null;
+    document.removeEventListener("visibilitychange",visibilidad);raiz=null;frase=null;fichas=[];ordenBanco=[];espacios=[];
+  }
+  return{abrir,salir,mejorPuntaje,configNivel,elegir};
+})();
+window.FrasesEnGiro=FrasesEnGiro;
