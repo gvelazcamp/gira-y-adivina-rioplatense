@@ -84,6 +84,7 @@ const RoscoRioplatense=(()=>{
     actual=destino;fase="resolver";const d=items[actual];
     $("#rrGrande").textContent=d.letra;$("#rrRegla").textContent=(d.contiene?"Contiene la ":"Empieza con ")+d.letra;
     $("#rrDefinicion").textContent=d.definicion;hud();enfocar();
+    if(typeof hablar==="function")hablar(d.definicion);
   }
   function iniciar(){
     config=configNivel(nivel);items=armarRonda();guardar();estados=items.map(()=>"pendiente");
@@ -170,9 +171,10 @@ const RoscoRioplatense=(()=>{
   function abrir(contenedor){
     salir();datos=cargar();nivel=datos.nivelMax;config=configNivel(nivel);fase="inicio";
     raiz=document.createElement("div");raiz.className="rr-game";
-    raiz.innerHTML='<div class="rr-titulo"><img src="logo-rosco-rioplatense.svg" alt=""><div><h2>El Rosco</h2><p>Una vuelta, muchas palabras nuestras.</p></div></div><div id="rrJuego" hidden><div class="sf-hud"><div><small>Nivel</small><b id="rrNivel"></b></div><div><small>Aciertos</small><b id="rrAciertos"></b></div><div><small>Errores</small><b id="rrErrores"></b></div><div><small>Tiempo</small><b id="rrTiempo"></b></div></div><div class="sf-bar"><i id="rrBarra"></i></div><div class="rr-rueda"><div id="rrDisco"></div><b id="rrGrande"></b></div><div class="rr-pista" role="status" aria-live="polite"><small id="rrRegla"></small><p id="rrDefinicion"></p></div><p id="rrMensaje" class="rr-mensaje" role="status"></p><form id="rrForm" autocomplete="off"><label class="rr-sr" for="rrEntrada">Tu respuesta</label><div class="rr-fila"><input id="rrEntrada" placeholder="Escribí la palabra" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="send" maxlength="60"><button id="rrEnviar" type="submit">Enviar</button></div><button id="rrPasar" type="button">Pasapalabra ↻</button></form></div><div id="rrPanel" class="rr-panel-capa"></div>';
+    raiz.innerHTML='<div class="rr-titulo"><img src="logo-rosco-rioplatense.svg" alt=""><div><h2>El Rosco</h2><p>Una vuelta, muchas palabras nuestras.</p></div></div><div id="rrJuego" hidden><div class="sf-hud"><div><small>Nivel</small><b id="rrNivel"></b></div><div><small>Aciertos</small><b id="rrAciertos"></b></div><div><small>Errores</small><b id="rrErrores"></b></div><div><small>Tiempo</small><b id="rrTiempo"></b></div></div><div class="sf-bar"><i id="rrBarra"></i></div><div class="rr-rueda"><div id="rrDisco"></div><b id="rrGrande"></b></div><div class="rr-pista" role="status" aria-live="polite"><div class="voz-fila"><small id="rrRegla"></small><button type="button" class="voz-btn" id="rrEscuchar" aria-label="Escuchar la pista">🔊</button></div><p id="rrDefinicion"></p></div><p id="rrMensaje" class="rr-mensaje" role="status"></p><form id="rrForm" autocomplete="off"><label class="rr-sr" for="rrEntrada">Tu respuesta</label><div class="rr-fila"><input id="rrEntrada" placeholder="Escribí la palabra" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="send" maxlength="60"><button id="rrEnviar" type="submit">Enviar</button></div><button id="rrPasar" type="button">Pasapalabra ↻</button></form></div><div id="rrPanel" class="rr-panel-capa"></div>';
     contenedor.appendChild(raiz);shell=raiz.closest(".ext-shell");shell?.classList.add("rr-abierta");
     $("#rrForm").onsubmit=e=>{e.preventDefault();enviar();};$("#rrPasar").onclick=pasar;
+    $("#rrEscuchar").onclick=()=>{if(actual>=0&&typeof hablar==="function")hablar(items[actual].definicion);};
     for(const b of raiz.querySelectorAll("#rrForm button"))b.onpointerdown=e=>e.preventDefault();
     $("#rrEntrada").onbeforeinput=e=>{if(fase!=="resolver")e.preventDefault();};
     window.visualViewport?.addEventListener("resize",ajustarPantalla);window.visualViewport?.addEventListener("scroll",ajustarPantalla);window.addEventListener("resize",ajustarPantalla);
@@ -184,6 +186,7 @@ const RoscoRioplatense=(()=>{
     clearInterval(intervalo);intervalo=null;document.removeEventListener("visibilitychange",visibilidad);
     window.visualViewport?.removeEventListener("resize",ajustarPantalla);window.visualViewport?.removeEventListener("scroll",ajustarPantalla);window.removeEventListener("resize",ajustarPantalla);
     shell?.classList.remove("rr-abierta");shell?.style.removeProperty("--rr-alto");shell?.style.removeProperty("--rr-arriba");
+    if("speechSynthesis" in window)speechSynthesis.cancel();
     raiz=null;shell=null;fase="inicio";items=[];estados=[];
   }
   return{abrir,salir,enviar,configNivel,mejorPuntaje:()=>cargar().mejor};

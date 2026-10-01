@@ -1,4 +1,8 @@
 #bExtensiones[hidden],.ext-shell[hidden]{display:none!important}
+/* Botón de "escuchar la pista" (voz nativa del celular), compartido entre juegos. */
+.voz-fila{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.voz-btn{flex:0 0 auto;width:34px;height:34px;min-height:0;border-radius:50%;background:#37D6C022;border:1px solid #37D6C077;color:#37D6C0;font-size:1rem;padding:0;display:grid;place-items:center}
+.voz-btn:active{background:#37D6C044}
 #bExtensiones{margin:16px 0 6px;background:linear-gradient(135deg,#633CCB 0%,#385DC3 52%,#148C9B 100%);box-shadow:0 6px 0 #174F71}
 #bExtensiones:active{box-shadow:0 2px 0 #174F71}
 #bExtensiones .cta-play{background:#FFFFFF30;color:#F6D77A}
