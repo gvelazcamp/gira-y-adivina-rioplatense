@@ -6,7 +6,7 @@
    quedás mucho rato sin responder la actual. */
 const SILABARIO_CONFIG={
   segundosPorPalabra:16,puntosAcierto:100,bonoSegundo:2,
-  mezclaMs:550,pausaMs:900,ticMs:50,proporcionAvance:.7,distraccionMs:9000,
+  mezclaMs:550,pausaMs:900,ticMs:50,proporcionAvance:.7,distraccionMs:14000,
   margenMinimo:.75,descensoMargen:.05,
   niveles:{1:{palabras:8,margen:1.6},2:{palabras:10,margen:1.4},3:{palabras:12,margen:1.2}}
 };
