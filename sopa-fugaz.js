@@ -5,6 +5,7 @@ const SOPA_CONFIG={
   segundosBasePalabra:4,segundosPorLetra:1.2,factorMudanzas:1.15,factorTiempoExtra:1.1,grillaBase:10,
   puntosPalabra:100,puntosSegundo:5,graciaArrastreMs:2500,giroMs:1100,
   ticMs:50,registroPalabrasMax:100,intentosTablero:30,intentosColocacion:500,
+  intentosInterior:350,margenInterior:1,
   niveles:{
     1:{n:10,palabras:3,min:4,max:6,margen:1.6,mudanza:9},
     2:{n:10,palabras:3,min:4,max:6,margen:1.4,mudanza:8},
@@ -62,13 +63,17 @@ const SopaFugaz=(()=>{
     else if(elegidas.length<c.palabras)categoria="Últimas palabras nuevas";
     return elegidas;
   }
-  function colocar(palabra,matriz,n,direcciones){
+  function colocar(palabra,matriz,n,direcciones,preferirInterior){
     for(let intento=0;intento<SOPA_CONFIG.intentosColocacion;intento++){
       const [dr,dc]=direcciones[azar(direcciones.length)];
       const margenFila=n-(palabra.length-1)*Math.abs(dr),margenCol=n-(palabra.length-1)*Math.abs(dc);
       const fila=(dr<0?(palabra.length-1):0)+azar(margenFila);
       const col=(dc<0?(palabra.length-1):0)+azar(margenCol);
       const indices=Array.from({length:palabra.length},(_,i)=>(fila+dr*i)*n+col+dc*i);
+      if(preferirInterior&&intento<SOPA_CONFIG.intentosInterior&&indices.some(k=>{
+        const r=Math.floor(k/n),c=k%n,m=SOPA_CONFIG.margenInterior;
+        return r<m||r>=n-m||c<m||c>=n-m;
+      }))continue;
       if(indices.every((k,i)=>!matriz[k]||matriz[k]===palabra[i])){
         indices.forEach((k,i)=>matriz[k]=palabra[i]);return true;
       }
@@ -81,8 +86,8 @@ const SopaFugaz=(()=>{
     for(let intento=0;intento<SOPA_CONFIG.intentosTablero;intento++){
       const matriz=Array(n*n).fill("");
       const orden=mezclar(restantes).sort((a,b)=>b.length-a.length);
-      if(!orden.every((w,i)=>colocar(w,matriz,n,nivel<=2&&restantes.length>=2&&i<2?[direcciones[i]]:direcciones)))continue;
-      const relleno=("AAEEIIOOUUBCDFGLMNPRSTVZ"+restantes.join("")).split("");
+      if(!orden.every((w,i)=>colocar(w,matriz,n,nivel<=2&&restantes.length>=2&&i<2?[direcciones[i]]:direcciones,mudando)))continue;
+      const relleno=("AAEEIIOOUUBCDFGLMNPRSTVZ"+objetivos.join("")).split("");
       tablero=matriz.map(letra=>letra||relleno[azar(relleno.length)]);
       dibujarTablero(n);return;
     }
