@@ -530,6 +530,7 @@ body.gonzalo-admin .frame-card .tn-admin-x,body.gonzalo-admin .tn-item .tn-admin
 .rk-info{flex:1;display:flex;flex-direction:column;gap:1px;min-width:0}
 .rk-info b{font-size:.9rem}
 .rk-info span{font-size:.72rem;color:#B49FCE}
+.rk-info .rk-ciudad{color:#7DE6D7;font-weight:800;overflow-wrap:anywhere}
 .rk-monedas{font-weight:800;color:var(--oro);font-size:.85rem;flex-shrink:0;white-space:nowrap}
 .rk-avatar{width:34px;height:34px;border-radius:50%;flex-shrink:0;object-fit:cover;border:1px solid #FFFFFF33;background:#00000055}
 .rk-avatar-wrap{position:relative;flex-shrink:0;line-height:0}
@@ -633,6 +634,7 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 .perfil-pais-btn{border:1px solid #FFFFFF22;background:#2A1A3C;color:var(--crema);border-radius:16px;padding:12px 8px;font-weight:900;box-shadow:0 4px 0 #150C1F}
 .perfil-pais-btn.elegido{background:var(--agua);color:var(--tinta);border-color:var(--agua);box-shadow:0 4px 0 #16796D}
 .perfil-pais-ayuda{display:block;color:#B49FCE;font-size:.78rem;line-height:1.25;margin:8px 6px 0}
+.perfil-ciudad{margin:12px 0 6px;text-align:left;flex-direction:column;align-items:stretch}.perfil-ciudad input{width:100%;flex:auto}.perfil-ciudad-ayuda{display:block;color:#B49FCE;font-size:.76rem;line-height:1.3;margin:5px 6px 0}
 #perfilCambiarNombre{background:none;color:var(--agua);font-weight:700;padding:4px 8px;margin:-2px 0 12px}
 .avatar-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:0 0 22px}
 .avatar-opcion{position:relative;border-radius:50%;padding:0;border:3px solid transparent;background:none;aspect-ratio:1;overflow:hidden}
@@ -1235,7 +1237,9 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
 <div class="capa" id="capaSocial">
   <div class="caja" style="max-width:420px;padding:16px">
     <img src="assets/social/promo-redes.webp" alt="Girá y Adiviná Rioplatense en redes" style="width:100%;border-radius:14px;display:block;margin-bottom:14px">
-    <button class="btn-grande" id="socialContinuar" style="display:none;margin-bottom:10px">Continuar</button>
+    <p class="sub" id="socialCiudadInfo" style="margin:0 0 8px"></p>
+    <button class="no" id="socialEditarCiudad" style="width:100%;border-radius:12px;padding:10px;font-weight:700;margin-bottom:10px">📍 Indicar mi ciudad</button>
+    <button class="btn-grande" id="socialContinuar" style="margin-bottom:10px">Ver jugadores y ciudades</button>
     <button class="no" id="socialCerrar" style="width:100%;border-radius:12px;padding:13px;font-weight:700">Cerrar</button>
   </div>
 </div>
@@ -1312,6 +1316,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
       </div>
       <small class="perfil-pais-ayuda" id="perfilPaisAyuda">Elegí tu país para habilitar el perfil. La expansión sugerida queda cruzada al otro lado del Río de la Plata.</small>
     </div>
+    <div class="campo perfil-ciudad"><span>Ciudad (opcional)</span><input id="perfilCiudad" placeholder="Ej.: Montevideo" maxlength="40" autocomplete="address-level2"><small class="perfil-ciudad-ayuda">Se mostrará junto a tu nombre en Social y en el ranking. No usa tu ubicación del celular.</small></div>
   </div>
   <div id="perfilPasoAvatar" style="display:none">
     <p class="sub" id="avatarTitulo" style="margin:8px 0 4px">Ahora elegí tu avatar</p>
@@ -1841,6 +1846,8 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <h2>🥇 Ranking de amigos</h2>
   <div id="rkSetup">
     <p class="sub" style="margin:6px 0 14px">Elegí un apodo para aparecer en el ranking junto a todos los que jueguen.</p>
+    <p class="sub" id="rkMiCiudadSetup" style="margin:0 0 10px"></p>
+    <button class="no" id="rkEditarCiudadSetup" style="width:100%;border-radius:10px;padding:9px;font-size:.78rem;font-weight:700;margin-bottom:12px">📍 Editar mi ciudad</button>
     <div class="campo"><span>Tu apodo</span><input id="rkApodo" placeholder="ej: Fede" maxlength="14" autocomplete="off"></div>
     <button class="btn-grande" id="rkCrear" style="margin-top:6px">Entrar al ranking</button>
   </div>
@@ -1850,6 +1857,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
       <button class="no" id="rkCompartir">📤 Invitar amigos</button>
       <button class="no" id="rkSalir">✏️ Cambiar apodo</button>
     </div>
+    <button class="no" id="rkEditarCiudad" style="width:100%;border-radius:10px;padding:9px;font-size:.78rem;font-weight:700;margin-bottom:12px">📍 Editar mi ciudad</button>
     <div class="rk-lista" id="rkLista"></div>
     <p class="estado" id="rkEstado" style="margin-top:8px"></p>
   </div>
@@ -4340,6 +4348,12 @@ function cargarRkPerfil(){
 }
 function guardarRkPerfil(p){try{localStorage.setItem("gya_ranking_perfil",JSON.stringify(p));}catch(e){}}
 function rkEsc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function ciudadDeFila(f){
+  let estado=f&&f.estado_juego;
+  if(typeof estado==="string"){try{estado=JSON.parse(estado);}catch(e){estado=null;}}
+  const guardado=estado&&estado.localStorage||{};
+  return ciudadPerfilTexto(guardado.gya_ciudad);
+}
 /* Respaldo completo del progreso: guarda una copia fiel de todo lo persistente
    (gya_* y larueda_*) en Supabase (columna estado_juego), aparte de los campos
    resumen ya existentes, para poder restaurar un perfil exacto en otro dispositivo. */
@@ -4519,6 +4533,7 @@ async function rkCargarTabla(){
     d.innerHTML='<div class="rk-puesto">'+(i+1)+'</div>'+
       (f.avatar?'<img class="rk-avatar" src="assets/avatars/'+rkEsc(f.avatar)+'.webp" alt="">':'')+
       '<div class="rk-info"><b>'+rkEsc(f.apodo)+(f.apodo===rkPerfil.apodo?" (vos)":"")+'</b>'+
+      '<span class="rk-ciudad">📍 '+rkEsc(ciudadDeFila(f))+'</span>'+
       '<span>🗺️ '+f.ciudades_ganadas+'/9 · 🏆 racha '+f.mejor_racha+' · 🏅 '+f.logros+'</span></div>'+
       '<div class="rk-monedas">🪙 '+f.monedas_totales+'</div>';
     d.onclick=()=>{
@@ -4545,7 +4560,7 @@ function rkMostrarTabla(){
   const rkPerfil=cargarRkPerfil();
   $("rkSetup").style.display="none";
   $("rkTabla").style.display="block";
-  $("rkGrupoTxt").textContent="Vos: "+rkPerfil.apodo;
+  $("rkGrupoTxt").textContent="Vos: "+rkPerfil.apodo+" · 📍 "+ciudadPerfilTexto(perfil.ciudad);
   empujarRanking().then(rkCargarTabla);
 }
 function rkMostrarSetup(){
@@ -4553,6 +4568,7 @@ function rkMostrarSetup(){
   $("rkSetup").style.display="block";
   const rkPerfil=cargarRkPerfil();
   $("rkApodo").value=(rkPerfil&&rkPerfil.apodo)||perfil.nombre||"";
+  $("rkMiCiudadSetup").textContent="📍 Tu ciudad: "+ciudadPerfilTexto(perfil.ciudad);
 }
 function rkAbrir(){
   if(!obtenerSupa()){alert("El ranking no está disponible ahora mismo.");return;}
@@ -4561,10 +4577,8 @@ function rkAbrir(){
   if(rkPerfil&&rkPerfil.apodo)rkMostrarTabla();else rkMostrarSetup();
 }
 $("bRanking").onclick=rkAbrir;
-/* Prototipo en prueba, solo visible para Gonzalo: botón "Continuar" en el
-   modal de Social que lleva a un listado de todos los usuarios (reusa la
-   tabla gya_ranking, ya usada por el Ranking, pero mostrada como listado
-   simple de jugadores en vez de tabla de puntajes). */
+/* Social muestra el listado de jugadores y la ciudad que cada uno indicó
+   en su perfil; no infiere ubicación a partir del mapa ni del dispositivo. */
 function esGonzalo(){try{return(perfil&&perfil.nombre||"").trim().toLowerCase()==="gonzalo";}catch(e){return false;}}
 function actualizarModoAdminGonzalo(){try{document.body.classList.toggle("gonzalo-admin",esGonzalo());}catch(e){}}
 const TIENDA_REMOVIDOS_PUBLICADOS=new Set([
@@ -4610,7 +4624,8 @@ function tiendaAdminPrepararItemsFijos(){
   });
 }
 $("bSocial").onclick=$("bSocialGrande").onclick=()=>{
-  $("socialContinuar").style.display=esGonzalo()?"block":"none";
+  $("socialCiudadInfo").textContent="Tu ciudad: "+ciudadPerfilTexto(perfil.ciudad);
+  $("socialEditarCiudad").textContent=perfil.ciudad?"📍 Editar mi ciudad":"📍 Indicar mi ciudad";
   $("capaSocial").classList.add("ver");
 };
 $("bLogrosMini").onclick=lgAbrir;
@@ -4619,6 +4634,14 @@ $("torneosCerrar").onclick=()=>$("capaTorneos").classList.remove("ver");
 $("torneosEntrar").onclick=torneoEntrar;
 $("socialCerrar").onclick=()=>$("capaSocial").classList.remove("ver");
 $("socialContinuar").onclick=()=>{$("capaSocial").classList.remove("ver");usrAbrir();};
+function abrirPerfilDesdeUbicacion(){
+  $("capaSocial").classList.remove("ver");$("capaRanking").classList.remove("ver");
+  abrirPerfil(null);
+  if(perfilExiste())setTimeout(()=>$("perfilCiudad").focus(),0);
+}
+$("socialEditarCiudad").onclick=abrirPerfilDesdeUbicacion;
+$("rkEditarCiudad").onclick=abrirPerfilDesdeUbicacion;
+$("rkEditarCiudadSetup").onclick=abrirPerfilDesdeUbicacion;
 async function usrCargarLista(){
   const supa=obtenerSupa();
   $("usrEstado").textContent="Cargando…";
@@ -4627,12 +4650,15 @@ async function usrCargarLista(){
   let data,error;
   try{
     const r=await supa.from("gya_ranking").select("*").in("grupo",[USR_GRUPO,RK_GRUPO]).order("apodo",{ascending:true});
-    const vistos=new Set();
-    data=(r.data||[]).filter(f=>{
+    const vistos=new Map();
+    (r.data||[]).forEach(f=>{
       const clave=String(f.apodo||"").trim().toLowerCase();
-      if(!clave||nombrePerfilAutomatico(clave)||RK_APODOS_OCULTOS.includes(clave)||vistos.has(clave))return false;
-      vistos.add(clave);return true;
+      if(!clave||nombrePerfilAutomatico(clave)||RK_APODOS_OCULTOS.includes(clave))return;
+      const anterior=vistos.get(clave);
+      const calidad=x=>(ciudadDeFila(x)==="Ciudad no indicada"?0:2)+(x.grupo===USR_GRUPO?1:0);
+      if(!anterior||calidad(f)>calidad(anterior))vistos.set(clave,f);
     });
+    data=[...vistos.values()];
     error=r.error;
   }catch(e){error=e;}
   if(error){$("usrEstado").textContent="No se pudo cargar. Revisá tu conexión.";return;}
@@ -4649,6 +4675,7 @@ async function usrCargarLista(){
     d.className="rk-fila";
     d.innerHTML=(f.avatar?'<span class="rk-avatar-wrap"><img class="rk-avatar" src="assets/avatars/'+rkEsc(f.avatar)+'.webp" alt="">'+(online?'<span class="rk-online-dot"></span>':'')+'</span>':'')+
       '<div class="rk-info"><b>'+rkEsc(f.apodo)+(soyYo?" (vos)":"")+'</b>'+
+      '<span class="rk-ciudad">📍 '+rkEsc(ciudadDeFila(f))+'</span>'+
       '<span>🗺️ '+f.ciudades_ganadas+'/9 · 🏆 racha '+f.mejor_racha+' · 🏅 '+f.logros+'</span></div>';
     if(!soyYo){
       const b=document.createElement("button");
@@ -6813,11 +6840,16 @@ let botT=null,botTossT=null,botTossReaccionT=null,botTossPensarT=null;
 const AVATARES=Array.from({length:21},(_,i)=>"avatar-"+String(i+1).padStart(2,"0")).concat(["avatar-33","avatar-42","avatar-43","avatar-44","avatar-45","avatar-46","avatar-47","avatar-48","avatar-49","avatar-50","avatar-51","avatar-52","avatar-53","avatar-54"]);
 const AVATAR_EXCLUSIVO={id:"avatar-22",nombre:"gonzalo"};
 function cargarPerfil(){
-  let nombre="",avatar="",pais="";
-  try{nombre=localStorage.getItem("gya_nombre")||"";avatar=localStorage.getItem("gya_avatar")||"";pais=localStorage.getItem("gya_pais")||"";}catch(e){}
-  return{nombre,avatar,pais};
+  let nombre="",avatar="",pais="",ciudad="";
+  try{nombre=localStorage.getItem("gya_nombre")||"";avatar=localStorage.getItem("gya_avatar")||"";pais=localStorage.getItem("gya_pais")||"";ciudad=localStorage.getItem("gya_ciudad")||"";}catch(e){}
+  return{nombre,avatar,pais,ciudad:normalizarCiudad(ciudad)};
 }
 let perfil=cargarPerfil();
+function normalizarCiudad(valor){return typeof valor==="string"?valor.replace(/[\u0000-\u001F\u007F]/g," ").replace(/\s+/g," ").trim().slice(0,40):"";}
+function ciudadPerfilTexto(ciudad){
+  const nombre=normalizarCiudad(ciudad);
+  return nombre||"Ciudad no indicada";
+}
 /* Versiones viejas podían dejar nombres de respaldo como "Explorer 1"
    o "Jugador 2" cuando el alta quedaba incompleta. No cuentan como una
    identidad elegida: al volver, el usuario debe definir nombre y avatar. */
@@ -6856,18 +6888,21 @@ async function nombrePerfilDisponible(nombre){
     return !(r.data&&r.data.length);
   }catch(e){return true;}
 }
-function guardarPerfil(nombre,avatar,pais){
-  perfil={nombre,avatar,pais};
+function guardarPerfil(nombre,avatar,pais,ciudad){
+  ciudad=normalizarCiudad(ciudad);
+  perfil={nombre,avatar,pais,ciudad};
   try{
     localStorage.setItem("gya_nombre",nombre);
     localStorage.setItem("gya_avatar",avatar);
     localStorage.setItem("gya_pais",pais);
+    localStorage.setItem("gya_ciudad",ciudad);
     localStorage.setItem("larueda_nombre",nombre);
   }catch(e){}
   $("miNombre").value=nombre;
   actualizarChipPerfil();
   logroDesbloquear("avatar");
   empujarUsuario();
+  empujarRanking();
 }
 let avatarElegido=null,paisElegido=null,perfilCallback=null,previsualizandoPerfil=false,perfilObligatorio=false,perfilEdicionDirecta=false,perfilPasoActual="nombre";
 function listaAvataresDisponibles(){
@@ -6920,6 +6955,7 @@ function abrirPerfil(callback,obligatorio=false){
   $("eventos").style.display="none";
   perfilCallback=callback||null;perfilObligatorio=!!obligatorio;perfilEdicionDirecta=!perfilObligatorio&&!perfilCallback&&perfilExiste();
   $("perfilNombre").value=nombrePerfilPersonal(perfil.nombre)||nombrePerfilPersonal($("miNombre").value)||"";
+  $("perfilCiudad").value=perfil.ciudad||"";
   avatarElegido=perfil.avatar||null;paisElegido=paisPerfilValido(perfil.pais)?perfil.pais:null;
   $("setup").style.display="none";$("mundo").style.display="none";$("pantDurazno").style.display="none";
   $("pantPerfil").style.display="block";
@@ -6928,7 +6964,7 @@ function abrirPerfil(callback,obligatorio=false){
 }
 function previsualizarPerfilVacio(){
   previsualizandoPerfil=true;perfilCallback=null;perfilObligatorio=true;perfilEdicionDirecta=false;
-  $("perfilNombre").value="";avatarElegido=null;paisElegido=null;
+  $("perfilNombre").value="";$("perfilCiudad").value="";avatarElegido=null;paisElegido=null;
   $("setup").style.display="none";$("mundo").style.display="none";$("pantDurazno").style.display="none";
   $("pantPerfil").style.display="block";
   $("perfilCerrar").style.display="none";
@@ -6968,7 +7004,7 @@ $("perfilContinuar").onclick=async()=>{
     actualizarBotonPerfil();
     if(!disponible){mostrarToast("👤","Ese nombre ya lo usa otro jugador. Probá otro, por ej. "+n+"2.");return;}
   }
-  guardarPerfil(n,avatarElegido,paisElegido);
+  guardarPerfil(n,avatarElegido,paisElegido,$("perfilCiudad").value);
   mapaPaisForzado=null;sincronizarMundoActivo();
   perfilObligatorio=false;$("perfilCerrar").style.display="";
   tutOcultarSpotlight();
