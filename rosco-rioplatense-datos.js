@@ -72,5 +72,28 @@ const ROSCO_DATOS=[
   ["Y","YUYO","Nombre popular para una hierba que crece silvestre.","naturaleza",3],
   ["Z","ZAPALLO","Hortaliza de pulpa anaranjada que usás para puré o sopa.","comida",1],
   ["Z","ZAGUAN","Espacio de entrada de una casa, entre la puerta de calle y el interior.","costumbres",2],
-  ["Z","ZAFRA","Época del año en que se concentra una cosecha o actividad productiva.","costumbres",3]
+  ["Z","ZAFRA","Época del año en que se concentra una cosecha o actividad productiva.","costumbres",3],
+
+  /* Segunda vuelta de palabras nivel 2, para sumar variedad a cada letra. */
+  ["A","ASADOR","Persona encargada de cocinar la carne sobre las brasas.","costumbres",2],
+  ["B","BOLICHE","Local nocturno donde la gente se junta a tomar algo o bailar.","costumbres",2],
+  ["C","CORSO","Desfile de carnaval por una calle principal, con carrozas y comparsas.","carnaval",2],
+  ["D","DESFILE","Paso ordenado de comparsas o murgas por la calle durante el carnaval.","carnaval",2],
+  ["E","ESQUINA","Lugar de la cuadra donde se juntan los vecinos a charlar.","costumbres",2],
+  ["F","FOGON","Fuego armado al aire libre para cocinar o para juntarse a charlar.","costumbres",2],
+  ["G","GALPON","Construcción grande de campo usada para guardar herramientas o animales.","costumbres",2],
+  ["H","HUMITA","Pasta de choclo rallado envuelta en la chala, dulce o salada.","comida",2],
+  ["I","INTERIOR","Todo el territorio de un país por fuera de su capital.","ciudades",2],
+  ["J","JURADO","Grupo de personas que califica a las comparsas durante el carnaval.","carnaval",2],
+  ["L","LABURO","Forma lunfarda de decir trabajo.","lunfardo",2],
+  ["M","MORFI","Forma lunfarda de decir comida.","lunfardo",2],
+  ["N","NAVIDAD","Fiesta de fin de año que en el Río de la Plata se festeja con calor y fuegos artificiales.","costumbres",2],
+  ["O","ORQUESTA","Conjunto de músicos que toca en un baile o una murga.","costumbres",2],
+  ["P","POTRERO","Campito de tierra donde los chicos juegan al fútbol improvisado.","futbol",2],
+  ["Q","QUILOMBO","Forma coloquial de decir lío o desorden.","lunfardo",2],
+  ["R","REMERA","Prenda de manga corta que te ponés en verano.","costumbres",2],
+  ["S","SANGUCHE","Forma rioplatense de decir sándwich.","comida",2],
+  ["T","TRIBUNA","Sector de la cancha donde se ubican los hinchas para alentar.","futbol",2],
+  ["V","VERDULERIA","Comercio de barrio donde se compran frutas y verduras.","comida",2],
+  ["Z","ZURDO","Jugador que patea mejor con la pierna izquierda.","futbol",2]
 ].map(([letra,palabra,definicion,categoria,nivel,alternativas=[]])=>({letra,palabra,definicion,categoria,nivel,alternativas}));
