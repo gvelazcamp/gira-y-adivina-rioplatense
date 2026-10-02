@@ -15,7 +15,7 @@ const FrasesEnGiro=(()=>{
   const azar=n=>Math.floor(Math.random()*n);
   let datos=cargar(),raiz=null,frase=null,fichas=[],ordenBanco=[],espacios=[];
   let nivel=1,puntos=0,racha=0,errores=0,tiempoMs=0,duracionMs=0,giroMs=0,proximoGiro=0;
-  let jugando=false,girando=false,intervalo=null,giroTimer=null,ultimoTic=0,ocultoDesde=0,token=0;
+  let jugando=false,girando=false,intervalo=null,giroTimer=null,ultimoTic=0,ocultoDesde=0,token=0,duelo=false;
 
   function cargar(){
     try{const d=JSON.parse(localStorage.getItem(CLAVE)||"null");if(d&&typeof d==="object")return{
@@ -100,14 +100,14 @@ const FrasesEnGiro=(()=>{
     raiz.querySelector("#fgVaciar").disabled=!jugando||girando||espacios.every(id=>id===null);
     hud();
   }
-  function panel(titulo,detalle,principal,accion,secundario){
+  function panel(titulo,detalle,principal,accion,secundarios){
     const capa=raiz.querySelector("#fgPanel");capa.replaceChildren();capa.hidden=false;
     const tarjeta=document.createElement("div");tarjeta.className="fg-panel";
     const h=document.createElement("h3");h.textContent=titulo;
     const p=document.createElement("p");p.textContent=detalle;
     const acciones=document.createElement("div");acciones.className="fg-panel-acciones";
     const b=document.createElement("button");b.type="button";b.className="fg-principal";b.textContent=principal;b.onclick=accion;acciones.appendChild(b);
-    if(secundario){const otro=document.createElement("button");otro.type="button";otro.textContent=secundario.texto;otro.onclick=secundario.accion;acciones.appendChild(otro);}
+    (Array.isArray(secundarios)?secundarios:[secundarios]).forEach(sec=>{if(!sec)return;const otro=document.createElement("button");otro.type="button";otro.textContent=sec.texto;otro.onclick=sec.accion;acciones.appendChild(otro);});
     tarjeta.append(h,p,acciones);capa.appendChild(tarjeta);
   }
   function prepararFichas(c){
@@ -119,9 +119,12 @@ const FrasesEnGiro=(()=>{
     espacios=Array(palabras.length).fill(null);
   }
   function comenzar(){
-    token++;clearTimeout(giroTimer);
-    const c=configNivel(nivel);
+    duelo=false;token++;clearTimeout(giroTimer);
     frase=elegir(nivel);datos.recientes.push(frase.id);datos.recientes=datos.recientes.slice(-FRASES_GIRO_CONFIG.recientesMax);guardar();
+    arrancarRonda();
+  }
+  function arrancarRonda(){
+    const c=configNivel(nivel);
     prepararFichas(c);errores=0;girando=false;duracionMs=c.segundos*1000;tiempoMs=duracionMs;giroMs=c.giro*1000;
     ultimoTic=performance.now();proximoGiro=ultimoTic+giroMs;ocultoDesde=0;jugando=true;
     raiz.querySelector("#fgPista").textContent="Escena: "+frase.pista;
@@ -130,6 +133,14 @@ const FrasesEnGiro=(()=>{
     raiz.closest(".ext-shell")?.scrollTo(0,0);
     avisar(c.senuelos?"Ojo: hay "+c.senuelos+" palabra"+(c.senuelos===1?" señuelo.":"s señuelo."):"Tocá las palabras en orden. Podés quitar cualquiera.");
     dibujar();
+  }
+  function iniciarDuelo(){
+    if(typeof Duelo==="undefined")return;
+    Duelo.mostrarLobby("Frases en Giro","frases",{onListo:(soyHost)=>{
+      duelo=true;token++;clearTimeout(giroTimer);
+      if(soyHost){frase=elegir(nivel);Duelo.enviarRonda({frase,nivel});arrancarRonda();}
+      else Duelo.onRondaRecibida(datos=>{frase=datos.frase;nivel=datos.nivel;arrancarRonda();});
+    }});
   }
   function terminar(gano,motivo){
     if(!jugando)return;
@@ -142,6 +153,11 @@ const FrasesEnGiro=(()=>{
       if(typeof vibrar==="function")vibrar([30,40,55]);
     }else{racha=0;puntos=0;sonido(260);if(typeof vibrar==="function")vibrar(85);}
     datos.mejor=Math.max(datos.mejor,puntos);guardar();dibujar();
+    if(duelo){
+      Duelo.enviarFinal({valor:puntos});
+      Duelo.mostrarResultado({valor:puntos},{etiqueta:gano?"puntos · ganó la frase":"puntos · no llegó a armarla",onVolver:()=>{duelo=false;abrir(raiz.parentElement);}});
+      return;
+    }
     if(gano){nivel++;panel("¡Frase armada!","“"+frase.texto+"” · "+puntos+" puntos · mejor: "+datos.mejor,"Siguiente nivel",comenzar);}
     else panel("Perdiste esta frase",(motivo==="intentos"?"Agotaste los 3 intentos.":"Se terminó el tiempo.")+" La frase era: “"+frase.texto+"”. Se cortó tu racha"+(puntosPerdidos?" y perdiste "+puntosPerdidos+" puntos de esta partida":"")+". Mejor marca: "+datos.mejor+".","Otra frase del nivel "+nivel,comenzar);
   }
@@ -198,11 +214,13 @@ const FrasesEnGiro=(()=>{
     raiz.querySelector("#fgVaciar").onclick=()=>{espacios.fill(null);avisar("Empezá de nuevo: tocá las palabras en orden.");dibujar();};
     intervalo=setInterval(tic,FRASES_GIRO_CONFIG.ticMs);document.addEventListener("visibilitychange",visibilidad);
     panel("Frases en Giro","Armá frases disparatadas tocando las palabras en orden. Cada giro mezcla las fichas libres; lo que ya colocaste queda seguro. Desde el nivel 2 aparecen palabras señuelo. Tenés 3 intentos: cada error te quita 10 segundos y te obliga a rearmar la frase. Si perdés, se corta la racha y los puntos de esta partida.","Jugar nivel "+nivel,comenzar,
-      nivel>1?{texto:"Empezar desde el nivel 1",accion:()=>{nivel=1;puntos=0;comenzar();}}:null);
+      [nivel>1?{texto:"Empezar desde el nivel 1",accion:()=>{nivel=1;puntos=0;comenzar();}}:null,{texto:"Jugar con un amigo 👥",accion:iniciarDuelo}]);
   }
   function salir(){
     jugando=false;girando=false;token++;clearInterval(intervalo);clearTimeout(giroTimer);intervalo=null;giroTimer=null;
-    document.removeEventListener("visibilitychange",visibilidad);raiz=null;frase=null;fichas=[];ordenBanco=[];espacios=[];
+    document.removeEventListener("visibilitychange",visibilidad);
+    if(typeof Duelo!=="undefined")Duelo.salir();
+    duelo=false;raiz=null;frase=null;fichas=[];ordenBanco=[];espacios=[];
   }
   return{abrir,salir,mejorPuntaje,configNivel,elegir};
 })();
