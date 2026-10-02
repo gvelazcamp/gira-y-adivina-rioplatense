@@ -13,6 +13,15 @@ const MemoriaEnGiro=(()=>{
   let datos=cargar(),raiz=null,cartas=[],config=null,nivel=1,puntos=0,pares=0,racha=0,fallos=0,girosRestantes=MEMORIA_GIRO_GIROS;
   let fase="inicio",primera=null,segunda=null,tiempoMs=0,vistaMs=0,falloMs=0,giroMs=0,animacionMs=0,recuerdoMs=0;
   let intervalo=null,ultimoTic=0,mensaje="",duelo=false;
+  let audioMusica=null;
+  function iniciarMusicaJuego(){
+    try{
+      if(typeof sonidoPermitido==="function"&&!sonidoPermitido())return;
+      if(!audioMusica){audioMusica=new Audio("assets/audio/memoria-en-giro-musica.mp3");audioMusica.loop=true;audioMusica.volume=.28;}
+      if(audioMusica.paused)audioMusica.play().catch(()=>{});
+    }catch(e){}
+  }
+  function detenerMusicaJuego(){try{if(audioMusica&&!audioMusica.paused)audioMusica.pause();}catch(e){}}
 
   function cargar(){
     try{const d=JSON.parse(localStorage.getItem(CLAVE)||"null");if(d&&typeof d==="object")return{
@@ -189,17 +198,18 @@ const MemoriaEnGiro=(()=>{
     }
     actualizarHud();
   }
-  function visibilidad(){ultimoTic=performance.now();}
+  function visibilidad(){if(document.hidden)detenerMusicaJuego();else iniciarMusicaJuego();ultimoTic=performance.now();}
   function abrir(contenedor){
     salir();datos=cargar();nivel=datos.nivelMax;puntos=0;
     raiz=document.createElement("div");raiz.className="mg-game";
     raiz.innerHTML='<div class="mg-titulo"><img src="logo-memoria-en-giro.svg" alt=""><div><h2>Memoria en Giro</h2><p>Recordá los símbolos y encontrá sus parejas.</p></div></div><div class="mg-hud"><div><small>Nivel</small><b id="mgNivel">1</b></div><div><small>Pares</small><b id="mgPares">0/3</b></div><div><small>Puntos</small><b id="mgPuntos">0</b></div><div><small>Tiempo</small><b id="mgTiempo">45</b></div></div><div class="mg-bar"><i id="mgTiempoBarra"></i></div><p class="mg-fallas" id="mgFallas"></p><div class="mg-tablero" id="mgTablero" aria-label="Tablero de cartas"></div><p class="mg-mensaje" id="mgMensaje" role="status" aria-live="polite"></p><p class="mg-giro-texto" id="mgGiroTexto"></p><div class="mg-bar giro"><i id="mgGiroBarra"></i></div><div class="mg-panel-capa" id="mgPanel"></div>';
-    contenedor.appendChild(raiz);ultimoTic=performance.now();intervalo=setInterval(tic,50);document.addEventListener("visibilitychange",visibilidad);
+    contenedor.appendChild(raiz);ultimoTic=performance.now();intervalo=setInterval(tic,50);document.addEventListener("visibilitychange",visibilidad);iniciarMusicaJuego();
     panel("Memoria en Giro","Primero ves todas las cartas. Cuando se tapen, encontrá los pares antes de que termine el tiempo. Tenés 3 giros con pista: solo giran las cartas pendientes y luego podés verlas unos segundos más. Después el tablero queda quieto. Una pareja equivocada te quita 3 segundos. Estos corazones no gastan vidas del juego principal.","Jugar nivel "+nivel,comenzar,
       [nivel>1?{texto:"Empezar desde el nivel 1",accion:()=>{nivel=1;puntos=0;comenzar();}}:null,{texto:"Jugar con un amigo 👥",accion:iniciarDuelo}]);
   }
   function salir(){
     clearInterval(intervalo);intervalo=null;document.removeEventListener("visibilitychange",visibilidad);
+    detenerMusicaJuego();
     if(typeof Duelo!=="undefined")Duelo.salir();
     duelo=false;raiz=null;cartas=[];config=null;fase="inicio";
   }
