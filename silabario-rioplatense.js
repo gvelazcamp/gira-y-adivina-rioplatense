@@ -12,7 +12,7 @@ const SILABARIO_CONFIG={
 };
 const SilabarioRioplatense=(()=>{
   const CLAVE="gya_silabario_rioplatense";
-  let datos=cargar(),raiz=null,items=[],estados=[],fichas=[],elegidas=[],actual=-1,bloqueado=false,tiempoPregunta=0;
+  let datos=cargar(),raiz=null,items=[],estados=[],fichas=[],elegidas=[],actual=-1,bloqueado=false,tiempoPregunta=0,usadasSesion=new Set();
   let nivel=1,config=null,fase="inicio",tiempo=0,tiempoTotal=0,espera=0,ultimo=0,intervalo=null;
   const $=s=>raiz?.querySelector(s);
   const numero=(v,base=0)=>Number.isFinite(v)&&v>=0?v:base;
@@ -34,10 +34,11 @@ const SilabarioRioplatense=(()=>{
      nunca con la última fila a medias. Por eso elegimos palabras cuyas
      sílabas sumen EXACTO la cantidad de fichas del nivel, probando varias
      combinaciones al azar. Si ninguna cierra justo (dataset chico, puede
-     pasar), se completa con alguna sílaba repetida como relleno inerte. */
-  function armarRonda(){
-    const preferidas=SILABARIO_DATOS.filter(d=>nivel<3?d.nivel<=2:d.nivel>=2);
-    const pool=preferidas.length?preferidas:SILABARIO_DATOS;
+     pasar), se completa con alguna sílaba repetida como relleno inerte.
+     Primero probamos solo con palabras que todavía no salieron en esta
+     partida (para no repetir de un nivel a otro); si con esas no se puede
+     cerrar el cuadrado, recién ahí se habilita el resto del banco. */
+  function intentarCuadrado(pool){
     for(let intento=0;intento<80;intento++){
       const candidatas=mezclar(pool),elegidas=[];let suma=0;
       for(const palabra of candidatas){
@@ -46,8 +47,18 @@ const SilabarioRioplatense=(()=>{
         if(suma===config.fichas)return elegidas;
       }
     }
-    const candidatas=mezclar(pool),elegidas=[];let suma=0;
-    for(const palabra of candidatas){const n=palabra.silabas.length;if(suma+n<=config.fichas){elegidas.push(palabra);suma+=n;}}
+    return null;
+  }
+  function armarRonda(){
+    const preferidas=SILABARIO_DATOS.filter(d=>nivel<3?d.nivel<=2:d.nivel>=2);
+    const pool=preferidas.length?preferidas:SILABARIO_DATOS;
+    const sinRepetir=pool.filter(d=>!usadasSesion.has(d.respuesta));
+    const elegidas=(sinRepetir.length?intentarCuadrado(sinRepetir):null)||intentarCuadrado(pool)||(()=>{
+      const candidatas=mezclar(pool),out=[];let suma=0;
+      for(const palabra of candidatas){const n=palabra.silabas.length;if(suma+n<=config.fichas){out.push(palabra);suma+=n;}}
+      return out;
+    })();
+    elegidas.forEach(d=>usadasSesion.add(d.respuesta));
     return elegidas;
   }
   function construirFichas(objetivo){
@@ -185,7 +196,7 @@ const SilabarioRioplatense=(()=>{
   }
   function visibilidad(){ultimo=performance.now();}
   function abrir(contenedor){
-    salir();datos=cargar();nivel=datos.nivelMax;config=configNivel(nivel);fase="inicio";
+    salir();datos=cargar();nivel=datos.nivelMax;config=configNivel(nivel);fase="inicio";usadasSesion=new Set();
     raiz=document.createElement("div");raiz.className="sb-game";
     raiz.innerHTML='<div class="sb-titulo"><img src="logo-silabario-rioplatense.svg" alt=""><div><h2>Silabario Rioplatense</h2><p>Un tablero con todas las sílabas. Armá cada respuesta con las que estén.</p></div></div><div id="sbJuego" hidden><div class="sf-hud"><div><small>Nivel</small><b id="sbNivel"></b></div><div><small>Aciertos</small><b id="sbAciertos"></b></div><div><small>Errores</small><b id="sbErrores"></b></div><div><small>Tiempo</small><b id="sbTiempo"></b></div></div><div class="sf-bar"><i id="sbBarra"></i></div><div class="sb-pista" role="status" aria-live="polite"><div class="voz-fila"><p id="sbPista"></p><button type="button" class="voz-btn" id="sbEscuchar" aria-label="Escuchar la pista">🔊</button></div><small id="sbSilabasCant"></small></div><div class="sb-respuesta" id="sbRespuesta"></div><p id="sbMensaje" class="sb-mensaje" role="status"></p><div class="sb-tablero" id="sbTablero"></div><div class="sf-acciones"><button type="button" id="sbBorrar">⌫ Borrar</button><button type="button" id="sbPasar">Pasar ↻</button></div></div><div class="sf-panel-capa" id="sbPanel" hidden></div>';
     contenedor.appendChild(raiz);
