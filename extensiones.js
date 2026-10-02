@@ -67,8 +67,11 @@ const EXTENSIONES=[
   {id:"rosco-rioplatense",nombre:"El Rosco",descripcion:"Girá, leé la pista y descubrí la palabra",icono:"logo-rosco-rioplatense.svg",estado:ROSCO_HABILITADO?"disponible":"proximamente",abrir:contenedor=>RoscoRioplatense.abrir(contenedor),record:()=>RoscoRioplatense.mejorPuntaje()+" puntos"},
   {id:"silabario-rioplatense",nombre:"Silabario Rioplatense",descripcion:"Armá la respuesta con las sílabas del tablero que gira",icono:"logo-silabario-rioplatense.svg",estado:"disponible",abrir:contenedor=>SilabarioRioplatense.abrir(contenedor),record:()=>SilabarioRioplatense.mejorPuntaje()+" puntos"},
   {id:"cien-rioplatenses",nombre:"100 Rioplatenses Dicen",descripcion:"Girá por un tema y descubrí el panel",icono:"logo-cien-rioplatenses.svg",estado:CIEN_HABILITADO?"disponible":"proximamente",abrir:contenedor=>CienRioplatenses.abrir(contenedor),record:()=>CienRioplatenses.mejorPuntaje()+" puntos"},
-  {id:"ahorcado-rioplatense",nombre:"Ahorcado Rioplatense",descripcion:"La ruleta elige la categoría, adiviná la palabra",icono:"logo-ahorcado-rioplatense.svg",estado:AHORCADO_HABILITADO?"disponible":"proximamente",abrir:contenedor=>AhorcadoRioplatense.abrir(contenedor),record:()=>AhorcadoRioplatense.mejorPuntaje()+" puntos"},
-  {id:"mahjong-rioplatense",nombre:"Mahjong Rioplatense",descripcion:"Juntá las fichas en pares antes de quedar sin jugadas",icono:"logo-mahjong.png",estado:"disponible",abrir:()=>{location.href="mahjong-rioplatense.html";},record:()=>{let r=0;try{r=JSON.parse(localStorage.getItem("mj_racha")||"{}").n||0;}catch(e){}return "Racha: "+r+" días";}}
+  {id:"ahorcado-rioplatense",nombre:"Ahorcado Rioplatense",descripcion:"La ruleta elige la categoría, adiviná la palabra",icono:"logo-ahorcado-rioplatense.svg",estado:AHORCADO_HABILITADO?"disponible":"proximamente",abrir:contenedor=>AhorcadoRioplatense.abrir(contenedor),record:()=>AhorcadoRioplatense.mejorPuntaje()+" puntos"}
+  /* Mahjong Rioplatense (mahjong-rioplatense.html) a propósito oculto del lobby:
+     la pantalla de inicio no estaba lista para mostrarse a los jugadores.
+     Sigue publicada y accesible por URL directa para que Gonzalo la pruebe;
+     sumar de nuevo esta entrada cuando el inicio esté arreglado. */
 ];
 window.EXTENSIONES=EXTENSIONES;
 const Extensiones=(()=>{

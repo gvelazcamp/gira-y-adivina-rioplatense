@@ -9,6 +9,16 @@ const AhorcadoRioplatense=(()=>{
   const $=s=>raiz?.querySelector(s);
   let raiz=null,fase="inicio",datos=cargar(),duelo=false,palabrasDuelo=null;
   let palabra=null,usadas=[],adivinadas=new Set(),errores=0,puntos=0,n=0,W=0,etiquetas=[],intervalo=null;
+  let audioMusica=null;
+  function iniciarMusicaJuego(){
+    try{
+      if(typeof sonidoPermitido==="function"&&!sonidoPermitido())return;
+      if(!audioMusica){audioMusica=new Audio("assets/audio/ahorcado-rioplatense-musica.mp3");audioMusica.loop=true;audioMusica.volume=.28;}
+      if(audioMusica.paused)audioMusica.play().catch(()=>{});
+    }catch(e){}
+  }
+  function detenerMusicaJuego(){try{if(audioMusica&&!audioMusica.paused)audioMusica.pause();}catch(e){}}
+  function visibilidad(){if(document.hidden)detenerMusicaJuego();else iniciarMusicaJuego();}
   function numero(v,base=0){return Number.isFinite(v)&&v>=0?v:base;}
   function cargar(){
     try{const d=JSON.parse(localStorage.getItem(CLAVE));if(d&&typeof d==="object")return{mejor:numero(d.mejor)};}catch(e){}
@@ -156,12 +166,14 @@ const AhorcadoRioplatense=(()=>{
     $("#ahTeclado").addEventListener("click",e=>{const l=e.target?.dataset?.l;if(l)tocarLetra(l);});
     $("#ahSiguiente").addEventListener("click",siguientePalabra);
     addEventListener("resize",posicionarRueda);
+    document.addEventListener("visibilitychange",visibilidad);iniciarMusicaJuego();
     hud();
     panel("Ahorcado Rioplatense","El clásico del muñeco con un giro rioplatense: antes de cada palabra, la ruleta elige la categoría (Comida, Carnaval, Fútbol, Costumbres, Lunfardo o Ciudades) y esa es tu única pista. Son 5 palabras difíciles, sin repetir. Cada error dibuja una parte del muñeco: con 6 errores, perdés esa palabra. Jugás gratis, sin gastar vidas ni monedas. Mejor: "+datos.mejor+" puntos.",
       [["Jugar",iniciar],["Jugar con un amigo 👥",iniciarDuelo]]);
   }
   function salir(){
     removeEventListener("resize",posicionarRueda);
+    document.removeEventListener("visibilitychange",visibilidad);detenerMusicaJuego();
     if(typeof Duelo!=="undefined")Duelo.salir();
     duelo=false;palabrasDuelo=null;raiz=null;fase="inicio";
   }
