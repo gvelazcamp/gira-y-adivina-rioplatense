@@ -79,7 +79,7 @@ const Extensiones=(()=>{
       if(e.key!=="Tab")e.stopImmediatePropagation();
     },true);
   }
-  function mostrar(){asegurar();shell.hidden=false;document.body.classList.add("ext-abierta");}
+  function mostrar(){asegurar();shell.hidden=false;document.body.classList.add("ext-abierta");if(typeof detenerMusica==="function")detenerMusica();}
   function abrirLobby(){
     if(!EXTENSIONES_HABILITADAS)return;
     salirJuego();
@@ -109,7 +109,7 @@ const Extensiones=(()=>{
     ext.abrir(contenido);shell.scrollTop=0;
   }
   function salirJuego(){for(const juego of [window.SopaFugaz,window.RuedaDeLetras,window.PalabraSecreta,window.FrasesEnGiro,window.MemoriaEnGiro,window.RoscoRioplatense,window.SilabarioRioplatense,window.CienRioplatenses])if(juego)juego.salir();}
-  function cerrar(){if(!shell)return;salirJuego();shell.hidden=true;document.body.classList.remove("ext-abierta");vista="";}
+  function cerrar(){if(!shell)return;salirJuego();shell.hidden=true;document.body.classList.remove("ext-abierta");vista="";if(typeof sincronizarMusica==="function")sincronizarMusica();}
   return{abrirLobby,abrirJuego,cerrar};
 })();
 window.Extensiones=Extensiones;
