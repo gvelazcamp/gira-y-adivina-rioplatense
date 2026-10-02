@@ -1,79 +1,47 @@
-# CLAUDE.md
+# Mahjong Rioplatense — Universo Girá y Adiviná
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Solitario tipo Mahjong (fichas apiladas, se juntan de a pares) con cultura rioplatense. Un solo archivo autocontenido: `mahjong-rioplatense.html` (HTML + CSS + JS, logo embebido en base64). Sin build, sin dependencias salvo Google Fonts. Se publica como página estática (GitHub Pages) y enlaza a https://gvelazcamp.github.io/gira-y-adivina-rioplatense/
 
-## Overview
+## Reglas de trabajo (importante)
+- Cambios **quirúrgicos**, no reescrituras completas.
+- Respuestas mínimas: entregar el resultado, sin explicar pasos.
+- **Cero texto en el juego**: fichas, reglas, ruleta, resultados y botones usan solo imágenes/emoji (el único texto permitido es el título y el enlace a Girá y Adiviná). Textos para accesibilidad solo en `aria-label`.
+- **No debe ser fácil**: toda mejora tiene que mantener o subir la dificultad. Nada de "tocar y listo".
+- Móvil primero (viewport ~390px, `safe-area-inset`, `prefers-reduced-motion`).
+- No usar `localStorage` sin `try/catch` (ya envuelto en `LS`).
 
-"Girá y Adiviná Rioplatense" is a Río de la Plata–themed wheel-of-fortune / word-guessing trivia game. It is a **single-file vanilla HTML/CSS/JS app**: almost all game logic, styles, and markup live in `index.html` (thousands of lines, inline `<style>` and `<script>`). There is no build tooling, no bundler, no package.json, no framework, and no test suite.
+## Archivos
+- `mahjong-rioplatense.html` — el juego.
+- `logo-mahjong.png` (512), `logo-mahjong-192.png`, `logo-mahjong.webp` — ícono propio de esta extensión (cuadrado redondeado oscuro, fichas con mate y yerba, flechas magenta/turquesa, brillos dorados; mismo estilo que los íconos de los demás juegos de Girá y Adiviná). El .webp está embebido en el header del HTML.
 
-The game is deployed two ways from the same code:
-- **Web / PWA**: served as a static site via GitHub Pages at `https://gvelazcamp.github.io/gira-y-adivina-rioplatense/` (URL recorded in the `Repo` file). `manifest.json` makes it installable (`start_url: "./index.html"`, standalone, portrait, `lang: "es-UY"`).
-- **Android**: wrapped as a TWA (Trusted Web Activity) — `.well-known/assetlinks.json` declares the Android package `io.github.gvelazcamp.twa`. Because the TWA just loads the live web app, **most gameplay/content changes ship instantly to Android users on next launch with no new APK build.**
+## Imágenes de fichas
+Ilustraciones de ChatGPT (estilo sticker, contorno oscuro, PNG transparente) en `img/` (512px) y embebidas en el HTML como webp 200px en el objeto `IMG`. En `C` se referencian con `@nombre`; lo que no tiene `@` sigue siendo emoji (fallback).
+- Hechas: `yerba`, `asado`, `fuego`, `tambor`, `mascaras`, `camisa-penarol`, `pelota`, `camisa-nacional`, `arco`, `bondi`, `parada`, `mate`, `gaucho` (sombrero), `caballo`, `tango`, `bandoneon`, `flan`, y de UI: `espejo`, `cerebro`, `hielo`, `reloj`, `lupa`, `cruz`, `llama`, `trofeo`, `calavera` (helper `ic(nombre,clase)`).
+- Faltan (hoy emoji): gaucho 🤠, caballo 🐎, tango 💃, bandoneón 🪗, flan 🍮, dulce de leche 🍯 (ficha) y el candado 🚫🧩 (pantalla de sin jugadas; sigue emoji). Los emoji restantes en la UI (🎡📅🎲✕, reglas) también son emoji.
+- Para sumar una: copiar el png a `img/`, agregar su webp base64 a `IMG` y reemplazar el emoji por `@nombre` en `C`.
 
-## Commands
+## Diseño del juego
+- **Tablero:** 36 fichas, 3 capas (`POS`: capa 0 = 24 en grilla 6×4, capa 1 = 9, capa 2 = 3). Una ficha está libre si no tiene otra encima y tiene al menos un lado horizontal abierto (`geo`).
+- **Fichas boca abajo:** solo se ven las libres.
+- **Pares por asociación:** `C` define 9 conceptos `[A, B]` (cada lado es uno o dos emoji). Cada concepto aparece 2 veces → 4 fichas (2 A + 2 B). Un par válido = mismo `id` y distinto lado (`s`). Tocar dos fichas del mismo lado es error.
+- **Trampa central:** como hay 2 A y 2 B por concepto, elegir mal el emparejamiento puede dejar el tablero sin salida. Sin jugadas posibles ⇒ pierde (`🚫🧩`).
+- **Generación (`gen`)**: se arma sacando pares al azar en orden inverso (garantiza solución geométrica), luego un solver DFS con memo (`sv`, `mv`, presupuesto de 60.000 nodos) verifica que tenga solución **y** que exista al menos una jugada inicial trampa. Hasta 120 intentos. Determinista por semilla (reto del día = mismo tablero para todos: `DAY*7919+13`).
+- **Dificultad:** 4 errores máximo (cada uno +10 s), 1 pista (+15 s, marca una jugada segura calculada con el solver), sin deshacer.
+- **Ruleta (4 modos, `MODS`)**: 🪞 Espejo (tablero espejado + dibujos invertidos), 🧠 Memoria (las fichas se tapan tras 2 s; se revelan al tocar), ❄️ Hielo (4 fichas congeladas hasta 5 pares removidos), ⏱️ Reloj (3:30, `TL=210`).
+- **Reto del día:** modo = `DAY%4`, racha en `localStorage` clave `mj_racha`. Resultado compartible solo con emoji.
 
-There is no build, lint, or test step. To preview locally, serve the directory as static files, e.g.:
+## Estructura del JS
+- Bloque `//CORE … //ENDCORE`: lógica pura sin DOM (`C`, `POS`, `R` PRNG, `geo`, `fr`, `mv`, `sv`, `gen`). Se puede testear en Node extrayendo ese bloque.
+- Resto: UI (`build`, `paint`, `hud`, `pick`, `hint`, `peek`, `end`, `go`, `home`).
+- Estado global: `T` (fichas), `sel`, `errs`, `secs`, `hints`, `mod`, `daily`, `pk` (modo Memoria visible).
 
-```
-python3 -m http.server
-```
+## Verificación rápida
+Test de solvabilidad (Node): extraer `//CORE…//ENDCORE`, para cada modo generar ~30 semillas y comprobar `sv(T)=true` y que haya jugada trampa. Última corrida: 0 irresolubles, 30/30 con trampa en los 4 modos.
 
-then open `index.html` in a browser. Verify UI changes manually (or with Playwright) in a real browser — there is no automated test suite to run.
-
-## Service worker (`sw.js`)
-
-Split strategy, not uniformly network-first anymore:
-- `index.html`/JS/manifest: **network-first**, falling back to cache only when offline. This was a conscious fix for a real bug — a cache-first strategy left phones (especially the TWA) stuck on stale versions after deploys.
-- Anything under `assets/`: **cache-first** (added later to stop the shop re-fetching every icon over the network on each open).
-
-Because images are cache-first, **replacing the content of an existing file under `assets/` (same filename, different picture) will not reach phones that already cached it** unless `CACHE_NAME` is bumped — bump it whenever you overwrite an existing asset's bytes, not just when the app-shell file list changes.
-
-## Architecture inside `index.html`
-
-### State model: `S` vs `V`
-- `S` is the host's authoritative, mutable game state.
-- `V` is a render-facing snapshot broadcast to all clients, produced by `publicar()`.
-- `pintar()` / `pintarTodo()` render from `V`, never directly from `S`, so guests and the host render identically.
-
-### Mode dispatch: `modo`
-Game behavior branches throughout the code on a `modo` string:
-- `"local"` — same-device, no network.
-- `"bot"` — vs AI (covers both world-map matches and the "Jugar online" fake matchmaking flow).
-- `"host"` / `"guest"` — real multiplayer with a friend.
-- `"tvhost"` / `"tvguest"` — "Sala TV" family mode.
-
-Anything involving per-player display (e.g. which tablero/board background to show) needs to check `modo` and handle each branch — `aplicarTableroSegunTurno()` is the reference example: `"host"/"guest"` swap board art per `V.jug[V.turno].tab` (turn-based), while `"bot"/"local"` always show the local player's own `tableroEquipado` (no swapping, since there's no real opponent turn to reflect).
-
-### Multiplayer transport
-Real-time sync uses **public MQTT brokers over WebSocket** (e.g. `wss://broker.emqx.io:8084/mqtt`) — there is no custom backend/server. Treat message payloads over MQTT as the only channel between host and guest(s).
-
-### Shop (`Tienda`)
-CSS/JS use a `tn-` prefix convention. Purchases go through a generic pipeline dispatched by string-prefix on an item "tipo": `tnPuedeComprar(tipo)` → `tnRazonBloqueo(tipo)` → `tnEjecutarCompra(tipo, precio)`. Known tipo prefixes: `sobre_<cityId>` (collectible pack), `marco_<frameId>` (avatar frame), `oferta_gratis`, `vida`, `recarga`, `ruleta`. A shared confirmation modal (`#confirmCompra`) is reused for all purchase types; `#capaSeccionTienda` is a shared full-screen sub-modal used to show a section's full catalog when its title is tapped (pattern: a few items shown inline, the rest only visible via this "ver todos" view).
-
-`ruleta` (Giro extra) is special-cased: it does not purchase directly — it shows a confirm dialog and, on confirm, navigates to the Ruleta screen instead.
-
-Real-money purchases (`.tn-comprar-mini`, `.tn-item.tn-real`, and the "Paquetes con dinero real" section) are fully built in the UI but currently **hidden via a single CSS block** (search for "PAUSA DE DINERO REAL") pending Google Play Billing integration — not deleted, just hidden, meant to be reactivated later. The real-money buttons that are reachable are stubbed to show a "coming soon" toast; there is no real payment integration yet.
-
-Ownership state for shop items (`tablerosComprados`, `framesComprados`, equipped selections) is tracked in in-memory Sets/strings and persisted to `localStorage`; always check ownership via the existing `*Poseido`/`*Disponibles` helpers rather than assuming an item is free.
-
-### Daily rotation
-`ofertaDiaIdx()` derives a deterministic index from `Math.floor(Date.now()/86400000)` (days since epoch) — this drives which items appear in "Ofertas diarias" (daily frame deal, daily collectible pack) without needing localStorage or server coordination; every client computes the same day index independently.
-
-### Collections
-`COLECCIONES` is keyed by city id (e.g. `montevideo`, `punta`, `colonia`, etc.) and defines each city's collectible-pack art and item list; `Object.keys(COLECCIONES)` is the canonical ordered list of city ids used both by the shop grid and the daily pack rotation.
-
-### Persistence
-Game/profile/shop state persists via `localStorage` under `gya_`-prefixed keys (e.g. `gya_tablero_equipado`). Player identity is a simple typed-in profile name (`perfil.nombre`), not an auth system — do not assume it's unique or stable across devices.
-
-### Asset pipeline
-Images under `assets/` (avatars, frames, tableros, per-city collectibles, shop art) are generated externally (ChatGPT image prompts) then processed locally with Python/PIL (resize/crop, convert to `.webp`) before being committed. The board-art generation prompt template is kept at `assets/tableros/PROMPT.md` for regenerating that specific style; the passport-stamp style template lives at `assets/passport/PROMPT.md`.
-
-### Supabase (Ranking, backup, profile-name uniqueness)
-Despite the "no backend" framing above, the game does talk to one real backend: Supabase (`SUPA_URL`/`SUPA_KEY` constants, client loaded via `@supabase/supabase-js` from a CDN `<script defer>`). Everything goes through a single table, `gya_ranking`, reused for three unrelated purposes distinguished only by the `grupo` column:
-- `grupo:"global"` (`RK_GRUPO`) — the opt-in "Ranking de amigos" leaderboard. Player picks an `apodo` (separate from `perfil.nombre`, stored in `gya_ranking_perfil`).
-- `grupo:"usuarios"` (`USR_GRUPO`) — a shadow registry written automatically (`empujarUsuario()`) for every player who has a profile (`perfil.nombre` used as the row's `apodo`), independent of whether they ever opt into Ranking. Powers cross-device restore via `?restaurar_apodo=<nombre>` in the URL.
-- Both rows carry a full `estado_juego` JSON blob (`capturarEstadoJuego()`, everything in `localStorage` under `gya_`/`larueda_` prefixes) as a complete backup, synced on a debounce whenever local state changes (`chequearCambioEstadoJuego`/`programarSyncEstadoJuego`).
-- Upserts use `onConflict:"grupo,apodo"` — meaning `(grupo, apodo)` is treated as unique. Two different players choosing the same `apodo`/`perfil.nombre` within the same `grupo` silently overwrite each other's row. `nombrePerfilDisponible()` guards against this at profile creation/edit time (checks `gya_ranking` across both `grupo`s before allowing a name), but it's a best-effort client-side check, not a DB constraint — Supabase calls are wrapped in `try/catch` and swallow errors everywhere in this file (offline should never hard-block the game).
-
-### Bug-hunting agent on demand
-There is no test suite (see Commands above), so correctness relies on manual QA and periodic review. When the project owner says **"despertar agente"** (or an obvious variant, e.g. "despertá el agente"), spend a while doing a thorough correctness-focused review of `index.html` — use the `code-review` skill at `high` or `max` effort targeting the file (not just the current diff), since the goal is to surface latent bugs across the whole single-file codebase, not just recent changes. Report findings concisely in Spanish; don't silently apply fixes unless the owner (Gonzalo, non-technical) asks you to.
+## Pendiente / ideas
+- Completar las ilustraciones que faltan (ver arriba) para que no se mezclen emoji con dibujos.
+- Más conceptos rioplatenses (hoy 9) y rotar el set por día para que el reto no sea memorizable.
+- Niveles de dificultad (fácil/normal/experto) subiendo capas, fichas o trampas.
+- Sonidos y animación al juntar pares.
+- Ranking/tabla compartida del reto del día.
+- Que Gonzalo agregue el resto de las cosas que tenía para pedir sobre el juego.
