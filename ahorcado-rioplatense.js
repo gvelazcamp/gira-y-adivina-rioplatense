@@ -8,6 +8,12 @@ const AhorcadoRioplatense=(()=>{
   const CLAVE="gya_ahorcado_rioplatense";
   const $=s=>raiz?.querySelector(s);
   let raiz=null,fase="inicio",datos=cargar(),duelo=false,palabrasDuelo=null;
+  /* Duelo "por turnos": los dos juegan la MISMA palabra en el mismo tablero.
+     Acertar suma puntos y sigue jugando el mismo; errar dibuja el muñeco
+     (compartido) y pasa el turno. Cada letra viaja con la lista completa de
+     letras jugadas, así los dos celulares quedan siempre iguales. */
+  const TURNO_PTS_LETRA=10,TURNO_PTS_COMPLETAR=50;
+  let turnos=false,yo="host",turnoDe="host",ptsRival=0,ordenLetras=[],colaRemota=[];
   let palabra=null,usadas=[],adivinadas=new Set(),errores=0,puntos=0,n=0,W=0,etiquetas=[],intervalo=null;
   let audioMusica=null;
   function iniciarMusicaJuego(){
@@ -66,12 +72,20 @@ const AhorcadoRioplatense=(()=>{
     }).join("");
   }
   function hud(){$("#ahN").textContent=n+"/"+AHORCADO_CONFIG.palabras;$("#ahPt").textContent=puntos;$("#ahMejor").textContent=datos.mejor;}
+  const nombreRival=()=>(typeof Duelo!=="undefined"&&Duelo.rivalActual()?.nombre)||"tu rival";
+  function avisoTurno(){
+    if(!turnos||fase!=="jugando")return;
+    const mio=turnoDe===yo,f=$("#ahFeedback");
+    f.textContent=mio?"🎯 ¡Tu turno! Elegí una letra":"⏳ Turno de "+nombreRival()+"…";f.style.color=mio?"#F5B301":"#CBB8DB";
+    $("#ahTeclado").classList.toggle("ah-espera",!mio);
+  }
   function construirTeclado(){
     $("#ahTeclado").innerHTML=AHORCADO_LETRAS.split("").map(c=>`<button type="button" data-l="${c}">${c}</button>`).join("");
   }
   function resetTeclado(){document.querySelectorAll("#ahTeclado button").forEach(b=>{b.className="";b.disabled=false;});}
   function siguientePalabra(){
-    n++;errores=0;adivinadas=new Set();fase="girando";$("#ahSiguiente").hidden=true;$("#ahFeedback").textContent="";
+    n++;errores=0;adivinadas=new Set();ordenLetras=[];fase="girando";$("#ahTeclado").classList.remove("ah-espera");
+    if(turnos)turnoDe=n%2===1?"host":"guest";$("#ahSiguiente").hidden=true;$("#ahFeedback").textContent="";
     document.querySelectorAll(".ah-figura g>*").forEach(e=>e.classList.remove("on"));$("#ahFigura").classList.remove("perdida");
     resetTeclado();$("#ahPalabra").innerHTML="";$("#ahPregunta").innerHTML="<small>Girando…</small>";hud();
     if(duelo){palabra=palabrasDuelo[n-1];}else{palabra=elegirPalabra(usadas);usadas.push(palabra);}
@@ -80,6 +94,7 @@ const AhorcadoRioplatense=(()=>{
       const cat=AHORCADO_CATEGORIAS[indice];
       $("#ahPregunta").innerHTML=`<small>Categoría</small>${cat.emoji} ${cat.nombre} · ${palabra.palabra.length} letras`;
       dibujarPalabra(false);fase="jugando";
+      if(turnos){avisoTurno();const cola=colaRemota;colaRemota=[];cola.forEach(letraRemota);}
     });
   }
   function sonido(acierto){
@@ -93,18 +108,43 @@ const AhorcadoRioplatense=(()=>{
     $("#p"+errores)?.classList.add("on");errores++;
     if(errores>=AHORCADO_CONFIG.vidas)terminarPalabra(false);
   }
-  function tocarLetra(L){
+  function tocarLetra(L,remoto){
     if(fase!=="jugando"||adivinadas.has(L))return;
-    adivinadas.add(L);
+    if(turnos&&!remoto&&turnoDe!==yo){avisoTurno();return;}
+    const quien=turnoDe;
+    adivinadas.add(L);ordenLetras.push(L);
+    if(turnos&&!remoto)Duelo.enviarProgreso({t:"letra",n,letras:ordenLetras.join("")});
+    if(turnos){
+      const veces=palabra.palabra.split("").filter(c=>c===L).length;
+      if(veces){const p=veces*TURNO_PTS_LETRA;if(quien===yo)puntos+=p;else ptsRival+=p;}
+      else turnoDe=turnoDe==="host"?"guest":"host";
+      hud();Duelo.actualizarBadge(String(ptsRival));
+    }
     const b=$(`#ahTeclado [data-l="${L}"]`);if(b)b.disabled=true;
     if(palabra.palabra.includes(L)){
       if(b)b.className="ok";sonido(true);dibujarPalabra(false);
-      if(palabra.palabra.split("").every(c=>adivinadas.has(c)))terminarPalabra(true);
+      if(palabra.palabra.split("").every(c=>adivinadas.has(c)))terminarPalabra(true,quien);
     }else{if(b)b.className="no";sonido(false);marcarError();}
+    avisoTurno();
   }
-  function terminarPalabra(gano){
+  // Letra jugada por el rival: se aplican, en orden, las que falten.
+  function letraRemota(m){
+    if(!turnos||!m||typeof m.letras!=="string")return;
+    if(m.n!==n||fase==="girando"){if(m.n>=n)colaRemota.push(m);return;}
+    for(const L of m.letras.split("")){if(fase!=="jugando")break;if(!adivinadas.has(L)&&AHORCADO_LETRAS.includes(L))tocarLetra(L,true);}
+  }
+  function terminarPalabra(gano,quien){
     if(fase!=="jugando")return;
-    fase="resultado";const f=$("#ahFeedback");
+    fase="resultado";const f=$("#ahFeedback");$("#ahTeclado").classList.remove("ah-espera");
+    if(turnos){
+      if(gano){
+        if(quien===yo){puntos+=TURNO_PTS_COMPLETAR;f.textContent="¡La completaste vos! +"+TURNO_PTS_COMPLETAR+" 🧉";f.style.color="#37D6C0";}
+        else{ptsRival+=TURNO_PTS_COMPLETAR;f.textContent="La completó "+nombreRival()+" (+"+TURNO_PTS_COMPLETAR+")";f.style.color="#FF9DA7";}
+      }else{$("#ahFigura").classList.add("perdida");dibujarPalabra(true);f.textContent="Nadie la sacó: era "+palabra.palabra;f.style.color="#FF9DA7";}
+      hud();Duelo.actualizarBadge(String(ptsRival));
+      setTimeout(()=>{if(!raiz||!duelo)return;if(n<AHORCADO_CONFIG.palabras)siguientePalabra();else terminar();},AHORCADO_CONFIG.pausaMs+1300);
+      return;
+    }
     if(gano){
       const p=AHORCADO_CONFIG.ptsPalabra+AHORCADO_CONFIG.ptsVida*(AHORCADO_CONFIG.vidas-errores);
       puntos+=p;f.textContent="¡Bien! +"+p+" 🧉";f.style.color="#37D6C0";
@@ -117,27 +157,32 @@ const AhorcadoRioplatense=(()=>{
     if(n<AHORCADO_CONFIG.palabras)setTimeout(()=>{$("#ahSiguiente").hidden=false;},AHORCADO_CONFIG.pausaMs);
     else setTimeout(terminar,1200);
   }
-  function iniciar(){duelo=false;palabrasDuelo=null;n=0;puntos=0;usadas=[];fase="girando";$("#ahPanel").hidden=true;siguientePalabra();}
-  function iniciarDuelo(){
+  function iniciar(){duelo=false;turnos=false;palabrasDuelo=null;n=0;puntos=0;usadas=[];fase="girando";$("#ahPanel").hidden=true;siguientePalabra();}
+  // modo: "turnos" (misma palabra, de a una letra cada uno) o "carrera"
+  // (mismas palabras, cada uno en su tablero). Lo decide quien crea la sala.
+  function iniciarDuelo(modo){
     if(typeof Duelo==="undefined")return;
-    Duelo.mostrarLobby("Ahorcado Rioplatense","ahorcado",{onListo:(soyHost)=>{
-      duelo=true;Duelo.mostrarBadge();Duelo.actualizarBadge("0");
-      Duelo.onProgresoRival(p=>Duelo.actualizarBadge(String(p.puntos)));
+    const etiqueta=modo==="turnos"?"Ahorcado Rioplatense (por turnos)":"Ahorcado Rioplatense (carrera)";
+    Duelo.mostrarLobby(etiqueta,"ahorcado",{onListo:(soyHost)=>{
+      duelo=true;yo=soyHost?"host":"guest";ptsRival=0;colaRemota=[];Duelo.mostrarBadge();Duelo.actualizarBadge("0");
+      Duelo.onProgresoRival(p=>{if(turnos)letraRemota(p);else Duelo.actualizarBadge(String(p.puntos));});
+      const arrancar=(lista,m)=>{turnos=m==="turnos";palabrasDuelo=lista;n=0;puntos=0;ptsRival=0;usadas=[];fase="girando";$("#ahPanel").hidden=true;siguientePalabra();};
       if(soyHost){
         const lista=[];for(let i=0;i<AHORCADO_CONFIG.palabras;i++)lista.push(elegirPalabra(lista));
-        palabrasDuelo=lista;Duelo.enviarRonda({palabras:lista});n=0;puntos=0;usadas=[];fase="girando";$("#ahPanel").hidden=true;siguientePalabra();
-      }else Duelo.onRondaRecibida(d=>{palabrasDuelo=d.palabras;n=0;puntos=0;usadas=[];fase="girando";$("#ahPanel").hidden=true;siguientePalabra();});
+        const m=modo==="turnos"?"turnos":"carrera";Duelo.enviarRonda({palabras:lista,modo:m});arrancar(lista,m);
+      }else Duelo.onRondaRecibida(d=>arrancar(d.palabras,d.modo));
     }});
   }
+  const OPCIONES_AMIGO=[["👥 Por turnos",()=>iniciarDuelo("turnos")],["👥 Carrera",()=>iniciarDuelo("carrera")]];
   function terminar(){
     if(duelo){
       datos.mejor=Math.max(datos.mejor,puntos);guardar();hud();
       Duelo.enviarFinal({valor:puntos});
-      Duelo.mostrarResultado({valor:puntos},{etiqueta:"puntos de la partida",onVolver:()=>{duelo=false;abrir(raiz.parentElement);}});
+      Duelo.mostrarResultado({valor:puntos},{etiqueta:"puntos de la partida",onVolver:()=>{duelo=false;turnos=false;abrir(raiz.parentElement);}});
       return;
     }
     fase="fin";datos.mejor=Math.max(datos.mejor,puntos);guardar();hud();
-    panel("¡Se terminó!","Puntos: "+puntos+". Mejor: "+datos.mejor+".",[["Jugar de nuevo",iniciar],["Jugar con un amigo 👥",iniciarDuelo]]);
+    panel("¡Se terminó!","Puntos: "+puntos+". Mejor: "+datos.mejor+".",[["Jugar de nuevo",iniciar],...OPCIONES_AMIGO]);
   }
   function quitarTildes(s){return s.normalize("NFD").split("").filter(ch=>{const n=ch.charCodeAt(0);return n<0x300||n>0x36f;}).join("");}
   function tecla(key,evento){
@@ -168,14 +213,14 @@ const AhorcadoRioplatense=(()=>{
     addEventListener("resize",posicionarRueda);
     document.addEventListener("visibilitychange",visibilidad);iniciarMusicaJuego();
     hud();
-    panel("Ahorcado Rioplatense","El clásico del muñeco con un giro rioplatense: antes de cada palabra, la ruleta elige la categoría (Comida, Carnaval, Fútbol, Costumbres, Lunfardo o Ciudades) y esa es tu única pista. Son 5 palabras difíciles, sin repetir. Cada error dibuja una parte del muñeco: con 6 errores, perdés esa palabra. Jugás gratis, sin gastar vidas ni monedas. Mejor: "+datos.mejor+" puntos.",
-      [["Jugar",iniciar],["Jugar con un amigo 👥",iniciarDuelo]]);
+    panel("Ahorcado Rioplatense","El clásico del muñeco con un giro rioplatense: antes de cada palabra, la ruleta elige la categoría (Comida, Carnaval, Fútbol, Costumbres, Lunfardo o Ciudades) y esa es tu única pista. Son 5 palabras difíciles, sin repetir. Cada error dibuja una parte del muñeco: con 6 errores, perdés esa palabra. Jugás gratis, sin gastar vidas ni monedas. Con un amigo: 👥 POR TURNOS (la misma palabra, de a una letra; si errás, juega el otro) o 👥 CARRERA (cada uno en su tablero, gana el que suma más). Mejor: "+datos.mejor+" puntos.",
+      [["Jugar",iniciar],...OPCIONES_AMIGO]);
   }
   function salir(){
     removeEventListener("resize",posicionarRueda);
     document.removeEventListener("visibilitychange",visibilidad);detenerMusicaJuego();
     if(typeof Duelo!=="undefined")Duelo.salir();
-    duelo=false;palabrasDuelo=null;raiz=null;fase="inicio";
+    duelo=false;turnos=false;colaRemota=[];palabrasDuelo=null;raiz=null;fase="inicio";
   }
   return{abrir,salir,tecla,mejorPuntaje:()=>cargar().mejor};
 })();
