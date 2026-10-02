@@ -9,6 +9,15 @@ const RoscoRioplatense=(()=>{
   const CLAVE="gya_rosco_rioplatense";
   let datos=cargar(),raiz=null,shell=null,items=[],estados=[],actual=-1,destino=-1,angulo=0;
   let nivel=1,config=null,fase="inicio",tiempo=0,espera=0,ultimo=0,intervalo=null,ultimoTac=0,duelo=false,usadasSesion=new Set();
+  let audioMusica=null;
+  function iniciarMusicaJuego(){
+    try{
+      if(typeof sonidoPermitido==="function"&&!sonidoPermitido())return;
+      if(!audioMusica){audioMusica=new Audio("assets/audio/rosco-rioplatense-musica.mp3");audioMusica.loop=true;audioMusica.volume=.28;}
+      if(audioMusica.paused)audioMusica.play().catch(()=>{});
+    }catch(e){}
+  }
+  function detenerMusicaJuego(){try{if(audioMusica&&!audioMusica.paused)audioMusica.pause();}catch(e){}}
   const $=s=>raiz?.querySelector(s);
   const normalizar=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase().replace(/\s+/g,"");
   const numero=(v,base=0)=>Number.isFinite(v)&&v>=0?v:base;
@@ -83,7 +92,7 @@ const RoscoRioplatense=(()=>{
     actual=destino;fase="resolver";const d=items[actual];
     $("#rrGrande").textContent=d.letra;$("#rrRegla").textContent=(d.contiene?"Contiene la ":"Empieza con ")+d.letra;
     $("#rrDefinicion").textContent=d.definicion;hud();enfocar();
-    if(typeof hablar==="function")hablar(d.definicion);
+    if(typeof hablar==="function")hablar(d.definicion,audioMusica);
   }
   function iniciar(){duelo=false;config=configNivel(nivel);items=armarRonda();guardar();arrancarRonda();}
   function arrancarRonda(){
@@ -186,18 +195,18 @@ const RoscoRioplatense=(()=>{
     }else if(fase==="respuesta"){espera-=dt;if(espera<=0)siguiente();}
     hud();
   }
-  function visibilidad(){ultimo=performance.now();}
+  function visibilidad(){if(document.hidden)detenerMusicaJuego();else iniciarMusicaJuego();ultimo=performance.now();}
   function abrir(contenedor){
     salir();datos=cargar();nivel=datos.nivelMax;config=configNivel(nivel);fase="inicio";usadasSesion=new Set();
     raiz=document.createElement("div");raiz.className="rr-game";
     raiz.innerHTML='<div class="rr-titulo"><img src="logo-rosco-rioplatense.svg" alt=""><div><h2>El Rosco</h2><p>Una vuelta, muchas palabras nuestras.</p></div></div><div id="rrJuego" hidden><div class="sf-hud"><div><small>Nivel</small><b id="rrNivel"></b></div><div><small>Aciertos</small><b id="rrAciertos"></b></div><div><small>Errores</small><b id="rrErrores"></b></div><div><small>Tiempo</small><b id="rrTiempo"></b></div></div><div class="sf-bar"><i id="rrBarra"></i></div><div class="rr-rueda"><div id="rrDisco"></div><b id="rrGrande"></b></div><div class="rr-pista" role="status" aria-live="polite"><div class="voz-fila"><small id="rrRegla"></small><button type="button" class="voz-btn" id="rrEscuchar" aria-label="Escuchar la pista">🔊</button></div><p id="rrDefinicion"></p></div><p id="rrMensaje" class="rr-mensaje" role="status"></p><form id="rrForm" autocomplete="off"><label class="rr-sr" for="rrEntrada">Tu respuesta</label><div class="rr-fila"><input id="rrEntrada" placeholder="Escribí la palabra" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="send" maxlength="60"><button id="rrEnviar" type="submit">Enviar</button></div><button id="rrPasar" type="button">Pasapalabra ↻</button></form></div><div id="rrPanel" class="rr-panel-capa"></div>';
     contenedor.appendChild(raiz);shell=raiz.closest(".ext-shell");shell?.classList.add("rr-abierta");
     $("#rrForm").onsubmit=e=>{e.preventDefault();enviar();};$("#rrPasar").onclick=pasar;
-    $("#rrEscuchar").onclick=()=>{if(actual>=0&&typeof hablar==="function")hablar(items[actual].definicion);};
+    $("#rrEscuchar").onclick=()=>{if(actual>=0&&typeof hablar==="function")hablar(items[actual].definicion,audioMusica);};
     for(const b of raiz.querySelectorAll("#rrForm button"))b.onpointerdown=e=>e.preventDefault();
     $("#rrEntrada").onbeforeinput=e=>{if(fase!=="resolver")e.preventDefault();};
     window.visualViewport?.addEventListener("resize",ajustarPantalla);window.visualViewport?.addEventListener("scroll",ajustarPantalla);window.addEventListener("resize",ajustarPantalla);
-    document.addEventListener("visibilitychange",visibilidad);ultimo=performance.now();intervalo=setInterval(tic,ROSCO_CONFIG.ticMs);
+    document.addEventListener("visibilitychange",visibilidad);ultimo=performance.now();intervalo=setInterval(tic,ROSCO_CONFIG.ticMs);iniciarMusicaJuego();
     const acciones=[["Jugar nivel "+nivel,iniciar]];if(nivel>1)acciones.push(["Practicar desde el nivel 1",()=>{nivel=1;iniciar();}]);
     acciones.push(["Jugar con un amigo 👥",iniciarDuelo]);
     panel("El Rosco Rioplatense",config.letras+" letras y "+config.segundos+" segundos. Leé cada pista y escribí la palabra: tenés un intento por letra. Pasapalabra la deja para después. El reloj se pausa al girar. Acertá al menos "+Math.ceil(config.letras*ROSCO_CONFIG.proporcionAvance)+" y respondé todas para avanzar. Jugás gratis, sin gastar vidas ni monedas. Mejor: "+datos.mejor+" puntos.",acciones);ajustarPantalla();
@@ -208,6 +217,7 @@ const RoscoRioplatense=(()=>{
     shell?.classList.remove("rr-abierta");
     if("speechSynthesis" in window)speechSynthesis.cancel();
     if(typeof sincronizarMusica==="function")sincronizarMusica();
+    detenerMusicaJuego();
     if(typeof Duelo!=="undefined")Duelo.salir();
     duelo=false;raiz=null;shell=null;fase="inicio";items=[];estados=[];
   }
