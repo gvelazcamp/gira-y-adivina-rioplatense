@@ -24,6 +24,15 @@ const SopaFugaz=(()=>{
   let datos=cargar(),raiz=null,gridEl=null,chipsEl=null,celdas=[],tablero=[],objetivos=[],halladas=new Set();
   let nivel=1,puntaje=0,tiempoMs=0,duracionMs=0,mudanzaMs=0,proximaMudanza=0,ultimaMarca=0;
   let jugando=false,mudando=false,arrastre=null,camino=[],intervalo=null,trasladoTimer=null,token=0,ultimoTic=0,ocultoDesde=0,categoria="",repetirConocidas=false,duelo=false;
+  let audioMusica=null;
+  function iniciarMusicaJuego(){
+    try{
+      if(typeof sonidoPermitido==="function"&&!sonidoPermitido())return;
+      if(!audioMusica){audioMusica=new Audio("assets/audio/sopa-fugaz-musica.mp3");audioMusica.loop=true;audioMusica.volume=.28;}
+      if(audioMusica.paused)audioMusica.play().catch(()=>{});
+    }catch(e){}
+  }
+  function detenerMusicaJuego(){try{if(audioMusica&&!audioMusica.paused)audioMusica.pause();}catch(e){}}
 
   function cargar(){
     try{const d=JSON.parse(localStorage.getItem(CLAVE)||"null");if(d&&typeof d==="object")return{
@@ -232,7 +241,8 @@ const SopaFugaz=(()=>{
     }
   }
   function alVolver(){
-    if(document.hidden){if(jugando&&!ocultoDesde)ocultoDesde=performance.now();return;}
+    if(document.hidden){detenerMusicaJuego();if(jugando&&!ocultoDesde)ocultoDesde=performance.now();return;}
+    iniciarMusicaJuego();
     if(!ocultoDesde)return;
     const pausa=performance.now()-ocultoDesde;
     proximaMudanza+=pausa;ultimaMarca+=pausa;ultimoTic=performance.now();ocultoDesde=0;
@@ -309,6 +319,7 @@ const SopaFugaz=(()=>{
     };
     intervalo=setInterval(tic,SOPA_CONFIG.ticMs);
     document.addEventListener("visibilitychange",alVolver);
+    iniciarMusicaJuego();
     raiz.querySelector("#sfMejor").textContent=datos.mejor;
     dibujarHistorial();
     mostrarPanel("Sopa Fugaz","Encontrá las palabras arrastrando el dedo. Las letras giran y se mudan durante la ronda. Las que descubrís quedan en Mis palabras y no vuelven a salir mientras haya nuevas.","Jugar",iniciarRonda,false,{texto:"Jugar con un amigo 👥",accion:iniciarDuelo});
@@ -316,6 +327,7 @@ const SopaFugaz=(()=>{
   function salir(){
     jugando=false;mudando=false;arrastre=null;token++;clearInterval(intervalo);clearTimeout(trasladoTimer);
     document.removeEventListener("visibilitychange",alVolver);
+    detenerMusicaJuego();
     if(typeof Duelo!=="undefined")Duelo.salir();
     duelo=false;raiz=null;gridEl=null;chipsEl=null;celdas=[];intervalo=null;ocultoDesde=0;
   }
