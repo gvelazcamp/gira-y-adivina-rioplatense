@@ -24,9 +24,17 @@ function obtenerVozMasculina(){
 /* Si no se dejó elegir una voz masculina real, igual bajamos el tono para
    que no quede una voz aguda — no cambia el género percibido del todo,
    pero suena más grave que la voz por defecto del celular. */
+let hablarToken=0;
 function hablar(texto){
   try{
     if(!("speechSynthesis" in window)||!texto)return;
+    const t=++hablarToken;
+    /* cancel() dispara el onend/onerror de la lectura anterior (si había
+       una en curso) de forma asincrónica, un instante después de este
+       punto. Si esa lectura vieja reanudara la música sin más, taparía
+       la nueva que estamos por empezar. Por eso cada lectura guarda su
+       propio número de turno y solo reanuda la música si sigue siendo
+       la más reciente cuando termina. */
     speechSynthesis.cancel();
     if(typeof detenerMusica==="function")detenerMusica();
     const u=new SpeechSynthesisUtterance(texto);
@@ -34,7 +42,7 @@ function hablar(texto){
     const voz=obtenerVozMasculina();
     u.pitch=voz?.75:.6;
     if(voz)u.voice=voz;
-    const reanudarMusica=()=>{if(typeof sincronizarMusica==="function")sincronizarMusica();};
+    const reanudarMusica=()=>{if(t===hablarToken&&typeof sincronizarMusica==="function")sincronizarMusica();};
     u.onend=reanudarMusica;u.onerror=reanudarMusica;
     speechSynthesis.speak(u);
   }catch(e){}
