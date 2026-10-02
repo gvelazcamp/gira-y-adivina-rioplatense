@@ -5,14 +5,23 @@ const RUEDA_CONFIG={
 };
 const RuedaDeLetras=(()=>{
   const CLAVE="gya_rueda_de_letras",azar=n=>Math.floor(Math.random()*n);
-  let datos=cargar(),raiz=null,nivel=1,puntos=0,ronda=null,letras=[],hechas=new Set(),extrasEncontradas=new Set(),encontradasRonda=[],camino=[],arrastrando=false,jugando=false,girando=false,centros=[];
+  let datos=cargar(),raiz=null,nivel=1,puntos=0,ronda=null,letras=[],hechas=new Set(),extrasEncontradas=new Set(),encontradasRonda=[],camino=[],arrastrando=false,jugando=false,girando=false,centros=[],usadasSesion=new Set();
   let tiempoMs=0,duracionMs=0,ultimo=0,intervalo=null,giroTimer=null,errores=0,inicio=0,ocultoDesde=0,token=0;
   function cargar(){try{const d=JSON.parse(localStorage.getItem(CLAVE)||"null");if(d)return{mejor:Number(d.mejor)||0,nivelMax:Number(d.nivelMax)||1,completadas:Number(d.completadas)||0,tiempos:Array.isArray(d.tiempos)?d.tiempos:[],coleccion:[...new Set((Array.isArray(d.coleccion)?d.coleccion:[]).filter(w=>typeof w==="string"&&/^[A-Z]{3,7}$/.test(w)))]};}catch(e){}return{mejor:0,nivelMax:1,completadas:0,tiempos:[],coleccion:[]};}
   function guardar(){try{localStorage.setItem(CLAVE,JSON.stringify(datos));}catch(e){}}
   function mejorPuntaje(){return datos.mejor;}
   function configNivel(n){if(RUEDA_CONFIG.niveles[n])return RUEDA_CONFIG.niveles[n];const a=RUEDA_CONFIG.avanzado,p=n-5;return{letras:a.letras,palabras:Math.min(a.palabrasMax,a.palabrasBase+Math.floor(Math.max(0,p)/2)),min:a.min,max:a.max,margen:Math.max(a.margenPiso,a.margenInicial-p*a.margenPaso)};}
   function mezclar(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=azar(i+1);[b[i],b[j]]=[b[j],b[i]];}return b;}
-  function elegir(n){const c=configNivel(n),fuentes=RUEDA_DATOS.filter(d=>d.base.length===c.letras),fuente=fuentes[azar(fuentes.length)];const candidatas=fuente.palabras.filter(w=>w!==fuente.base&&w.length>=c.min&&w.length<=c.max);if(candidatas.length<c.palabras-1)throw Error("Faltan palabras en "+fuente.base);return{base:fuente.base,ciudad:fuente.ciudad,palabras:[fuente.base,...candidatas.slice(0,c.palabras-1)]};}
+  function elegir(n){
+    const c=configNivel(n),fuentes=RUEDA_DATOS.filter(d=>d.base.length===c.letras);
+    const sinRepetirSesion=fuentes.filter(d=>!usadasSesion.has(d.base));
+    const origen=sinRepetirSesion.length?sinRepetirSesion:fuentes;
+    const fuente=origen[azar(origen.length)];
+    const candidatas=fuente.palabras.filter(w=>w!==fuente.base&&w.length>=c.min&&w.length<=c.max);
+    if(candidatas.length<c.palabras-1)throw Error("Faltan palabras en "+fuente.base);
+    usadasSesion.add(fuente.base);
+    return{base:fuente.base,ciudad:fuente.ciudad,palabras:[fuente.base,...candidatas.slice(0,c.palabras-1)]};
+  }
   function tiempoRonda(palabras,n){const c=configNivel(n),largo=palabras.reduce((s,w)=>s+w.length,0)/palabras.length;return Math.round(palabras.length*(RUEDA_CONFIG.segundosBase+RUEDA_CONFIG.segundosPorLetra*largo)*c.margen*1000);}
   function sonido(){try{if(typeof sonarRuletaGiro==="function")sonarRuletaGiro();}catch(e){}}
   function feedback(){try{if(typeof vibrar==="function")vibrar(20);}catch(e){}}
@@ -63,7 +72,7 @@ const RuedaDeLetras=(()=>{
   function visibilidad(){if(document.hidden){ocultoDesde=performance.now();}else if(jugando){ultimo=performance.now();ocultoDesde=0;}}
   function comenzar(){clearInterval(intervalo);clearTimeout(giroTimer);token++;ronda=elegir(nivel);letras=mezclar([...ronda.base]);hechas=new Set();extrasEncontradas=new Set();encontradasRonda=[];camino=[];arrastrando=false;girando=false;errores=0;duracionMs=tiempoRonda(ronda.palabras,nivel);tiempoMs=duracionMs;jugando=true;inicio=ultimo=performance.now();raiz.querySelector("#rlPanel").hidden=true;raiz.querySelector("#rlRueda").classList.remove("spin","error");raiz.querySelector("#rlCajon").open=false;mensaje("Deslizá por la rueda");pistas();mostrarCajon();rueda();hud();intervalo=setInterval(tic,RUEDA_CONFIG.ticMs);if(typeof objSumar==="function")objSumar("ruedaRonda",1);}
   function terminar(gano){if(!jugando)return;jugando=false;clearInterval(intervalo);intervalo=null;if(gano){puntos+=Math.ceil(tiempoMs/1000)*RUEDA_CONFIG.puntosSegundo;datos.completadas++;datos.nivelMax=Math.max(datos.nivelMax,nivel+1);if(errores===0&&typeof logroDesbloquear==="function")logroDesbloquear("ruedaPerfecta");}datos.mejor=Math.max(datos.mejor,puntos);datos.tiempos.push({nivel,base:ronda.base,segundos:Math.round((duracionMs-tiempoMs)/1000),ganada:gano});datos.tiempos=datos.tiempos.slice(-60);guardar();hud();panel(gano?"¡Rueda completada!":"Se acabó el tiempo",`${hechas.size}/${ronda.palabras.length} ocultas · ${extrasEncontradas.size} extra · ${puntos} puntos${gano?"":" · Faltaban: "+ronda.palabras.filter(w=>!hechas.has(w)).join(", ")}`,gano?"Siguiente rueda":"Volver a intentar",()=>{if(gano)nivel++;else{nivel=1;puntos=0;}comenzar();});}
-  function abrir(contenedor){salir();datos=cargar();raiz=contenedor;pantalla();panel("Rueda de Letras","Arrastrá entre letras para formar palabras. Las ocultas completan la ronda; otras palabras válidas suman puntos extra. Todas las encontradas caen en tu cajón y quedan guardadas para otras partidas.","Empezar",()=>{nivel=1;puntos=0;comenzar();});document.addEventListener("visibilitychange",visibilidad);}
+  function abrir(contenedor){salir();datos=cargar();usadasSesion=new Set();raiz=contenedor;pantalla();panel("Rueda de Letras","Arrastrá entre letras para formar palabras. Las ocultas completan la ronda; otras palabras válidas suman puntos extra. Todas las encontradas caen en tu cajón y quedan guardadas para otras partidas.","Empezar",()=>{nivel=1;puntos=0;comenzar();});document.addEventListener("visibilitychange",visibilidad);}
   function salir(){jugando=false;clearInterval(intervalo);clearTimeout(giroTimer);intervalo=null;giroTimer=null;token++;document.removeEventListener("visibilitychange",visibilidad);raiz=null;}
   return{abrir,salir,mejorPuntaje,configNivel,tiempoRonda,elegir};
 })();
