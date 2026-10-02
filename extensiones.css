@@ -226,6 +226,7 @@ body.ext-abierta{overflow:hidden}
 .ah-letra.x{color:#FF7E8B;border-color:#FF7E8B}
 .ah-feedback{min-height:22px;margin:2px 0 6px;font-size:.84rem;font-weight:800;color:#D7C8E5}
 .ah-teclado{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:4px}
+.ah-game .sf-acciones{flex-direction:column}.ah-game .sf-acciones button:not(.sf-principal){background:#3A2650;border:1px solid #FFFFFF1F}
 .ah-teclado.ah-espera{opacity:.45;pointer-events:none;filter:grayscale(.4)}
 .ah-teclado button{padding:9px 0;font-size:.82rem;font-weight:900;border-radius:9px;background:#F6EFE2;color:#241237;box-shadow:0 3px 0 #AFA3B8}
 .ah-teclado button:not(:disabled):active{transform:translateY(2px);box-shadow:0 1px 0 #AFA3B8}

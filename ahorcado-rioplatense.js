@@ -179,7 +179,7 @@ const AhorcadoRioplatense=(()=>{
     turnos:"🔄 <b>POR TURNOS</b>: los dos juegan la <b>misma palabra en el mismo tablero</b>. Si acertás una letra sumás y seguís vos; si errás, se dibuja el muñeco (que es de los dos) y juega el otro. Quien completa la palabra suma +50.",
     carrera:"🏁 <b>CARRERA</b>: los dos reciben las <b>mismas 5 palabras</b>, pero cada uno juega en <b>su propio tablero</b> sin ver las letras del otro. Gana el que suma más puntos."
   };
-  const OPCIONES_AMIGO=[["👥 Por turnos",()=>iniciarDuelo("turnos")],["👥 Carrera",()=>iniciarDuelo("carrera")]];
+  const OPCIONES_AMIGO=[["👥 Con un amigo · Por turnos",()=>iniciarDuelo("turnos")],["👥 Con un amigo · Carrera",()=>iniciarDuelo("carrera")]];
   function terminar(){
     if(duelo){
       datos.mejor=Math.max(datos.mejor,puntos);guardar();hud();
@@ -219,7 +219,7 @@ const AhorcadoRioplatense=(()=>{
     addEventListener("resize",posicionarRueda);
     document.addEventListener("visibilitychange",visibilidad);iniciarMusicaJuego();
     hud();
-    panel("Ahorcado Rioplatense","El clásico del muñeco con un giro rioplatense: antes de cada palabra, la ruleta elige la categoría (Comida, Carnaval, Fútbol, Costumbres, Lunfardo o Ciudades) y esa es tu única pista. Son 5 palabras difíciles, sin repetir. Cada error dibuja una parte del muñeco: con 6 errores, perdés esa palabra. Jugás gratis, sin gastar vidas ni monedas. Con un amigo hay 2 tipos de partida. 👥 POR TURNOS: juegan la misma palabra en el mismo tablero, de a una letra; si errás, juega el otro. 👥 CARRERA: las mismas palabras pero cada uno en su tablero; gana el que suma más. Mejor: "+datos.mejor+" puntos.",
+    panel("Ahorcado Rioplatense","La ruleta elige la categoría y vos adiviná la palabra antes de completar el muñeco. Mejor: "+datos.mejor+" puntos.",
       [["Jugar",iniciar],...OPCIONES_AMIGO]);
   }
   function salir(){
