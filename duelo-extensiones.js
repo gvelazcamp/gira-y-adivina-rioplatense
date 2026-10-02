@@ -59,10 +59,10 @@ const Duelo=(()=>{
   }
   function cerrarCapa(){if(capa){capa.remove();capa=null;}}
   /* --- Lobby: elegir crear o unirse, mostrar código, esperar rival --- */
-  function mostrarLobby(nombreJuego,idJuego,{onListo,onCancelar}){
+  function mostrarLobby(nombreJuego,idJuego,{onListo,onCancelar,detalle}){
     juego=idJuego;activo=false;rival=null;finalRival=null;
     const c=activaCapa();
-    c.innerHTML='<div class="dl-tarjeta"><h3>Jugar con un amigo</h3><p class="dl-sub">'+nombreJuego+' · 1 vs 1</p>'+
+    c.innerHTML='<div class="dl-tarjeta"><h3>Jugar con un amigo</h3><p class="dl-sub">'+nombreJuego+' · 1 vs 1</p>'+(detalle?'<p class="dl-detalle">'+detalle+'</p>':'')+
       '<div id="dlElegir" class="dl-fila"><button type="button" id="dlCrear" class="dl-principal">Crear sala</button><button type="button" id="dlUnirse">Unirme con código</button></div>'+
       '<div id="dlCodigoZona" hidden><button type="button" id="dlWpp" class="dl-wpp">📲 Invitar por WhatsApp</button><p>o pasale este código:</p><div class="dl-codigo" id="dlCodigo"></div>'+
       '<div class="dl-fila"><button type="button" id="dlCopiar">Copiar invitación</button></div></div>'+

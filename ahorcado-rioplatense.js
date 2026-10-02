@@ -163,16 +163,22 @@ const AhorcadoRioplatense=(()=>{
   function iniciarDuelo(modo){
     if(typeof Duelo==="undefined")return;
     const etiqueta=modo==="turnos"?"Ahorcado Rioplatense (por turnos)":"Ahorcado Rioplatense (carrera)";
-    Duelo.mostrarLobby(etiqueta,"ahorcado",{onListo:(soyHost)=>{
+    Duelo.mostrarLobby(etiqueta,"ahorcado",{detalle:EXPLICA[modo==="turnos"?"turnos":"carrera"],onListo:(soyHost)=>{
       duelo=true;yo=soyHost?"host":"guest";ptsRival=0;colaRemota=[];Duelo.mostrarBadge();Duelo.actualizarBadge("0");
       Duelo.onProgresoRival(p=>{if(turnos)letraRemota(p);else Duelo.actualizarBadge(String(p.puntos));});
-      const arrancar=(lista,m)=>{turnos=m==="turnos";palabrasDuelo=lista;n=0;puntos=0;ptsRival=0;usadas=[];fase="girando";$("#ahPanel").hidden=true;siguientePalabra();};
+      const arrancar=(lista,m)=>{
+        if(typeof mostrarToast==="function")try{mostrarToast("👥",m==="turnos"?"Misma palabra, de a una letra. Si errás, juega el otro.":"Cada uno en su tablero. Gana el que suma más.",m==="turnos"?"Partida por turnos":"Partida carrera");}catch(e){}
+        turnos=m==="turnos";palabrasDuelo=lista;n=0;puntos=0;ptsRival=0;usadas=[];fase="girando";$("#ahPanel").hidden=true;siguientePalabra();};
       if(soyHost){
         const lista=[];for(let i=0;i<AHORCADO_CONFIG.palabras;i++)lista.push(elegirPalabra(lista));
         const m=modo==="turnos"?"turnos":"carrera";Duelo.enviarRonda({palabras:lista,modo:m});arrancar(lista,m);
       }else Duelo.onRondaRecibida(d=>arrancar(d.palabras,d.modo));
     }});
   }
+  const EXPLICA={
+    turnos:"🔄 <b>POR TURNOS</b>: los dos juegan la <b>misma palabra en el mismo tablero</b>. Si acertás una letra sumás y seguís vos; si errás, se dibuja el muñeco (que es de los dos) y juega el otro. Quien completa la palabra suma +50.",
+    carrera:"🏁 <b>CARRERA</b>: los dos reciben las <b>mismas 5 palabras</b>, pero cada uno juega en <b>su propio tablero</b> sin ver las letras del otro. Gana el que suma más puntos."
+  };
   const OPCIONES_AMIGO=[["👥 Por turnos",()=>iniciarDuelo("turnos")],["👥 Carrera",()=>iniciarDuelo("carrera")]];
   function terminar(){
     if(duelo){
@@ -213,7 +219,7 @@ const AhorcadoRioplatense=(()=>{
     addEventListener("resize",posicionarRueda);
     document.addEventListener("visibilitychange",visibilidad);iniciarMusicaJuego();
     hud();
-    panel("Ahorcado Rioplatense","El clásico del muñeco con un giro rioplatense: antes de cada palabra, la ruleta elige la categoría (Comida, Carnaval, Fútbol, Costumbres, Lunfardo o Ciudades) y esa es tu única pista. Son 5 palabras difíciles, sin repetir. Cada error dibuja una parte del muñeco: con 6 errores, perdés esa palabra. Jugás gratis, sin gastar vidas ni monedas. Con un amigo: 👥 POR TURNOS (la misma palabra, de a una letra; si errás, juega el otro) o 👥 CARRERA (cada uno en su tablero, gana el que suma más). Mejor: "+datos.mejor+" puntos.",
+    panel("Ahorcado Rioplatense","El clásico del muñeco con un giro rioplatense: antes de cada palabra, la ruleta elige la categoría (Comida, Carnaval, Fútbol, Costumbres, Lunfardo o Ciudades) y esa es tu única pista. Son 5 palabras difíciles, sin repetir. Cada error dibuja una parte del muñeco: con 6 errores, perdés esa palabra. Jugás gratis, sin gastar vidas ni monedas. Con un amigo hay 2 tipos de partida. 👥 POR TURNOS: juegan la misma palabra en el mismo tablero, de a una letra; si errás, juega el otro. 👥 CARRERA: las mismas palabras pero cada uno en su tablero; gana el que suma más. Mejor: "+datos.mejor+" puntos.",
       [["Jugar",iniciar],...OPCIONES_AMIGO]);
   }
   function salir(){
