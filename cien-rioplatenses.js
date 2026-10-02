@@ -16,6 +16,15 @@ const CienRioplatenses=(()=>{
   let datos=cargar(),raiz=null,shell=null,fase="inicio",ronda=0,puntos=0,errores=0,pregunta=null,encontradas=[];
   let usadasPartida=[],resumen=[],angulo=0,espera=0,ultimo=0,tacMs=0,intervalo=null,categoriaActual=null;
   let duelo=false,preguntasDuelo=null;
+  let audioMusica=null;
+  function iniciarMusicaJuego(){
+    try{
+      if(typeof sonidoPermitido==="function"&&!sonidoPermitido())return;
+      if(!audioMusica){audioMusica=new Audio("assets/audio/cien-rioplatenses-musica.mp3");audioMusica.loop=true;audioMusica.volume=.28;}
+      if(audioMusica.paused)audioMusica.play().catch(()=>{});
+    }catch(e){}
+  }
+  function detenerMusicaJuego(){try{if(audioMusica&&!audioMusica.paused)audioMusica.pause();}catch(e){}}
   const $=s=>raiz?.querySelector(s);
   function cargar(){
     try{const d=JSON.parse(localStorage.getItem(CLAVE)||"null");if(d&&typeof d==="object")return{
@@ -119,7 +128,7 @@ const CienRioplatenses=(()=>{
     fase="responder";$("#crEscenaRuleta").hidden=true;$("#crEscenaPanel").hidden=false;$("#crRendirse").hidden=false;
     $("#crCategoria").textContent=categoriaActual.icono+" "+categoriaActual.nombre;
     $("#crPregunta").textContent=pregunta.pregunta;$("#crEntrada").placeholder="Tu respuesta…";
-    if(typeof hablar==="function")hablar(pregunta.pregunta);
+    if(typeof hablar==="function")hablar(pregunta.pregunta,audioMusica);
     const tablero=$("#crTablero");tablero.replaceChildren();
     pregunta.respuestas.forEach((r,i)=>{
       const fila=document.createElement("div"),num=document.createElement("b"),txt=document.createElement("span"),pts=document.createElement("em");
@@ -203,7 +212,7 @@ const CienRioplatenses=(()=>{
       if(espera<=0)seleccionar();
     }else if(fase==="seleccion"){espera-=dt;if(espera<=0)mostrarPanel();}
   }
-  function visibilidad(){ultimo=performance.now();}
+  function visibilidad(){ultimo=performance.now();if(document.hidden)detenerMusicaJuego();else iniciarMusicaJuego();}
   function abrir(contenedor){
     salir();datos=cargar();ronda=0;puntos=0;errores=0;angulo=0;fase="inicio";usadasPartida=[];prepararBanco();
     raiz=document.createElement("div");raiz.className="cr-game";
@@ -212,11 +221,11 @@ const CienRioplatenses=(()=>{
     $("#crVolver").onclick=()=>Extensiones.abrirLobby();
     $("#crJugar").onclick=iniciar;$("#crOtra").onclick=iniciar;$("#crCompartir").onclick=e=>compartir(e.currentTarget);
     $("#crDuelo").onclick=iniciarDuelo;
-    $("#crEscuchar").onclick=()=>{if(pregunta&&typeof hablar==="function")hablar(pregunta.pregunta);};
+    $("#crEscuchar").onclick=()=>{if(pregunta&&typeof hablar==="function")hablar(pregunta.pregunta,audioMusica);};
     $("#crForm").onsubmit=e=>{e.preventDefault();enviar();};$("#crRendirse").onclick=cerrarRonda;
     $("#crEnviar").onpointerdown=e=>e.preventDefault();$("#crEntrada").onbeforeinput=e=>{if(fase!=="responder")e.preventDefault();};
     document.addEventListener("visibilitychange",visibilidad);window.visualViewport?.addEventListener("resize",ajustarPantalla);window.visualViewport?.addEventListener("scroll",ajustarPantalla);window.addEventListener("resize",ajustarPantalla);
-    ultimo=performance.now();intervalo=setInterval(tic,CIEN_CONFIG.ticMs);ajustarPantalla();
+    ultimo=performance.now();intervalo=setInterval(tic,CIEN_CONFIG.ticMs);ajustarPantalla();iniciarMusicaJuego();
   }
   function salir(){
     clearInterval(intervalo);intervalo=null;document.removeEventListener("visibilitychange",visibilidad);
@@ -224,6 +233,7 @@ const CienRioplatenses=(()=>{
     shell?.classList.remove("cr-abierta");
     raiz=null;shell=null;fase="inicio";pregunta=null;encontradas=[];
     if("speechSynthesis" in window)speechSynthesis.cancel();
+    detenerMusicaJuego();
     if(typeof sincronizarMusica==="function")sincronizarMusica();
     if(typeof Duelo!=="undefined")Duelo.salir();
     duelo=false;preguntasDuelo=null;
