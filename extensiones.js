@@ -25,7 +25,11 @@ function obtenerVozMasculina(){
    que no quede una voz aguda — no cambia el género percibido del todo,
    pero suena más grave que la voz por defecto del celular. */
 let hablarToken=0;
-function hablar(texto){
+/* audioExtra (opcional): la música propia del juego que llama a hablar(),
+   además de la música de la rueda principal. Cada extensión con su propia
+   pista de fondo (Sopa Fugaz, Rueda de Letras, etc.) la pasa acá para que
+   también se pause mientras lee y se reanude cuando termina. */
+function hablar(texto,audioExtra){
   try{
     if(!("speechSynthesis" in window)||!texto)return;
     const t=++hablarToken;
@@ -37,12 +41,17 @@ function hablar(texto){
        la más reciente cuando termina. */
     speechSynthesis.cancel();
     if(typeof detenerMusica==="function")detenerMusica();
+    if(audioExtra&&!audioExtra.paused)audioExtra.pause();
     const u=new SpeechSynthesisUtterance(texto);
     u.lang="es-UY";u.rate=.97;
     const voz=obtenerVozMasculina();
     u.pitch=voz?.75:.6;
     if(voz)u.voice=voz;
-    const reanudarMusica=()=>{if(t===hablarToken&&typeof sincronizarMusica==="function")sincronizarMusica();};
+    const reanudarMusica=()=>{
+      if(t!==hablarToken)return;
+      if(typeof sincronizarMusica==="function")sincronizarMusica();
+      if(audioExtra&&typeof sonidoPermitido==="function"&&sonidoPermitido())audioExtra.play().catch(()=>{});
+    };
     u.onend=reanudarMusica;u.onerror=reanudarMusica;
     speechSynthesis.speak(u);
   }catch(e){}
