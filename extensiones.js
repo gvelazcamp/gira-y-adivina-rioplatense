@@ -140,3 +140,10 @@ const Extensiones=(()=>{
 window.Extensiones=Extensiones;
 const botonExtensiones=document.getElementById("bExtensiones");
 if(EXTENSIONES_HABILITADAS&&botonExtensiones){botonExtensiones.hidden=false;botonExtensiones.onclick=Extensiones.abrirLobby;}
+/* Link de invitación de Contra Reloj (?sala=XXXX): abre el juego directo
+   para que el invitado solo ponga su nombre y entre. */
+try{
+  if(EXTENSIONES_HABILITADAS&&/^[A-Za-z0-9]{4}$/.test(new URLSearchParams(location.search).get("sala")||"")){
+    addEventListener("load",()=>setTimeout(()=>{try{if(typeof perfil!=="undefined"&&perfil&&perfil.nombre)Extensiones.abrirJuego("contra-reloj-rioplatense");}catch(e){}},1800));
+  }
+}catch(e){}
