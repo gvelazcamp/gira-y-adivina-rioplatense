@@ -266,12 +266,16 @@ const ContraRelojOnline=(()=>{
     if(window.ContraRelojVoz)ContraRelojVoz.sincronizar();
     const yo=estadoSala.players.find(p=>p.pid===pid);
     if(!estadoSala.started){
+      c.raiz().classList.remove("crr-en-ronda");$("#onlineGame").classList.remove("crr-en-ronda");
       if(!$("#onlineLobby").hidden||!$("#onlineGame").hidden){c.pantalla("#onlineLobby");pintarEquipos($("#lobbyTeams"));}
       if(!soyHost&&yo&&yo.team)$("#teamPicker").hidden=true;
       return;
     }
     if(!soyHost&&yo&&!yo.team){c.pantalla("#onlineLobby");pintarEquipos($("#lobbyTeams"));mostrarSelectorGrupo();return;}
     if($("#onlineGame").hidden)c.pantalla("#onlineGame");
+    // Durante la ronda se esconde lo accesorio para que entre en una pantalla.
+    const enRonda=estadoSala.turn?.status==="active";
+    $("#onlineGame").classList.toggle("crr-en-ronda",enRonda);c.raiz().classList.toggle("crr-en-ronda",enRonda);
     pintarMarcador();pintarRol();pintarResultado();
   }
   function pintarMarcador(){
