@@ -8,7 +8,7 @@ const ROSCO_CONFIG={
 const RoscoRioplatense=(()=>{
   const CLAVE="gya_rosco_rioplatense";
   let datos=cargar(),raiz=null,shell=null,items=[],estados=[],actual=-1,destino=-1,angulo=0;
-  let nivel=1,config=null,fase="inicio",tiempo=0,espera=0,ultimo=0,intervalo=null,ultimoTac=0;
+  let nivel=1,config=null,fase="inicio",tiempo=0,espera=0,ultimo=0,intervalo=null,ultimoTac=0,duelo=false;
   const $=s=>raiz?.querySelector(s);
   const normalizar=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase().replace(/\s+/g,"");
   const numero=(v,base=0)=>Number.isFinite(v)&&v>=0?v:base;
@@ -86,8 +86,9 @@ const RoscoRioplatense=(()=>{
     $("#rrDefinicion").textContent=d.definicion;hud();enfocar();
     if(typeof hablar==="function")hablar(d.definicion);
   }
-  function iniciar(){
-    config=configNivel(nivel);items=armarRonda();guardar();estados=items.map(()=>"pendiente");
+  function iniciar(){duelo=false;config=configNivel(nivel);items=armarRonda();guardar();arrancarRonda();}
+  function arrancarRonda(){
+    estados=items.map(()=>"pendiente");
     actual=-1;destino=-1;angulo=0;tiempo=config.segundos*1000;ultimo=performance.now();
     $("#rrPanel").hidden=true;$("#rrEntrada").value="";$("#rrJuego").hidden=false;
     const disco=$("#rrDisco");disco.replaceChildren();disco.style.transition="none";disco.style.transform="rotate(0deg)";
@@ -97,6 +98,18 @@ const RoscoRioplatense=(()=>{
       span.textContent=d.letra;el.appendChild(span);disco.appendChild(el);
     });
     void disco.offsetWidth;disco.style.transition="";enfocar();siguiente();
+    if(duelo){
+      Duelo.mostrarBadge();Duelo.actualizarBadge("0/"+items.length);
+      Duelo.onProgresoRival(p=>Duelo.actualizarBadge(p.aciertos+"/"+p.total));
+    }
+  }
+  function iniciarDuelo(){
+    if(typeof Duelo==="undefined")return;
+    Duelo.mostrarLobby("El Rosco","rosco",{onListo:(soyHost)=>{
+      duelo=true;
+      if(soyHost){config=configNivel(nivel);items=armarRonda();guardar();Duelo.enviarRonda({items,config});arrancarRonda();}
+      else Duelo.onRondaRecibida(datos=>{config=datos.config;items=datos.items;arrancarRonda();});
+    }});
   }
   function enviar(){
     if(!raiz||fase!=="resolver"||document.hidden)return;
@@ -108,6 +121,7 @@ const RoscoRioplatense=(()=>{
     if(typeof objSumar==="function")objSumar("roscoLetras",1);
     if(ok&&typeof logroDesbloquear==="function")logroDesbloquear("roscoPrimera");
     hud();enfocar();
+    if(duelo)Duelo.enviarProgreso({aciertos:conteo("acierto"),total:items.length});
   }
   function pasar(){
     if(!raiz||fase!=="resolver"||document.hidden)return;
@@ -126,6 +140,12 @@ const RoscoRioplatense=(()=>{
     const aciertos=conteo("acierto"),errores=conteo("error"),faltan=pendientes().length;
     const bonus=faltan===0?Math.max(0,Math.ceil(tiempo/1000))*ROSCO_CONFIG.bonoSegundo:0;
     const puntos=aciertos*ROSCO_CONFIG.puntosAcierto+bonus;
+    if(duelo){
+      datos.mejor=Math.max(datos.mejor,puntos);guardar();hud();
+      Duelo.enviarFinal({valor:aciertos});
+      Duelo.mostrarResultado({valor:aciertos},{etiqueta:"aciertos sobre "+items.length,onVolver:()=>{duelo=false;abrir(raiz.parentElement);}});
+      return;
+    }
     const avanzar=faltan===0&&aciertos>=Math.ceil(items.length*ROSCO_CONFIG.proporcionAvance);
     datos.mejor=Math.max(datos.mejor,puntos);if(avanzar)datos.nivelMax=Math.max(datos.nivelMax,nivel+1);guardar();
     if(aciertos===items.length&&typeof logroDesbloquear==="function"){
@@ -180,6 +200,7 @@ const RoscoRioplatense=(()=>{
     window.visualViewport?.addEventListener("resize",ajustarPantalla);window.visualViewport?.addEventListener("scroll",ajustarPantalla);window.addEventListener("resize",ajustarPantalla);
     document.addEventListener("visibilitychange",visibilidad);ultimo=performance.now();intervalo=setInterval(tic,ROSCO_CONFIG.ticMs);
     const acciones=[["Jugar nivel "+nivel,iniciar]];if(nivel>1)acciones.push(["Practicar desde el nivel 1",()=>{nivel=1;iniciar();}]);
+    acciones.push(["Jugar con un amigo 👥",iniciarDuelo]);
     panel("El Rosco Rioplatense",config.letras+" letras y "+config.segundos+" segundos. Leé cada pista y escribí la palabra: tenés un intento por letra. Pasapalabra la deja para después. El reloj se pausa al girar. Acertá al menos "+Math.ceil(config.letras*ROSCO_CONFIG.proporcionAvance)+" y respondé todas para avanzar. Jugás gratis, sin gastar vidas ni monedas. Mejor: "+datos.mejor+" puntos.",acciones);ajustarPantalla();
   }
   function salir(){
@@ -188,7 +209,8 @@ const RoscoRioplatense=(()=>{
     shell?.classList.remove("rr-abierta");shell?.style.removeProperty("--rr-alto");shell?.style.removeProperty("--rr-arriba");
     if("speechSynthesis" in window)speechSynthesis.cancel();
     if(typeof sincronizarMusica==="function")sincronizarMusica();
-    raiz=null;shell=null;fase="inicio";items=[];estados=[];
+    if(typeof Duelo!=="undefined")Duelo.salir();
+    duelo=false;raiz=null;shell=null;fase="inicio";items=[];estados=[];
   }
   return{abrir,salir,enviar,configNivel,mejorPuntaje:()=>cargar().mejor};
 })();
