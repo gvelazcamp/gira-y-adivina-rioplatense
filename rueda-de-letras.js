@@ -7,6 +7,15 @@ const RuedaDeLetras=(()=>{
   const CLAVE="gya_rueda_de_letras",azar=n=>Math.floor(Math.random()*n);
   let datos=cargar(),raiz=null,nivel=1,puntos=0,ronda=null,letras=[],hechas=new Set(),extrasEncontradas=new Set(),encontradasRonda=[],camino=[],arrastrando=false,jugando=false,girando=false,centros=[],usadasSesion=new Set(),duelo=false;
   let tiempoMs=0,duracionMs=0,ultimo=0,intervalo=null,giroTimer=null,errores=0,inicio=0,ocultoDesde=0,token=0;
+  let audioMusica=null;
+  function iniciarMusicaJuego(){
+    try{
+      if(typeof sonidoPermitido==="function"&&!sonidoPermitido())return;
+      if(!audioMusica){audioMusica=new Audio("assets/audio/rueda-de-letras-musica.mp3");audioMusica.loop=true;audioMusica.volume=.28;}
+      if(audioMusica.paused)audioMusica.play().catch(()=>{});
+    }catch(e){}
+  }
+  function detenerMusicaJuego(){try{if(audioMusica&&!audioMusica.paused)audioMusica.pause();}catch(e){}}
   function cargar(){try{const d=JSON.parse(localStorage.getItem(CLAVE)||"null");if(d)return{mejor:Number(d.mejor)||0,nivelMax:Number(d.nivelMax)||1,completadas:Number(d.completadas)||0,tiempos:Array.isArray(d.tiempos)?d.tiempos:[],coleccion:[...new Set((Array.isArray(d.coleccion)?d.coleccion:[]).filter(w=>typeof w==="string"&&/^[A-Z]{3,7}$/.test(w)))]};}catch(e){}return{mejor:0,nivelMax:1,completadas:0,tiempos:[],coleccion:[]};}
   function guardar(){try{localStorage.setItem(CLAVE,JSON.stringify(datos));}catch(e){}}
   function mejorPuntaje(){return datos.mejor;}
@@ -70,7 +79,7 @@ const RuedaDeLetras=(()=>{
   }
   function girar(){if(!jugando||arrastrando||girando)return;girando=true;const r=raiz.querySelector("#rlRueda");r.classList.add("spin");sonido();const t=++token;giroTimer=setTimeout(()=>{if(t!==token)return;letras=mezclar(letras);rueda();r.classList.remove("spin");girando=false;giroTimer=null;},RUEDA_CONFIG.giroMs);}
   function tic(){if(!jugando||document.hidden)return;const ahora=performance.now();tiempoMs=Math.max(0,tiempoMs-(ahora-ultimo));ultimo=ahora;hud();if(!tiempoMs)terminar(false);}
-  function visibilidad(){if(document.hidden){ocultoDesde=performance.now();}else if(jugando){ultimo=performance.now();ocultoDesde=0;}}
+  function visibilidad(){if(document.hidden){detenerMusicaJuego();ocultoDesde=performance.now();}else{iniciarMusicaJuego();if(jugando){ultimo=performance.now();ocultoDesde=0;}}}
   function comenzar(){duelo=false;token++;ronda=elegir(nivel);arrancarRonda();}
   function arrancarRonda(){
     clearInterval(intervalo);clearTimeout(giroTimer);
@@ -95,8 +104,8 @@ const RuedaDeLetras=(()=>{
       return;
     }
     panel(gano?"¡Rueda completada!":"Se acabó el tiempo",`${hechas.size}/${ronda.palabras.length} ocultas · ${extrasEncontradas.size} extra · ${puntos} puntos${gano?"":" · Faltaban: "+ronda.palabras.filter(w=>!hechas.has(w)).join(", ")}`,gano?"Siguiente rueda":"Volver a intentar",()=>{if(gano)nivel++;else{nivel=1;puntos=0;}comenzar();});}
-  function abrir(contenedor){salir();datos=cargar();usadasSesion=new Set();raiz=contenedor;pantalla();panel("Rueda de Letras","Arrastrá entre letras para formar palabras. Las ocultas completan la ronda; otras palabras válidas suman puntos extra. Todas las encontradas caen en tu cajón y quedan guardadas para otras partidas.","Empezar",()=>{nivel=1;puntos=0;comenzar();},["Jugar con un amigo 👥",iniciarDuelo]);document.addEventListener("visibilitychange",visibilidad);}
-  function salir(){jugando=false;clearInterval(intervalo);clearTimeout(giroTimer);intervalo=null;giroTimer=null;token++;document.removeEventListener("visibilitychange",visibilidad);if(typeof Duelo!=="undefined")Duelo.salir();duelo=false;raiz=null;}
+  function abrir(contenedor){salir();datos=cargar();usadasSesion=new Set();raiz=contenedor;pantalla();panel("Rueda de Letras","Arrastrá entre letras para formar palabras. Las ocultas completan la ronda; otras palabras válidas suman puntos extra. Todas las encontradas caen en tu cajón y quedan guardadas para otras partidas.","Empezar",()=>{nivel=1;puntos=0;comenzar();},["Jugar con un amigo 👥",iniciarDuelo]);document.addEventListener("visibilitychange",visibilidad);iniciarMusicaJuego();}
+  function salir(){jugando=false;clearInterval(intervalo);clearTimeout(giroTimer);intervalo=null;giroTimer=null;token++;document.removeEventListener("visibilitychange",visibilidad);detenerMusicaJuego();if(typeof Duelo!=="undefined")Duelo.salir();duelo=false;raiz=null;}
   return{abrir,salir,mejorPuntaje,configNivel,tiempoRonda,elegir};
 })();
 window.RuedaDeLetras=RuedaDeLetras;

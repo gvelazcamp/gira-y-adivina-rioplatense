@@ -2375,6 +2375,11 @@ function cortarSFX(){
   try{Object.values(audioSFX).forEach(a=>{if(!a.paused){a.pause();a.currentTime=0;}});}catch(e){}
 }
 function contextoMusicaActual(){
+  /* Las extensiones son independientes de la rueda principal (ver
+     extensiones.js): si están abiertas, no tiene que sonar la música del
+     menú/partida de atrás — cada extensión maneja su propio sonido. */
+  const extShell=document.getElementById("extShell");
+  if(extShell&&!extShell.hidden)return null;
   if($("modalFin").classList.contains("ver"))return musicaCompartida?"menu":"bonus";
   musicaCompartida=false;
   if(S&&(S.fase==="bonus_elegir"||S.fase==="bonus_resolver"||S.fase==="bonus_fin"))return"bonus";
@@ -10763,7 +10768,7 @@ document.addEventListener("keydown",e=>{
 <script src="sopa-fugaz.js?v=6"></script>
 <script src="rueda-de-letras-datos.js?v=1"></script>
 <script src="rueda-de-letras-diccionario.js?v=1"></script>
-<script src="rueda-de-letras.js?v=6"></script>
+<script src="rueda-de-letras.js?v=7"></script>
 <script src="palabra-secreta-datos.js?v=1"></script>
 <script src="palabra-secreta.js?v=4"></script>
 <script src="frases-en-giro-datos.js?v=1"></script>
@@ -10775,7 +10780,7 @@ document.addEventListener("keydown",e=>{
 <script src="silabario-rioplatense.js?v=8"></script>
 <script src="cien-rioplatenses-datos.js?v=1"></script>
 <script src="cien-rioplatenses.js?v=4"></script>
-<script src="extensiones.js?v=11"></script>
+<script src="extensiones.js?v=12"></script>
 <script src="sala-tv.js?v=1"></script>
 </body>
 </html>
