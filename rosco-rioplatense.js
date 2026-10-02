@@ -8,7 +8,7 @@ const ROSCO_CONFIG={
 const RoscoRioplatense=(()=>{
   const CLAVE="gya_rosco_rioplatense";
   let datos=cargar(),raiz=null,shell=null,items=[],estados=[],actual=-1,destino=-1,angulo=0;
-  let nivel=1,config=null,fase="inicio",tiempo=0,espera=0,ultimo=0,intervalo=null,ultimoTac=0,duelo=false;
+  let nivel=1,config=null,fase="inicio",tiempo=0,espera=0,ultimo=0,intervalo=null,ultimoTac=0,duelo=false,usadasSesion=new Set();
   const $=s=>raiz?.querySelector(s);
   const normalizar=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase().replace(/\s+/g,"");
   const numero=(v,base=0)=>Number.isFinite(v)&&v>=0?v:base;
@@ -31,9 +31,11 @@ const RoscoRioplatense=(()=>{
       const banco=ROSCO_DATOS.filter(d=>d.letra===letra);
       const preferidas=banco.filter(d=>nivel<3?d.nivel<=2:d.nivel>=2);
       const opciones=preferidas.length?preferidas:banco;
-      const nuevas=opciones.filter(d=>d.palabra!==datos.ultimas[letra]);
-      const elegida=mezclar(nuevas.length?nuevas:opciones)[0];
-      datos.ultimas[letra]=elegida.palabra;return elegida;
+      const sinRepetirSesion=opciones.filter(d=>!usadasSesion.has(d.palabra));
+      const base=sinRepetirSesion.length?sinRepetirSesion:opciones;
+      const nuevas=base.filter(d=>d.palabra!==datos.ultimas[letra]);
+      const elegida=mezclar(nuevas.length?nuevas:base)[0];
+      datos.ultimas[letra]=elegida.palabra;usadasSesion.add(elegida.palabra);return elegida;
     });
   }
   function pendientes(){return estados.map((s,i)=>s==="pendiente"?i:-1).filter(i=>i>=0);}
@@ -60,9 +62,6 @@ const RoscoRioplatense=(()=>{
   function enfocar(){if(raiz&&!document.hidden){$("#rrEntrada").focus({preventScroll:true});ajustarPantalla();}}
   function ajustarPantalla(){
     if(!raiz||!shell)return;
-    const v=window.visualViewport,alto=v?v.height:innerHeight;
-    shell.style.setProperty("--rr-alto",alto+"px");shell.style.setProperty("--rr-arriba",(v?v.offsetTop:0)+"px");
-    raiz.classList.toggle("rr-compacto",alto<600&&innerWidth<600);
     if(document.activeElement===$("#rrEntrada"))$("#rrForm").scrollIntoView({block:"nearest"});
   }
   function siguiente(){
@@ -189,7 +188,7 @@ const RoscoRioplatense=(()=>{
   }
   function visibilidad(){ultimo=performance.now();}
   function abrir(contenedor){
-    salir();datos=cargar();nivel=datos.nivelMax;config=configNivel(nivel);fase="inicio";
+    salir();datos=cargar();nivel=datos.nivelMax;config=configNivel(nivel);fase="inicio";usadasSesion=new Set();
     raiz=document.createElement("div");raiz.className="rr-game";
     raiz.innerHTML='<div class="rr-titulo"><img src="logo-rosco-rioplatense.svg" alt=""><div><h2>El Rosco</h2><p>Una vuelta, muchas palabras nuestras.</p></div></div><div id="rrJuego" hidden><div class="sf-hud"><div><small>Nivel</small><b id="rrNivel"></b></div><div><small>Aciertos</small><b id="rrAciertos"></b></div><div><small>Errores</small><b id="rrErrores"></b></div><div><small>Tiempo</small><b id="rrTiempo"></b></div></div><div class="sf-bar"><i id="rrBarra"></i></div><div class="rr-rueda"><div id="rrDisco"></div><b id="rrGrande"></b></div><div class="rr-pista" role="status" aria-live="polite"><div class="voz-fila"><small id="rrRegla"></small><button type="button" class="voz-btn" id="rrEscuchar" aria-label="Escuchar la pista">🔊</button></div><p id="rrDefinicion"></p></div><p id="rrMensaje" class="rr-mensaje" role="status"></p><form id="rrForm" autocomplete="off"><label class="rr-sr" for="rrEntrada">Tu respuesta</label><div class="rr-fila"><input id="rrEntrada" placeholder="Escribí la palabra" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="send" maxlength="60"><button id="rrEnviar" type="submit">Enviar</button></div><button id="rrPasar" type="button">Pasapalabra ↻</button></form></div><div id="rrPanel" class="rr-panel-capa"></div>';
     contenedor.appendChild(raiz);shell=raiz.closest(".ext-shell");shell?.classList.add("rr-abierta");
@@ -206,7 +205,7 @@ const RoscoRioplatense=(()=>{
   function salir(){
     clearInterval(intervalo);intervalo=null;document.removeEventListener("visibilitychange",visibilidad);
     window.visualViewport?.removeEventListener("resize",ajustarPantalla);window.visualViewport?.removeEventListener("scroll",ajustarPantalla);window.removeEventListener("resize",ajustarPantalla);
-    shell?.classList.remove("rr-abierta");shell?.style.removeProperty("--rr-alto");shell?.style.removeProperty("--rr-arriba");
+    shell?.classList.remove("rr-abierta");
     if("speechSynthesis" in window)speechSynthesis.cancel();
     if(typeof sincronizarMusica==="function")sincronizarMusica();
     if(typeof Duelo!=="undefined")Duelo.salir();
