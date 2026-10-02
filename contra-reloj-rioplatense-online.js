@@ -431,16 +431,17 @@ const ContraRelojOnline=(()=>{
   function invitar(){
     if(!sala)return;
     let base="";try{base=location.origin+location.pathname;}catch(e){}
-    const link=base+"?contrareloj=1&sala="+sala;
-    const texto="¡Sumate a Contra Reloj en Girá y Adiviná! ⏱👥 Somos 4 o más, cada uno desde su casa con el audio prendido. Sala: "+sala+" · Entrá acá: "+link;
+    const link=base+"?contrareloj=1&sala="+sala+"&de="+encodeURIComponent(miNombre);
+    const texto="¡"+miNombre+" te invita a Contra Reloj en Girá y Adiviná! ⏱👥 Somos 4 o más, cada uno desde su casa con el audio prendido. Tocá el link y apretá UNIRME: "+link+" (sala "+sala+")";
     try{window.open("https://wa.me/?text="+encodeURIComponent(texto),"_blank");}catch(e){}
   }
   // Abierto desde un link de invitación: deja listo el formulario para entrar.
-  function irAUnirse(cod){
+  function irAUnirse(cod,de){
     if(!c||!SALA_OK.test(cod))return;
     $("#onlineBtn").onclick();
     $("#onlineChoice").hidden=true;$("#joinForm").hidden=false;$("#joinCode").value=cod;
-    conexion("Te invitaron a la sala "+cod+". Poné tu nombre y tocá ENTRAR.");
+    conexion((de?de+" te invitó":"Te invitaron")+" a la sala "+cod+". Poné tu nombre y tocá UNIRME.");
+    try{history.replaceState(null,"",location.pathname+"?contrareloj=1");}catch(e){}
   }
   function salir(){if(mq||sala)desconectar();else if(window.ContraRelojVoz)ContraRelojVoz.desvincular();c=null;}
   return{iniciar,salir,irAUnirse};

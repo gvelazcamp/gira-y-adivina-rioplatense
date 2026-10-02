@@ -142,8 +142,17 @@ const botonExtensiones=document.getElementById("bExtensiones");
 if(EXTENSIONES_HABILITADAS&&botonExtensiones){botonExtensiones.hidden=false;botonExtensiones.onclick=Extensiones.abrirLobby;}
 /* Link de invitación de Contra Reloj (?sala=XXXX): abre el juego directo
    para que el invitado solo ponga su nombre y entre. */
+/* Lo mismo para los duelos 1 vs 1 (?duelo=<juego>&sala=XXXX). Si el
+   invitado todavía no tiene perfil, se espera a que lo cree. */
 try{
-  if(EXTENSIONES_HABILITADAS&&/^[A-Za-z0-9]{4}$/.test(new URLSearchParams(location.search).get("sala")||"")){
-    addEventListener("load",()=>setTimeout(()=>{try{if(typeof perfil!=="undefined"&&perfil&&perfil.nombre)Extensiones.abrirJuego("contra-reloj-rioplatense");}catch(e){}},1800));
+  const q=new URLSearchParams(location.search),hayDuelo=!!q.get("duelo"),haySala=/^[A-Za-z0-9]{4}$/.test(q.get("sala")||"");
+  if(EXTENSIONES_HABILITADAS&&haySala){
+    let intentos=0;
+    const t=setInterval(()=>{
+      if(++intentos>80){clearInterval(t);return;}
+      if(document.readyState!=="complete"||typeof perfil==="undefined"||!perfil||!perfil.nombre)return;
+      clearInterval(t);
+      setTimeout(()=>{try{if(hayDuelo){if(window.Duelo)Duelo.abrirInvitacion();}else Extensiones.abrirJuego("contra-reloj-rioplatense");}catch(e){}},1200);
+    },1500);
   }
 }catch(e){}

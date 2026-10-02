@@ -7,6 +7,27 @@
 const Duelo=(()=>{
   const CHARS="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let cliente=null,juego=null,sala=null,soyHost=false,rival=null,activo=false;
+  /* Invitación por link: ?duelo=<juego>&sala=XXXX&de=<nombre> abre ese juego
+     con el lobby en "Unirme" y el código ya cargado. */
+  const DUELO_EXT={ahorcado:"ahorcado-rioplatense",cien:"cien-rioplatenses",frases:"frases-en-giro",memoria:"memoria-en-giro",rosco:"rosco-rioplatense",rueda:"rueda-de-letras",silabario:"silabario-rioplatense",sopa:"sopa-fugaz"};
+  let invitacion=null;
+  try{
+    const q=new URLSearchParams(location.search),j=q.get("duelo"),s=(q.get("sala")||"").toUpperCase();
+    if(DUELO_EXT[j]&&/^[A-HJ-NP-Z2-9]{4}$/.test(s))invitacion={juego:j,sala:s,de:(q.get("de")||"").replace(/[^\p{L}\p{N} ]/gu,"").trim().slice(0,14)};
+  }catch(e){}
+  function linkInvitacion(){
+    let base="";try{base=location.origin+location.pathname;}catch(e){}
+    return base+"?duelo="+juego+"&sala="+sala+"&de="+encodeURIComponent((perfil&&perfil.nombre)||"");
+  }
+  function limpiarUrl(){try{history.replaceState(null,"",location.pathname);}catch(e){}}
+  function abrirInvitacion(){
+    if(!invitacion||typeof Extensiones==="undefined")return;
+    Extensiones.abrirJuego(DUELO_EXT[invitacion.juego]);
+    let n=0;const t=setInterval(()=>{
+      const b=[...document.querySelectorAll("#extContenido button")].find(x=>/con un amigo/i.test(x.textContent)&&x.offsetParent);
+      if(b){clearInterval(t);b.click();}else if(++n>24)clearInterval(t);
+    },250);
+  }
   let cbRivalListo=null,cbRonda=null,cbProgreso=null,cbFinal=null,finalRival=null,holaTimer=null,capa=null;
   function codigoNuevo(){return Array.from({length:4},()=>CHARS[Math.floor(Math.random()*CHARS.length)]).join("");}
   function temaOut(){return "gyaduelo/"+juego+"/"+sala+"/"+(soyHost?"host":"guest");}
@@ -43,9 +64,9 @@ const Duelo=(()=>{
     const c=activaCapa();
     c.innerHTML='<div class="dl-tarjeta"><h3>Jugar con un amigo</h3><p class="dl-sub">'+nombreJuego+' · 1 vs 1</p>'+
       '<div id="dlElegir" class="dl-fila"><button type="button" id="dlCrear" class="dl-principal">Crear sala</button><button type="button" id="dlUnirse">Unirme con código</button></div>'+
-      '<div id="dlCodigoZona" hidden><p>Compartí este código:</p><div class="dl-codigo" id="dlCodigo"></div>'+
-      '<div class="dl-fila"><button type="button" id="dlWpp">WhatsApp</button><button type="button" id="dlCopiar">Copiar</button></div></div>'+
-      '<div id="dlEntrarZona" hidden><label class="dl-sr" for="dlInput">Código</label><input id="dlInput" maxlength="4" placeholder="CÓDIGO" autocomplete="off" autocapitalize="characters"><button type="button" id="dlEntrar" class="dl-principal">Entrar</button></div>'+
+      '<div id="dlCodigoZona" hidden><button type="button" id="dlWpp" class="dl-wpp">📲 Invitar por WhatsApp</button><p>o pasale este código:</p><div class="dl-codigo" id="dlCodigo"></div>'+
+      '<div class="dl-fila"><button type="button" id="dlCopiar">Copiar invitación</button></div></div>'+
+      '<div id="dlEntrarZona" hidden><label class="dl-sr" for="dlInput">Código</label><input id="dlInput" maxlength="4" placeholder="CÓDIGO" autocomplete="off" autocapitalize="characters"><button type="button" id="dlEntrar" class="dl-principal">Unirme</button></div>'+
       '<p id="dlEstado" class="dl-estado" role="status"></p>'+
       '<button type="button" id="dlCancelar" class="dl-cerrar">Cancelar</button></div>';
     const estado=t=>{c.querySelector("#dlEstado").textContent=t;};
@@ -58,11 +79,12 @@ const Duelo=(()=>{
         cliente.subscribe(temaIn());cliente.on("message",recibir);estado("Sala lista. Esperando al otro jugador…");
         cbRivalListo=r=>{estado("");cerrarCapa();if(onListo)onListo(true,r);};
       },()=>estado("No se pudo conectar. Probá con otra red (datos del celular)."),cl=>{cliente=cl;});
-      const texto="Jugamos a "+nombreJuego+" en Girá y Adiviná. Código: "+sala;
+      const quien=(perfil&&perfil.nombre)||"Un amigo";
+      const texto="¡"+quien+" te desafía a "+nombreJuego+" en Girá y Adiviná! 👥 Tocá el link y apretá UNIRME: "+linkInvitacion()+" (código "+sala+")";
       c.querySelector("#dlWpp").onclick=()=>window.open("https://wa.me/?text="+encodeURIComponent(texto),"_blank");
       c.querySelector("#dlCopiar").onclick=async()=>{
         try{await navigator.clipboard.writeText(texto);}catch(e){}
-        const b=c.querySelector("#dlCopiar");b.textContent="Copiado";setTimeout(()=>b.textContent="Copiar",1500);
+        const b=c.querySelector("#dlCopiar");b.textContent="¡Copiada!";setTimeout(()=>b.textContent="Copiar invitación",1500);
       };
     };
     c.querySelector("#dlUnirse").onclick=()=>{
@@ -81,6 +103,12 @@ const Duelo=(()=>{
     };
     c.querySelector("#dlEntrar").onclick=entrar;
     c.querySelector("#dlInput").onkeydown=e=>{if(e.key==="Enter")entrar();};
+    if(invitacion&&invitacion.juego===idJuego){
+      const inv=invitacion;invitacion=null;limpiarUrl();
+      c.querySelector("#dlElegir").hidden=true;c.querySelector("#dlEntrarZona").hidden=false;
+      c.querySelector("#dlInput").value=inv.sala;
+      estado((inv.de?inv.de+" te invitó":"Te invitaron")+" a la sala "+inv.sala+". Tocá UNIRME.");
+    }
   }
   /* --- Durante la partida: progreso propio/rival y badge flotante --- */
   function enviarRonda(datos){mandar({tipo:"ronda",datos});}
@@ -118,6 +146,6 @@ const Duelo=(()=>{
   function estaActivo(){return activo;}
   function rivalActual(){return rival;}
   function salir(){cerrarCliente();cerrarCapa();quitarBadge();activo=false;rival=null;finalRival=null;cbRivalListo=null;cbRonda=null;cbProgreso=null;cbFinal=null;}
-  return{mostrarLobby,enviarRonda,onRondaRecibida,enviarProgreso,onProgresoRival,mostrarBadge,actualizarBadge,enviarFinal,mostrarResultado,estaActivo,rivalActual,salir};
+  return{abrirInvitacion,hayInvitacion:()=>!!invitacion,mostrarLobby,enviarRonda,onRondaRecibida,enviarProgreso,onProgresoRival,mostrarBadge,actualizarBadge,enviarFinal,mostrarResultado,estaActivo,rivalActual,salir};
 })();
 window.Duelo=Duelo;
