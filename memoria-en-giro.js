@@ -12,7 +12,7 @@ const MemoriaEnGiro=(()=>{
   const azar=n=>Math.floor(Math.random()*n);
   let datos=cargar(),raiz=null,cartas=[],config=null,nivel=1,puntos=0,pares=0,racha=0,fallos=0,girosRestantes=MEMORIA_GIRO_GIROS;
   let fase="inicio",primera=null,segunda=null,tiempoMs=0,vistaMs=0,falloMs=0,giroMs=0,animacionMs=0,recuerdoMs=0;
-  let intervalo=null,ultimoTic=0,mensaje="";
+  let intervalo=null,ultimoTic=0,mensaje="",duelo=false;
 
   function cargar(){
     try{const d=JSON.parse(localStorage.getItem(CLAVE)||"null");if(d&&typeof d==="object")return{
@@ -82,24 +82,37 @@ const MemoriaEnGiro=(()=>{
     });
     pintarCartas();
   }
-  function panel(titulo,detalle,botonTexto,accion,alternativa){
+  function panel(titulo,detalle,botonTexto,accion,alternativas){
     const capa=raiz.querySelector("#mgPanel");capa.replaceChildren();capa.hidden=false;
     const tarjeta=document.createElement("div");tarjeta.className="mg-panel";
     const h=document.createElement("h3");h.textContent=titulo;
     const p=document.createElement("p");p.textContent=detalle;
     const b=document.createElement("button");b.type="button";b.className="mg-principal";b.textContent=botonTexto;b.onclick=accion;
     tarjeta.append(h,p,b);
-    if(alternativa){const otro=document.createElement("button");otro.type="button";otro.textContent=alternativa.texto;otro.onclick=alternativa.accion;tarjeta.appendChild(otro);}
+    (Array.isArray(alternativas)?alternativas:[alternativas]).forEach(alt=>{if(!alt)return;const otro=document.createElement("button");otro.type="button";otro.textContent=alt.texto;otro.onclick=alt.accion;tarjeta.appendChild(otro);});
     capa.appendChild(tarjeta);
   }
-  function comenzar(){
-    config=configNivel(nivel);nuevasCartas();pares=0;racha=0;fallos=0;girosRestantes=MEMORIA_GIRO_GIROS;
+  function comenzar(){duelo=false;config=configNivel(nivel);nuevasCartas();arrancarRonda();}
+  function arrancarRonda(){
+    pares=0;racha=0;fallos=0;girosRestantes=MEMORIA_GIRO_GIROS;
     primera=null;segunda=null;tiempoMs=config.segundos*1000;vistaMs=config.vista*1000;
     falloMs=0;giroMs=config.giro*1000;animacionMs=0;recuerdoMs=0;fase="vista";ultimoTic=performance.now();
     raiz.querySelector("#mgPanel").hidden=true;
     raiz.closest(".ext-shell")?.scrollTo(0,0);
     avisar("Mirá bien dónde está cada símbolo. El reloj empieza cuando se tapen.");
     dibujarTablero();
+    if(duelo){
+      Duelo.mostrarBadge();Duelo.actualizarBadge("0/"+config.pares);
+      Duelo.onProgresoRival(p=>Duelo.actualizarBadge(p.pares+"/"+p.total));
+    }
+  }
+  function iniciarDuelo(){
+    if(typeof Duelo==="undefined")return;
+    Duelo.mostrarLobby("Memoria en Giro","memoria",{onListo:(soyHost)=>{
+      duelo=true;config=configNivel(nivel);
+      if(soyHost){nuevasCartas();Duelo.enviarRonda({cartas,nivel});arrancarRonda();}
+      else Duelo.onRondaRecibida(datos=>{nivel=datos.nivel;config=configNivel(nivel);cartas=datos.cartas;arrancarRonda();});
+    }});
   }
   function terminar(gano){
     if(fase==="ganado"||fase==="perdido")return;
@@ -109,11 +122,14 @@ const MemoriaEnGiro=(()=>{
       datos.mejor=Math.max(datos.mejor,puntos);datos.nivelMax=Math.max(datos.nivelMax,nivel+1);datos.ganadas++;guardar();
       if(typeof sonarSFX==="function")sonarSFX("festejo");else sonar(1000,.25);
       if(typeof vibrar==="function")vibrar([35,45,60]);
-      pintarCartas();nivel++;
+      pintarCartas();
+      if(duelo){Duelo.enviarFinal({valor:puntos});Duelo.mostrarResultado({valor:puntos},{etiqueta:"puntos · encontró todos los pares",onVolver:()=>{duelo=false;abrir(raiz.parentElement);}});return;}
+      nivel++;
       panel("¡Todos los pares!","+"+bonus+" puntos por el tiempo que sobró. Total: "+puntos+" · mejor marca: "+datos.mejor+". Las cartas que encontraste quedaron a salvo en los giros.","Siguiente nivel",comenzar);
     }else{
       puntos=0;racha=0;sonar(260,.25);if(typeof vibrar==="function")vibrar(85);
       pintarCartas();
+      if(duelo){Duelo.enviarFinal({valor:puntos});Duelo.mostrarResultado({valor:puntos},{etiqueta:"puntos · "+pares+" de "+config.pares+" pares",onVolver:()=>{duelo=false;abrir(raiz.parentElement);}});return;}
       panel("Se terminó el tiempo","Encontraste "+pares+" de "+config.pares+" pares. Se cortó la racha"+(puntosPrevios?" y perdiste "+puntosPrevios+" puntos de esta partida":"")+". Mejor marca: "+datos.mejor+".","Otra ronda del nivel "+nivel,comenzar);
     }
   }
@@ -126,6 +142,7 @@ const MemoriaEnGiro=(()=>{
       pares++;racha++;const premio=60+racha*15;puntos+=premio;
       primera=null;segunda=null;sonarPar();
       avisar("¡Par encontrado! +"+premio+" puntos"+(racha>1?" · racha de "+racha:""));
+      if(duelo)Duelo.enviarProgreso({pares,total:config.pares});
       if(pares===config.pares){terminar(true);return;}
       pintarCartas();
     }else{
@@ -179,10 +196,12 @@ const MemoriaEnGiro=(()=>{
     raiz.innerHTML='<div class="mg-titulo"><img src="logo-memoria-en-giro.svg" alt=""><div><h2>Memoria en Giro</h2><p>Recordá los símbolos y encontrá sus parejas.</p></div></div><div class="mg-hud"><div><small>Nivel</small><b id="mgNivel">1</b></div><div><small>Pares</small><b id="mgPares">0/3</b></div><div><small>Puntos</small><b id="mgPuntos">0</b></div><div><small>Tiempo</small><b id="mgTiempo">45</b></div></div><div class="mg-bar"><i id="mgTiempoBarra"></i></div><p class="mg-fallas" id="mgFallas"></p><div class="mg-tablero" id="mgTablero" aria-label="Tablero de cartas"></div><p class="mg-mensaje" id="mgMensaje" role="status" aria-live="polite"></p><p class="mg-giro-texto" id="mgGiroTexto"></p><div class="mg-bar giro"><i id="mgGiroBarra"></i></div><div class="mg-panel-capa" id="mgPanel"></div>';
     contenedor.appendChild(raiz);ultimoTic=performance.now();intervalo=setInterval(tic,50);document.addEventListener("visibilitychange",visibilidad);
     panel("Memoria en Giro","Primero ves todas las cartas. Cuando se tapen, encontrá los pares antes de que termine el tiempo. Tenés 3 giros con pista: solo giran las cartas pendientes y luego podés verlas unos segundos más. Después el tablero queda quieto. Una pareja equivocada te quita 3 segundos. Estos corazones no gastan vidas del juego principal.","Jugar nivel "+nivel,comenzar,
-      nivel>1?{texto:"Empezar desde el nivel 1",accion:()=>{nivel=1;puntos=0;comenzar();}}:null);
+      [nivel>1?{texto:"Empezar desde el nivel 1",accion:()=>{nivel=1;puntos=0;comenzar();}}:null,{texto:"Jugar con un amigo 👥",accion:iniciarDuelo}]);
   }
   function salir(){
-    clearInterval(intervalo);intervalo=null;document.removeEventListener("visibilitychange",visibilidad);raiz=null;cartas=[];config=null;fase="inicio";
+    clearInterval(intervalo);intervalo=null;document.removeEventListener("visibilitychange",visibilidad);
+    if(typeof Duelo!=="undefined")Duelo.salir();
+    duelo=false;raiz=null;cartas=[];config=null;fase="inicio";
   }
   return{abrir,salir,mejorPuntaje,configNivel};
 })();
