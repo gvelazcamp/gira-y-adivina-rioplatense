@@ -13,7 +13,7 @@ const SILABARIO_CONFIG={
 const SilabarioRioplatense=(()=>{
   const CLAVE="gya_silabario_rioplatense";
   let datos=cargar(),raiz=null,items=[],estados=[],fichas=[],elegidas=[],actual=-1,bloqueado=false,tiempoPregunta=0,usadasSesion=new Set();
-  let nivel=1,config=null,fase="inicio",tiempo=0,tiempoTotal=0,espera=0,ultimo=0,intervalo=null;
+  let nivel=1,config=null,fase="inicio",tiempo=0,tiempoTotal=0,espera=0,ultimo=0,intervalo=null,duelo=false;
   const $=s=>raiz?.querySelector(s);
   const numero=(v,base=0)=>Number.isFinite(v)&&v>=0?v:base;
   function cargar(){
@@ -135,6 +135,7 @@ const SilabarioRioplatense=(()=>{
     sonido(ok);
     mensaje(ok?"¡Bien! +100 puntos · "+item.respuesta:"Era "+item.respuesta,ok?"acierto":"error");
     hud();
+    if(duelo)Duelo.enviarProgreso({aciertos:conteo("acierto"),total:items.length});
   }
   function pasar(){if(fase==="jugando"&&!bloqueado)siguiente();}
   function distraer(){
@@ -155,12 +156,25 @@ const SilabarioRioplatense=(()=>{
     renderRespuesta(items[actual]);hud();
     reordenar(()=>{bloqueado=false;hud();});
   }
-  function iniciar(){
-    config=configNivel(nivel);items=armarRonda();estados=items.map(()=>"pendiente");fichas=construirFichas(config.fichas);
+  function iniciar(){duelo=false;config=configNivel(nivel);items=armarRonda();arrancarRonda();}
+  function arrancarRonda(){
+    estados=items.map(()=>"pendiente");fichas=construirFichas(config.fichas);
     actual=-1;tiempoTotal=Math.round(items.length*SILABARIO_CONFIG.segundosPorPalabra*config.margen)*1000;tiempo=tiempoTotal;
     ultimo=performance.now();bloqueado=false;
     $("#sbPanel").hidden=true;$("#sbJuego").hidden=false;
     renderTablero();siguiente();
+    if(duelo){
+      Duelo.mostrarBadge();Duelo.actualizarBadge("0/"+items.length);
+      Duelo.onProgresoRival(p=>Duelo.actualizarBadge(p.aciertos+"/"+p.total));
+    }
+  }
+  function iniciarDuelo(){
+    if(typeof Duelo==="undefined")return;
+    Duelo.mostrarLobby("Silabario Rioplatense","silabario",{onListo:(soyHost)=>{
+      duelo=true;
+      if(soyHost){config=configNivel(nivel);items=armarRonda();Duelo.enviarRonda({items,config});arrancarRonda();}
+      else Duelo.onRondaRecibida(datos=>{config=datos.config;items=datos.items;arrancarRonda();});
+    }});
   }
   function panel(titulo,detalle,acciones){
     const p=$("#sbPanel");p.innerHTML='<div class="sf-panel"><h3></h3><p></p><div class="sf-acciones"></div></div>';
@@ -174,6 +188,12 @@ const SilabarioRioplatense=(()=>{
     const aciertos=conteo("acierto"),errores=conteo("error"),faltan=pendientes().length;
     const bonus=faltan===0?Math.max(0,Math.ceil(tiempo/1000))*SILABARIO_CONFIG.bonoSegundo:0;
     const puntos=aciertos*SILABARIO_CONFIG.puntosAcierto+bonus;
+    if(duelo){
+      datos.mejor=Math.max(datos.mejor,puntos);guardar();hud();
+      Duelo.enviarFinal({valor:aciertos});
+      Duelo.mostrarResultado({valor:aciertos},{etiqueta:"aciertos sobre "+items.length,onVolver:()=>{duelo=false;abrir(raiz.parentElement);}});
+      return;
+    }
     const avanzar=faltan===0&&aciertos>=Math.ceil(items.length*SILABARIO_CONFIG.proporcionAvance);
     datos.mejor=Math.max(datos.mejor,puntos);if(avanzar)datos.nivelMax=Math.max(datos.nivelMax,nivel+1);guardar();
     hud();
@@ -204,13 +224,15 @@ const SilabarioRioplatense=(()=>{
     $("#sbEscuchar").onclick=()=>{if(actual>=0&&typeof hablar==="function")hablar(items[actual].pista);};
     document.addEventListener("visibilitychange",visibilidad);ultimo=performance.now();intervalo=setInterval(tic,SILABARIO_CONFIG.ticMs);
     const acciones=[["Jugar nivel "+nivel,iniciar]];if(nivel>1)acciones.push(["Practicar desde el nivel 1",()=>{nivel=1;iniciar();}]);
+    acciones.push(["Jugar con un amigo 👥",iniciarDuelo]);
     panel("Silabario Rioplatense","Un tablero de "+config.columnas+"×"+config.columnas+" con todas las sílabas de las respuestas de este nivel. Tocá en orden las sílabas que arman cada respuesta, estén donde estén — las que ya usaste quedan marcadas. El tablero se reordena entre pregunta y pregunta, y también si te quedás trabado mucho rato. Si no sabés, tocá Pasar. Respondé bien la mayoría para avanzar de nivel. Jugás gratis, sin gastar vidas ni monedas. Mejor: "+datos.mejor+" puntos.",acciones);
   }
   function salir(){
     clearInterval(intervalo);intervalo=null;document.removeEventListener("visibilitychange",visibilidad);
     if("speechSynthesis" in window)speechSynthesis.cancel();
     if(typeof sincronizarMusica==="function")sincronizarMusica();
-    raiz=null;fase="inicio";items=[];estados=[];fichas=[];elegidas=[];
+    if(typeof Duelo!=="undefined")Duelo.salir();
+    duelo=false;raiz=null;fase="inicio";items=[];estados=[];fichas=[];elegidas=[];
   }
   return{abrir,salir,configNivel,mejorPuntaje:()=>cargar().mejor};
 })();
