@@ -23,7 +23,7 @@ const SopaFugaz=(()=>{
   const azar=n=>Math.floor(Math.random()*n);
   let datos=cargar(),raiz=null,gridEl=null,chipsEl=null,celdas=[],tablero=[],objetivos=[],halladas=new Set();
   let nivel=1,puntaje=0,tiempoMs=0,duracionMs=0,mudanzaMs=0,proximaMudanza=0,ultimaMarca=0;
-  let jugando=false,mudando=false,arrastre=null,camino=[],intervalo=null,trasladoTimer=null,token=0,ultimoTic=0,ocultoDesde=0,categoria="",repetirConocidas=false;
+  let jugando=false,mudando=false,arrastre=null,camino=[],intervalo=null,trasladoTimer=null,token=0,ultimoTic=0,ocultoDesde=0,categoria="",repetirConocidas=false,duelo=false;
 
   function cargar(){
     try{const d=JSON.parse(localStorage.getItem(CLAVE)||"null");if(d&&typeof d==="object")return{
@@ -118,7 +118,7 @@ const SopaFugaz=(()=>{
     raiz.querySelector("#sfTiempo").textContent=Math.max(0,Math.ceil(tiempoMs/1000));
     raiz.querySelector("#sfTiempoBarra").style.width=Math.max(0,tiempoMs/duracionMs*100)+"%";
   }
-  function mostrarPanel(titulo,detalle,boton,accion,compartir=false){
+  function mostrarPanel(titulo,detalle,boton,accion,compartir=false,extra){
     const panel=raiz.querySelector("#sfPanel");
     panel.innerHTML="";panel.hidden=false;
     const tarjeta=document.createElement("div");tarjeta.className="sf-panel";
@@ -127,6 +127,7 @@ const SopaFugaz=(()=>{
     const acciones=document.createElement("div");acciones.className="sf-acciones";
     const principal=document.createElement("button");principal.className="sf-principal";principal.type="button";principal.textContent=boton;principal.onclick=accion;acciones.appendChild(principal);
     if(compartir){const b=document.createElement("button");b.type="button";b.textContent="📤 Compartir";b.onclick=()=>compartirResultado(b);acciones.appendChild(b);}
+    if(extra){const b=document.createElement("button");b.type="button";b.textContent=extra.texto;b.onclick=extra.accion;acciones.appendChild(b);}
     tarjeta.append(h,p,acciones);panel.appendChild(tarjeta);
   }
   function guardarMejor(){if(puntaje>datos.mejor){datos.mejor=puntaje;guardar();}}
@@ -147,6 +148,11 @@ const SopaFugaz=(()=>{
       sonarSFX("aplausos");vibrar([45,45,90]);
     }else{sonarSFX("abucheo");vibrar(90);}
     guardarMejor();registrarResultado(gano);actualizarHUD();
+    if(duelo){
+      Duelo.enviarFinal({valor:puntaje});
+      Duelo.mostrarResultado({valor:puntaje},{etiqueta:"puntos de la ronda",onVolver:()=>{duelo=false;abrir(raiz.parentElement);}});
+      return;
+    }
     mostrarPanel(gano?"¡Ronda superada!":"Se acabó el tiempo",
       gano?"Llevás "+puntaje+" puntos. Te sobraron "+Math.ceil(tiempoMs/1000)+" segundos.":"Te faltaron: "+faltantes.join(", ")+". Hiciste "+puntaje+" puntos.",
       gano?"Siguiente ronda":"Jugar de nuevo",()=>{
@@ -155,10 +161,14 @@ const SopaFugaz=(()=>{
       },true);
   }
   function iniciarRonda(){
+    duelo=false;
     token++;clearTimeout(trasladoTimer);mudando=false;arrastre=null;camino=[];halladas.clear();
     const c=configNivel(nivel);
     objetivos=elegirPalabras(c);
     if(!objetivos.length){jugando=false;dibujarHistorial();mostrarPanel("¡Encontraste todas!","Ya descubriste todas las palabras disponibles para esta dificultad. Podés volver a jugarlas para practicar.","Rejugar conocidas",()=>{repetirConocidas=true;iniciarRonda();});return;}
+    arrancarRonda(c);
+  }
+  function arrancarRonda(c){
     duracionMs=Math.round(objetivos.reduce((sum,w)=>sum+SOPA_CONFIG.segundosBasePalabra+SOPA_CONFIG.segundosPorLetra*w.length,0)
       *SOPA_CONFIG.factorMudanzas*SOPA_CONFIG.factorTiempoExtra*(c.n/SOPA_CONFIG.grillaBase)*c.margen*1000);
     tiempoMs=duracionMs;mudanzaMs=c.mudanza*1000;
@@ -168,6 +178,22 @@ const SopaFugaz=(()=>{
     ultimoTic=performance.now();ultimaMarca=ultimoTic;proximaMudanza=ultimoTic+mudanzaMs;
     jugando=true;actualizarHUD();actualizarBarraMudanza(ultimoTic);
     objSumar("sopaRonda",1);
+    if(duelo){
+      Duelo.mostrarBadge();Duelo.actualizarBadge("0/"+objetivos.length);
+      Duelo.onProgresoRival(p=>Duelo.actualizarBadge(p.halladas+"/"+p.total));
+    }
+  }
+  function iniciarDuelo(){
+    if(typeof Duelo==="undefined")return;
+    Duelo.mostrarLobby("Sopa Fugaz","sopa",{onListo:(soyHost)=>{
+      duelo=true;token++;clearTimeout(trasladoTimer);mudando=false;arrastre=null;camino=[];halladas.clear();
+      const c=configNivel(nivel);
+      if(soyHost){
+        objetivos=elegirPalabras(c);
+        if(!objetivos.length){repetirConocidas=true;objetivos=elegirPalabras(c);}
+        Duelo.enviarRonda({objetivos,categoria,nivel});arrancarRonda(c);
+      }else Duelo.onRondaRecibida(datos=>{objetivos=datos.objetivos;categoria=datos.categoria;nivel=datos.nivel;arrancarRonda(configNivel(nivel));});
+    }});
   }
   function cancelarArrastre(){arrastre=null;camino=[];pintarCamino();}
   function mudar(ahora){
@@ -261,6 +287,7 @@ const SopaFugaz=(()=>{
       tac();vibrar(35);objSumar("sopaPalabras",1);
       logroDesbloquear("sopaPrimera");
       if(datos.palabrasTotal>=10)logroDesbloquear("sopaDiez");
+      if(duelo)Duelo.enviarProgreso({halladas:halladas.size,total:objetivos.length});
       if(halladas.size===objetivos.length)terminar(true);
     }
   }
@@ -284,12 +311,13 @@ const SopaFugaz=(()=>{
     document.addEventListener("visibilitychange",alVolver);
     raiz.querySelector("#sfMejor").textContent=datos.mejor;
     dibujarHistorial();
-    mostrarPanel("Sopa Fugaz","Encontrá las palabras arrastrando el dedo. Las letras giran y se mudan durante la ronda. Las que descubrís quedan en Mis palabras y no vuelven a salir mientras haya nuevas.","Jugar",iniciarRonda);
+    mostrarPanel("Sopa Fugaz","Encontrá las palabras arrastrando el dedo. Las letras giran y se mudan durante la ronda. Las que descubrís quedan en Mis palabras y no vuelven a salir mientras haya nuevas.","Jugar",iniciarRonda,false,{texto:"Jugar con un amigo 👥",accion:iniciarDuelo});
   }
   function salir(){
     jugando=false;mudando=false;arrastre=null;token++;clearInterval(intervalo);clearTimeout(trasladoTimer);
     document.removeEventListener("visibilitychange",alVolver);
-    raiz=null;gridEl=null;chipsEl=null;celdas=[];intervalo=null;ocultoDesde=0;
+    if(typeof Duelo!=="undefined")Duelo.salir();
+    duelo=false;raiz=null;gridEl=null;chipsEl=null;celdas=[];intervalo=null;ocultoDesde=0;
   }
   return{abrir,salir,mejorPuntaje,configNivel};
 })();
