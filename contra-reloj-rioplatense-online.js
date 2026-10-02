@@ -8,7 +8,7 @@ const ContraRelojOnline=(()=>{
   const BROKERS=["wss://broker.emqx.io:8084/mqtt","wss://broker.hivemq.com:8884/mqtt"];
   const PID_OK=/^p[a-z0-9]{4,12}$/,SALA_OK=/^[A-HJ-NP-Z2-9]{4}$/,ESTADOS_OK=["pending","correct","invalid"],MAX_JUG=18;
   let c=null,mq=null,sala="",pid="",miNombre="",soyHost=false,grupos=2,estadoSala=null,privado=null,tTurno=null,micOnline=false,listoConexion=false;
-  let jug={},puntos={},empezada=false,grupoActivo=1,turno=null,rotacion={},tHost=null,mazo=[],idxMazo=-1,tDadoHost=null;
+  let meta=15,jugados={},ganadorG=0,ultimoFestejo="",jug={},puntos={},empezada=false,grupoActivo=1,turno=null,rotacion={},tHost=null,mazo=[],idxMazo=-1,tDadoHost=null;
   const $=s=>c?c.$(s):null;
   const nuevoPid=()=>"p"+Math.random().toString(36).slice(2,10);
   const nuevoCodigo=()=>Array.from({length:4},()=>LETRAS[Math.floor(Math.random()*LETRAS.length)]).join("");
@@ -78,7 +78,7 @@ const ContraRelojOnline=(()=>{
     if(!turno)return null;
     return{id:turno.id,team:turno.team,describer:turno.describer,startAt:turno.startAt,endAt:turno.endAt,status:turno.status,statuses:turno.statuses,die:turno.die,points:turno.points};
   }
-  function estadoHost(){return{type:"state",room:sala,teamCount:grupos,players:Object.values(jug),scores:puntos,started:empezada,activeTeam:grupoActivo,turn:turnoPublico()};}
+  function estadoHost(){return{type:"state",room:sala,teamCount:grupos,players:Object.values(jug),scores:puntos,started:empezada,activeTeam:grupoActivo,turn:turnoPublico(),meta,winner:ganadorG};}
   function difundir(){estadoSala=estadoHost();hostOut(estadoSala);pintar();}
   function mandarTarjeta(p){
     if(!turno||turno.status!=="active")return;
@@ -115,6 +115,7 @@ const ContraRelojOnline=(()=>{
   function crearSala(){
     miNombre=limpiarNombre($("#hostName").value,"Anfitrión");
     grupos=Number(c.raiz().querySelector(".crr-choice.crr-sel[data-teams]")?.dataset.teams||2)===3?3:2;
+    const mt=Number(c.raiz().querySelector(".crr-choice.crr-sel[data-meta]")?.dataset.meta);meta=[10,15,20].includes(mt)?mt:15;
     sala=nuevoCodigo();pid=nuevoPid();soyHost=true;
     jug={[pid]:{pid,name:miNombre,team:1,host:true,voiceReady:false}};
     puntos={};for(let i=1;i<=grupos;i++)puntos[i]=0;
@@ -148,7 +149,7 @@ const ContraRelojOnline=(()=>{
     if(sinVoz.length){c.aviso("Antes de empezar, todos tienen que activar el micrófono. Falta: "+sinVoz.map(p=>p.name).join(", "));return;}
     const sinGrupo=Object.values(jug).filter(p=>!p.team);
     if(sinGrupo.length){c.aviso("Falta que elijan grupo: "+sinGrupo.map(p=>p.name).join(", "));return;}
-    empezada=true;grupoActivo=1;c.sumarPartida();difundir();
+    empezada=true;reiniciarMarcador();c.sumarPartida();difundir();
   }
   function gruposConGente(){const a=[];for(let t=1;t<=grupos;t++)if(Object.values(jug).some(p=>p.team===t))a.push(t);return a;}
   function siguienteGrupo(act){const a=gruposConGente();if(!a.length)return 1;const i=a.indexOf(act);return a[(i+1+a.length)%a.length];}
@@ -182,6 +183,7 @@ const ContraRelojOnline=(()=>{
     const h=c.contar(turno.statuses),d=turno.die??0;
     turno.points=c.puntaje(h,d);turno.status="done";
     puntos[turno.team]=(puntos[turno.team]||0)+turno.points;
+    jugados[turno.team]=(jugados[turno.team]||0)+1;
     Object.values(jug).forEach(p=>hostA(p.pid,{type:"turn_stop"}));
     grupoActivo=siguienteGrupo(turno.team);
     c.pitidoFin();difundir();
@@ -194,7 +196,17 @@ const ContraRelojOnline=(()=>{
     puntos[turno.team]=(puntos[turno.team]||0)+(turno.points-antes);
     actualizarPalabra(i,turno.statuses[i]);difundir();
   }
-  function terminarPartida(){if(!soyHost)return;empezada=false;turno=null;privado=null;clearTimeout(tHost);difundir();c.pantalla("#onlineLobby");}
+  function reiniciarMarcador(){puntos={};for(let i=1;i<=grupos;i++)puntos[i]=0;jugados={};ganadorG=0;grupoActivo=1;turno=null;privado=null;}
+  // Una vuelta está completa cuando todos los grupos jugaron la misma cantidad de turnos.
+  function vueltaCompleta(){const gs=gruposConGente();return gs.length>1&&gs.every(g=>(jugados[g]||0)===(jugados[gs[0]]||0))&&(jugados[gs[0]]||0)>0;}
+  function ganadorAhora(){return turno?.status==="done"?c.ganador(puntos,grupos,meta,vueltaCompleta()):0;}
+  function siguienteOGanador(){
+    if(!soyHost)return;
+    const g=ganadorAhora();
+    if(g){ganadorG=g;difundir();}else prepararTurno();
+  }
+  function revancha(){if(!soyHost)return;clearTimeout(tHost);reiniciarMarcador();difundir();}
+  function terminarPartida(){if(!soyHost)return;ganadorG=0;empezada=false;turno=null;privado=null;clearTimeout(tHost);difundir();c.pantalla("#onlineLobby");}
 
   /* CLIENTE */
   function estadoValido(m){
@@ -267,21 +279,37 @@ const ContraRelojOnline=(()=>{
     const yo=estadoSala.players.find(p=>p.pid===pid);
     if(!estadoSala.started){
       c.raiz().classList.remove("crr-en-ronda");$("#onlineGame").classList.remove("crr-en-ronda");
-      if(!$("#onlineLobby").hidden||!$("#onlineGame").hidden){c.pantalla("#onlineLobby");pintarEquipos($("#lobbyTeams"));}
+      if(!$("#onlineLobby").hidden||!$("#onlineGame").hidden||!$("#onlineWinner").hidden){c.pantalla("#onlineLobby");pintarEquipos($("#lobbyTeams"));}
       if(!soyHost&&yo&&yo.team)$("#teamPicker").hidden=true;
       return;
     }
     if(!soyHost&&yo&&!yo.team){c.pantalla("#onlineLobby");pintarEquipos($("#lobbyTeams"));mostrarSelectorGrupo();return;}
+    const gan=Number(estadoSala.winner)||0;
+    if(gan>=1&&gan<=estadoSala.teamCount){pintarGanador(gan);return;}
+    ultimoFestejo="";
     if($("#onlineGame").hidden)c.pantalla("#onlineGame");
     // Durante la ronda se esconde lo accesorio para que entre en una pantalla.
     const enRonda=estadoSala.turn?.status==="active";
     $("#onlineGame").classList.toggle("crr-en-ronda",enRonda);c.raiz().classList.toggle("crr-en-ronda",enRonda);
     pintarMarcador();pintarRol();pintarResultado();
   }
+  function pintarGanador(g){
+    c.raiz().classList.remove("crr-en-ronda");$("#onlineGame").classList.remove("crr-en-ronda");
+    clearInterval(tTurno);tTurno=null;
+    if($("#onlineWinner").hidden)c.pantalla("#onlineWinner");
+    const nombres=estadoSala.players.filter(p=>p.team===g).map(p=>p.name);
+    const yo=estadoSala.players.find(p=>p.pid===pid);
+    $("#owTitulo").textContent=yo?.team===g?"¡Ganaron ustedes!":"¡Ganó el Grupo "+g+"!";
+    $("#owSub").textContent=(yo?.team===g?"Grupo "+g+": ":"")+nombres.join(", ");
+    c.marcador($("#owScores"),estadoSala.scores||{},estadoSala.teamCount,g,0);
+    $("#owHost").hidden=!soyHost;$("#owEspera").hidden=soyHost;
+    const clave=sala+":"+g+":"+JSON.stringify(estadoSala.scores);
+    if(ultimoFestejo!==clave){ultimoFestejo=clave;c.fanfarria();}
+  }
   function pintarMarcador(){
-    const s=$("#scoreboard");s.innerHTML="";
-    for(let t=1;t<=estadoSala.teamCount;t++){const d=document.createElement("div");d.className="crr-scoreline"+(estadoSala.activeTeam===t?" crr-active":"");d.innerHTML="<span>Grupo "+t+"</span><b>"+(Number(estadoSala.scores?.[t])||0)+"</b>";s.appendChild(d);}
+    c.marcador($("#scoreboard"),estadoSala.scores||{},estadoSala.teamCount,estadoSala.activeTeam,Number(estadoSala.meta)||0);
     const st=estadoSala.turn?.status||"";
+    if(soyHost)$("#nextTurnBtn").textContent=ganadorAhora()?"🏆 VER GANADOR":"PREPARAR SIGUIENTE TURNO";
     $("#hostControls").hidden=!soyHost;
     $("#nextTurnBtn").hidden=!soyHost||["awaiting_die","ready","active"].includes(st);
     $("#rollOnlineDie").hidden=!soyHost||st!=="awaiting_die";
@@ -390,7 +418,9 @@ const ContraRelojOnline=(()=>{
     const elegir=c.raiz().querySelectorAll(".crr-choice[data-teams]");
     elegir.forEach(b=>b.onclick=()=>{elegir.forEach(x=>x.classList.remove("crr-sel"));b.classList.add("crr-sel");});
     $("#confirmCreate").onclick=crearSala;$("#confirmJoin").onclick=unirse;
-    $("#startMatchBtn").onclick=empezarPartida;$("#nextTurnBtn").onclick=prepararTurno;$("#rollOnlineDie").onclick=tirarDadoHost;
+    $("#startMatchBtn").onclick=empezarPartida;$("#nextTurnBtn").onclick=siguienteOGanador;
+    $("#owRevancha").onclick=revancha;$("#owSala").onclick=terminarPartida;$("#owSalir").onclick=salirSala;
+    $("#invitarBtn").onclick=invitar;$("#rollOnlineDie").onclick=tirarDadoHost;
     $("#startOnlineRoundBtn").onclick=empezarRondaHost;$("#endMatchBtn").onclick=terminarPartida;
     $("#oFinish").onclick=()=>enviarIn({type:"finish_round"});
     $("#leaveRoomBtn").onclick=salirSala;$("#leaveGameBtn").onclick=salirSala;
@@ -398,7 +428,21 @@ const ContraRelojOnline=(()=>{
     for(const id of["#voiceLobbyMute","#voiceGameMute"])$(id).onclick=()=>window.ContraRelojVoz&&ContraRelojVoz.alternarSilencio();
     if(window.ContraRelojVoz)ContraRelojVoz.iniciar({$:c.$,esc:c.esc,mq:()=>null,sala:()=>"",pid:()=>"",base,jugadores:()=>[],marcarListo:()=>{},aviso:c.aviso});
   }
+  function invitar(){
+    if(!sala)return;
+    let base="";try{base=location.origin+location.pathname;}catch(e){}
+    const link=base+"?contrareloj=1&sala="+sala;
+    const texto="¡Sumate a Contra Reloj en Girá y Adiviná! ⏱👥 Somos 4 o más, cada uno desde su casa con el audio prendido. Sala: "+sala+" · Entrá acá: "+link;
+    try{window.open("https://wa.me/?text="+encodeURIComponent(texto),"_blank");}catch(e){}
+  }
+  // Abierto desde un link de invitación: deja listo el formulario para entrar.
+  function irAUnirse(cod){
+    if(!c||!SALA_OK.test(cod))return;
+    $("#onlineBtn").onclick();
+    $("#onlineChoice").hidden=true;$("#joinForm").hidden=false;$("#joinCode").value=cod;
+    conexion("Te invitaron a la sala "+cod+". Poné tu nombre y tocá ENTRAR.");
+  }
   function salir(){if(mq||sala)desconectar();else if(window.ContraRelojVoz)ContraRelojVoz.desvincular();c=null;}
-  return{iniciar,salir};
+  return{iniciar,salir,irAUnirse};
 })();
 window.ContraRelojOnline=ContraRelojOnline;
