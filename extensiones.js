@@ -68,12 +68,20 @@ const EXTENSIONES=[
   {id:"silabario-rioplatense",nombre:"Silabario Rioplatense",descripcion:"Armá la respuesta con las sílabas del tablero que gira",icono:"logo-silabario-rioplatense.svg",estado:"disponible",abrir:contenedor=>SilabarioRioplatense.abrir(contenedor),record:()=>SilabarioRioplatense.mejorPuntaje()+" puntos"},
   {id:"cien-rioplatenses",nombre:"100 Rioplatenses Dicen",descripcion:"Girá por un tema y descubrí el panel",icono:"logo-cien-rioplatenses.svg",estado:CIEN_HABILITADO?"disponible":"proximamente",abrir:contenedor=>CienRioplatenses.abrir(contenedor),record:()=>CienRioplatenses.mejorPuntaje()+" puntos"},
   {id:"ahorcado-rioplatense",nombre:"Ahorcado Rioplatense",descripcion:"La ruleta elige la categoría, adiviná la palabra",icono:"logo-ahorcado-rioplatense.svg",estado:AHORCADO_HABILITADO?"disponible":"proximamente",abrir:contenedor=>AhorcadoRioplatense.abrir(contenedor),record:()=>AhorcadoRioplatense.mejorPuntaje()+" puntos"},
-  {id:"contra-reloj-rioplatense",nombre:"Contra Reloj Rioplatense",descripcion:"Hasta 4 personas, muy pronto en Girá y Adiviná",icono:"logo-contra-reloj-rioplatense.svg",estado:"proximamente",abrir:()=>{},record:()=>""}
+  /* Contra Reloj: en prueba, solo visible para el perfil "Gonzalo" (o con
+     ?contrareloj=1 en la URL, para que los amigos puedan sumarse a una
+     sala online de prueba). Sacar soloGonzalo cuando se publique. */
+  {id:"contra-reloj-rioplatense",nombre:"Contra Reloj",descripcion:"Describí 5 palabras antes de que termine el tiempo · 4+ jugadores",icono:"logo-contra-reloj-rioplatense.svg",estado:"disponible",soloGonzalo:true,abrir:contenedor=>ContraRelojRioplatense.abrir(contenedor),record:()=>ContraRelojRioplatense.mejorPuntaje()+" puntos"}
   /* Mahjong Rioplatense (mahjong-rioplatense.html) a propósito oculto del lobby:
      la pantalla de inicio no estaba lista para mostrarse a los jugadores.
      Sigue publicada y accesible por URL directa para que Gonzalo la pruebe;
      sumar de nuevo esta entrada cuando el inicio esté arreglado. */
 ];
+function extensionVisible(ext){
+  if(!ext.soloGonzalo)return true;
+  try{if(/[?&]contrareloj=1\b/.test(location.search))return true;}catch(e){}
+  return typeof esGonzalo==="function"&&esGonzalo();
+}
 window.EXTENSIONES=EXTENSIONES;
 const Extensiones=(()=>{
   let shell=null,contenido=null,vista="";
@@ -103,7 +111,7 @@ const Extensiones=(()=>{
     shell.querySelector("#extTitulo").textContent="Extensiones Girá y Adiviná";
     contenido.innerHTML='<div class="ext-hero"><span>✦ MÁS JUEGOS, MÁS DESAFÍOS</span><h2>Extensiones</h2><p>Elegí un juego del universo Girá y Adiviná. Jugá gratis, sin gastar vidas ni monedas.</p></div><div class="ext-lista"></div>';
     const lista=contenido.querySelector(".ext-lista");
-    EXTENSIONES.forEach(ext=>{
+    EXTENSIONES.filter(extensionVisible).forEach(ext=>{
       const b=document.createElement("button");b.type="button";b.className="ext-tarjeta";
       b.disabled=ext.estado!=="disponible";
       const img=document.createElement("img");img.src=ext.icono;img.alt="";img.loading="lazy";
@@ -119,12 +127,12 @@ const Extensiones=(()=>{
   }
   function abrirJuego(id){
     if(!EXTENSIONES_HABILITADAS)return;
-    const ext=EXTENSIONES.find(x=>x.id===id&&x.estado==="disponible");if(!ext)return;
+    const ext=EXTENSIONES.find(x=>x.id===id&&x.estado==="disponible"&&extensionVisible(x));if(!ext)return;
     mostrar();vista=id;contenido.replaceChildren();
     shell.querySelector("#extTitulo").textContent=ext.nombre;
     ext.abrir(contenido);shell.scrollTop=0;
   }
-  function salirJuego(){for(const juego of [window.SopaFugaz,window.RuedaDeLetras,window.PalabraSecreta,window.FrasesEnGiro,window.MemoriaEnGiro,window.RoscoRioplatense,window.SilabarioRioplatense,window.CienRioplatenses,window.AhorcadoRioplatense])if(juego)juego.salir();}
+  function salirJuego(){for(const juego of [window.SopaFugaz,window.RuedaDeLetras,window.PalabraSecreta,window.FrasesEnGiro,window.MemoriaEnGiro,window.RoscoRioplatense,window.SilabarioRioplatense,window.CienRioplatenses,window.AhorcadoRioplatense,window.ContraRelojRioplatense])if(juego)juego.salir();}
   function cerrar(){if(!shell)return;salirJuego();shell.hidden=true;document.body.classList.remove("ext-abierta");vista="";if(typeof sincronizarMusica==="function")sincronizarMusica();}
   return{abrirLobby,abrirJuego,cerrar};
 })();
