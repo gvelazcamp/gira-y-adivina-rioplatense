@@ -15,6 +15,7 @@ const CienRioplatenses=(()=>{
   function mismaPalabra(a,b){const fa=formasSingulares(a);for(const x of formasSingulares(b))if(fa.has(x))return true;return false;}
   let datos=cargar(),raiz=null,shell=null,fase="inicio",ronda=0,puntos=0,errores=0,pregunta=null,encontradas=[];
   let usadasPartida=[],resumen=[],angulo=0,espera=0,ultimo=0,tacMs=0,intervalo=null,categoriaActual=null;
+  let duelo=false,preguntasDuelo=null;
   const $=s=>raiz?.querySelector(s);
   function cargar(){
     try{const d=JSON.parse(localStorage.getItem(CLAVE)||"null");if(d&&typeof d==="object")return{
@@ -69,10 +70,29 @@ const CienRioplatenses=(()=>{
     if(document.activeElement===$("#crEntrada"))$("#crForm").scrollIntoView({block:"nearest"});
   }
   function iniciar(){ronda=0;puntos=0;usadasPartida=[];resumen=[];$("#crFinal").hidden=true;girar();}
+  function elegirPreguntaParaDuelo(yaElegidas){
+    const pool=CIEN_PREGUNTAS.filter(p=>!yaElegidas.includes(p.id));
+    const categorias=CIEN_CATEGORIAS.filter(c=>pool.some(p=>p.categoria===c.id));
+    const categoria=categorias[Math.floor(Math.random()*categorias.length)];
+    const opciones=pool.filter(p=>p.categoria===categoria.id);
+    return opciones[Math.floor(Math.random()*opciones.length)];
+  }
+  function iniciarDuelo(){
+    if(typeof Duelo==="undefined")return;
+    Duelo.mostrarLobby("100 Rioplatenses Dicen","cien",{onListo:(soyHost)=>{
+      duelo=true;Duelo.mostrarBadge();Duelo.actualizarBadge("0");
+      Duelo.onProgresoRival(p=>Duelo.actualizarBadge(String(p.puntos)));
+      if(soyHost){
+        const ids=[];
+        for(let i=0;i<CIEN_CONFIG.rondas;i++)ids.push(elegirPreguntaParaDuelo(ids).id);
+        preguntasDuelo=ids;Duelo.enviarRonda({ids});iniciar();
+      }else Duelo.onRondaRecibida(datos=>{preguntasDuelo=datos.ids;iniciar();});
+    }});
+  }
   function girar(){
     if(!raiz||fase==="giro"||fase==="seleccion"||ronda>=CIEN_CONFIG.rondas)return;
-    pregunta=elegirPregunta();if(!pregunta)return;
-    marcarDisponibles();categoriaActual=CIEN_CATEGORIAS.find(c=>c.id===pregunta.categoria);
+    pregunta=duelo?CIEN_PREGUNTAS.find(p=>p.id===preguntasDuelo[ronda]):elegirPregunta();if(!pregunta)return;
+    if(!duelo)marcarDisponibles();categoriaActual=CIEN_CATEGORIAS.find(c=>c.id===pregunta.categoria);
     ronda++;errores=0;encontradas=pregunta.respuestas.map(()=>false);fase="giro";
     usadasPartida.push(pregunta.id);datos.usadas.push(pregunta.id);guardar();
     $("#crEscenaRuleta").hidden=false;$("#crEscenaPanel").hidden=true;$("#crIntro").hidden=true;$("#crSiguiente").hidden=true;
@@ -145,11 +165,17 @@ const CienRioplatenses=(()=>{
     siguiente.textContent=ronda<CIEN_CONFIG.rondas?"Girar la ruleta · puntos ×"+CIEN_CONFIG.multiplicadores[ronda]:"Ver mi resultado";
     siguiente.onclick=ronda<CIEN_CONFIG.rondas?girar:terminar;
     if(ronda===CIEN_CONFIG.rondas){datos.mejor=Math.max(datos.mejor,puntos);guardar();}
+    if(duelo)Duelo.enviarProgreso({puntos});
     hud();siguiente.focus({preventScroll:true});ajustarPantalla();
   }
   function terminar(){
     if(fase!=="rondaTerminada")return;fase="fin";
     if(resumen.every(r=>r.aciertos===6&&r.errores===0)&&typeof logroDesbloquear==="function")logroDesbloquear("cienPerfecta");
+    if(duelo){
+      Duelo.enviarFinal({valor:puntos});
+      Duelo.mostrarResultado({valor:puntos},{etiqueta:"puntos de la partida",onVolver:()=>{duelo=false;abrir(raiz.parentElement);}});
+      return;
+    }
     $("#crEscenaPanel").hidden=true;$("#crSiguiente").hidden=true;$("#crFinal").hidden=false;mostrarMensaje("");
     $("#crResultadoPuntos").textContent=puntos;$("#crResultadoMarca").textContent="Tu mejor marca: "+datos.mejor+" puntos";
     const lista=$("#crResumen");lista.replaceChildren();
@@ -181,9 +207,10 @@ const CienRioplatenses=(()=>{
   function abrir(contenedor){
     salir();datos=cargar();ronda=0;puntos=0;errores=0;angulo=0;fase="inicio";usadasPartida=[];prepararBanco();
     raiz=document.createElement("div");raiz.className="cr-game";
-    raiz.innerHTML='<header class="cr-titulo"><img src="logo-cien-rioplatenses.svg" alt=""><div><small>EL DESAFÍO DEL PANEL</small><h2>100 Rioplatenses <em>Dicen</em></h2></div></header><div class="cr-hud"><div><small>Ronda</small><b id="crRonda"></b></div><div><small>Puntos</small><b id="crPuntos"></b></div><div><small>Mejor</small><b id="crMejor"></b></div><div class="cr-multi"><small>Multiplicador</small><b id="crMultiplicador"></b></div></div><section id="crEscenaRuleta"><h3 id="crRuletaTitulo">¿Qué tema te toca?</h3><div id="crRuleta" class="cr-ruleta"><div class="cr-aro"><div id="crDisco"></div></div><div id="crLuces" aria-hidden="true"></div><div class="cr-puntero" aria-hidden="true"></div><div class="cr-centro"><strong>100</strong><span>DICEN</span></div></div><p id="crSeleccion" class="cr-seleccion" aria-live="polite">12 temas · una nueva sorpresa en cada giro</p><div id="crIntro"><button id="crJugar" class="cr-principal" type="button">Girar y jugar <span>↻</span></button><p class="cr-reglas">Descubrí las 6 respuestas del panel.<br>3 rondas · 3 errores por ronda · puntos ×1, ×2 y ×3</p><details class="cr-ayuda"><summary>Cómo se juega</summary><p>La ruleta elige el tema. Escribí una respuesta y mandala: si está en el panel, sumás sus puntos. Una repetida no te penaliza. Al tercer error se revelan las restantes y podés girar de nuevo. Podés rendirte cuando quieras. Jugás gratis.</p></details></div></section><section id="crEscenaPanel" hidden><div class="cr-panel-cabecera"><span id="crCategoria"></span><div id="crFallos" role="img"><i>✕</i><i>✕</i><i>✕</i></div></div><div class="voz-fila"><h3 id="crPregunta"></h3><button type="button" class="voz-btn" id="crEscuchar" aria-label="Escuchar la pregunta">🔊</button></div><div id="crTablero" class="cr-tablero"></div></section><p id="crMensaje" class="cr-mensaje" role="status"></p><form id="crForm" autocomplete="off" hidden><label class="cr-sr" for="crEntrada">Tu respuesta para el panel</label><div class="cr-fila"><input id="crEntrada" maxlength="80" placeholder="Tu respuesta…" autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="false" enterkeyhint="send"><button id="crEnviar" type="submit">Enviar</button></div></form><button id="crRendirse" class="cr-rendirse" type="button" hidden>Me rindo · mostrar respuestas</button><button id="crSiguiente" class="cr-principal" type="button" hidden></button><section id="crFinal" class="cr-final" hidden><small>¡LAS TRES RONDAS COMPLETAS!</small><h3>Así quedó tu partida</h3><strong id="crResultadoPuntos"></strong><span>puntos</span><p id="crResultadoMarca"></p><div id="crResumen"></div><button id="crOtra" class="cr-principal" type="button">Volver a girar ↻</button><button id="crCompartir" class="cr-rendirse" type="button">Compartir resultado</button></section><p class="cr-nota">Edición de práctica · respuestas y puntajes de juego, sin encuesta real.</p>';
+    raiz.innerHTML='<header class="cr-titulo"><img src="logo-cien-rioplatenses.svg" alt=""><div><small>EL DESAFÍO DEL PANEL</small><h2>100 Rioplatenses <em>Dicen</em></h2></div></header><div class="cr-hud"><div><small>Ronda</small><b id="crRonda"></b></div><div><small>Puntos</small><b id="crPuntos"></b></div><div><small>Mejor</small><b id="crMejor"></b></div><div class="cr-multi"><small>Multiplicador</small><b id="crMultiplicador"></b></div></div><section id="crEscenaRuleta"><h3 id="crRuletaTitulo">¿Qué tema te toca?</h3><div id="crRuleta" class="cr-ruleta"><div class="cr-aro"><div id="crDisco"></div></div><div id="crLuces" aria-hidden="true"></div><div class="cr-puntero" aria-hidden="true"></div><div class="cr-centro"><strong>100</strong><span>DICEN</span></div></div><p id="crSeleccion" class="cr-seleccion" aria-live="polite">12 temas · una nueva sorpresa en cada giro</p><div id="crIntro"><button id="crJugar" class="cr-principal" type="button">Girar y jugar <span>↻</span></button><button id="crDuelo" class="cr-rendirse" type="button">Jugar con un amigo 👥</button><p class="cr-reglas">Descubrí las 6 respuestas del panel.<br>3 rondas · 3 errores por ronda · puntos ×1, ×2 y ×3</p><details class="cr-ayuda"><summary>Cómo se juega</summary><p>La ruleta elige el tema. Escribí una respuesta y mandala: si está en el panel, sumás sus puntos. Una repetida no te penaliza. Al tercer error se revelan las restantes y podés girar de nuevo. Podés rendirte cuando quieras. Jugás gratis.</p></details></div></section><section id="crEscenaPanel" hidden><div class="cr-panel-cabecera"><span id="crCategoria"></span><div id="crFallos" role="img"><i>✕</i><i>✕</i><i>✕</i></div></div><div class="voz-fila"><h3 id="crPregunta"></h3><button type="button" class="voz-btn" id="crEscuchar" aria-label="Escuchar la pregunta">🔊</button></div><div id="crTablero" class="cr-tablero"></div></section><p id="crMensaje" class="cr-mensaje" role="status"></p><form id="crForm" autocomplete="off" hidden><label class="cr-sr" for="crEntrada">Tu respuesta para el panel</label><div class="cr-fila"><input id="crEntrada" maxlength="80" placeholder="Tu respuesta…" autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="false" enterkeyhint="send"><button id="crEnviar" type="submit">Enviar</button></div></form><button id="crRendirse" class="cr-rendirse" type="button" hidden>Me rindo · mostrar respuestas</button><button id="crSiguiente" class="cr-principal" type="button" hidden></button><section id="crFinal" class="cr-final" hidden><small>¡LAS TRES RONDAS COMPLETAS!</small><h3>Así quedó tu partida</h3><strong id="crResultadoPuntos"></strong><span>puntos</span><p id="crResultadoMarca"></p><div id="crResumen"></div><button id="crOtra" class="cr-principal" type="button">Volver a girar ↻</button><button id="crCompartir" class="cr-rendirse" type="button">Compartir resultado</button></section><p class="cr-nota">Edición de práctica · respuestas y puntajes de juego, sin encuesta real.</p>';
     contenedor.appendChild(raiz);shell=raiz.closest(".ext-shell");shell?.classList.add("cr-abierta");dibujarRuleta();hud();
     $("#crJugar").onclick=iniciar;$("#crOtra").onclick=iniciar;$("#crCompartir").onclick=e=>compartir(e.currentTarget);
+    $("#crDuelo").onclick=iniciarDuelo;
     $("#crEscuchar").onclick=()=>{if(pregunta&&typeof hablar==="function")hablar(pregunta.pregunta);};
     $("#crForm").onsubmit=e=>{e.preventDefault();enviar();};$("#crRendirse").onclick=cerrarRonda;
     $("#crEnviar").onpointerdown=e=>e.preventDefault();$("#crEntrada").onbeforeinput=e=>{if(fase!=="responder")e.preventDefault();};
@@ -197,6 +224,8 @@ const CienRioplatenses=(()=>{
     raiz=null;shell=null;fase="inicio";pregunta=null;encontradas=[];
     if("speechSynthesis" in window)speechSynthesis.cancel();
     if(typeof sincronizarMusica==="function")sincronizarMusica();
+    if(typeof Duelo!=="undefined")Duelo.salir();
+    duelo=false;preguntasDuelo=null;
   }
   return{abrir,salir,enviar,mejorPuntaje:()=>cargar().mejor};
 })();
