@@ -88,6 +88,16 @@ const Extensiones=(()=>{
     shell.innerHTML='<div class="ext-wrap"><header class="ext-header"><button class="ext-atras" id="extAtras" type="button" aria-label="Volver">‹</button><strong id="extTitulo">Extensiones</strong><button class="ext-cerrar" id="extCerrar" type="button" aria-label="Cerrar">✕</button></header><div id="extContenido"></div></div>';
     document.body.appendChild(shell);
     contenido=shell.querySelector("#extContenido");
+    /* Todas las ventanitas de inicio/fin de los juegos llevan un "Volver"
+       al final, por si alguien entró sin querer. */
+    const TARJETAS=".sf-panel,.fg-panel,.mg-panel,.rr-panel,.crr-grupo-card";
+    new MutationObserver(()=>{
+      contenido.querySelectorAll(TARJETAS).forEach(t=>{
+        if(t.querySelector(":scope>.ext-panel-volver"))return;
+        const b=document.createElement("button");b.type="button";b.className="ext-panel-volver";b.textContent="⟵ Volver a Extensiones";
+        b.onclick=()=>abrirLobby();t.appendChild(b);
+      });
+    }).observe(contenido,{childList:true,subtree:true});
     shell.querySelector("#extAtras").onclick=()=>vista==="lobby"?cerrar():abrirLobby();
     shell.querySelector("#extCerrar").onclick=cerrar;
     document.addEventListener("keydown",e=>{
