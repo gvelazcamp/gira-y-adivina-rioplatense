@@ -94,7 +94,7 @@ const Extensiones=(()=>{
     salirJuego();
     mostrar();vista="lobby";
     shell.querySelector("#extTitulo").textContent="Extensiones Girá y Adiviná";
-    contenido.innerHTML='<div class="ext-hero"><span>✦ MÁS JUEGOS, MÁS DESAFÍOS</span><h2>Extensiones</h2><p>Elegí un juego del universo Girá y Adiviná. Jugá gratis, sin gastar vidas ni monedas.</p></div><div class="ext-lista"></div>';
+    contenido.innerHTML='<div class="ext-hero"><span>✦ MÁS JUEGOS, MÁS DESAFÍOS</span><p>Elegí un juego del universo Girá y Adiviná. Jugá gratis, sin gastar vidas ni monedas.</p></div><div class="ext-lista"></div>';
     const lista=contenido.querySelector(".ext-lista");
     EXTENSIONES.forEach(ext=>{
       const b=document.createElement("button");b.type="button";b.className="ext-tarjeta";
