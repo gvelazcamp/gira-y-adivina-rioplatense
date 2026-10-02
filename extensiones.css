@@ -204,3 +204,30 @@ body.ext-abierta{overflow:hidden}
 .cr-nota{font-size:.62rem;color:#B9A5C5;line-height:1.4;margin:15px auto 3px;max-width:300px}.cr-final{background:linear-gradient(145deg,#4B255E,#231330);border:1px solid #EABD6166;border-radius:22px;padding:24px 18px;margin-top:18px}.cr-final>small{color:#FFD15B;font-weight:800;font-size:.64rem;letter-spacing:.12em}.cr-final h3{font-size:1.25rem;color:#FFF1D2;margin:12px 0}.cr-final>strong{display:block;font-family:'Archivo Black',sans-serif;font-size:4rem;line-height:1.15;color:#FFD15B}.cr-final>span{color:#D7C8E5;font-size:.8rem;text-transform:uppercase;letter-spacing:.15em}#crResultadoMarca{font-size:.83rem;color:#37D6C0}#crResumen{margin:18px 0}#crResumen p{display:flex;justify-content:space-between;gap:6px;text-align:left;border-bottom:1px solid #FFFFFF1A;padding:9px 0;margin:0;font-size:.75rem}#crResumen span{color:#D7C8E5}
 @keyframes crLuces{to{opacity:.25;box-shadow:none}}@keyframes crRevelar{from{transform:rotateX(75deg);filter:brightness(1.7)}to{transform:rotateX(0);filter:none}}
 @media(prefers-reduced-motion:reduce){#crDisco,.cr-gajo>span{transition:none}.cr-respuesta.acierto,.cr-ruleta.girando #crLuces i{animation:none}}
+
+/* Ahorcado Rioplatense: ruleta de categorías + muñeco clásico + teclado. */
+.ah-game{max-width:520px;margin:0 auto;text-align:center}.ah-game [hidden]{display:none!important}
+.ah-titulo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px}.ah-titulo img{width:52px;height:52px;border-radius:14px}.ah-titulo h2{font-family:'Archivo Black',sans-serif;color:#F5B301;font-size:1.4rem;margin:0}.ah-titulo p{font-size:.76rem;color:#D7C8E5;margin:4px 0 0}
+.ah-top{display:flex;gap:12px;align-items:center;justify-content:center;margin:10px 0 6px}
+.ah-rueda-wrap{position:relative;width:min(36vw,32svh,160px);aspect-ratio:1;flex:none}
+.ah-rueda-wrap:before{content:"▼";position:absolute;left:50%;top:-16px;transform:translateX(-50%);color:#F5B301;font-size:18px;z-index:2}
+.ah-rueda{position:absolute;inset:0;border-radius:50%;border:5px solid #2a1646;transition:transform 1.8s cubic-bezier(.17,.67,.2,1);box-shadow:0 8px 20px #0007}
+.ah-cat{position:absolute;left:50%;top:50%;width:38%;text-align:center;font:700 clamp(8px,2.3vw,10px)/1.15 system-ui;color:#fff;text-shadow:0 1px 3px #000;transition:transform 1.8s cubic-bezier(.17,.67,.2,1)}
+.ah-hub{position:absolute;left:50%;top:50%;width:24%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:#160B24;border:3px solid #F6EFE2}
+.ah-figura{width:min(36vw,32svh,160px);flex:none}
+.ah-figura g>*{opacity:0;transition:opacity .3s}.ah-figura g>.on{opacity:1}.ah-figura.perdida g{stroke:#FF7E8B}
+.ah-pregunta{background:#2A1A3C;border:1px solid #FFFFFF22;border-radius:15px;padding:10px 14px;margin:8px 0 10px;min-height:40px;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:800;font-size:.88rem}
+.ah-pregunta small{color:#F5B301;font-size:.72rem;font-weight:900}
+.ah-palabra{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;margin:4px 0 8px}
+.ah-letra{min-width:24px;height:34px;padding:0 2px;border-bottom:4px solid #F5B301;font-family:'Archivo Black',sans-serif;font-size:clamp(.85rem,4vw,1.1rem);display:grid;place-items:center;color:#F6EFE2}
+.ah-letra.x{color:#FF7E8B;border-color:#FF7E8B}
+.ah-feedback{min-height:22px;margin:2px 0 6px;font-size:.84rem;font-weight:800;color:#D7C8E5}
+.ah-teclado{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:4px}
+.ah-teclado button{padding:9px 0;font-size:.82rem;font-weight:900;border-radius:9px;background:#F6EFE2;color:#241237;box-shadow:0 3px 0 #AFA3B8}
+.ah-teclado button:not(:disabled):active{transform:translateY(2px);box-shadow:0 1px 0 #AFA3B8}
+.ah-teclado button.ok{background:#37D6C0;color:#0B3B36;box-shadow:0 3px 0 #187D75}
+.ah-teclado button.no{background:#FF7E8B;color:#4A0F17;box-shadow:0 3px 0 #C94B58}
+.ah-teclado button:disabled{opacity:.5;cursor:default;box-shadow:none}
+.ah-siguiente{width:100%;margin-top:10px;padding:12px;border-radius:13px;background:#37D6C0;color:#0B3B36;font-weight:900;font-size:.95rem}
+.ah-game button:focus-visible{outline:3px solid #F5B301;outline-offset:2px}
+@media(prefers-reduced-motion:reduce){.ah-rueda,.ah-cat,.ah-figura g>*{transition:none}}
