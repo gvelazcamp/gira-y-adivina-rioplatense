@@ -158,6 +158,7 @@ const SilabarioRioplatense=(()=>{
     const p=pendientes();if(!p.length){terminar();return;}
     const opciones=p.length>1?p.filter(i=>i!==actual):p;
     actual=opciones[Math.floor(Math.random()*opciones.length)];
+    elegidas.forEach(f=>{f.el.disabled=false;f.el.classList.remove("elegida");});
     fase="jugando";elegidas=[];tiempoPregunta=0;bloqueado=true;mensaje("");
     $("#sbPista").textContent=items[actual].pista;
     $("#sbSilabasCant").textContent="("+items[actual].silabas.length+(items[actual].silabas.length===1?" sílaba)":" sílabas)");
