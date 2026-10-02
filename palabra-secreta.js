@@ -1,6 +1,16 @@
 const PalabraSecreta=(()=>{
   const CLAVE="gya_palabra_secreta",MAX=6,COLORES={ausente:"⬛",presente:"🟨",exacta:"🟩"};
   let datos=cargar(),raiz=null,partida=null,borrador="",practica=false,animando=false,token=0;
+  let audioMusica=null;
+  function iniciarMusicaJuego(){
+    try{
+      if(typeof sonidoPermitido==="function"&&!sonidoPermitido())return;
+      if(!audioMusica){audioMusica=new Audio("assets/audio/palabra-secreta-musica.mp3");audioMusica.loop=true;audioMusica.volume=.28;}
+      if(audioMusica.paused)audioMusica.play().catch(()=>{});
+    }catch(e){}
+  }
+  function detenerMusicaJuego(){try{if(audioMusica&&!audioMusica.paused)audioMusica.pause();}catch(e){}}
+  function alVisibilidad(){if(document.hidden)detenerMusicaJuego();else{iniciarMusicaJuego();comprobarDia();}}
   function cargar(){try{const d=JSON.parse(localStorage.getItem(CLAVE)||"null");if(d&&typeof d==="object")return{diaria:d.diaria||null,racha:Number(d.racha)||0,mejorRacha:Number(d.mejorRacha)||0,ganadas:Number(d.ganadas)||0,jugadas:Number(d.jugadas)||0,distribucion:Array.isArray(d.distribucion)?d.distribucion.slice(0,6):[0,0,0,0,0,0],ultimoGanado:Number(d.ultimoGanado)||0,ayudaVista:!!d.ayudaVista};}catch(e){}return{diaria:null,racha:0,mejorRacha:0,ganadas:0,jugadas:0,distribucion:[0,0,0,0,0,0],ultimoGanado:0,ayudaVista:false};}
   function guardar(){try{localStorage.setItem(CLAVE,JSON.stringify(datos));}catch(e){}}
   function indiceDia(fecha=new Date()){const p=Object.fromEntries(new Intl.DateTimeFormat("en-US",{timeZone:"America/Montevideo",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(fecha).map(x=>[x.type,x.value]));return Math.floor(Date.UTC(Number(p.year),Number(p.month)-1,Number(p.day))/86400000);}
@@ -25,8 +35,8 @@ const PalabraSecreta=(()=>{
   function textoCompartir(){const d=practica?"práctica":new Intl.DateTimeFormat("es-UY",{timeZone:"UTC",day:"numeric",month:"numeric"}).format(new Date(partida.dia*86400000));return`Palabra Secreta ${d} ${partida.gano?partida.intentos.length:"X"}/6\n${partida.intentos.map(x=>x.colores.map(c=>COLORES[c]).join("")).join("\n")}`;}
   async function compartirResultado(){const txt=textoCompartir();try{await navigator.clipboard.writeText(txt);mensaje("Resultado copiado. ¡Compartilo!");}catch(e){const a=document.createElement("textarea");a.value=txt;document.body.appendChild(a);a.select();const ok=document.execCommand("copy");a.remove();mensaje(ok?"Resultado copiado. ¡Compartilo!":"No se pudo copiar el resultado.");}}
   function iniciarPractica(){practica=true;const candidatas=PALABRA_SECRETAS.filter(w=>w!==palabraDia());partida=nueva(candidatas[Math.floor(Math.random()*candidatas.length)]);borrador="";tablero();mensaje("Partida de práctica: no modifica tu racha.");}
-  function abrir(contenedor){salir();raiz=contenedor;iniciarDiaria();pantalla();tablero();document.addEventListener("visibilitychange",comprobarDia);if(!datos.ayudaVista)ayuda();}
-  function salir(){token++;animando=false;document.removeEventListener("visibilitychange",comprobarDia);raiz=null;partida=null;borrador="";}
+  function abrir(contenedor){salir();raiz=contenedor;iniciarDiaria();pantalla();tablero();document.addEventListener("visibilitychange",alVisibilidad);iniciarMusicaJuego();if(!datos.ayudaVista)ayuda();}
+  function salir(){token++;animando=false;document.removeEventListener("visibilitychange",alVisibilidad);detenerMusicaJuego();raiz=null;partida=null;borrador="";}
   return{abrir,salir,tecla,indiceDia,palabraDia,evaluar,rachaActual,estadisticasGuardadas:()=>({...datos}),textoCompartir};
 })();
 window.PalabraSecreta=PalabraSecreta;
