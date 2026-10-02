@@ -24,7 +24,7 @@ const Duelo=(()=>{
     if(!invitacion||typeof Extensiones==="undefined")return;
     Extensiones.abrirJuego(DUELO_EXT[invitacion.juego]);
     let n=0;const t=setInterval(()=>{
-      const b=[...document.querySelectorAll("#extContenido button")].find(x=>/con un amigo/i.test(x.textContent)&&x.offsetParent);
+      const b=[...document.querySelectorAll("#extContenido button")].find(x=>/con un amigo|👥/i.test(x.textContent)&&x.offsetParent);
       if(b){clearInterval(t);b.click();}else if(++n>24)clearInterval(t);
     },250);
   }
