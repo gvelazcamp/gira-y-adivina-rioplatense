@@ -16,6 +16,15 @@ const FrasesEnGiro=(()=>{
   let datos=cargar(),raiz=null,frase=null,fichas=[],ordenBanco=[],espacios=[];
   let nivel=1,puntos=0,racha=0,errores=0,tiempoMs=0,duracionMs=0,giroMs=0,proximoGiro=0;
   let jugando=false,girando=false,intervalo=null,giroTimer=null,ultimoTic=0,ocultoDesde=0,token=0,duelo=false;
+  let audioMusica=null;
+  function iniciarMusicaJuego(){
+    try{
+      if(typeof sonidoPermitido==="function"&&!sonidoPermitido())return;
+      if(!audioMusica){audioMusica=new Audio("assets/audio/frases-en-giro-musica.mp3");audioMusica.loop=true;audioMusica.volume=.28;}
+      if(audioMusica.paused)audioMusica.play().catch(()=>{});
+    }catch(e){}
+  }
+  function detenerMusicaJuego(){try{if(audioMusica&&!audioMusica.paused)audioMusica.pause();}catch(e){}}
 
   function cargar(){
     try{const d=JSON.parse(localStorage.getItem(CLAVE)||"null");if(d&&typeof d==="object")return{
@@ -202,7 +211,8 @@ const FrasesEnGiro=(()=>{
     hud();
   }
   function visibilidad(){
-    if(document.hidden){if(jugando&&!ocultoDesde)ocultoDesde=performance.now();return;}
+    if(document.hidden){detenerMusicaJuego();if(jugando&&!ocultoDesde)ocultoDesde=performance.now();return;}
+    iniciarMusicaJuego();
     if(ocultoDesde){proximoGiro+=performance.now()-ocultoDesde;ultimoTic=performance.now();ocultoDesde=0;}
   }
   function abrir(contenedor){
@@ -212,13 +222,14 @@ const FrasesEnGiro=(()=>{
     contenedor.appendChild(raiz);
     raiz.querySelector("#fgComprobar").onclick=comprobar;
     raiz.querySelector("#fgVaciar").onclick=()=>{espacios.fill(null);avisar("Empezá de nuevo: tocá las palabras en orden.");dibujar();};
-    intervalo=setInterval(tic,FRASES_GIRO_CONFIG.ticMs);document.addEventListener("visibilitychange",visibilidad);
+    intervalo=setInterval(tic,FRASES_GIRO_CONFIG.ticMs);document.addEventListener("visibilitychange",visibilidad);iniciarMusicaJuego();
     panel("Frases en Giro","Armá frases disparatadas tocando las palabras en orden. Cada giro mezcla las fichas libres; lo que ya colocaste queda seguro. Desde el nivel 2 aparecen palabras señuelo. Tenés 3 intentos: cada error te quita 10 segundos y te obliga a rearmar la frase. Si perdés, se corta la racha y los puntos de esta partida.","Jugar nivel "+nivel,comenzar,
       [nivel>1?{texto:"Empezar desde el nivel 1",accion:()=>{nivel=1;puntos=0;comenzar();}}:null,{texto:"Jugar con un amigo 👥",accion:iniciarDuelo}]);
   }
   function salir(){
     jugando=false;girando=false;token++;clearInterval(intervalo);clearTimeout(giroTimer);intervalo=null;giroTimer=null;
     document.removeEventListener("visibilitychange",visibilidad);
+    detenerMusicaJuego();
     if(typeof Duelo!=="undefined")Duelo.salir();
     duelo=false;raiz=null;frase=null;fichas=[];ordenBanco=[];espacios=[];
   }
