@@ -364,9 +364,9 @@ const ContraRelojOnline=(()=>{
   async function iniciarMicOnline(p){
     micOnline=true;
     try{
-      await c.micPreparar();
-      $("#oRec").hidden=false;$("#oRec").classList.add("crr-on");$("#oRec span").textContent="● GRABANDO · ÁRBITRO EN VIVO";
-      const ok=c.arbitroIniciar(p.card,p.statuses,i=>{enviarIn({type:"word_invalid",index:i});pintarPalabras();});
+      if(c.necesitaMicPropio()||(window.ContraRelojVoz&&ContraRelojVoz.stream()))await c.micPreparar();
+      $("#oRec").hidden=false;$("#oRec").classList.add("crr-on");$("#oRec span").textContent="● PREPARANDO ÁRBITRO…";
+      const ok=c.arbitroIniciar(p.card,p.statuses,i=>{enviarIn({type:"word_invalid",index:i});pintarPalabras();},t=>{const sp=$("#oRec span");if(sp&&micOnline)sp.textContent=t;});
       if(!ok)$("#oRec span").textContent="● GRABANDO · SIN ÁRBITRO AUTOMÁTICO";
     }catch(e){$("#oRec").hidden=false;$("#oRec").classList.remove("crr-on");$("#oRec span").textContent="SIN MICRÓFONO";}
   }
