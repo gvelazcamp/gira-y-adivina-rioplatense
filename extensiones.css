@@ -8,6 +8,7 @@
    de la cabecera compartida si el contenido del juego obliga a scrollear. */
 .ext-volver{display:inline-flex;align-items:center;gap:4px;background:#352146;color:#D7C8E5;border:none;border-radius:10px;padding:6px 11px;font-size:.72rem;font-weight:800;margin:0 0 8px;white-space:nowrap}
 .ext-volver:active{background:#2A1938}
+.ext-panel-volver{display:block;width:100%;margin-top:10px;background:transparent;border:1px solid #FFFFFF2E;color:#D7C8E5;border-radius:12px;padding:10px;font-weight:800;font-size:.85rem}.ext-panel-volver:active{background:#2A1938}
 /* Duelo 1 vs 1 entre extensiones: lobby, badge flotante del rival y resultado final. */
 .dl-capa{position:fixed;inset:0;background:#160B24D8;z-index:9000;display:grid;place-items:center;padding:16px;backdrop-filter:blur(2px)}
 .dl-tarjeta{width:min(360px,100%);background:#2B1A3F;border-radius:18px;padding:22px 20px;text-align:center;box-shadow:0 12px 30px #0008}
