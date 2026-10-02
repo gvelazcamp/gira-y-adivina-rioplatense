@@ -67,10 +67,8 @@ const EXTENSIONES=[
   {id:"rosco-rioplatense",nombre:"El Rosco",descripcion:"Girá, leé la pista y descubrí la palabra",icono:"logo-rosco-rioplatense.svg",estado:ROSCO_HABILITADO?"disponible":"proximamente",abrir:contenedor=>RoscoRioplatense.abrir(contenedor),record:()=>RoscoRioplatense.mejorPuntaje()+" puntos"},
   {id:"silabario-rioplatense",nombre:"Silabario Rioplatense",descripcion:"Armá la respuesta con las sílabas del tablero que gira",icono:"logo-silabario-rioplatense.svg",estado:"disponible",abrir:contenedor=>SilabarioRioplatense.abrir(contenedor),record:()=>SilabarioRioplatense.mejorPuntaje()+" puntos"},
   {id:"cien-rioplatenses",nombre:"100 Rioplatenses Dicen",descripcion:"Girá por un tema y descubrí el panel",icono:"logo-cien-rioplatenses.svg",estado:CIEN_HABILITADO?"disponible":"proximamente",abrir:contenedor=>CienRioplatenses.abrir(contenedor),record:()=>CienRioplatenses.mejorPuntaje()+" puntos"},
-  {id:"ahorcado-rioplatense",nombre:"Ahorcado Rioplatense",descripcion:"La ruleta elige la categoría, adiviná la palabra",icono:"logo-ahorcado-rioplatense.svg",estado:AHORCADO_HABILITADO?"disponible":"proximamente",abrir:contenedor=>AhorcadoRioplatense.abrir(contenedor),record:()=>AhorcadoRioplatense.mejorPuntaje()+" puntos"}
-  /* Contra Reloj Rioplatense: sin tarjeta todavía. El logo que se armó a
-     partir de uno de los dados del .zip no era el correcto; falta que
-     Gonzalo mande el logo real antes de sumarla de nuevo al lobby. */
+  {id:"ahorcado-rioplatense",nombre:"Ahorcado Rioplatense",descripcion:"La ruleta elige la categoría, adiviná la palabra",icono:"logo-ahorcado-rioplatense.svg",estado:AHORCADO_HABILITADO?"disponible":"proximamente",abrir:contenedor=>AhorcadoRioplatense.abrir(contenedor),record:()=>AhorcadoRioplatense.mejorPuntaje()+" puntos"},
+  {id:"contra-reloj-rioplatense",nombre:"Contra Reloj Rioplatense",descripcion:"Hasta 4 personas, muy pronto en Girá y Adiviná",icono:"logo-contra-reloj-rioplatense.svg",estado:"proximamente",abrir:()=>{},record:()=>""}
   /* Mahjong Rioplatense (mahjong-rioplatense.html) a propósito oculto del lobby:
      la pantalla de inicio no estaba lista para mostrarse a los jugadores.
      Sigue publicada y accesible por URL directa para que Gonzalo la pruebe;
