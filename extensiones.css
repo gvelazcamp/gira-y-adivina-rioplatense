@@ -55,6 +55,7 @@ body.ext-abierta{overflow:hidden}
 .ext-tarjeta{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:9px;padding:12px;text-align:left;color:#F6EFE2;background:#2A1A3C;border:1px solid #FFFFFF22;border-radius:19px;box-shadow:0 5px 0 #13091E}
 .ext-tarjeta:not(:disabled):active{transform:translateY(3px);box-shadow:0 2px 0 #13091E}
 .ext-tarjeta:disabled{opacity:.55;cursor:default}
+.ext-tarjeta{position:relative}.ext-insignia{position:absolute;top:10px;right:10px;background:#E5197C;color:#fff;font-weight:900;font-size:.78rem;padding:4px 9px;border-radius:99px;border:2px solid #FFE39A;box-shadow:0 3px 8px #0006}
 .ext-tarjeta img{width:64px;height:64px;border-radius:15px;object-fit:contain}
 .ext-tarjeta-texto{display:flex;flex-direction:column;gap:3px;min-width:0}
 .ext-tarjeta b{font-size:.93rem}.ext-tarjeta small{font-size:.73rem;line-height:1.25;color:#D7C8E5}.ext-tarjeta em{font-size:.7rem;font-style:normal;color:#37D6C0;font-weight:800;margin-top:4px}
