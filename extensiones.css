@@ -264,3 +264,12 @@ body.ext-abierta{overflow:hidden}
 .dl-resultado .dl-revancha{display:block;width:100%;padding:14px;border-radius:13px;color:#fff;font-weight:900;font-size:1.05rem;margin:4px 0 8px;box-shadow:0 4px 0 #8E0F4C}
 .dl-resultado #dlVolver.dl-salir{background:transparent!important;border:1px solid #FFFFFF2E;color:#D7C8E5}
 .dl-revancha-aviso{margin:6px 0;color:#FFD85B;font-weight:800;font-size:.85rem;text-align:center}
+/* Ahorcado por turnos: un ahorcado chico por jugador */
+.ah-duo{display:flex;gap:6px;flex:none}
+.ah-duo[hidden]{display:none}
+.ah-mini{width:min(25vw,92px);text-align:center;border-radius:12px;padding:3px 3px 0;border:2px solid #FFFFFF14;background:#1B0F2A;opacity:.7;transition:opacity .2s,border-color .2s}
+.ah-mini.activo{opacity:1;border-color:#F5B301;background:#F5B30118;box-shadow:0 0 12px #F5B30144}
+.ah-mini small{display:block;font-size:.6rem;font-weight:900;color:#F6EFE2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ah-mini svg{display:block;width:100%}
+.ah-mini g>*{opacity:0;transition:opacity .25s}.ah-mini g>.on{opacity:1}
+.ah-mini.perdida g{stroke:#FF7E8B}.ah-mini.perdida{border-color:#FF7E8B}
