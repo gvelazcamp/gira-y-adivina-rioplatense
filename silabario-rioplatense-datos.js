@@ -2,8 +2,8 @@
    Nivel 1: cotidiano; 2: intermedio; 3: desafío. */
 const SILABARIO_DATOS=[
   ["Persona que queda en la primera y se lleva la copa.",["CAM","PE","ÓN"],"general",1],
-  ["Carne cocinada a las brasas para compartir en la mesa.",["A","SA","DO"],"comida",1],
-  ["Infusión que se toma con bombilla, pasando de mano en mano.",["MA","TE"],"costumbres",1],
+  ["Tabla con fiambres, quesos y aceitunas para comer antes del plato principal.",["PI","CA","DA"],"comida",1],
+  ["Mate frío de verano que se prepara con agua helada o jugo.",["TE","RE","RÉ"],"costumbres",1],
   ["Espacio abierto en el centro de un pueblo o barrio, con bancos y árboles.",["PLA","ZA"],"ciudades",1],
   ["Aparato que transmite música y noticias por el aire.",["RA","DIO"],"costumbres",1],
   ["Pasta fina y larga que se sirve con salsa o caldo.",["FI","DE","O"],"comida",1],
