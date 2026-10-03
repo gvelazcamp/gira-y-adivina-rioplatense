@@ -196,7 +196,6 @@ const AhorcadoRioplatense=(()=>{
       duelo=true;yo=soyHost?"host":"guest";ptsRival=0;colaRemota=[];Duelo.mostrarBadge();Duelo.actualizarBadge("0");
       Duelo.onProgresoRival(p=>{if(turnos)letraRemota(p);else Duelo.actualizarBadge(String(p.puntos));});
       const arrancar=(lista,m)=>{
-        if(typeof mostrarToast==="function")try{mostrarToast("👥",m==="turnos"?"Cada uno tiene su ahorcado. Si errás, juega el otro. Gana quien se lleve más palabras.":"Cada uno en su tablero. Gana el que suma más.",m==="turnos"?"Partida por turnos":"Partida carrera");}catch(e){}
         turnos=m==="turnos";erroresDuo={host:0,guest:0};ganadas={host:0,guest:0};
         $("#ahDuo").hidden=!turnos;$("#ahFigura").style.display=turnos?"none":"";if(turnos)Duelo.actualizarBadge("🏆 0");
         palabrasDuelo=lista;n=0;puntos=0;ptsRival=0;usadas=[];fase="girando";$("#ahPanel").hidden=true;siguientePalabra();};
