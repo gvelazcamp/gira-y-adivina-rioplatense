@@ -237,3 +237,27 @@ body.ext-abierta{overflow:hidden}
 .ah-siguiente{width:100%;margin-top:10px;padding:12px;border-radius:13px;background:#37D6C0;color:#0B3B36;font-weight:900;font-size:.95rem}
 .ah-game button:focus-visible{outline:3px solid #F5B301;outline-offset:2px}
 @media(prefers-reduced-motion:reduce){.ah-rueda,.ah-cat,.ah-figura g>*{transition:none}}
+/* Moon Tap */
+.mt-game{position:relative}
+.mt-top{display:grid;grid-template-columns:1fr repeat(4,auto);gap:5px;align-items:center;margin-bottom:6px}
+.mt-nivel{min-width:0}.mt-nivel b{display:block;font-size:.84rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mt-nivel small{display:block;color:#CBC6DE;font-size:.66rem;line-height:1.2;max-height:2.4em;overflow:hidden}
+.mt-pill{min-width:44px;padding:4px 6px;border-radius:12px;text-align:center;background:rgba(17,12,36,.78);border:1px solid rgba(255,255,255,.14);color:#CBC6DE;font-size:.58rem}
+.mt-pill strong{display:block;color:#fff;font-size:.9rem;line-height:1.1}
+.mt-progreso{position:relative;height:14px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin-bottom:6px}
+.mt-progreso span{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#63deff,#ffd85b);transition:width .22s}
+.mt-progreso em{position:absolute;inset:0;display:grid;place-items:center;font-style:normal;font-size:.62rem;font-weight:900;color:#fff;text-shadow:0 1px 2px #000}
+.mt-escenario{position:relative;overflow:hidden;border-radius:20px;border:1px solid rgba(255,255,255,.14);background:#0b0916;box-shadow:0 14px 40px rgba(0,0,0,.34)}
+.mt-escenario canvas{display:block;width:100%;height:clamp(300px,calc(100dvh - 285px),640px);touch-action:manipulation;user-select:none}
+.mt-pista{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);max-width:90%;padding:8px 12px;border-radius:99px;background:rgba(8,7,20,.78);border:1px solid rgba(255,255,255,.12);font-weight:800;font-size:.75rem;text-align:center;pointer-events:none;transition:opacity .2s}
+.mt-resultado{position:absolute;left:50%;top:15%;transform:translateX(-50%) scale(.9);opacity:0;pointer-events:none;font-weight:1000;font-size:clamp(24px,8vw,44px);text-shadow:0 6px 24px rgba(0,0,0,.55);transition:opacity .14s,transform .14s;white-space:nowrap}
+.mt-resultado.show{opacity:1;transform:translateX(-50%) scale(1)}
+.mt-subida{position:absolute;inset:0;display:grid;place-items:center;opacity:0;pointer-events:none;background:rgba(5,4,14,.26);transition:opacity .18s}
+.mt-subida.show{opacity:1}
+.mt-subida>div{min-width:220px;max-width:82%;padding:16px 18px;border-radius:18px;text-align:center;background:rgba(20,14,43,.94);border:1px solid rgba(255,255,255,.15)}
+.mt-subida small{display:block;color:#CBC6DE;font-size:.7rem;font-weight:800}.mt-subida strong{display:block;margin-top:4px;color:#ffd85b;font-size:1.6rem}.mt-subida span{display:block;margin-top:6px;font-size:.8rem;line-height:1.35}
+.mt-controles{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:8px}
+.mt-controles button{min-height:50px;border-radius:14px;font-weight:900}
+#mtLanzar{background:linear-gradient(180deg,#fff192,#ffd85b);color:#241a00;font-size:1.05rem}
+#mtReiniciar{padding:0 16px;color:#fff;background:rgba(17,12,36,.78);border:1px solid rgba(255,255,255,.14)}
+.ps-duelo{display:block;width:100%;max-width:300px;margin:4px auto 0;background:#352146;color:#fff;border:1px solid #FFFFFF2A;border-radius:11px;padding:6px 8px;font-weight:900;font-size:.8rem}
+.dl-resultado #dlVolver{display:block;width:100%;padding:12px;border-radius:13px;color:#fff;font-weight:900;margin-top:8px}
