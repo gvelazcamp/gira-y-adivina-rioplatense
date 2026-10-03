@@ -14,6 +14,23 @@ const AhorcadoRioplatense=(()=>{
      letras jugadas, así los dos celulares quedan siempre iguales. */
   const TURNO_PTS_LETRA=10,TURNO_PTS_COMPLETAR=50;
   let turnos=false,yo="host",turnoDe="host",ptsRival=0,ordenLetras=[],colaRemota=[];
+  /* Cada jugador tiene SU ahorcado chico: el que erra suma una parte en el
+     suyo y pasa el turno. El que completa la palabra la gana; si a uno se le
+     completa el muñeco, la palabra es para el otro. Gana quien se lleve más
+     palabras de las 5 (nunca hay empate: cada palabra tiene dueño). */
+  let erroresDuo={host:0,guest:0},ganadas={host:0,guest:0};
+  const otro=q=>q==="host"?"guest":"host";
+  function miniSVG(color){return'<svg viewBox="0 0 120 130" aria-hidden="true"><path d="M10 122H80M30 122V10H85V26" stroke="#F6EFE2" stroke-width="5" stroke-linecap="round" fill="none"/><g stroke="'+color+'" stroke-width="5" stroke-linecap="round" fill="none"><circle cx="85" cy="36" r="10"/><path d="M85 46V80"/><path d="M85 54L68 68"/><path d="M85 54L102 68"/><path d="M85 80L70 102"/><path d="M85 80L100 102"/></g></svg>';}
+  function pintarMinis(){
+    if(!turnos||!raiz)return;
+    for(const [rol,id] of [[yo,"#ahMiniYo"],[otro(yo),"#ahMiniRival"]]){
+      const box=$(id);if(!box)continue;
+      [...box.querySelectorAll("g>*")].forEach((e,i)=>e.classList.toggle("on",i<erroresDuo[rol]));
+      box.classList.toggle("activo",fase==="jugando"&&turnoDe===rol);
+      box.classList.toggle("perdida",erroresDuo[rol]>=AHORCADO_CONFIG.vidas);
+      box.querySelector("small").textContent=(rol===yo?"Vos":nombreRival())+" · 🏆"+ganadas[rol];
+    }
+  }
   let palabra=null,usadas=[],adivinadas=new Set(),errores=0,puntos=0,n=0,W=0,etiquetas=[],intervalo=null;
   let audioMusica=null;
   function iniciarMusicaJuego(){
@@ -85,7 +102,7 @@ const AhorcadoRioplatense=(()=>{
   function resetTeclado(){document.querySelectorAll("#ahTeclado button").forEach(b=>{b.className="";b.disabled=false;});}
   function siguientePalabra(){
     n++;errores=0;adivinadas=new Set();ordenLetras=[];fase="girando";$("#ahTeclado").classList.remove("ah-espera");
-    if(turnos)turnoDe=n%2===1?"host":"guest";$("#ahSiguiente").hidden=true;$("#ahFeedback").textContent="";
+    if(turnos){turnoDe=n%2===1?"host":"guest";erroresDuo={host:0,guest:0};}$("#ahSiguiente").hidden=true;$("#ahFeedback").textContent="";
     document.querySelectorAll(".ah-figura g>*").forEach(e=>e.classList.remove("on"));$("#ahFigura").classList.remove("perdida");
     resetTeclado();$("#ahPalabra").innerHTML="";$("#ahPregunta").innerHTML="<small>Girando…</small>";hud();
     if(duelo){palabra=palabrasDuelo[n-1];}else{palabra=elegirPalabra(usadas);usadas.push(palabra);}
@@ -94,7 +111,7 @@ const AhorcadoRioplatense=(()=>{
       const cat=AHORCADO_CATEGORIAS[indice];
       $("#ahPregunta").innerHTML=`<small>Categoría</small>${cat.emoji} ${cat.nombre} · ${palabra.palabra.length} letras`;
       dibujarPalabra(false);fase="jugando";
-      if(turnos){avisoTurno();const cola=colaRemota;colaRemota=[];cola.forEach(letraRemota);}
+      if(turnos){avisoTurno();pintarMinis();const cola=colaRemota;colaRemota=[];cola.forEach(letraRemota);}
     });
   }
   function sonido(acierto){
@@ -114,13 +131,21 @@ const AhorcadoRioplatense=(()=>{
     const quien=turnoDe;
     adivinadas.add(L);ordenLetras.push(L);
     if(turnos&&!remoto)Duelo.enviarProgreso({t:"letra",n,letras:ordenLetras.join("")});
+    const b=$(`#ahTeclado [data-l="${L}"]`);if(b)b.disabled=true;
     if(turnos){
       const veces=palabra.palabra.split("").filter(c=>c===L).length;
-      if(veces){const p=veces*TURNO_PTS_LETRA;if(quien===yo)puntos+=p;else ptsRival+=p;}
-      else turnoDe=turnoDe==="host"?"guest":"host";
-      hud();Duelo.actualizarBadge(String(ptsRival));
+      if(veces){
+        const p=veces*TURNO_PTS_LETRA;if(quien===yo)puntos+=p;else ptsRival+=p;
+        if(b)b.className="ok";sonido(true);dibujarPalabra(false);hud();
+        if(palabra.palabra.split("").every(c=>adivinadas.has(c)))terminarPalabra(true,quien);
+      }else{
+        if(b)b.className="no";sonido(false);
+        erroresDuo[quien]++;
+        if(erroresDuo[quien]>=AHORCADO_CONFIG.vidas){pintarMinis();terminarPalabra(true,otro(quien),true);}
+        else turnoDe=otro(quien);
+      }
+      pintarMinis();avisoTurno();return;
     }
-    const b=$(`#ahTeclado [data-l="${L}"]`);if(b)b.disabled=true;
     if(palabra.palabra.includes(L)){
       if(b)b.className="ok";sonido(true);dibujarPalabra(false);
       if(palabra.palabra.split("").every(c=>adivinadas.has(c)))terminarPalabra(true,quien);
@@ -133,15 +158,19 @@ const AhorcadoRioplatense=(()=>{
     if(m.n!==n||fase==="girando"){if(m.n>=n)colaRemota.push(m);return;}
     for(const L of m.letras.split("")){if(fase!=="jugando")break;if(!adivinadas.has(L)&&AHORCADO_LETRAS.includes(L))tocarLetra(L,true);}
   }
-  function terminarPalabra(gano,quien){
+  function terminarPalabra(gano,quien,porAhorcado){
     if(fase!=="jugando")return;
     fase="resultado";const f=$("#ahFeedback");$("#ahTeclado").classList.remove("ah-espera");
     if(turnos){
-      if(gano){
-        if(quien===yo){puntos+=TURNO_PTS_COMPLETAR;f.textContent="¡La completaste vos! +"+TURNO_PTS_COMPLETAR+" 🧉";f.style.color="#37D6C0";}
-        else{ptsRival+=TURNO_PTS_COMPLETAR;f.textContent="La completó "+nombreRival()+" (+"+TURNO_PTS_COMPLETAR+")";f.style.color="#FF9DA7";}
-      }else{$("#ahFigura").classList.add("perdida");dibujarPalabra(true);f.textContent="Nadie la sacó: era "+palabra.palabra;f.style.color="#FF9DA7";}
-      hud();Duelo.actualizarBadge(String(ptsRival));
+      ganadas[quien]++;
+      if(quien===yo)puntos+=TURNO_PTS_COMPLETAR;else ptsRival+=TURNO_PTS_COMPLETAR;
+      if(porAhorcado){
+        dibujarPalabra(true);
+        if(quien===yo){f.textContent="¡"+nombreRival()+" se ahorcó! La palabra es tuya 🎉";f.style.color="#37D6C0";}
+        else{f.textContent="¡Te ahorcaste! La palabra es para "+nombreRival()+" ("+palabra.palabra+")";f.style.color="#FF9DA7";}
+      }else if(quien===yo){f.textContent="¡La completaste vos! Palabra para vos 🧉";f.style.color="#37D6C0";}
+      else{f.textContent="La completó "+nombreRival()+": palabra para "+nombreRival();f.style.color="#FF9DA7";}
+      hud();pintarMinis();Duelo.actualizarBadge("🏆 "+ganadas[otro(yo)]);
       setTimeout(()=>{if(!raiz||!duelo)return;if(n<AHORCADO_CONFIG.palabras)siguientePalabra();else terminar();},AHORCADO_CONFIG.pausaMs+1300);
       return;
     }
@@ -167,8 +196,10 @@ const AhorcadoRioplatense=(()=>{
       duelo=true;yo=soyHost?"host":"guest";ptsRival=0;colaRemota=[];Duelo.mostrarBadge();Duelo.actualizarBadge("0");
       Duelo.onProgresoRival(p=>{if(turnos)letraRemota(p);else Duelo.actualizarBadge(String(p.puntos));});
       const arrancar=(lista,m)=>{
-        if(typeof mostrarToast==="function")try{mostrarToast("👥",m==="turnos"?"Misma palabra, de a una letra. Si errás, juega el otro.":"Cada uno en su tablero. Gana el que suma más.",m==="turnos"?"Partida por turnos":"Partida carrera");}catch(e){}
-        turnos=m==="turnos";palabrasDuelo=lista;n=0;puntos=0;ptsRival=0;usadas=[];fase="girando";$("#ahPanel").hidden=true;siguientePalabra();};
+        if(typeof mostrarToast==="function")try{mostrarToast("👥",m==="turnos"?"Cada uno tiene su ahorcado. Si errás, juega el otro. Gana quien se lleve más palabras.":"Cada uno en su tablero. Gana el que suma más.",m==="turnos"?"Partida por turnos":"Partida carrera");}catch(e){}
+        turnos=m==="turnos";erroresDuo={host:0,guest:0};ganadas={host:0,guest:0};
+        $("#ahDuo").hidden=!turnos;$("#ahFigura").style.display=turnos?"none":"";if(turnos)Duelo.actualizarBadge("🏆 0");
+        palabrasDuelo=lista;n=0;puntos=0;ptsRival=0;usadas=[];fase="girando";$("#ahPanel").hidden=true;siguientePalabra();};
       if(soyHost){
         const lista=[];for(let i=0;i<AHORCADO_CONFIG.palabras;i++)lista.push(elegirPalabra(lista));
         const m=modo==="turnos"?"turnos":"carrera";Duelo.enviarRonda({palabras:lista,modo:m});arrancar(lista,m);
@@ -176,15 +207,16 @@ const AhorcadoRioplatense=(()=>{
     }});
   }
   const EXPLICA={
-    turnos:"🔄 <b>POR TURNOS</b>: los dos juegan la <b>misma palabra en el mismo tablero</b>. Si acertás una letra sumás y seguís vos; si errás, se dibuja el muñeco (que es de los dos) y juega el otro. Quien completa la palabra suma +50.",
+    turnos:"🔄 <b>POR TURNOS</b>: los dos juegan la <b>misma palabra</b>, de a una letra. <b>Cada uno tiene su ahorcado</b>: si errás, se dibuja una parte en el tuyo y juega el otro. El que completa la palabra se la lleva; si a uno se le completa el muñeco, la palabra es para el otro. Gana el que se lleve <b>más palabras</b> de las 5.",
     carrera:"🏁 <b>CARRERA</b>: los dos reciben las <b>mismas 5 palabras</b>, pero cada uno juega en <b>su propio tablero</b> sin ver las letras del otro. Gana el que suma más puntos."
   };
   const OPCIONES_AMIGO=[["👥 Con un amigo · Por turnos",()=>iniciarDuelo("turnos")],["👥 Con un amigo · Carrera",()=>iniciarDuelo("carrera")]];
   function terminar(){
     if(duelo){
       datos.mejor=Math.max(datos.mejor,puntos);guardar();hud();
-      Duelo.enviarFinal({valor:puntos});
-      Duelo.mostrarResultado({valor:puntos},{etiqueta:"puntos de la partida",onVolver:()=>{duelo=false;turnos=false;abrir(raiz.parentElement);}});
+      const valor=turnos?ganadas[yo]:puntos;
+      Duelo.enviarFinal({valor});
+      Duelo.mostrarResultado({valor},{etiqueta:turnos?"palabras ganadas (de "+AHORCADO_CONFIG.palabras+")":"puntos de la partida",onVolver:()=>{duelo=false;turnos=false;abrir(raiz.parentElement);}});
       return;
     }
     fase="fin";datos.mejor=Math.max(datos.mejor,puntos);guardar();hud();
@@ -204,7 +236,8 @@ const AhorcadoRioplatense=(()=>{
       +'<div class="ah-titulo"><img src="logo-ahorcado-rioplatense.svg" alt=""><div><h2>Ahorcado Rioplatense</h2><p>La ruleta elige la categoría, vos adiviná la palabra.</p></div></div>'
       +'<div class="sf-hud"><div><small>Palabra</small><b id="ahN">0/'+AHORCADO_CONFIG.palabras+'</b></div><div><small>Puntos</small><b id="ahPt">0</b></div><div><small>Mejor</small><b id="ahMejor">'+datos.mejor+'</b></div></div>'
       +'<div class="ah-top"><div class="ah-rueda-wrap" id="ahRuedaWrap"><div class="ah-rueda" id="ahRueda"></div><div class="ah-hub"></div></div>'
-      +'<svg class="ah-figura" id="ahFigura" viewBox="0 0 120 130" aria-label="Muñeco del ahorcado"><path d="M10 122H80M30 122V10H85V26" stroke="#F6EFE2" stroke-width="4" stroke-linecap="round" fill="none"/><g stroke="#F5B301" stroke-width="4" stroke-linecap="round" fill="none"><circle id="p0" cx="85" cy="36" r="10"/><path id="p1" d="M85 46V80"/><path id="p2" d="M85 54L68 68"/><path id="p3" d="M85 54L102 68"/><path id="p4" d="M85 80L70 102"/><path id="p5" d="M85 80L100 102"/></g></svg></div>'
+      +'<svg class="ah-figura" id="ahFigura" viewBox="0 0 120 130" aria-label="Muñeco del ahorcado"><path d="M10 122H80M30 122V10H85V26" stroke="#F6EFE2" stroke-width="4" stroke-linecap="round" fill="none"/><g stroke="#F5B301" stroke-width="4" stroke-linecap="round" fill="none"><circle id="p0" cx="85" cy="36" r="10"/><path id="p1" d="M85 46V80"/><path id="p2" d="M85 54L68 68"/><path id="p3" d="M85 54L102 68"/><path id="p4" d="M85 80L70 102"/><path id="p5" d="M85 80L100 102"/></g></svg>'
+      +'<div class="ah-duo" id="ahDuo" hidden><div class="ah-mini" id="ahMiniYo"><small>Vos</small>'+miniSVG("#F5B301")+'</div><div class="ah-mini" id="ahMiniRival"><small>Rival</small>'+miniSVG("#E5197C")+'</div></div></div>'
       +'<div class="ah-pregunta" id="ahPregunta"></div>'
       +'<div class="ah-palabra" id="ahPalabra"></div>'
       +'<div class="ah-feedback" id="ahFeedback"></div>'
