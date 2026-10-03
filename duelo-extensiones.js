@@ -9,7 +9,7 @@ const Duelo=(()=>{
   let cliente=null,juego=null,sala=null,soyHost=false,rival=null,activo=false;
   /* Invitación por link: ?duelo=<juego>&sala=XXXX&de=<nombre> abre ese juego
      con el lobby en "Unirme" y el código ya cargado. */
-  const DUELO_EXT={ahorcado:"ahorcado-rioplatense",cien:"cien-rioplatenses",frases:"frases-en-giro",memoria:"memoria-en-giro",rosco:"rosco-rioplatense",rueda:"rueda-de-letras",silabario:"silabario-rioplatense",sopa:"sopa-fugaz"};
+  const DUELO_EXT={ahorcado:"ahorcado-rioplatense",cien:"cien-rioplatenses",frases:"frases-en-giro",memoria:"memoria-en-giro",rosco:"rosco-rioplatense",rueda:"rueda-de-letras",silabario:"silabario-rioplatense",sopa:"sopa-fugaz",palabra:"palabra-secreta",moon:"moon-tap"};
   let invitacion=null;
   try{
     const q=new URLSearchParams(location.search),j=q.get("duelo"),s=(q.get("sala")||"").toUpperCase();
@@ -59,7 +59,9 @@ const Duelo=(()=>{
   }
   function cerrarCapa(){if(capa){capa.remove();capa=null;}}
   /* --- Lobby: elegir crear o unirse, mostrar código, esperar rival --- */
+  let nombreActual="";
   function mostrarLobby(nombreJuego,idJuego,{onListo,onCancelar,detalle}){
+    nombreActual=nombreJuego;
     juego=idJuego;activo=false;rival=null;finalRival=null;
     const c=activaCapa();
     c.innerHTML='<div class="dl-tarjeta"><h3>Jugar con un amigo</h3><p class="dl-sub">'+nombreJuego+' · 1 vs 1</p>'+(detalle?'<p class="dl-detalle">'+detalle+'</p>':'')+
@@ -137,7 +139,16 @@ const Duelo=(()=>{
         '<span class="dl-vsversus">VS</span>'+
         '<div class="dl-vsjugador'+(gano==="rival"?" dl-gano":"")+'">'+avatarHtml(rival&&rival.avatar,rival&&rival.frame)+'<small>'+((rival&&rival.nombre)||"Rival")+'</small><b>'+(finalRival?finalRival.valor:"…")+'</b></div>'+
         '</div><p class="dl-sub">'+etiqueta+(finalRival?"":" · todavía está jugando")+'</p>'+
+        (finalRival?'<button type="button" id="dlCompartir" class="dl-wpp">📲 Compartir por WhatsApp</button>':'')+
         '<button type="button" id="dlVolver" class="dl-principal">Volver</button></div>';
+      const comp=c.querySelector("#dlCompartir");
+      if(comp)comp.onclick=()=>{
+        let base="";try{base=location.origin+location.pathname;}catch(e){}
+        const rn=(rival&&rival.nombre)||"mi rival";
+        const frase=gano==="vos"?"¡Le gané a "+rn:gano==="rival"?"¡"+rn+" me ganó":"¡Empaté con "+rn;
+        const texto=frase+" en "+nombreActual+"! Yo "+miResultado.valor+" · "+rn+" "+finalRival.valor+" ("+etiqueta+"). ¿Te animás? Jugá gratis en Girá y Adiviná: "+base;
+        try{window.open("https://wa.me/?text="+encodeURIComponent(texto),"_blank");}catch(e){}
+      };
       c.querySelector("#dlVolver").onclick=()=>{cerrarCliente();cerrarCapa();activo=false;if(onVolver)onVolver();};
     };
     pintar();

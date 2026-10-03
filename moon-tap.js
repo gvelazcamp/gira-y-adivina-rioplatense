@@ -17,6 +17,30 @@ const MoonTap=(()=>{
     else if(color==="#ff6786")bip(180,.2,"sawtooth",.03);
   }
   let api={launch(){},reset(){}};
+  /* Duelo 1 vs 1: cada uno tira 15 veces en su celular; se ve en vivo
+     cuántos puntos y aciertos lleva el otro. Gana el de más puntos. */
+  const TIROS_DUELO=15;
+  let duelo=false,tiros=0,aciertos=0;
+  function alTiro(acierto){
+    if(!duelo)return;
+    tiros++;if(acierto)aciertos++;
+    const pts=api.puntos();
+    Duelo.enviarProgreso({puntos:pts,aciertos,tiros});
+    const pista=q("mtPista");pista.style.opacity="1";pista.textContent="👥 Duelo · tiro "+tiros+"/"+TIROS_DUELO+" · aciertos "+aciertos;
+    if(tiros>=TIROS_DUELO){
+      api.bloquear(true);
+      Duelo.enviarFinal({valor:pts});
+      setTimeout(()=>{if(!raiz)return;Duelo.mostrarResultado({valor:pts},{etiqueta:"puntos en "+TIROS_DUELO+" tiros",onVolver:()=>{duelo=false;const padre=raiz&&raiz.parentElement;if(padre)abrir(padre);}});},900);
+    }
+  }
+  function iniciarDuelo(){
+    if(typeof Duelo==="undefined")return;
+    Duelo.mostrarLobby("Moon Tap","moon",{detalle:"Cada uno tira <b>15 veces</b> en su celular y ves en vivo los puntos y aciertos del otro. Gana el que suma <b>más puntos</b>.",onListo:soyHost=>{
+      const arrancar=()=>{duelo=true;tiros=0;aciertos=0;Duelo.mostrarBadge();Duelo.actualizarBadge("0 pts");q("mtPanel").hidden=true;api.reset();api.bloquear(false);q("mtReiniciar").disabled=true;const pista=q("mtPista");pista.style.opacity="1";pista.textContent="👥 Duelo · 15 tiros · ¡dale!";};
+      Duelo.onProgresoRival(p=>Duelo.actualizarBadge((Number(p.puntos)||0)+" pts · "+(Number(p.aciertos)||0)+"/"+(Number(p.tiros)||0)));
+      if(soyHost){Duelo.enviarRonda({tiros:TIROS_DUELO});arrancar();}else Duelo.onRondaRecibida(()=>arrancar());
+    }});
+  }
   function iniciarJuego(){
   const mejorEl=q('mtMejor');
   const canvas = q('mtCanvas');
@@ -310,6 +334,7 @@ const MoonTap=(()=>{
     }
 
     updateHUD();
+    alTiro(best <= good);
     if(hitsThisLevel >= c.hits){
       levelUp();
     }
@@ -939,7 +964,7 @@ const MoonTap=(()=>{
   updateHUD();
   lockInput = true;
   raf=requestAnimationFrame(loop);
-  api={launch,reset:()=>{reset();},bloquear:v=>{lockInput=v;}};
+  api={launch,reset:()=>{reset();},bloquear:v=>{lockInput=v;},puntos:()=>score};
   }
   function panel(titulo,detalle,acciones){
     const p=q("mtPanel");p.innerHTML='<div class="sf-panel"><h3></h3><p></p><div class="sf-acciones"></div></div>';
@@ -964,11 +989,12 @@ const MoonTap=(()=>{
     contenedor.appendChild(raiz);
     q("mtVolver").onclick=()=>Extensiones.abrirLobby();
     iniciarJuego();
-    panel("Moon Tap","Tocá la pantalla (o LANZAR) para tirar la pelota. Tiene que llegar a la zona dorada del aro justo cuando pasa el punto amarillo. Ojo con los puntos celestes: son trampa. 15 niveles. Récord: "+mejor+" puntos.",[["Jugar",jugar]]);
+    panel("Moon Tap","Tocá la pantalla (o LANZAR) para tirar la pelota. Tiene que llegar a la zona dorada del aro justo cuando pasa el punto amarillo. Ojo con los puntos celestes: son trampa. 15 niveles. Récord: "+mejor+" puntos.",[["Jugar",jugar],["👥 Jugar con un amigo",iniciarDuelo]]);
   }
   function salir(){
     if(raf)cancelAnimationFrame(raf);raf=0;
     if(ro){try{ro.disconnect();}catch(e){}ro=null;}
+    if(duelo&&typeof Duelo!=="undefined")Duelo.salir();duelo=false;
     api={launch(){},reset(){}};raiz=null;
   }
   function tecla(key,e){

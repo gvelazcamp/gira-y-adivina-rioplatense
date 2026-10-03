@@ -259,3 +259,5 @@ body.ext-abierta{overflow:hidden}
 .mt-controles button{min-height:50px;border-radius:14px;font-weight:900}
 #mtLanzar{background:linear-gradient(180deg,#fff192,#ffd85b);color:#241a00;font-size:1.05rem}
 #mtReiniciar{padding:0 16px;color:#fff;background:rgba(17,12,36,.78);border:1px solid rgba(255,255,255,.14)}
+.ps-duelo{display:block;width:100%;max-width:300px;margin:4px auto 0;background:#352146;color:#fff;border:1px solid #FFFFFF2A;border-radius:11px;padding:6px 8px;font-weight:900;font-size:.8rem}
+.dl-resultado #dlVolver{display:block;width:100%;padding:12px;border-radius:13px;color:#fff;font-weight:900;margin-top:8px}
