@@ -247,7 +247,7 @@ body.ext-abierta{overflow:hidden}
 .mt-progreso span{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#63deff,#ffd85b);transition:width .22s}
 .mt-progreso em{position:absolute;inset:0;display:grid;place-items:center;font-style:normal;font-size:.62rem;font-weight:900;color:#fff;text-shadow:0 1px 2px #000}
 .mt-escenario{position:relative;overflow:hidden;border-radius:20px;border:1px solid rgba(255,255,255,.14);background:#0b0916;box-shadow:0 14px 40px rgba(0,0,0,.34)}
-.mt-escenario canvas{display:block;width:100%;height:clamp(300px,calc(100dvh - 285px),640px);touch-action:manipulation;user-select:none}
+.mt-escenario canvas{display:block;margin:0 auto;width:auto;max-width:100%;height:clamp(300px,calc(100dvh - 285px),720px);aspect-ratio:941/1672;touch-action:manipulation;user-select:none}
 .mt-pista{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);max-width:90%;padding:8px 12px;border-radius:99px;background:rgba(8,7,20,.78);border:1px solid rgba(255,255,255,.12);font-weight:800;font-size:.75rem;text-align:center;pointer-events:none;transition:opacity .2s}
 .mt-resultado{position:absolute;left:50%;top:15%;transform:translateX(-50%) scale(.9);opacity:0;pointer-events:none;font-weight:1000;font-size:clamp(24px,8vw,44px);text-shadow:0 6px 24px rgba(0,0,0,.55);transition:opacity .14s,transform .14s;white-space:nowrap}
 .mt-resultado.show{opacity:1;transform:translateX(-50%) scale(1)}
