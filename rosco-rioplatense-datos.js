@@ -95,5 +95,15 @@ const ROSCO_DATOS=[
   ["S","SANGUCHE","Forma rioplatense de decir sándwich.","comida",2],
   ["T","TRIBUNA","Sector de la cancha donde se ubican los hinchas para alentar.","futbol",2],
   ["V","VERDULERIA","Comercio de barrio donde se compran frutas y verduras.","comida",2],
-  ["Z","ZURDO","Jugador que patea mejor con la pierna izquierda.","futbol",2]
+  ["Z","ZURDO","Jugador que patea mejor con la pierna izquierda.","futbol",2],
+  ["K","KAYAK","Bote angosto que se rema con pala doble, ideal para recorrer lagunas y arroyos.","naturaleza",2],
+  ["U","UTILES","Lápices, cuadernos y gomas que se compran antes de que empiecen las clases.","costumbres",1],
+  ["Y","YARARA","Víbora venenosa del litoral con manchas en el lomo.","naturaleza",2],
+  ["G","GARUFA","En lunfardo, farra o diversión; también da nombre a un tango famoso.","lunfardo",3],
+  ["B","BAQUIANO","Persona que conoce como nadie los caminos y atajos del campo.","costumbres",3],
+  ["C","CHINCHON","Juego de cartas de mesa familiar donde se arman escaleras y grupos.","costumbres",1],
+  ["F","FILETEADO","Arte decorativo porteño de líneas, flores y letras en colores vivos.","costumbres",3],
+  ["M","MATUNGO","En lunfardo, caballo viejo y flaco que ya no rinde.","lunfardo",3],
+  ["P","PALENQUE","Poste firme del campo donde se ata el caballo.","costumbres",3],
+  ["T","TAMBERO","Persona que trabaja en el tambo ordeñando las vacas.","costumbres",2]
 ].map(([letra,palabra,definicion,categoria,nivel,alternativas=[]])=>({letra,palabra,definicion,categoria,nivel,alternativas}));
