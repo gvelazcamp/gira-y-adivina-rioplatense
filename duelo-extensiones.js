@@ -28,6 +28,16 @@ const Duelo=(()=>{
       if(b){clearInterval(t);b.click();}else if(++n>24)clearInterval(t);
     },250);
   }
+  /* Revancha en la misma sala: al terminar, si los dos tocan "Revancha"
+     se vuelve a llamar al onListo del juego (misma conexión, sin invitar
+     de nuevo) y arranca otra partida. "Salir" avisa al otro ("chau"). */
+  let onListoJuego=null,revancha={yo:false,rival:false},rivalSeFue=false,repintar=null,rondaPendiente=null;
+  function chequearRevancha(){
+    if(!(revancha.yo&&revancha.rival)||!onListoJuego)return;
+    revancha={yo:false,rival:false};finalRival=null;cbFinal=null;cbRonda=null;cbProgreso=null;repintar=null;
+    cerrarCapa();activo=true;
+    onListoJuego(soyHost,rival);
+  }
   let cbRivalListo=null,cbRonda=null,cbProgreso=null,cbFinal=null,finalRival=null,holaTimer=null,capa=null;
   function codigoNuevo(){return Array.from({length:4},()=>CHARS[Math.floor(Math.random()*CHARS.length)]).join("");}
   function temaOut(){return "gyaduelo/"+juego+"/"+sala+"/"+(soyHost?"host":"guest");}
@@ -43,8 +53,11 @@ const Duelo=(()=>{
     if(m.tipo==="hola"){
       rival={nombre:m.nombre,avatar:m.avatar,frame:m.frame};
       if(soyHost)mandar({tipo:"hola",nombre:(perfil&&perfil.nombre)||"Jugador",avatar:(perfil&&perfil.avatar)||null,frame:(typeof frameEquipado!=="undefined"?frameEquipado:null)});
+      if(!soyHost&&holaTimer){clearInterval(holaTimer);holaTimer=null;}
       if(cbRivalListo){const f=cbRivalListo;cbRivalListo=null;f(rival);}
-    }else if(m.tipo==="ronda"&&cbRonda){cbRonda(m.datos);}
+    }else if(m.tipo==="ronda"){if(cbRonda)cbRonda(m.datos);else rondaPendiente=m.datos;}
+    else if(m.tipo==="revancha"){revancha.rival=true;rivalSeFue=false;if(repintar)repintar();chequearRevancha();}
+    else if(m.tipo==="chau"){rivalSeFue=true;revancha.rival=false;if(repintar)repintar();}
     else if(m.tipo==="progreso"&&cbProgreso){cbProgreso(m.datos);}
     else if(m.tipo==="final"){finalRival=m.datos;if(cbFinal)cbFinal(m.datos);}
   }
@@ -61,7 +74,7 @@ const Duelo=(()=>{
   /* --- Lobby: elegir crear o unirse, mostrar código, esperar rival --- */
   let nombreActual="";
   function mostrarLobby(nombreJuego,idJuego,{onListo,onCancelar,detalle}){
-    nombreActual=nombreJuego;
+    nombreActual=nombreJuego;onListoJuego=onListo||null;revancha={yo:false,rival:false};rivalSeFue=false;rondaPendiente=null;
     juego=idJuego;activo=false;rival=null;finalRival=null;
     const c=activaCapa();
     c.innerHTML='<div class="dl-tarjeta"><h3>Jugar con un amigo</h3><p class="dl-sub">'+nombreJuego+' · 1 vs 1</p>'+(detalle?'<p class="dl-detalle">'+detalle+'</p>':'')+
@@ -114,7 +127,7 @@ const Duelo=(()=>{
   }
   /* --- Durante la partida: progreso propio/rival y badge flotante --- */
   function enviarRonda(datos){mandar({tipo:"ronda",datos});}
-  function onRondaRecibida(cb){cbRonda=cb;}
+  function onRondaRecibida(cb){cbRonda=cb;if(rondaPendiente){const d=rondaPendiente;rondaPendiente=null;cb(d);}}
   function enviarProgreso(datos){mandar({tipo:"progreso",datos});}
   function onProgresoRival(cb){cbProgreso=cb;}
   let badgeEl=null;
@@ -139,8 +152,13 @@ const Duelo=(()=>{
         '<span class="dl-vsversus">VS</span>'+
         '<div class="dl-vsjugador'+(gano==="rival"?" dl-gano":"")+'">'+avatarHtml(rival&&rival.avatar,rival&&rival.frame)+'<small>'+((rival&&rival.nombre)||"Rival")+'</small><b>'+(finalRival?finalRival.valor:"…")+'</b></div>'+
         '</div><p class="dl-sub">'+etiqueta+(finalRival?"":" · todavía está jugando")+'</p>'+
+        (finalRival&&!rivalSeFue?(revancha.rival&&!revancha.yo?'<p class="dl-revancha-aviso">🔥 '+((rival&&rival.nombre)||"Tu rival")+' quiere la revancha</p>':'')+
+          (revancha.yo?'<p class="dl-revancha-aviso">⏳ Esperando que '+((rival&&rival.nombre)||"tu rival")+' acepte la revancha…</p>':'<button type="button" id="dlRevancha" class="dl-principal dl-revancha">🔄 '+(revancha.rival?"¡Dale, revancha!":"Revancha")+'</button>'):'')+
+        (rivalSeFue?'<p class="dl-revancha-aviso">'+((rival&&rival.nombre)||"Tu rival")+' salió de la sala.</p>':'')+
         (finalRival?'<button type="button" id="dlCompartir" class="dl-wpp">📲 Compartir por WhatsApp</button>':'')+
-        '<button type="button" id="dlVolver" class="dl-principal">Volver</button></div>';
+        '<button type="button" id="dlVolver" class="dl-salir">Salir</button></div>';
+      const rev=c.querySelector("#dlRevancha");
+      if(rev)rev.onclick=()=>{revancha.yo=true;mandar({tipo:"revancha"});pintar();chequearRevancha();};
       const comp=c.querySelector("#dlCompartir");
       if(comp)comp.onclick=()=>{
         let base="";try{base=location.origin+location.pathname;}catch(e){}
@@ -149,14 +167,15 @@ const Duelo=(()=>{
         const texto=frase+" en "+nombreActual+"! Yo "+miResultado.valor+" · "+rn+" "+finalRival.valor+" ("+etiqueta+"). ¿Te animás? Jugá gratis en Girá y Adiviná: "+base;
         try{window.open("https://wa.me/?text="+encodeURIComponent(texto),"_blank");}catch(e){}
       };
-      c.querySelector("#dlVolver").onclick=()=>{cerrarCliente();cerrarCapa();activo=false;if(onVolver)onVolver();};
+      c.querySelector("#dlVolver").onclick=()=>{mandar({tipo:"chau"});repintar=null;onListoJuego=null;setTimeout(cerrarCliente,150);cerrarCapa();activo=false;if(onVolver)onVolver();};
     };
+    repintar=pintar;
     pintar();
     if(!finalRival)cbFinal=()=>pintar();
   }
   function estaActivo(){return activo;}
   function rivalActual(){return rival;}
-  function salir(){cerrarCliente();cerrarCapa();quitarBadge();activo=false;rival=null;finalRival=null;cbRivalListo=null;cbRonda=null;cbProgreso=null;cbFinal=null;}
+  function salir(){if(cliente&&cliente.connected)mandar({tipo:"chau"});repintar=null;onListoJuego=null;rondaPendiente=null;cerrarCliente();cerrarCapa();quitarBadge();activo=false;rival=null;finalRival=null;cbRivalListo=null;cbRonda=null;cbProgreso=null;cbFinal=null;}
   return{abrirInvitacion,hayInvitacion:()=>!!invitacion,mostrarLobby,enviarRonda,onRondaRecibida,enviarProgreso,onProgresoRival,mostrarBadge,actualizarBadge,enviarFinal,mostrarResultado,estaActivo,rivalActual,salir};
 })();
 window.Duelo=Duelo;
