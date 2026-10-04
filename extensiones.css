@@ -312,3 +312,6 @@ body.qns-bloqueado{overscroll-behavior:none}
 .pf-mantener{--p:0;background-image:linear-gradient(90deg,#E5197C88 calc(var(--p)*100%),transparent 0)!important;touch-action:none;user-select:none;-webkit-user-select:none}
 /* Partida de previa en curso: sin atajos para salir de un toque */
 body.pf-activo #extAtras,body.pf-activo #extCerrar,body.pf-activo .ext-volver{visibility:hidden;pointer-events:none}
+.mg-panel button.bb-voz{background:#1F6FB2;text-align:left;line-height:1.25}.bb-voz small{display:block;font-size:.75rem;font-weight:700;opacity:.8}
+.bb-oido{min-height:1.4em;margin-top:2vh;font-weight:800;font-size:1.05rem;color:#7DF0B4;text-align:center}
+.bb-silaba.ok{animation:bbOk .4s}@keyframes bbOk{0%{color:#2ED18A;transform:scale(1.15)}}
