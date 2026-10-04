@@ -157,8 +157,7 @@ const CienRioplatenses=(()=>{
       if(typeof logroDesbloquear==="function")logroDesbloquear("cienPrimera");
     }else{
       errores++;mostrarMensaje("✕ Esa respuesta no está en este panel.","error");
-      if(typeof bip==="function")bip(170,.24,"sawtooth",.035);if(typeof vibrar==="function")vibrar([40,30,40]);
-      if(typeof sonarSFX==="function")sonarSFX("abucheo");
+      sonidoErrorExt();if(typeof vibrar==="function")vibrar([40,30,40]);
     }
     hud();if(encontradas.every(Boolean)||errores>=CIEN_CONFIG.maxErrores)cerrarRonda();else enfocar();
   }

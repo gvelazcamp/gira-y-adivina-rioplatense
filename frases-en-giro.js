@@ -161,7 +161,7 @@ const FrasesEnGiro=(()=>{
       datos.ganadas++;datos.nivelMax=Math.max(datos.nivelMax,nivel+1);
       sonidoAcierto();
       if(typeof vibrar==="function")vibrar([30,40,55]);
-    }else{racha=0;puntos=0;sonido(260);if(typeof vibrar==="function")vibrar(85);}
+    }else{racha=0;puntos=0;sonidoErrorExt();if(typeof vibrar==="function")vibrar(85);}
     datos.mejor=Math.max(datos.mejor,puntos);guardar();dibujar();
     if(duelo){
       Duelo.enviarFinal({valor:puntos});
@@ -178,7 +178,7 @@ const FrasesEnGiro=(()=>{
     if(elegidas.every((palabra,i)=>palabra===correctas[i])){terminar(true);return;}
     const enSuLugar=elegidas.filter((palabra,i)=>palabra===correctas[i]).length;
     errores++;tiempoMs=Math.max(0,tiempoMs-FRASES_GIRO_CONFIG.penalidadErrorMs);
-    sonido(340);if(typeof vibrar==="function")vibrar(50);
+    sonidoErrorExt();if(typeof vibrar==="function")vibrar(50);
     if(errores>=FRASES_GIRO_CONFIG.intentos||tiempoMs<=0){terminar(false,errores>=FRASES_GIRO_CONFIG.intentos?"intentos":"tiempo");return;}
     espacios.fill(null);ordenBanco=mezclar(ordenBanco);
     avisar("❌ "+enSuLugar+" de "+correctas.length+" palabras estaban en su lugar. Perdiste un intento y 10 segundos. Rearmá la frase: te quedan "+(FRASES_GIRO_CONFIG.intentos-errores)+" intentos.",true);

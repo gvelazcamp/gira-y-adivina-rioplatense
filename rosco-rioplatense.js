@@ -65,7 +65,7 @@ const RoscoRioplatense=(()=>{
     if(typeof bip!=="function")return;
     // Acorde luminoso para acertar; tono grave y áspero para fallar.
     if(acierto){bip(660,.2,"sine",.065);bip(990,.3,"triangle",.04);}
-    else{bip(180,.24,"sawtooth",.035);bip(135,.3,"triangle",.05);}
+    else sonidoErrorExt();
     if(typeof vibrar==="function")vibrar(acierto?25:[45,40,45]);
   }
   function enfocar(){if(raiz&&!document.hidden){$("#rrEntrada").focus({preventScroll:true});ajustarPantalla();}}
