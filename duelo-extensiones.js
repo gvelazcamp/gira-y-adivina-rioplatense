@@ -27,6 +27,64 @@ const sonidoErrorExt=(()=>{let a=null;return function(){
     a.currentTime=0;a.play().catch(()=>{});}catch(e){}
 };})();
 window.sonidoErrorExt=sonidoErrorExt;
+/* MultiBroker: conexión a TODOS los servidores MQTT públicos a la vez.
+   Antes se probaba uno por uno y cada celular se quedaba con el primero que
+   le andaba: si un servidor fallaba solo para uno, quedaban en servidores
+   distintos y no se encontraban. Ahora se publica y se escucha en todos los
+   que conecten, así se encuentran siempre (también con un celular que tenga
+   la versión vieja, que usa uno solo). Los mensajes repetidos (mismo texto
+   por dos servidores en menos de 1,5 s) se descartan.
+   Misma firma que conectar(): conectar(alConectar, alFallar, asignar). */
+const MultiBroker=(()=>{
+  const LISTA=["wss://broker.emqx.io:8084/mqtt","wss://broker.hivemq.com:8884/mqtt","wss://test.mosquitto.org:8081/mqtt","wss://mqtt.eclipseprojects.io:443/mqtt"];
+  function cargarLib(cb){
+    if(typeof mqtt!=="undefined"){cb(true);return;}
+    const urls=["lib/mqtt.min.js?v=5.10.1","https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js"];
+    const probar=k=>{if(typeof mqtt!=="undefined"){cb(true);return;}if(k>=urls.length){cb(false);return;}
+      const sc=document.createElement("script");sc.src=urls[k];sc.onload=()=>cb(typeof mqtt!=="undefined");sc.onerror=()=>probar(k+1);document.head.appendChild(sc);};
+    probar(0);
+  }
+  function conectar(alConectar,alFallar,asignar){
+    const clis=[],subs=new Set(),oyentes=[],vistos=new Map();
+    let listo=false,fallo=false,cerrado=false,caidos=0,timer=0;
+    const w={
+      get connected(){return clis.some(c=>c.connected);},
+      subscribe(t){subs.add(t);clis.forEach(c=>{if(c.connected)try{c.subscribe(t);}catch(e){}});},
+      unsubscribe(t){subs.delete(t);clis.forEach(c=>{try{c.unsubscribe(t);}catch(e){}});},
+      publish(t,m){clis.forEach(c=>{if(c.connected)try{c.publish(t,m);}catch(e){}});},
+      on(ev,f){if(ev==="message")oyentes.push(f);return w;},
+      end(){cerrado=true;clearTimeout(timer);clis.forEach(c=>{try{c.end(true);}catch(e){}});}
+    };
+    const fallar=motivo=>{if(listo||fallo)return;fallo=true;window.gyaFalloConexion=motivo;w.end();if(alFallar)alFallar();};
+    const recibir=(t,pl)=>{
+      const txt=String(pl),clave=t+"|"+txt,ahora=Date.now();
+      const antes=vistos.get(clave);if(antes&&ahora-antes<1500)return;
+      vistos.set(clave,ahora);if(vistos.size>300){for(const [k,v] of vistos)if(ahora-v>5000)vistos.delete(k);}
+      oyentes.forEach(f=>{try{f(t,pl);}catch(e){}});
+    };
+    cargarLib(ok=>{
+      if(cerrado)return;
+      if(!ok){fallar("sin librería");return;}
+      if(asignar)asignar(w);
+      LISTA.forEach(url=>{
+        let c,primera=true;
+        try{c=mqtt.connect(url,{clientId:"gyx"+Math.random().toString(16).slice(2),connectTimeout:8000,reconnectPeriod:3000,clean:true});}catch(e){caidos++;return;}
+        clis.push(c);
+        c.on("connect",()=>{
+          if(cerrado){try{c.end(true);}catch(e){}return;}
+          subs.forEach(t=>{try{c.subscribe(t);}catch(e){}});
+          if(!listo&&!fallo){listo=true;clearTimeout(timer);alConectar();}
+        });
+        c.on("message",recibir);
+        c.on("error",()=>{});
+        c.on("close",()=>{if(primera&&!listo){primera=false;caidos++;if(caidos>=LISTA.length)fallar("los servidores no responden");}});
+      });
+      timer=setTimeout(()=>fallar("los servidores no responden"),15000);
+    });
+  }
+  return{conectar};
+})();
+window.MultiBroker=MultiBroker;
 const Duelo=(()=>{
   const CHARS="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let cliente=null,juego=null,sala=null,soyHost=false,rival=null,activo=false;
@@ -113,7 +171,7 @@ const Duelo=(()=>{
     c.querySelector("#dlCrear").onclick=()=>{
       soyHost=true;sala=codigoNuevo();c.querySelector("#dlElegir").hidden=true;c.querySelector("#dlCodigoZona").hidden=false;
       c.querySelector("#dlCodigo").textContent=sala;estado("Conectando…");
-      conectar(()=>{
+      MultiBroker.conectar(()=>{
         cliente.subscribe(temaIn());cliente.on("message",recibir);estado("Sala lista. Esperando al otro jugador…");
         cbRivalListo=r=>{estado("");cerrarCapa();if(onListo)onListo(true,r);};
       },()=>estado("No se pudo conectar ("+(window.gyaFalloConexion||"sin respuesta")+"). Probá con otra red (datos del celular)."),cl=>{cliente=cl;});
@@ -132,7 +190,7 @@ const Duelo=(()=>{
       const cod=c.querySelector("#dlInput").value.trim().toUpperCase();
       if(cod.length<4){estado("El código tiene 4 caracteres.");return;}
       soyHost=false;sala=cod;estado("Conectando…");
-      conectar(()=>{
+      MultiBroker.conectar(()=>{
         cliente.subscribe(temaIn());cliente.on("message",recibir);estado("Buscando la sala "+sala+"…");
         cbRivalListo=r=>{estado("");cerrarCapa();if(onListo)onListo(false,r);};
         const hola=()=>mandar({tipo:"hola",nombre:(perfil&&perfil.nombre)||"Jugador",avatar:(perfil&&perfil.avatar)||null,frame:(typeof frameEquipado!=="undefined"?frameEquipado:null)});
