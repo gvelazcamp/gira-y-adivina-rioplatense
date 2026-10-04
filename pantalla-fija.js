@@ -3,8 +3,7 @@
    link de WhatsApp que abre el juego directo (?ext=<id>). Mientras está activo:
    pantalla completa, la pantalla no se apaga (Screen Wake Lock, se vuelve
    a pedir al volver a la app) y el "atrás" del celular no saca del juego.
-   mantener(el,ms,cb): botón que hay que dejar apretado ms para salir;
-   pinta el avance en la variable CSS --p del botón (0 a 1). */
+   confirmar(el,cb): el botón ✕ Salir pregunta "¿Terminar la partida?" Sí/No. */
 const PantallaFija=(()=>{
   let activo=false,siempre=false,wake=null,orientacion="";
   async function pedirWake(){try{if((activo||siempre)&&"wakeLock" in navigator&&!wake&&document.visibilityState==="visible"){wake=await navigator.wakeLock.request("screen");wake.addEventListener("release",()=>{wake=null;});}}catch(e){wake=null;}}
@@ -41,14 +40,18 @@ const PantallaFija=(()=>{
     siempre=false;desactivar();soltarWake();
     try{if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen().catch(()=>{});}catch(e){}
   }
-  function mantener(el,ms,cb){
-    let t=0,raf=0,ini=0;
-    const cortar=()=>{clearTimeout(t);cancelAnimationFrame(raf);el.style.setProperty("--p","0");};
-    el.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();cortar();ini=performance.now();
-      const anim=()=>{const p=Math.min(1,(performance.now()-ini)/ms);el.style.setProperty("--p",String(p));if(p<1)raf=requestAnimationFrame(anim);};
-      raf=requestAnimationFrame(anim);t=setTimeout(()=>{cortar();cb();},ms);});
-    ["pointerup","pointercancel","pointerleave"].forEach(n=>el.addEventListener(n,cortar));
-    el.addEventListener("contextmenu",e=>e.preventDefault());
+  /* Botón ✕ Salir: pregunta "¿Terminar la partida?" con Sí / No. */
+  function confirmar(el,cb,texto="¿Terminar la partida?"){
+    el.addEventListener("click",e=>{
+      e.preventDefault();e.stopPropagation();
+      if(document.querySelector(".pf-confirmar"))return;
+      const c=document.createElement("div");c.className="pf-confirmar";
+      c.innerHTML='<div class="mg-panel pf-caja"><h3></h3><button type="button" class="mg-principal" data-r="si">Sí, terminar</button><button type="button" data-r="no">No, seguir jugando</button></div>';
+      c.querySelector("h3").textContent=texto;
+      ["pointerdown","touchstart"].forEach(t=>c.addEventListener(t,ev=>ev.stopPropagation()));
+      c.addEventListener("click",ev=>{ev.stopPropagation();const r=ev.target.closest("button[data-r]");if(!r&&ev.target!==c)return;c.remove();if(r&&r.dataset.r==="si")cb();});
+      document.body.appendChild(c);
+    });
   }
   /* Invitación por WhatsApp a un juego de previa (link ?ext=<id>). */
   function invitar(id,nombre){
@@ -56,6 +59,6 @@ const PantallaFija=(()=>{
     const texto="¿Jugamos a "+nombre+" en Girá y Adiviná? Entrá acá: "+base+"?ext="+id;
     try{window.open("https://wa.me/?text="+encodeURIComponent(texto),"_blank");}catch(e){}
   }
-  return{entrar,activar,desactivar,prender,salir,mantener,invitar,activo:()=>activo};
+  return{entrar,activar,desactivar,prender,salir,confirmar,invitar,activo:()=>activo};
 })();
 window.PantallaFija=PantallaFija;

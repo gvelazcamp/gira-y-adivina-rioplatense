@@ -5,7 +5,7 @@
    falta tocar Pasar: si la palabra que se dice tiene la sílaba (y no se
    repitió en la ronda), suena el acierto y pasa sola; si no cuenta, suena
    el error. Pantalla completa, sin apagarse y sin "atrás"
-   (PantallaFija). Para cortar antes: mantener ✕. Récord en gya_bomba. */
+   (PantallaFija). Para cortar antes: ✕ Salir y confirmar. Récord en gya_bomba. */
 const Bomba=(()=>{
   const CLAVE="gya_bomba";
   const SILABAS=["CA","CO","CU","MA","ME","MI","MO","PA","PE","PI","PO","LA","LO","LI","TA","TE","TO","RE","RO","SA","SE","SO","DE","DO","NA","NE","NO","BA","BO","BU","GA","GO","VA","VE","FA","FI","JA","JU","RA","RI","CHA","CHI","CHO","LLA","LLO","TRA","TRE","PRE","PRO","BRA","BLA","CLA","PLA","GRA","FRA","CRE","MEN","CON","TER","POR","SAL","MAR","CAN","TAR","PAN","SOL","DOR","ITO","ADA","ERO","OSO","ADO","ENTE","ANTE","ICO","ERA","ILLA","ÓN","EZ","AJE"];
@@ -38,18 +38,17 @@ const Bomba=(()=>{
   function silaba(){let s;do{s=SILABAS[Math.floor(Math.random()*SILABAS.length)];}while(s===ultima);ultima=s;return s;}
   function empezar(){
     raiz.innerHTML=`<div class="qns-pantalla bb-juego" id="bbJuego">
-      <div class="qs-tope"><span>💣 Bomba</span><b id="bbPasadas">0</b><button type="button" class="qs-salir" id="bbSalir" aria-label="Mantené para salir">✕</button></div>
+      <div class="qs-tope"><span>💣 Bomba</span><b id="bbPasadas">0</b><button type="button" class="pf-salir" id="bbSalir">✕ Salir</button></div>
       <div class="bb-mecha" id="bbMecha">💣</div>
       <div class="bb-silaba" id="bbSilaba"></div>
       <div class="bb-oido" id="bbOido"></div>
       <button type="button" class="bb-pasar" id="bbPasar">Pasar ➜</button>
-      <div class="qns-pie">🔒 Dejá apretada la ✕ 3 segundos para terminar la partida</div>
     </div>`;
     PantallaFija.activar();
     const juego=q("bbJuego");
     ["touchmove","contextmenu","dblclick"].forEach(t=>juego.addEventListener(t,e=>{if(e.cancelable)e.preventDefault();},{passive:false}));
     q("bbPasar").addEventListener("pointerdown",e=>{e.preventDefault();pasar();});
-    PantallaFija.mantener(q("bbSalir"),3000,()=>{parar();PantallaFija.desactivar();if(raiz)inicio();});
+    PantallaFija.confirmar(q("bbSalir"),()=>{parar();PantallaFija.desactivar();if(raiz)inicio();});
     pasadas=0;jugando=true;inicioT=Date.now();explota=inicioT+15000+Math.random()*30000;
     q("bbSilaba").textContent=silaba();usadas=new Set();
     if(conVoz)escuchar();

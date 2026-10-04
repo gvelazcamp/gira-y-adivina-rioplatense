@@ -2,7 +2,7 @@
    categoría y el celular muestra una palabra gigante; los demás la
    describen y el que tiene el celular en la frente adivina. Tocar la
    mitad derecha = ¡Acerté!, la izquierda = Paso. Pantalla completa, sin
-   apagarse y sin "atrás" (PantallaFija). Para cortar antes: mantener ✕.
+   apagarse y sin "atrás" (PantallaFija). Para cortar antes: ✕ Salir y confirmar.
    Récord en gya_quien_soy; Vistas evita repetir palabras entre días. */
 const QuienSoy=(()=>{
   const CLAVE="gya_quien_soy",TIEMPOS=[60,90,120];
@@ -46,20 +46,20 @@ const QuienSoy=(()=>{
     cat=id==="mezcla"?{id:"mezcla",nombre:"Mezcla",emoji:"🎲"}:cats.find(c=>c.id===id);if(!cat)return;
     palabras=elegirPalabras(id);idx=0;resultados=[];
     raiz.innerHTML=`<div class="qns-pantalla qs-juego" id="qsJuego">
-      <div class="qs-tope"><span id="qsCat">${cat.emoji} ${esc(cat.nombre)}</span><b id="qsReloj">${tiempo}</b><button type="button" class="qs-salir" id="qsSalir" aria-label="Mantené para salir">✕</button></div>
+      <div class="qs-tope"><span id="qsCat">${cat.emoji} ${esc(cat.nombre)}</span><b id="qsReloj">${tiempo}</b><button type="button" class="pf-salir" id="qsSalir">✕ Salir</button></div>
       <div class="qs-zona qs-paso" data-z="paso"><span>⟵ Paso</span></div><div class="qs-zona qs-ok" data-z="ok"><span>¡Acerté! ⟶</span></div>
       <div class="qs-palabra" id="qsPalabra"></div>
-      <div class="qns-pie" id="qsPie">🔒 Dejá apretada la ✕ 3 segundos para terminar la partida</div>
+      <div class="qns-pie" id="qsPie"></div>
     </div>`;
     PantallaFija.activar({orientacion:"landscape"});
     const juego=q("qsJuego");
-    ["touchstart","touchmove","contextmenu","dblclick"].forEach(t=>juego.addEventListener(t,e=>{if(e.cancelable)e.preventDefault();},{passive:false}));
+    ["touchstart","touchmove","contextmenu","dblclick"].forEach(t=>juego.addEventListener(t,e=>{if(e.target.closest(".pf-salir"))return;if(e.cancelable)e.preventDefault();},{passive:false}));
     raiz.querySelectorAll(".qs-zona").forEach(z=>z.addEventListener("pointerdown",e=>{e.preventDefault();responder(z.dataset.z==="ok");}));
-    PantallaFija.mantener(q("qsSalir"),3000,terminar);
+    PantallaFija.confirmar(q("qsSalir"),terminar);
     /* Cuenta regresiva para llegar a ponérselo en la frente. */
-    let n=3;jugando=false;const pal=q("qsPalabra");pal.classList.add("qns-cuenta");q("qsPie").textContent="Ponete el celular en la frente";
+    let n=3;jugando=false;const pal=q("qsPalabra");pal.classList.add("qns-cuenta");q("qsPie").textContent="Ponete el celular en la frente";q("qsPie").hidden=false;
     const paso=()=>{if(!raiz)return;if(n>0){pal.textContent=n;if(typeof bip==="function")bip(520,.08);n--;cuenta=setTimeout(paso,1000);return;}
-      pal.classList.remove("qns-cuenta");q("qsPie").textContent="🔒 Dejá apretada la ✕ 3 segundos para terminar la partida";jugando=true;fin=Date.now()+tiempo*1000;mostrar();reloj();};
+      pal.classList.remove("qns-cuenta");q("qsPie").hidden=true;jugando=true;fin=Date.now()+tiempo*1000;mostrar();reloj();};
     paso();
   }
   function mostrar(){
@@ -79,7 +79,8 @@ const QuienSoy=(()=>{
     bloqueoToque=Date.now()+450;
     resultados.push({w:palabras[idx],ok});Vistas.marcar("quien_soy_"+cat.id,palabras[idx]);idx++;
     const j=q("qsJuego");j.classList.remove("flash-ok","flash-paso");void j.offsetWidth;j.classList.add(ok?"flash-ok":"flash-paso");
-    if(typeof bip==="function"){if(ok){bip(660,.15,"sine",.06);bip(990,.22,"triangle",.04);}else bip(330,.12,"sine",.04);}
+    if(typeof bip==="function"){if(ok){bip(660,.15,"sine",.06);bip(990,.22,"triangle",.04);}}
+    if(!ok&&typeof sonidoErrorExt==="function")sonidoErrorExt();
     if(typeof vibrar==="function")vibrar(ok?30:15);
     mostrar();
   }

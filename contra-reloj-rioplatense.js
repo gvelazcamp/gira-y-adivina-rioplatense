@@ -299,10 +299,9 @@ const ContraRelojRioplatense=(()=>{
   }
   function aInicio(){limpiarTimers();activa=false;cerrarRondaLocal();arbitroDetener();micCerrar();if(window.PantallaFija)PantallaFija.desactivar();pantalla("#home");}
 
-  /* Botón de salir de la partida: hay que dejarlo apretado 3 segundos. */
+  /* Botón de salir de la partida: pregunta "¿Terminar la partida?" Sí/No. */
   function salirMantenido(b){
-    b.textContent="DEJÁ APRETADO 3 SEGUNDOS PARA TERMINAR LA PARTIDA";b.classList.add("pf-mantener");
-    if(window.PantallaFija)PantallaFija.mantener(b,3000,aInicio);else b.onclick=aInicio;
+    if(window.PantallaFija)PantallaFija.confirmar(b,aInicio);else b.onclick=aInicio;
   }
   function abrir(contenedor){
     salir();
@@ -311,7 +310,7 @@ const ContraRelojRioplatense=(()=>{
     raiz.innerHTML='<button type="button" class="ext-volver" id="crr-volver">⟵ Extensiones</button><main class="crr-app">'+HTML+EXTRA+'</main>';
     contenedor.appendChild(raiz);
     /* Juego de previa: pantalla completa y sin apagarse mientras está abierto;
-       durante una partida local, "atrás" bloqueado y salir es dejando apretado 3 s. */
+       durante una partida local, "atrás" bloqueado y salir pide confirmación. */
     if(window.PantallaFija){PantallaFija.entrar();PantallaFija.prender();}
     $("#volver").onclick=()=>Extensiones.abrirLobby();
     $("#lHourglass").innerHTML=relojSVG();$("#oHourglass").innerHTML=relojSVG();
