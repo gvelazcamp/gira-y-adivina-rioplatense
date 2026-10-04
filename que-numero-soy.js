@@ -36,7 +36,7 @@ const QueNumeroSoy=(()=>{
         <button type="button" id="qnsTerminar">Terminar</button>
       </div>
     </div>`;
-    contenedor.appendChild(raiz);
+    contenedor.appendChild(raiz);PantallaFija.entrar();
     pintarRangos();
     q("qnsRangos").onclick=e=>{const b=e.target.closest("button[data-max]");if(!b)return;max=Number(b.dataset.max);guardar();pintarRangos();};
     q("qnsEmpezar").onclick=empezar;
@@ -87,7 +87,7 @@ const QueNumeroSoy=(()=>{
   function terminar(){bloqueado=false;PantallaFija.desactivar();if(raiz){q("qnsFin").hidden=true;capa.hidden=true;}document.body.classList.remove("qns-bloqueado");}
   function salir(){
     clearTimeout(cuenta);cortarMantener();
-    if(bloqueado||raiz)PantallaFija.desactivar();bloqueado=false;document.body.classList.remove("qns-bloqueado");
+    if(bloqueado||raiz)PantallaFija.salir();bloqueado=false;document.body.classList.remove("qns-bloqueado");
     if(raiz)raiz.remove();raiz=null;capa=null;
   }
   return{abrir,salir,tecla:(k,e)=>{if(bloqueado&&e){e.preventDefault();}},bloqueado:()=>bloqueado,rondasJugadas:()=>{cargar();return rondas;}};

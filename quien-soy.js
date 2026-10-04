@@ -16,7 +16,7 @@ const QuienSoy=(()=>{
   function abrir(contenedor){
     salir();cargar();
     raiz=document.createElement("section");raiz.className="qs";
-    contenedor.appendChild(raiz);inicio();
+    contenedor.appendChild(raiz);PantallaFija.entrar();inicio();
   }
   function inicio(){
     const cats=window.QUIEN_SOY_CATEGORIAS||[];
@@ -99,7 +99,7 @@ const QuienSoy=(()=>{
     q("qsOtra").onclick=()=>empezar(cat.id);q("qsCambiar").onclick=inicio;
     if(typeof bip==="function"){bip(523,.15);setTimeout(()=>bip(784,.25),160);}
   }
-  function salir(){clearTimeout(timer);clearTimeout(cuenta);if(raiz||jugando)PantallaFija.desactivar();jugando=false;if(raiz)raiz.remove();raiz=null;}
+  function salir(){clearTimeout(timer);clearTimeout(cuenta);if(raiz||jugando)PantallaFija.salir();jugando=false;if(raiz)raiz.remove();raiz=null;}
   return{abrir,salir,mejorPuntaje:()=>{cargar();return mejor;}};
 })();
 window.QuienSoy=QuienSoy;

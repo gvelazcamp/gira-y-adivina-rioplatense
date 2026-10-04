@@ -14,7 +14,7 @@ const Bomba=(()=>{
   function abrir(contenedor){
     salir();cargar();
     raiz=document.createElement("section");raiz.className="bb";
-    contenedor.appendChild(raiz);inicio();
+    contenedor.appendChild(raiz);PantallaFija.entrar();inicio();
   }
   function inicio(){
     raiz.innerHTML=`<div class="mg-panel bb-panel"><div class="bb-icono">💣</div><h3>Bomba</h3>
@@ -86,7 +86,7 @@ const Bomba=(()=>{
     q("bbTerminar").onclick=()=>{PantallaFija.desactivar();inicio();};
   }
   function parar(){jugando=false;clearTimeout(tic);}
-  function salir(){parar();if(raiz)PantallaFija.desactivar();if(raiz)raiz.remove();raiz=null;}
+  function salir(){parar();if(raiz)PantallaFija.salir();if(raiz)raiz.remove();raiz=null;}
   return{abrir,salir,rondasJugadas:()=>{cargar();return rondas;}};
 })();
 window.Bomba=Bomba;
