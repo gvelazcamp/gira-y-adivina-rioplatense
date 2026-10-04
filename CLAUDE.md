@@ -49,6 +49,12 @@ Anything involving per-player display (e.g. which tablero/board background to sh
 ### Multiplayer transport
 Real-time sync uses **public MQTT brokers over WebSocket** (e.g. `wss://broker.emqx.io:8084/mqtt`) — there is no custom backend/server. Treat message payloads over MQTT as the only channel between host and guest(s).
 
+**Salas de extensiones (duelos 1 vs 1 y Tutti Frutti) — no tocar sin motivo, funciona así desde el 4/10/2026:**
+- `MultiBroker.conectar(alConectar, alFallar, asignar)` (en `duelo-extensiones.js`) se conecta **a la vez** a los 4 brokers públicos (emqx, hivemq, mosquitto, eclipse:443) **y** a Supabase Realtime (broadcast, mismo proyecto del Ranking). Publica y escucha en todos; los duplicados (mismo texto en <1,5 s) se descartan. Antes se probaba un broker por vez y, si uno fallaba para un solo celular, los dos quedaban en servidores distintos y no se encontraban.
+- `mqtt.js` está **guardado en el repo** (`lib/mqtt.min.js`, v5.10.1), no se depende de unpkg (cuando unpkg falló, todas las salas dieron error).
+- El mensaje de error muestra el estado de cada servidor y `GYA_VERSION_SALAS`: pedir esa captura al dueño antes de adivinar.
+- El juego principal (rueda host/guest, Sala TV) y Contra Reloj online siguen con su conexión propia (`conectar()` / la de `contra-reloj-rioplatense-online.js`).
+
 ### Shop (`Tienda`)
 CSS/JS use a `tn-` prefix convention. Purchases go through a generic pipeline dispatched by string-prefix on an item "tipo": `tnPuedeComprar(tipo)` → `tnRazonBloqueo(tipo)` → `tnEjecutarCompra(tipo, precio)`. Known tipo prefixes: `sobre_<cityId>` (collectible pack), `marco_<frameId>` (avatar frame), `oferta_gratis`, `vida`, `recarga`, `ruleta`. A shared confirmation modal (`#confirmCompra`) is reused for all purchase types; `#capaSeccionTienda` is a shared full-screen sub-modal used to show a section's full catalog when its title is tapped (pattern: a few items shown inline, the rest only visible via this "ver todos" view).
 
