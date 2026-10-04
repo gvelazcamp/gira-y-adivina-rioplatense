@@ -120,7 +120,9 @@ const TuttiFrutti=(()=>{
      Color, Fruta, Comida y Profesión; Wikipedia para Famoso, Marca y Película;
      diccionario por letra (assets/diccionario/es-<l>.txt) para Cosa y como
      respaldo. Nunca rechaza: marca ✓ o ⚠️ y al final se vota. */
-  const NORM=t=>String(t||"").toLowerCase().replace(/ñ/g,"\u0001").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\u0001/g,"ñ").replace(/[^a-zñ0-9 ]+/g," ").replace(/\s+/g," ").trim();
+  /* Sin tildes ni diéresis y con la ñ como n: "Rodríguez" = "Rodriguez",
+     "Niño" = "Nino". Así los acentos nunca hacen perder una respuesta. */
+  const NORM=t=>String(t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9 ]+/g," ").replace(/\s+/g," ").trim();
   const CLAVE_CAT={"Nombre":"nombre","Apellido":"apellido","País o ciudad":"lugar","Animal":"animal","Color":"color","Fruta o verdura":"fruta","Comida":"comida","Profesión":"profesion","Famoso":"wiki","Película o serie":"wiki","Marca":"wiki","Cosa":"dic"};
   const sets={},dics={},cacheWiki=new Map();
   function setDe(k){if(!sets[k]){const t=(window.TUTTI_LISTAS||{})[k]||"";sets[k]=new Set(t.split(",").map(NORM).filter(Boolean));}return sets[k];}
@@ -128,7 +130,7 @@ const TuttiFrutti=(()=>{
   function cargarDic(l){
     l=NORM(l)[0];if(!l)return Promise.resolve(null);
     if(dics[l])return dics[l];
-    dics[l]=fetch("assets/diccionario/es-"+l+".txt").then(r=>r.ok?r.text():"").then(t=>new Set(t.split("\n"))).catch(()=>null);
+    dics[l]=fetch("assets/diccionario/es-"+l+".txt").then(r=>r.ok?r.text():"").then(t=>new Set(t.split("\n").map(NORM))).catch(()=>null);
     return dics[l];
   }
   async function enDiccionario(v){const d=await cargarDic(v);if(!d||!d.size)return null;return variantes(v).some(x=>d.has(x))||v.split(" ").every(w=>w.length<3||d.has(w));}
