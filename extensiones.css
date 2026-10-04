@@ -349,3 +349,4 @@ body.pf-activo #extAtras,body.pf-activo #extCerrar,body.pf-activo .ext-volver{vi
 .tf-campo .imp-quien{font-family:'Archivo Black',sans-serif;font-size:1.6rem;color:#FFF9E9}
 .tf-prog{display:flex;gap:6px;justify-content:center}.tf-prog i{width:12px;height:12px;border-radius:50%;background:#FFFFFF22}.tf-prog i.ok{background:#2ED18A}.tf-prog i.act{outline:2px solid #FFD65C;outline-offset:2px}
 .tf-resps{list-style:none;padding:0;margin:0 0 8px;display:flex;flex-direction:column;gap:6px;max-height:34vh;overflow-y:auto;text-align:left}.tf-resps li{background:#FFFFFF10;border-radius:12px;padding:8px 10px;font-size:.85rem;line-height:1.35}.tf-resps li b{display:block;color:#FFD65C}.tf-resps li em{font-style:normal;color:#FFFFFF88}.tf-resps li.tf-gano{border:1px solid #F5B301;background:#F5B30118}
+.mg-panel button[hidden]{display:none!important}

@@ -26,18 +26,19 @@ const TuttiFrutti=(()=>{
       <div class="qns-rangos" id="tfT">${TIEMPOS.map(t=>`<button type="button" data-v="${t}">${t} s</button>`).join("")}</div>`;
   function ajustesEventos(){
     const pintar=()=>{raiz.querySelectorAll("#tfT button").forEach(b=>b.classList.toggle("activo",Number(b.dataset.v)===tiempo));raiz.querySelectorAll("#tfCats button").forEach(b=>b.classList.toggle("tf-on",cats.includes(b.dataset.c)));};pintar();
-    q("tfT").onclick=e=>{const b=e.target.closest("button[data-v]");if(b){tiempo=Number(b.dataset.v);guardar();pintar();}};
-    q("tfCats").onclick=e=>{const b=e.target.closest("button[data-c]");if(!b)return;const c=b.dataset.c;if(cats.includes(c)){if(cats.length>3)cats=cats.filter(x=>x!==c);}else cats=CATEGORIAS.filter(x=>x===c||cats.includes(x));guardar();pintar();};
+    const avisar=()=>{if(on&&on.host){on.cats=cats.slice();on.tiempo=tiempo;difundirSala();}};
+    q("tfT").onclick=e=>{const b=e.target.closest("button[data-v]");if(b){tiempo=Number(b.dataset.v);guardar();pintar();avisar();}};
+    q("tfCats").onclick=e=>{const b=e.target.closest("button[data-c]");if(!b)return;const c=b.dataset.c;if(cats.includes(c)){if(cats.length>3)cats=cats.filter(x=>x!==c);}else cats=CATEGORIAS.filter(x=>x===c||cats.includes(x));guardar();pintar();avisar();};
   }
   function configurar(){
     parar();cerrarSala();PantallaFija.desactivar();
     raiz.innerHTML=`<div class="mg-panel imp-panel"><h3>🍓 Tutti Frutti</h3>
       <p>Sale una letra y hay que completar las categorías. <b>El primero que completa todo gana</b> la ronda.</p>
       ${ajustesHtml()}
-      <button type="button" class="mg-principal" id="tfCrear">📱 Crear sala (cada uno con su celular)</button>
+      <div id="tfZona"><button type="button" class="mg-principal" id="tfCrear">📱 Crear sala (cada uno con su celular)</button>
       <div class="tf-unirse"><input id="tfCodigo" maxlength="4" placeholder="CÓDIGO" autocomplete="off" autocapitalize="characters"><button type="button" id="tfUnirse">🔑 Unirme</button></div>
       <button type="button" id="tfPapel">📝 Papel y lápiz (un solo celular)</button>
-      <p class="imp-ayuda" id="tfEstado" role="status"></p></div>`;
+      <p class="imp-ayuda" id="tfEstado" role="status"></p></div></div>`;
     ajustesEventos();
     q("tfCrear").onclick=crearSala;
     q("tfUnirse").onclick=()=>{const c=(q("tfCodigo").value||"").toUpperCase().trim();if(/^[A-HJ-NP-Z2-9]{4}$/.test(c))unirse(c);else estado("Escribí el código de 4 letras que te pasaron.");};
@@ -169,7 +170,7 @@ const TuttiFrutti=(()=>{
   }
   function crearSala(){
     nuevaSala(true,Array.from({length:4},()=>CHARS[Math.floor(Math.random()*CHARS.length)]).join(""));
-    lobby();
+    zonaAnfitrion();
     conectarSala(()=>{on.timers.push(setInterval(()=>{if(on&&on.host&&on.fase!=="jugando")difundirSala();},3000));difundirSala();});
   }
   function unirse(sala,de){
@@ -185,6 +186,24 @@ const TuttiFrutti=(()=>{
   }
   function difundirSala(){mandar({t:"sala",jug:on.jug,ganadas:on.ganadas,cats:on.cats,tiempo:on.tiempo,fase:on.fase});}
   function linkInvitacion(){let base="";try{base=location.origin+location.pathname;}catch(e){}return base+"?tutti="+on.sala+"&de="+encodeURIComponent(yo());}
+  /* Anfitrión: el código, la invitación y los que van entrando aparecen en
+     la misma pantalla de las categorías (se pueden seguir cambiando). */
+  function zonaAnfitrion(){
+    const z=raiz&&raiz.querySelector("#tfZona");if(!z){lobby();return;}
+    z.innerHTML=`<div class="qs-sub">🔑 Código de la sala</div><div class="dl-codigo tf-cod">${on.sala}</div>
+      <button type="button" id="tfWpp">📲 Invitar por WhatsApp</button>
+      <div class="qs-sub">👥 En la sala</div><ul class="imp-tabla" id="tfJugs"></ul>
+      <button type="button" class="mg-principal" id="tfArrancar">🎲 Empezar</button>
+      <p class="imp-ayuda" id="tfEstado" role="status"></p><button type="button" id="tfReintentar" hidden>🔄 Reintentar</button>
+      <button type="button" id="tfCancelar">✖ Cerrar la sala</button>`;
+    pintarJugadores();eventosAnfitrion();
+    q("tfReintentar").onclick=()=>{if(on&&on.reconectar)on.reconectar();};
+    q("tfCancelar").onclick=configurar;
+  }
+  function eventosAnfitrion(){
+    q("tfWpp").onclick=()=>{const texto="¡Juguemos Tutti Frutti en Girá y Adiviná! Entrá con este link: "+linkInvitacion()+" (código "+on.sala+")";try{window.open("https://wa.me/?text="+encodeURIComponent(texto),"_blank");}catch(e){}};
+    q("tfArrancar").onclick=()=>{if(!on.cli||!on.cli.connected){estado("Todavía conectando… esperá un segundo.");return;}if(on.jug.length<2){estado("Falta que se una al menos un jugador más.");return;}nuevaRonda();};
+  }
   function lobby(de){
     if(!raiz||!on)return;
     PantallaFija.activar();
@@ -198,10 +217,7 @@ const TuttiFrutti=(()=>{
       <p class="imp-ayuda" id="tfEstado" role="status"></p><button type="button" id="tfReintentar" hidden>🔄 Reintentar</button></div>`);
     pintarJugadores();
     q("tfReintentar").onclick=()=>{if(on&&on.reconectar)on.reconectar();};
-    if(on.host){
-      q("tfWpp").onclick=()=>{const texto="¡Juguemos Tutti Frutti en Girá y Adiviná! Entrá con este link: "+linkInvitacion()+" (código "+on.sala+")";try{window.open("https://wa.me/?text="+encodeURIComponent(texto),"_blank");}catch(e){}};
-      q("tfArrancar").onclick=()=>{if(!on.cli||!on.cli.connected){estado("Todavía conectando… esperá un segundo.");return;}if(on.jug.length<2){estado("Falta que se una al menos un jugador más.");return;}nuevaRonda();};
-    }
+    if(on.host)eventosAnfitrion();
   }
   function pintarJugadores(){
     const ul=raiz&&raiz.querySelector("#tfJugs");if(!ul||!on)return;
