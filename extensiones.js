@@ -111,7 +111,10 @@ const Extensiones=(()=>{
     document.addEventListener("keydown",e=>{
       if(shell.hidden)return;
       /* Juegos de previa en pantalla fija: Escape no saca del juego. */
-      if(window.PantallaFija&&PantallaFija.activo()){e.preventDefault();e.stopImmediatePropagation();return;}
+      /* Solo Escape se bloquea: las demás teclas tienen que escribir (en iPhone,
+         frenar todas dejaba sin escribir ni borrar en el Tutti Frutti). */
+      if(window.PantallaFija&&PantallaFija.activo()&&e.key==="Escape"){e.preventDefault();e.stopImmediatePropagation();return;}
+      if(vista==="tutti-frutti"&&e.key==="Enter"&&!e.isComposing&&e.target.id==="tfInput"&&window.TuttiFrutti){e.preventDefault();TuttiFrutti.enter();}
       if(e.key==="Escape"){e.preventDefault();e.stopImmediatePropagation();vista==="lobby"?cerrar():abrirLobby();return;}
       if(vista==="palabra-secreta"&&window.PalabraSecreta){if(e.key!=="Tab")e.preventDefault();PalabraSecreta.tecla(e.key);}
       if(vista==="ahorcado-rioplatense"&&window.AhorcadoRioplatense)AhorcadoRioplatense.tecla(e.key,e);

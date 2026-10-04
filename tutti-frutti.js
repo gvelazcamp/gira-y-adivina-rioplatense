@@ -157,6 +157,12 @@ const TuttiFrutti=(()=>{
     const c=on.cli;on=null;if(c)setTimeout(()=>{try{c.end(true);}catch(e){}},300);
   }
   function difundirSala(){mandar({t:"sala",jug:on.jug,ganadas:on.ganadas,cats:on.cats,tiempo:on.tiempo,fase:on.fase});}
+  function textoInvitacion(){return "¡Juguemos Tutti Frutti en Girá y Adiviná! 🍓 Tocá para unirte: "+linkInvitacion()+" (código "+on.sala+")";}
+  function copiarInvitacion(){
+    const t=textoInvitacion(),ok=()=>estado("✅ Invitación copiada. Pegala en el chat.");
+    try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(ok,()=>{try{window.prompt("Copiá la invitación:",t);}catch(e){}});return;}}catch(e){}
+    try{window.prompt("Copiá la invitación:",t);}catch(e){}
+  }
   function linkInvitacion(){let base="";try{base=location.origin+location.pathname;}catch(e){}return base+"?tutti="+on.sala+"&de="+encodeURIComponent(yo());}
   /* Anfitrión: el código, la invitación y los que van entrando aparecen en
      la misma pantalla de las categorías (se pueden seguir cambiando). */
@@ -164,6 +170,7 @@ const TuttiFrutti=(()=>{
     const z=raiz&&raiz.querySelector("#tfZona");if(!z){lobby();return;}
     z.innerHTML=`<div class="qs-sub">🔑 Código de la sala</div><div class="dl-codigo tf-cod">${on.sala}</div>
       <button type="button" id="tfWpp">📲 Invitar por WhatsApp</button>
+      <button type="button" id="tfCopiar">📋 Copiar invitación</button>
       <div class="qs-sub">👥 En la sala</div><ul class="imp-tabla" id="tfJugs"></ul>
       <button type="button" class="mg-principal" id="tfArrancar">🎲 Empezar</button>
       <p class="imp-ayuda" id="tfEstado" role="status"></p><button type="button" id="tfReintentar" hidden>🔄 Reintentar</button>
@@ -173,7 +180,8 @@ const TuttiFrutti=(()=>{
     q("tfCancelar").onclick=configurar;
   }
   function eventosAnfitrion(){
-    q("tfWpp").onclick=()=>{const texto="¡Juguemos Tutti Frutti en Girá y Adiviná! Entrá con este link: "+linkInvitacion()+" (código "+on.sala+")";try{window.open("https://wa.me/?text="+encodeURIComponent(texto),"_blank");}catch(e){}};
+    q("tfWpp").onclick=()=>{try{window.open("https://wa.me/?text="+encodeURIComponent(textoInvitacion()),"_blank");}catch(e){}};
+    const cp=raiz.querySelector("#tfCopiar");if(cp)cp.onclick=copiarInvitacion;
     q("tfArrancar").onclick=()=>{if(!on.cli||!on.cli.connected){estado("Todavía conectando… esperá un segundo.");return;}if(on.jug.length<2){estado("Falta que se una al menos un jugador más.");return;}nuevaRonda();};
   }
   function lobby(de){
@@ -182,7 +190,7 @@ const TuttiFrutti=(()=>{
     pantalla(`<div class="mg-panel imp-panel"><h3>🍓 Sala de Tutti Frutti</h3>
       ${on.host?`<p>Pasales el código o invitalos por WhatsApp. Cuando estén todos, tocá <b>Empezar</b>.</p>
         <div class="dl-codigo tf-cod">${on.sala}</div>
-        <button type="button" id="tfWpp">📲 Invitar por WhatsApp</button>`
+        <button type="button" id="tfWpp">📲 Invitar por WhatsApp</button><button type="button" id="tfCopiar">📋 Copiar invitación</button>`
       :`<p>${de?"Sala de <b>"+esc(de)+"</b>. ":""}Esperando que el anfitrión empiece…</p><div class="dl-codigo tf-cod">${on.sala}</div>`}
       <div class="qs-sub">👥 En la sala</div><ul class="imp-tabla" id="tfJugs"></ul>
       ${on.host?`<button type="button" class="mg-principal" id="tfArrancar">🎲 Empezar</button>`:""}
@@ -318,6 +326,6 @@ const TuttiFrutti=(()=>{
     Extensiones.abrirJuego("tutti-frutti");
     setTimeout(()=>{if(raiz)unirse(sala,de);},300);
   }
-  return{abrir,salir,abrirInvitacion,partidasJugadas:()=>{cargar();return partidas;}};
+  return{abrir,salir,abrirInvitacion,enter:()=>{try{confirmarCampo();}catch(e){}},partidasJugadas:()=>{cargar();return partidas;}};
 })();
 window.TuttiFrutti=TuttiFrutti;
