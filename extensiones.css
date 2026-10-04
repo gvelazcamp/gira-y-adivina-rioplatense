@@ -389,3 +389,8 @@ body.pf-activo #extAtras,body.pf-activo #extCerrar,body.pf-activo .ext-volver{vi
 .tf-pop-ok{margin-top:12px;width:100%;min-height:42px;border-radius:12px;background:#E5197C;color:#fff;font-weight:900;border:0}
 /* Pantallas de juegos de previa con mucho contenido (resultados): se pueden deslizar. */
 .imp-juego,.kar-escena{overflow-y:auto;touch-action:pan-y;-webkit-overflow-scrolling:touch;justify-content:flex-start!important}.imp-juego>.imp-centro,.imp-juego>.mg-panel,.kar-escena>.kar-centro{margin-top:auto;margin-bottom:auto;flex-shrink:0}
+/* Palabra con error: se ve que se puede tocar para ver el mini popup. */
+.tf-pal.tf-mal{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px;background:#F5B3011F;border:1px dashed #F5B301;border-radius:10px;padding:3px 7px;text-decoration:none!important;cursor:pointer}
+.tf-fila.tf-anulada .tf-pal.tf-mal{text-decoration:none;color:#FFE29A}
+.tf-ver,.tf-ver-ej{display:inline-block;background:#F5B301;color:#1A0F26;font-weight:900;font-size:.68rem;border-radius:999px;padding:2px 7px;white-space:nowrap;animation:tfLatir 1.6s ease-in-out infinite}
+@keyframes tfLatir{50%{transform:scale(1.08)}}
