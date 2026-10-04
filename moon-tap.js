@@ -15,7 +15,6 @@ const MoonTap=(()=>{
     if(typeof bip!=="function")return;
     if(color==="#ffd85b"){bip(880,.16,"triangle",.05);bip(1320,.22,"sine",.035);}
     else if(color==="#67f2ac")bip(660,.16,"sine",.05);
-    else if(color==="#ff6786"||color==="#ff6683")sonidoErrorExt();
   }
   let api={launch(){},reset(){}};
   /* Duelo 1 vs 1: cada uno tira 15 veces en su celular; se ve en vivo
