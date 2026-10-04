@@ -53,8 +53,9 @@ const RuedaDeLetras=(()=>{
   }
   function guardarEnCajon(w){encontradasRonda.push(w);if(!datos.coleccion.includes(w)){datos.coleccion.push(w);guardar();}mostrarCajon(w);}
   function mensaje(texto){raiz.querySelector("#rlActual").textContent=texto;}
-  function actualizarCentros(){const r=raiz.querySelector("#rlRueda"),box=r.getBoundingClientRect();centros=[...r.querySelectorAll(".rl-letra")].map(el=>{const b=el.getBoundingClientRect();return{x:b.left+b.width/2-box.left,y:b.top+b.height/2-box.top};});}
-  function letraMasCercana(e){const r=raiz.querySelector("#rlRueda"),box=r.getBoundingClientRect(),px=e.clientX-box.left,py=e.clientY-box.top;let mejor=-1,mejorDist=Infinity;for(let i=0;i<centros.length;i++){const dx=px-centros[i].x,dy=py-centros[i].y,d=dx*dx+dy*dy;if(d<mejorDist){mejorDist=d;mejor=i;}}const radioMax=box.width*.5;return mejor>=0&&Math.sqrt(mejorDist)<=radioMax?mejor:-1;}
+  function actualizarCentros(){const r=raiz.querySelector("#rlRueda"),box=r.getBoundingClientRect();centros=[...r.querySelectorAll(".rl-letra")].map(el=>{const b=el.getBoundingClientRect();return{x:b.left+b.width/2-box.left,y:b.top+b.height/2-box.top,r:b.width/2};});}
+  function letraMasCercana(e){const r=raiz.querySelector("#rlRueda"),box=r.getBoundingClientRect(),px=e.clientX-box.left,py=e.clientY-box.top;let mejor=-1,mejorDist=Infinity;for(let i=0;i<centros.length;i++){const dx=px-centros[i].x,dy=py-centros[i].y,d=dx*dx+dy*dy;if(d<mejorDist){mejorDist=d;mejor=i;}}/* Solo cuenta si el dedo está ENCIMA de la letra (no "la más cercana"):
+     así se puede cruzar el centro de la rueda, de R a O, sin agarrar las del medio. */const radioMax=mejor>=0?(centros[mejor].r||box.width*.1)*.95:0;return mejor>=0&&Math.sqrt(mejorDist)<=radioMax?mejor:-1;}
   function rueda(){const r=raiz.querySelector("#rlRueda");r.querySelectorAll(".rl-letra").forEach(x=>x.remove());letras.forEach((l,i)=>{const b=document.createElement("button");b.type="button";b.className="rl-letra";b.dataset.i=i;b.textContent=l;const ang=(i/letras.length)*Math.PI*2-Math.PI/2;b.style.left=(50+38*Math.cos(ang))+"%";b.style.top=(50+38*Math.sin(ang))+"%";b.onpointerdown=e=>{if(!jugando||girando)return;e.preventDefault();actualizarCentros();arrastrando=true;camino=[i];b.setPointerCapture(e.pointerId);pintar();};r.appendChild(b);});actualizarCentros();r.onpointermove=e=>{if(!arrastrando)return;const i=letraMasCercana(e);if(i<0)return;if(i===camino.at(-2))camino.pop();else if(!camino.includes(i))camino.push(i);pintar();};r.onpointerup=e=>{if(!arrastrando)return;arrastrando=false;entregar();};r.onpointercancel=()=>{arrastrando=false;camino=[];pintar();};}
   function pintar(){if(!raiz)return;raiz.querySelector("#rlActual").textContent=camino.length?camino.map(i=>letras[i]).join(""):"Deslizá por la rueda";raiz.querySelectorAll(".rl-letra").forEach((b,i)=>b.classList.toggle("sel",camino.includes(i)));const r=raiz.querySelector("#rlRueda"),svg=raiz.querySelector("#rlLineas"),box=r.getBoundingClientRect();svg.setAttribute("viewBox",`0 0 ${box.width} ${box.height}`);const points=camino.map(i=>centros[i]?`${centros[i].x},${centros[i].y}`:"").join(" ");svg.innerHTML=points?`<polyline points="${points}" fill="none" stroke="#37D6C0" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>`:"";}
   function entregar(){
@@ -74,7 +75,7 @@ const RuedaDeLetras=(()=>{
       const ganados=w.length*RUEDA_CONFIG.puntosExtraPorLetra;
       puntos+=ganados;guardarEnCajon(w);hud();feedback();mensaje(w+" extra · +"+ganados+" puntos");
     }else{
-      errores++;sonidoErrorExt();mensaje("Esa palabra no está en el diccionario");
+      errores++;mensaje("Esa palabra no está en el diccionario");
       const r=raiz.querySelector("#rlRueda");r.classList.remove("error");void r.offsetWidth;r.classList.add("error");
     }
   }
