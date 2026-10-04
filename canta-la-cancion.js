@@ -78,7 +78,7 @@ const CantaLaCancion=(()=>{
     q("ctaFin").addEventListener("pointerdown",e=>{e.preventDefault();if(Date.now()>=bloqueo)terminar();});
     fin=Date.now()+tiempo*1000;
     audioURL&&URL.revokeObjectURL(audioURL);audioURL="";ronda++;
-    if(GRABA)grabarAudio();
+    if(GRABA){prenderMedidor();grabarAudio();}
     reloj();
   }
   /* Grabación del canto para que el jurado lo escuche de nuevo. */
@@ -100,9 +100,11 @@ const CantaLaCancion=(()=>{
   }
   /* Si otra app se quedó con el micrófono la grabación sale muda: se mide el
      volumen para no ofrecer un audio vacío. */
+  /* El medidor se prende en el toque del micrófono: fuera de un toque el
+     celular lo deja dormido y mediría todo en silencio. */
+  function prenderMedidor(){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;if(!medidor)medidor=new AC();if(medidor.state==="suspended")medidor.resume();}catch(e){}}
   function medirVolumen(st){
-    try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC){volMax=1;return;}
-      if(!medidor)medidor=new AC();if(medidor.state==="suspended")medidor.resume();
+    try{if(!medidor||medidor.state!=="running"){volMax=1;return;}
       const fuente=medidor.createMediaStreamSource(st),an=medidor.createAnalyser();an.fftSize=1024;fuente.connect(an);
       const datos=new Float32Array(an.fftSize);
       const paso=()=>{if(!flujo){try{fuente.disconnect();}catch(e){}return;}an.getFloatTimeDomainData(datos);let m=0;for(const v of datos)m=Math.max(m,Math.abs(v));volMax=Math.max(volMax,m);setTimeout(paso,150);};paso();
@@ -125,12 +127,14 @@ const CantaLaCancion=(()=>{
     votos={};
     const jueces=pts.map((_,i)=>i).filter(i=>i!==turno);
     pantalla(`<div class="kar-centro">
+      <div class="kar-vuelta">Vuelta ${Math.floor(jugados/est.cant)+1} de ${vueltas} · canta ${turno+1} de ${est.cant}</div>
       <div class="kar-veredicto">🧑‍⚖️ ¿Vale?</div>
       <div class="kar-le">${esc(nom(turno))} tenía que cantar</div><div class="kar-cartel chico"><span>${esc(palabra)}</span></div>
       <button type="button" class="kar-oir" id="ctaOir" ${audioURL?"":"hidden"}>▶ Escuchar de nuevo</button>
       <div class="kar-le">Jurado: ¿era una canción con la palabra?</div>
       <div class="kar-jurado">${jueces.map(i=>`<div class="kar-juez" data-i="${i}" style="--c:${COLORES[i%COLORES.length]}"><i>${esc(iniciales(i))}</i><b>${esc(nom(i))}</b><button type="button" data-v="1">👍</button><button type="button" data-v="0">👎</button></div>`).join("")}</div>
-      <p class="kar-ayuda">Gana la mayoría. Si hay empate, vale.</p></div>`);
+      <p class="kar-ayuda">Cada uno del jurado toca 👍 o 👎. Cuando votan todos, sigue el juego (gana la mayoría; empate vale).</p>
+      ${marcador()}</div>`);
     q("ctaOir").onclick=()=>{if(!audioURL)return;if(audio){audio.pause();}audio=new Audio(audioURL);audio.play().catch(()=>{});};
     raiz.querySelectorAll(".kar-juez button").forEach(b=>b.onclick=()=>{
       const j=b.closest(".kar-juez"),i=Number(j.dataset.i);votos[i]=b.dataset.v==="1";
