@@ -33,7 +33,7 @@ const TuttiFrutti=(()=>{
   function configurar(){
     parar();cerrarSala();PantallaFija.desactivar();
     raiz.innerHTML=`<div class="mg-panel imp-panel"><h3>🍓 Tutti Frutti</h3>
-      <p>Sale una letra y hay que completar las categorías. El primero que completa todo canta <b>BASTA</b>. Puntos: <b>10</b> única, <b>5</b> repetida, <b>20</b> si sos el único.</p>
+      <p>Se juegan <b>3 rondas</b> y gana el mejor de 3. El primero que completa todo canta <b>BASTA</b>. Puntos: <b>10</b> única, <b>5</b> repetida, <b>20</b> si sos el único.</p>
       ${ajustesHtml()}
       <div id="tfZona"><button type="button" class="mg-principal" id="tfCrear">📱 Crear sala (cada uno con su celular)</button>
       <div class="tf-unirse"><input id="tfCodigo" maxlength="4" placeholder="CÓDIGO" autocomplete="off" autocapitalize="characters"><button type="button" id="tfUnirse">🔑 Unirme</button></div>
@@ -157,7 +157,7 @@ const TuttiFrutti=(()=>{
   const NOM_CAT={"Nombre":"nombre","Apellido":"apellido","País o ciudad":"país o ciudad","Animal":"animal","Color":"color","Fruta o verdura":"fruta o verdura","Comida":"comida","Profesión":"profesión","Famoso":"famoso","Película o serie":"película o serie","Marca":"marca","Cosa":"cosa"};
 
   /* ======================= SALA (cada uno con su celular) ======================= */
-  const CHARS="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",MAXJ=10;
+  const CHARS="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",MAXJ=10,RONDAS=3;
   const N=t=>String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase().trim();
   let on=null;/* {cli,sala,host,pid,jug:[{pid,nombre}],ganadas:{},usadas:[],n,letra,cats,tiempo,fase,resps:{},ganador,timers} */
   const yo=()=>((typeof perfil!=="undefined"&&perfil&&perfil.nombre)||"Jugador").slice(0,14);
@@ -197,7 +197,7 @@ const TuttiFrutti=(()=>{
     on.timers.forEach(t=>{clearInterval(t);clearTimeout(t);});
     const c=on.cli;on=null;if(c)setTimeout(()=>{try{c.end(true);}catch(e){}},300);
   }
-  function difundirSala(){mandar({t:"sala",jug:on.jug,ganadas:on.ganadas,cats:on.cats,tiempo:on.tiempo,fase:on.fase});}
+  function difundirSala(){mandar({t:"sala",jug:on.jug,ganadas:on.ganadas,rg:on.rg||{},cats:on.cats,tiempo:on.tiempo,fase:on.fase});}
   function textoInvitacion(){return "¡Juguemos Tutti Frutti en Girá y Adiviná! 🍓 Tocá para unirte: "+linkInvitacion()+" (código "+on.sala+")";}
   function copiarInvitacion(){
     const t=textoInvitacion(),ok=()=>estado("✅ Invitación copiada. Pegala en el chat.");
@@ -247,7 +247,8 @@ const TuttiFrutti=(()=>{
   function nuevaRonda(){
     let libres=LETRAS.filter(l=>!on.usadas.includes(l));if(!libres.length){on.usadas=[];libres=LETRAS.slice();}
     const l=libres[Math.floor(Math.random()*libres.length)];on.usadas.push(l);
-    mandar({t:"ronda",n:on.n+1,letra:l,cats:on.cats,tiempo:on.tiempo});
+    on.rj=(on.rj||0)+1;
+    mandar({t:"ronda",n:on.n+1,rj:on.rj,letra:l,cats:on.cats,tiempo:on.tiempo});
   }
   function manejar(m){
     if(!on)return;
@@ -255,14 +256,14 @@ const TuttiFrutti=(()=>{
       if(!on.jug.some(j=>j.pid===m.pid)){if(on.jug.length>=MAXJ)return;on.jug.push({pid:m.pid,nombre:String(m.nombre||"Jugador").slice(0,14)});}
       difundirSala();pintarJugadores();
     }else if(m.t==="sala"&&!on.host){
-      on.jug=Array.isArray(m.jug)?m.jug:[];on.ganadas=m.ganadas||{};on.cats=m.cats||on.cats;on.tiempo=m.tiempo||on.tiempo;pintarJugadores();
+      on.jug=Array.isArray(m.jug)?m.jug:[];on.ganadas=m.ganadas||{};on.rg=m.rg||{};on.cats=m.cats||on.cats;on.tiempo=m.tiempo||on.tiempo;pintarJugadores();
     }else if(m.t==="chau"){
       const eraHost=!on.host&&on.jug[0]&&on.jug[0].pid===m.pid;
       on.jug=on.jug.filter(j=>j.pid!==m.pid);
       if(eraHost){cerrarSala();if(raiz){configurar();estado("El anfitrión cerró la sala.");}return;}
       if(on.host)difundirSala();pintarJugadores();
     }else if(m.t==="ronda"){
-      on.n=m.n;on.letra=m.letra;on.cats=m.cats;on.tiempo=m.tiempo;on.fase="jugando";on.resps={};on.votos={};on.ganador=null;on.basta=null;on.mias=Array(on.cats.length).fill("");on.envie=false;
+      on.n=m.n;on.rj=m.rj||on.rj;on.letra=m.letra;on.cats=m.cats;on.tiempo=m.tiempo;on.fase="jugando";on.resps={};on.votos={};on.ganador=null;on.basta=null;on.mias=Array(on.cats.length).fill("");on.envie=false;
       jugarOnline();
     }else if(m.t==="basta"&&m.n===on.n){
       if(!on.basta){on.basta=m.pid;if(on.host)on.ganador=m.pid;}
@@ -274,6 +275,8 @@ const TuttiFrutti=(()=>{
       const k=m.a+"|"+m.i;on.votos=on.votos||{};const st=on.votos[k]=on.votos[k]||new Set();
       if(m.v)st.add(m.pid);else st.delete(m.pid);
       pintarVotos();
+    }else if(m.t==="final"){
+      on.ganadas=m.ganadas||on.ganadas;on.rg=m.rg||{};on.jug=m.jug||on.jug;mostrarFinal();
     }else if(m.t==="resultado"&&m.n===on.n&&!on.host){
       on.resps=m.resps||{};on.ganador=m.ganador;on.ganadas=m.ganadas||on.ganadas;on.jug=m.jug||on.jug;on.marcas=m.marcas||{};mostrarResultado();
     }
@@ -281,7 +284,7 @@ const TuttiFrutti=(()=>{
   /* Ronda: animación de la letra y después una categoría por vez. */
   function jugarOnline(){
     PantallaFija.activar();
-    pantalla(`<div class="imp-centro"><div class="imp-quien">🎲 Ronda ${on.n} · sorteando la letra…</div><div class="tf-letra" id="tfLetra">?</div></div>`);
+    pantalla(`<div class="imp-centro"><div class="imp-quien">🎲 Ronda ${on.rj||1} de ${RONDAS} · sorteando la letra…</div><div class="tf-letra" id="tfLetra">?</div></div>`);
     let k=0;const giro=()=>{if(!raiz||!on)return;const el=q("tfLetra");if(!el)return;
       if(k<12){el.textContent=LETRAS[Math.floor(Math.random()*LETRAS.length)];if(typeof bip==="function")bip(600+k*25,.04,"square",.03);k++;setTimeout(giro,60+k*8);return;}
       el.textContent=on.letra;el.classList.add("tf-final");if(typeof bip==="function"){bip(784,.15);setTimeout(()=>bip(1047,.25),120);}setTimeout(campos,800);};
@@ -390,7 +393,7 @@ const TuttiFrutti=(()=>{
       <p class="imp-ayuda">Letra <b>${on.letra}</b> · <b>10</b> única · <b>5</b> repetida · <b>20</b> si sos el único · <b>0</b> si no vale.<br>⚠️ = mal escrita (vale 0): tocala para ver lo correcto. Con el botón de la derecha votás: ❌ anula, ✔ perdona.</p>
       <ul class="tf-resps">${filas}</ul>
       <div class="qs-sub">🏆 Puntos (con esta ronda)</div><ul class="imp-tabla" id="tfTabla"></ul>
-      ${on.host?`<button type="button" class="mg-principal" id="tfOtra">🎲 Otra letra</button><button type="button" id="tfRevancha">🔄 Revancha (de cero)</button>`:`<p class="imp-ayuda">Esperando que el anfitrión saque otra letra…</p>`}</div>`);
+      ${on.host?`<button type="button" class="mg-principal" id="tfOtra">${(on.rj||1)>=RONDAS?"🏆 Ver ganador":"🎲 Ronda "+((on.rj||1)+1)+" de "+RONDAS}</button>`:`<p class="imp-ayuda">Esperando al anfitrión…</p>`}</div>`);
     raiz.querySelector(".tf-resps").onclick=e=>{
       const f=e.target.closest(".tf-fila");if(!f||!f.dataset.a)return;const a=f.dataset.a,i=Number(f.dataset.i);
       if(e.target.closest(".tf-votar")){const st=on.votos[a+"|"+i];const ya=!!(st&&st.has(on.pid));mandar({t:"voto",n:on.n,a,i,v:!ya});return;}
@@ -399,8 +402,16 @@ const TuttiFrutti=(()=>{
     if(on.ganador===on.pid&&typeof bip==="function")[523,659,784].forEach((f,i)=>setTimeout(()=>bip(f,.2,"triangle",.05),i*130));
     pintarVotos();
     if(on.host){
-      q("tfOtra").onclick=()=>{const pr=puntosRonda();on.jug.forEach(j=>on.ganadas[j.pid]=(on.ganadas[j.pid]||0)+sumar(pr[j.pid]));difundirSala();nuevaRonda();};
-      q("tfRevancha").onclick=()=>{on.ganadas={};on.usadas=[];partidas++;guardar();difundirSala();nuevaRonda();};
+      q("tfOtra").onclick=()=>{
+        const pr=puntosRonda();on.rg=on.rg||{};
+        on.jug.forEach(j=>on.ganadas[j.pid]=(on.ganadas[j.pid]||0)+sumar(pr[j.pid]));
+        /* La ronda la gana el que más sumó (si empatan, se la llevan los dos). */
+        const max=Math.max(...on.jug.map(j=>sumar(pr[j.pid])));
+        if(max>0)on.jug.forEach(j=>{if(sumar(pr[j.pid])===max)on.rg[j.pid]=(on.rg[j.pid]||0)+1;});
+        difundirSala();
+        if((on.rj||1)>=RONDAS){mandar({t:"final",n:on.n,ganadas:on.ganadas,rg:on.rg,jug:on.jug});return;}
+        nuevaRonda();
+      };
     }
   }
   /* Mini popup: por qué está mal y cuál es la forma correcta (solo informa). */
@@ -450,9 +461,22 @@ const TuttiFrutti=(()=>{
     const orden=on.jug.map(j=>[j,sumar(pr[j.pid]),(on.ganadas[j.pid]||0)+sumar(pr[j.pid])]).sort((a,b)=>b[2]-a[2]);
     const mejor=on.jug.map(j=>[j,sumar(pr[j.pid])]).sort((a,b)=>b[1]-a[1]);
     const t=raiz.querySelector("#tfTitulo");
-    if(t){const empate=mejor.length>1&&mejor[0][1]===mejor[1][1];t.textContent=empate?"🤝 Ronda empatada":"🏆 Ronda para "+mejor[0][0].nombre+" (+"+mejor[0][1]+")";}
+    if(t){const empate=mejor.length>1&&mejor[0][1]===mejor[1][1];const nr="Ronda "+(on.rj||1)+" de "+RONDAS+": ";t.textContent=nr+(empate?"empate 🤝":mejor[0][0].nombre+" (+"+mejor[0][1]+") 🏆");}
     const tabla=raiz.querySelector("#tfTabla");
     if(tabla)tabla.innerHTML=orden.map(([j,r,tot])=>`<li><span>${esc(j.nombre)}</span><b>${tot} <small>(+${r})</small></b></li>`).join("");
+  }
+  /* Final del mejor de 3: gana el que ganó más rondas; si empatan, el de más puntos. */
+  function mostrarFinal(){
+    if(!raiz||!on)return;on.fase="final";
+    const orden=on.jug.map(j=>[j,on.rg[j.pid]||0,on.ganadas[j.pid]||0]).sort((a,b)=>b[1]-a[1]||b[2]-a[2]);
+    const top=orden[0],ganan=orden.filter(o=>o[1]===top[1]&&o[2]===top[2]).map(o=>o[0].nombre);
+    if(ganan.includes(yo())||orden[0][0].pid===on.pid){if(typeof bip==="function")[523,659,784,1047].forEach((f,i)=>setTimeout(()=>bip(f,.22,"triangle",.05),i*140));}
+    if(on.host){partidas++;guardar();}
+    pantalla(`<div class="mg-panel imp-panel imp-fin"><div class="bb-icono">🏆</div><h3>${ganan.length>1?"¡Empate entre "+esc(ganan.join(" y "))+"!":"¡Ganó "+esc(ganan[0])+"!"}</h3>
+      <p class="imp-ayuda">Mejor de ${RONDAS}: gana el que ganó más rondas (si empatan, el de más puntos).</p>
+      <ol class="kar-podio">${orden.map(([j,rg,p],k)=>`<li style="--c:#E5197C"><span>${k+1}</span><i>${esc((j.nombre||"?")[0].toUpperCase())}</i><b>${esc(j.nombre)}${j.pid===on.pid?" (vos)":""}</b><em>${rg} ${rg===1?"ronda":"rondas"} · ${p} pts</em></li>`).join("")}</ol>
+      ${on.host?`<button type="button" class="mg-principal" id="tfRevancha">🔄 Revancha</button>`:`<p class="imp-ayuda">Esperando que el anfitrión arranque la revancha…</p>`}</div>`);
+    if(on.host)q("tfRevancha").onclick=()=>{on.ganadas={};on.rg={};on.rj=0;on.usadas=[];difundirSala();nuevaRonda();};
   }
   /* Link ?tutti=<SALA>&de=<nombre>: abre el juego y se une solo. */
   function abrirInvitacion(sala,de){
