@@ -1,6 +1,6 @@
-/* Mímica rioplatense: dos equipos sobre un escenario. El que actúa elige una
-   de tres cartas (Fácil +1, Media +2, Difícil +3), la hace sin hablar y su
-   equipo adivina; el reloj corre todo el turno. Gana el primero que llega a
+/* Mímica rioplatense: dos equipos sobre un escenario. Antes de jugar se marcan
+   las dificultades (Fácil +1, Media +2, Difícil +3) y en el turno salen frases
+   al azar de esas; el que actúa la hace sin hablar y su equipo adivina; el reloj corre todo el turno. Gana el primero que llega a
    la meta (al cerrar la vuelta, así los dos jugaron lo mismo).
    Pantalla fija (PantallaFija). Datos en gya_mimica. */
 const Mimica=(()=>{
@@ -28,7 +28,7 @@ const Mimica=(()=>{
       <div class="mim-cartel"><div class="mim-focos">🎭</div><h3>Mímica rioplatense</h3><p>Actuá <b>sin hablar</b>. Tu equipo adivina.</p></div>
       <div class="mg-panel mim-caja"><div class="qs-sub">👥 Equipos</div>
       <div class="mim-equipos">${[0,1].map(i=>`<label class="mim-eq" style="--c:${COLORES[i]}"><i></i><input id="mimE${i}" maxlength="14" placeholder="${POR_DEF[i]}" value="${esc(equipos[i])}"></label>`).join("")}</div>
-      <div class="qs-sub">🃏 Cartas en juego <small>(tocá para elegir)</small></div>
+      <div class="qs-sub">🃏 Dificultad <small>(tocá para elegir, podés marcar varias)</small></div>
       <div class="mim-niveles" id="mimN">${NIVELES.map((n,i)=>`<button type="button" class="mim-nv n${i}" data-n="${i}"><i>✔</i><span>${n.icono}</span><b>${n.nombre}</b><em>+${n.pts}</em><small>${n.ej}</small></button>`).join("")}</div>
       <div class="qs-sub">⏱️ Tiempo por turno</div>
       <div class="qns-rangos imp-dos" id="mimT">${TIEMPOS.map(t=>`<button type="button" data-v="${t}">${t} s</button>`).join("")}</div>
@@ -36,7 +36,7 @@ const Mimica=(()=>{
       <div class="qns-rangos" id="mimM">${METAS.map(m=>`<button type="button" data-v="${m}">${m} pts</button>`).join("")}</div>
       <button type="button" class="mg-principal" id="mimEmpezar">🎭 Abrir el telón</button>
       <div class="mim-dos"><button type="button" id="mimComo">❓ Cómo se juega</button><button type="button" id="mimWpp">💬 Invitar</button></div>
-      <div class="mim-como" id="mimComoTxt" hidden><ol><li>Pasale el celular al que actúa; su equipo no mira.</li><li>Elige una carta: cuanto más difícil, más puntos.</li><li>La actúa sin hablar ni señalar cosas. Si adivinan, ✔ y elige otra.</li><li>Si se traba, <b>Pasar</b> (no suma) y elige otra.</li><li>Cuando suena el tiempo, le toca al otro equipo.</li></ol></div></div></div>`;
+      <div class="mim-como" id="mimComoTxt" hidden><ol><li>Pasale el celular al que actúa; su equipo no mira.</li><li>Le sale una frase al azar de las dificultades elegidas: cuanto más difícil, más puntos.</li><li>La actúa sin hablar ni señalar cosas. Si adivinan, ✔ y sale otra.</li><li>Si se traba, <b>Pasar</b> (no suma) y sale otra.</li><li>Cuando suena el tiempo, le toca al otro equipo.</li></ol></div></div></div>`;
     const pintar=()=>{raiz.querySelectorAll("#mimT button").forEach(b=>b.classList.toggle("activo",Number(b.dataset.v)===tiempo));raiz.querySelectorAll("#mimM button").forEach(b=>b.classList.toggle("activo",Number(b.dataset.v)===meta));raiz.querySelectorAll("#mimN button").forEach(b=>b.classList.toggle("activo",usar[Number(b.dataset.n)]));};pintar();
     q("mimN").onclick=e=>{const b=e.target.closest("button[data-n]");if(!b)return;const n=Number(b.dataset.n);if(usar[n]&&usar.filter(Boolean).length===1){if(typeof mostrarToast==="function")mostrarToast("🃏","Tiene que quedar al menos una carta");return;}usar[n]=!usar[n];guardar();pintar();};
     [0,1].forEach(i=>q("mimE"+i).oninput=e=>{equipos[i]=e.target.value;guardar();});
@@ -61,13 +61,8 @@ const Mimica=(()=>{
     q("mimVer").onclick=()=>{hechas=[];jugando=true;fin=Date.now()+tiempo*1000;elegir();reloj();};
   }
   function elegir(){
-    actual=null;
-    pantalla(`<div class="mim-tope">${anillo()}<div><small>${esc(nom(turno))}</small><b>+${hechas.filter(h=>h.ok).reduce((s,h)=>s+h.pts,0)}</b></div></div>
-      <div class="imp-centro mim-centro"><div class="mim-elige">Elegí una carta</div>
-      <div class="mim-cartas" style="grid-template-columns:repeat(${usar.filter(Boolean).length},1fr)">${NIVELES.map((n,i)=>!usar[i]?"":`<button type="button" class="mim-carta n${i}" data-n="${i}"><span>${n.icono}</span><b>${n.nombre}</b><em>+${n.pts}</em></button>`).join("")}</div>
-      <p class="imp-ayuda">${usar.filter(Boolean).length>1?"Más difícil, más puntos.":"Tocá la carta para ver la frase."}</p></div>`,"mim-jugando");
-    raiz.querySelectorAll(".mim-carta").forEach(b=>b.addEventListener("pointerdown",e=>{e.preventDefault();if(!jugando||Date.now()<bloqueo)return;bloqueo=Date.now()+300;mostrar(Number(b.dataset.n));}));
-    pintarReloj();
+    const ok=[0,1,2].filter(n=>usar[n]&&mazos[n].length);
+    mostrar(ok.length?ok[Math.floor(Math.random()*ok.length)]:0);
   }
   function mostrar(n){
     const m=mazos[n];if(!m.length)return;
