@@ -282,3 +282,13 @@ body.ext-abierta{overflow:hidden}
 .rr-res-fila span small{display:block;font-size:.58rem;color:#B9A9CC;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rr-res-ok{color:#37D6C0;font-weight:800;overflow-wrap:anywhere}.rr-res-mal{color:#FF7E8B;font-weight:800;overflow-wrap:anywhere}.rr-res-nada{color:#8F80A3;font-weight:800}
 .dl-extra{max-height:36dvh;overflow-y:auto;margin:6px 0 10px}.dl-extra .rr-resumen{max-height:none;margin:0}
+/* ¿Qué número soy? */
+.qns-nota{background:#1F6FB233;border:1px solid #1F6FB277;border-radius:12px;padding:10px 12px}
+.qns-rangos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:6px}.mg-panel .qns-rangos button{margin:0}.mg-panel .qns-rangos button.activo{background:#F5B301;color:#1A0F26}
+.qns-pantalla{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0B0614;color:#FFF9E9;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;padding:max(18px,var(--safe-top)) max(18px,var(--safe-right)) max(18px,var(--safe-bottom)) max(18px,var(--safe-left))}.qns-pantalla[hidden]{display:none}
+.qns-num{font-family:'Archivo Black',sans-serif;font-size:min(62vw,52vh);line-height:1;color:#FFD65C;text-shadow:0 6px 0 #B38600}.qns-num.qns-cuenta{color:#FFFFFF66;text-shadow:none}
+.qns-num-chico{font-size:min(34vw,26vh);text-align:center;margin:6px 0 10px}
+.qns-pie{position:absolute;bottom:max(26px,var(--safe-bottom));left:0;right:0;text-align:center;font-size:.85rem;color:#FFFFFF55;font-weight:700}
+.qns-barra{position:absolute;left:0;right:0;bottom:0;height:6px;background:#FFFFFF14}.qns-barra i{display:block;height:100%;width:0;background:#E5197C}
+.qns-fin{background:#0A0412F2}
+body.qns-bloqueado{overscroll-behavior:none}
