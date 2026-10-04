@@ -1,11 +1,9 @@
-/* Tutti Frutti (Basta). Dos modos:
+/* Tutti Frutti (Basta):
    - Sala (cada uno con su celular, MQTT "gyatutti/<SALA>", el anfitrión
      manda): a todos les sale la misma letra; completan las categorías una
      por una (tiene que empezar con la letra) y el primero que completa todo
      canta BASTA y gana la ronda. Después se ven las respuestas de todos.
      Invitación: ?tutti=<SALA>&de=<nombre>.
-   - Papel y lápiz (un celular): sortea la letra, ¡BASTA! da 10 s más y se
-     anotan los puntos (10 única, 5 repetida, 0 vacía).
    Pantalla fija (PantallaFija). Datos en gya_tutti. */
 const TuttiFrutti=(()=>{
   const CLAVE="gya_tutti",TIEMPOS=[60,90,120];
@@ -37,82 +35,13 @@ const TuttiFrutti=(()=>{
       ${ajustesHtml()}
       <div id="tfZona"><button type="button" class="mg-principal" id="tfCrear">📱 Crear sala (cada uno con su celular)</button>
       <div class="tf-unirse"><input id="tfCodigo" maxlength="4" placeholder="CÓDIGO" autocomplete="off" autocapitalize="characters"><button type="button" id="tfUnirse">🔑 Unirme</button></div>
-      <button type="button" id="tfPapel">📝 Papel y lápiz (un solo celular)</button>
       <p class="imp-ayuda" id="tfEstado" role="status"></p></div></div>`;
     ajustesEventos();
     q("tfCrear").onclick=crearSala;
     q("tfUnirse").onclick=()=>{const c=(q("tfCodigo").value||"").toUpperCase().trim();if(/^[A-HJ-NP-Z2-9]{4}$/.test(c))unirse(c);else estado("Escribí el código de 4 letras que te pasaron.");};
-    q("tfPapel").onclick=papel;
   }
   function estado(t){const e=raiz&&raiz.querySelector("#tfEstado");if(e)e.textContent=t;}
-  function papel(){
-    raiz.innerHTML=`<div class="mg-panel imp-panel"><h3>📝 Papel y lápiz</h3>
-      <p>Cada uno con <b>papel y lápiz</b>. El celular sortea la letra y el primero que completa todo toca <b>¡BASTA!</b></p>
-      <div class="qs-sub">👥 Jugadores (para anotar los puntos)</div><div id="tfJug"></div>
-      <button type="button" class="mg-principal" id="tfEmpezar">🍓 Empezar</button>
-      <button type="button" id="tfAtras">⟵ Atrás</button></div>`;
-    PantallaFija.editorJugadores(q("tfJug"),est,{min:1,max:12,alCambiar:guardar});
-    q("tfEmpezar").onclick=()=>{total=Array(est.cant).fill(0);usadas=[];PantallaFija.activar();sortear();};
-    q("tfAtras").onclick=configurar;
-  }
   function pantalla(html){raiz.innerHTML=`<div class="qns-pantalla imp-juego"><button type="button" class="pf-salir" id="tfSalir">✕ Salir</button>${html}</div>`;PantallaFija.confirmar(q("tfSalir"),configurar);}
-  function sortear(){
-    let libres=LETRAS.filter(l=>!usadas.includes(l));if(!libres.length){usadas=[];libres=LETRAS.slice();}
-    letra=libres[Math.floor(Math.random()*libres.length)];usadas.push(letra);
-    pantalla(`<div class="imp-centro"><div class="imp-quien">🎲 Sorteando la letra…</div><div class="tf-letra" id="tfLetra">?</div></div>`);
-    let n=0;const giro=()=>{if(!raiz)return;const el=q("tfLetra");if(!el)return;
-      if(n<14){el.textContent=LETRAS[Math.floor(Math.random()*LETRAS.length)];if(typeof bip==="function")bip(600+n*25,.04,"square",.03);n++;setTimeout(giro,60+n*8);return;}
-      el.textContent=letra;el.classList.add("tf-final");if(typeof bip==="function"){bip(784,.15);setTimeout(()=>bip(1047,.25),120);}setTimeout(jugar,900);};
-    giro();
-  }
-  function jugar(){
-    jugando=true;basta=false;fin=Date.now()+tiempo*1000;
-    pantalla(`<div class="qs-tope"><span>🍓 Letra ${letra}</span><b id="tfReloj">${tiempo}</b><span></span></div>
-      <div class="imp-centro"><div class="tf-letra tf-final">${letra}</div>
-      <ul class="tf-cats">${cats.map(c=>`<li>${esc(c)}</li>`).join("")}</ul>
-      <p class="imp-ayuda" id="tfAviso">Escriban en su papel. El primero que completa todo toca ¡BASTA!</p>
-      <button type="button" class="bb-pasar" id="tfBasta">✋ ¡BASTA!</button></div>`);
-    q("tfBasta").addEventListener("pointerdown",e=>{e.preventDefault();gritarBasta();});
-    reloj();
-  }
-  function gritarBasta(){
-    if(!jugando||basta)return;basta=true;fin=Math.min(fin,Date.now()+10000);
-    if(typeof sonidoErrorExt==="function")sonidoErrorExt();if(typeof vibrar==="function")vibrar([80,50,80]);
-    const b=q("tfBasta");if(b){b.disabled=true;b.textContent="✋ ¡BASTA!";}
-    const a=q("tfAviso");if(a)a.innerHTML="<b>¡BASTA!</b> Los demás tienen 10 segundos para terminar la palabra que están escribiendo.";
-  }
-  function reloj(){
-    if(!raiz||!jugando)return;
-    const r=Math.max(0,Math.ceil((fin-Date.now())/1000)),el=q("tfReloj");
-    if(el){el.textContent=r;if(r<=5&&r>0&&el.dataset.u!==String(r)){el.dataset.u=String(r);if(typeof bip==="function")bip(880,.07);}}
-    if(r<=0){jugando=false;puntos();return;}
-    timer=setTimeout(reloj,200);
-  }
-  function puntos(){
-    if(typeof bip==="function"){bip(523,.12);setTimeout(()=>bip(392,.25),140);}
-    ronda=Array(est.cant).fill(0);
-    pantalla(`<div class="mg-panel imp-panel tf-puntos"><h3>✏️ ¡Lápices arriba!</h3>
-      <p class="imp-ayuda">Lean en voz alta. Por cada categoría: <b>10</b> si nadie más la puso, <b>5</b> si se repitió, <b>0</b> si quedó vacía o no vale.</p>
-      <ul class="tf-filas" id="tfFilas"></ul>
-      <button type="button" class="mg-principal" id="tfSig">🎲 Siguiente letra</button>
-      <button type="button" id="tfTerminar">🏁 Terminar y ver ganador</button></div>`);
-    const pintar=()=>{q("tfFilas").innerHTML=ronda.map((p,i)=>`<li><span>${esc(nom(i))}<small>Total ${total[i]+p}</small></span><button type="button" data-i="${i}" data-d="-5">−5</button><b>${p}</b><button type="button" data-i="${i}" data-d="5">+5</button><button type="button" data-i="${i}" data-d="10">+10</button></li>`).join("");};
-    pintar();
-    q("tfFilas").onclick=e=>{const b=e.target.closest("button[data-i]");if(!b)return;const i=Number(b.dataset.i);ronda[i]=Math.max(0,ronda[i]+Number(b.dataset.d));pintar();};
-    const cerrar=()=>{ronda.forEach((p,i)=>total[i]+=p);};
-    q("tfSig").onclick=()=>{cerrar();sortear();};
-    q("tfTerminar").onclick=()=>{cerrar();ganador();};
-  }
-  function ganador(){
-    partidas++;guardar();
-    const orden=total.map((p,i)=>[i,p]).sort((a,b)=>b[1]-a[1]);
-    const top=orden[0]?orden[0][1]:0,ganan=orden.filter(o=>o[1]===top).map(o=>nom(o[0]));
-    if(typeof bip==="function")[523,659,784,1047].forEach((f,i)=>setTimeout(()=>bip(f,.22,"triangle",.05),i*140));
-    pantalla(`<div class="mg-panel imp-panel imp-fin"><div class="bb-icono">🏆</div><h3>¡${ganan.length>1?"Empate: "+esc(ganan.join(" y ")):"Ganó "+esc(ganan[0]||"")}!</h3>
-      <ul class="imp-tabla">${orden.map(([i,p])=>`<li><span>${esc(nom(i))}</span><b>${p}</b></li>`).join("")}</ul>
-      <button type="button" class="mg-principal" id="tfRevancha">🔄 Revancha</button><button type="button" id="tfCambiar">⚙️ Cambiar jugadores o categorías</button></div>`);
-    q("tfRevancha").onclick=()=>{total=Array(est.cant).fill(0);usadas=[];PantallaFija.activar();sortear();};q("tfCambiar").onclick=configurar;
-  }
   function parar(){jugando=false;clearTimeout(timer);}
   function salir(){parar();cerrarSala();if(raiz)PantallaFija.salir();if(raiz)raiz.remove();raiz=null;}
   /* ===== Control de respuestas =====
