@@ -69,6 +69,7 @@ const EXTENSIONES=[
   {id:"cien-rioplatenses",nombre:"100 Rioplatenses Dicen",descripcion:"Girá por un tema y descubrí el panel",icono:"logo-cien-rioplatenses.svg",estado:CIEN_HABILITADO?"disponible":"proximamente",abrir:contenedor=>CienRioplatenses.abrir(contenedor),record:()=>CienRioplatenses.mejorPuntaje()+" puntos"},
   {id:"ahorcado-rioplatense",nombre:"Ahorcado Rioplatense",descripcion:"La ruleta elige la categoría, adiviná la palabra",icono:"logo-ahorcado-rioplatense.svg",estado:AHORCADO_HABILITADO?"disponible":"proximamente",abrir:contenedor=>AhorcadoRioplatense.abrir(contenedor),record:()=>AhorcadoRioplatense.mejorPuntaje()+" puntos"},
   {id:"contra-reloj-rioplatense",nombre:"Contra Reloj",descripcion:"Describí 5 palabras antes de que termine el tiempo · 4+ jugadores",icono:"logo-contra-reloj-rioplatense.svg",estado:"disponible",insignia:"👥 4+",abrir:contenedor=>ContraRelojRioplatense.abrir(contenedor),record:()=>ContraRelojRioplatense.mejorPuntaje()+" puntos"},
+  {id:"que-numero-soy",nombre:"¿Qué número soy?",descripcion:"Número gigante en pantalla completa, sin que se apague",icono:"logo-que-numero-soy.svg",estado:"disponible",abrir:contenedor=>QueNumeroSoy.abrir(contenedor),record:()=>QueNumeroSoy.rondasJugadas()+" rondas"},
   {id:"moon-tap",nombre:"Moon Tap",descripcion:"Tocá justo a tiempo y pegale al punto del aro",icono:"logo-moon-tap.webp",estado:"disponible",abrir:contenedor=>MoonTap.abrir(contenedor),record:()=>MoonTap.mejorPuntaje()+" puntos"},
   /* Mahjong Rioplatense (mahjong-rioplatense.html) a propósito oculto del lobby:
      la pantalla de inicio no estaba lista para mostrarse a los jugadores.
@@ -103,6 +104,7 @@ const Extensiones=(()=>{
     shell.querySelector("#extCerrar").onclick=cerrar;
     document.addEventListener("keydown",e=>{
       if(shell.hidden)return;
+      if(vista==="que-numero-soy"&&window.QueNumeroSoy&&QueNumeroSoy.bloqueado()){e.preventDefault();e.stopImmediatePropagation();return;}
       if(e.key==="Escape"){e.preventDefault();e.stopImmediatePropagation();vista==="lobby"?cerrar():abrirLobby();return;}
       if(vista==="palabra-secreta"&&window.PalabraSecreta){if(e.key!=="Tab")e.preventDefault();PalabraSecreta.tecla(e.key);}
       if(vista==="ahorcado-rioplatense"&&window.AhorcadoRioplatense)AhorcadoRioplatense.tecla(e.key,e);
@@ -142,7 +144,7 @@ const Extensiones=(()=>{
     shell.querySelector("#extTitulo").textContent=ext.nombre;
     ext.abrir(contenido);shell.scrollTop=0;
   }
-  function salirJuego(){for(const juego of [window.SopaFugaz,window.RuedaDeLetras,window.PalabraSecreta,window.FrasesEnGiro,window.MemoriaEnGiro,window.RoscoRioplatense,window.SilabarioRioplatense,window.CienRioplatenses,window.AhorcadoRioplatense,window.ContraRelojRioplatense,window.MoonTap])if(juego)juego.salir();}
+  function salirJuego(){for(const juego of [window.SopaFugaz,window.RuedaDeLetras,window.PalabraSecreta,window.FrasesEnGiro,window.MemoriaEnGiro,window.RoscoRioplatense,window.SilabarioRioplatense,window.CienRioplatenses,window.AhorcadoRioplatense,window.ContraRelojRioplatense,window.MoonTap,window.QueNumeroSoy])if(juego)juego.salir();}
   function cerrar(){if(!shell)return;salirJuego();shell.hidden=true;document.body.classList.remove("ext-abierta");vista="";if(typeof sincronizarMusica==="function")sincronizarMusica();}
   return{abrirLobby,abrirJuego,cerrar};
 })();
@@ -155,13 +157,15 @@ if(EXTENSIONES_HABILITADAS&&botonExtensiones){botonExtensiones.hidden=false;boto
    invitado todavía no tiene perfil, se espera a que lo cree. */
 try{
   const q=new URLSearchParams(location.search),hayDuelo=!!q.get("duelo"),haySala=/^[A-Za-z0-9]{4}$/.test(q.get("sala")||"");
-  if(EXTENSIONES_HABILITADAS&&haySala){
+  /* Invitación simple a un juego (?ext=<id>), sin sala. */
+  const extDirecta=!haySala&&/^[a-z-]{3,40}$/.test(q.get("ext")||"")?q.get("ext"):"";
+  if(EXTENSIONES_HABILITADAS&&(haySala||extDirecta)){
     let intentos=0;
     const t=setInterval(()=>{
       if(++intentos>80){clearInterval(t);return;}
       if(document.readyState!=="complete"||typeof perfil==="undefined"||!perfil||!perfil.nombre)return;
       clearInterval(t);
-      setTimeout(()=>{try{if(hayDuelo){if(window.Duelo)Duelo.abrirInvitacion();}else Extensiones.abrirJuego("contra-reloj-rioplatense");}catch(e){}},1200);
+      setTimeout(()=>{try{if(extDirecta){try{history.replaceState(null,"",location.pathname);}catch(e){}Extensiones.abrirJuego(extDirecta);}else if(hayDuelo){if(window.Duelo)Duelo.abrirInvitacion();}else Extensiones.abrirJuego("contra-reloj-rioplatense");}catch(e){}},1200);
     },1500);
   }
 }catch(e){}
