@@ -59,6 +59,19 @@ const PantallaFija=(()=>{
     const texto="¿Jugamos a "+nombre+" en Girá y Adiviná? Entrá acá: "+base+"?ext="+id;
     try{window.open("https://wa.me/?text="+encodeURIComponent(texto),"_blank");}catch(e){}
   }
-  return{entrar,activar,desactivar,prender,salir,confirmar,invitar,activo:()=>activo};
+  /* Editor de jugadores compartido (− N + y un campo de nombre por jugador).
+     estado={cant,nombres}; alCambiar() se llama en cada cambio. */
+  function editorJugadores(cont,estado,{min=2,max=12,alCambiar=()=>{}}={}){
+    cont.innerHTML='<div class="imp-cant"><button type="button" data-d="-1">−</button><b></b><button type="button" data-d="1">+</button></div><div class="imp-nombres"></div>';
+    const pintar=()=>{
+      cont.querySelector("b").textContent=estado.cant;
+      const lista=cont.querySelector(".imp-nombres");lista.innerHTML="";
+      for(let i=0;i<estado.cant;i++){const inp=document.createElement("input");inp.type="text";inp.maxLength=14;inp.placeholder="Jugador "+(i+1);inp.value=estado.nombres[i]||"";inp.oninput=()=>{estado.nombres[i]=inp.value;alCambiar();};lista.appendChild(inp);}
+    };
+    cont.querySelector(".imp-cant").onclick=e=>{const b=e.target.closest("button[data-d]");if(!b)return;const n=estado.cant+Number(b.dataset.d);if(n<min||n>max)return;estado.cant=n;pintar();alCambiar();};
+    pintar();
+  }
+  const nombreJugador=(estado,i)=>(estado.nombres[i]||"").trim()||"Jugador "+(i+1);
+  return{entrar,activar,desactivar,prender,salir,confirmar,invitar,editorJugadores,nombreJugador,activo:()=>activo};
 })();
 window.PantallaFija=PantallaFija;
