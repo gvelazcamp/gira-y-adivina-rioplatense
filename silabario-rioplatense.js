@@ -93,7 +93,6 @@ const SilabarioRioplatense=(()=>{
   function sonido(acierto){
     if(typeof bip!=="function")return;
     if(acierto){bip(660,.2,"sine",.065);bip(990,.3,"triangle",.04);}
-    else sonidoErrorExt();
     if(typeof vibrar==="function")vibrar(acierto?25:[45,40,45]);
   }
   function renderTablero(){
