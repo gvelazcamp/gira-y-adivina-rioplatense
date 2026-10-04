@@ -131,11 +131,11 @@ const TuttiFrutti=(()=>{
      con reconexión automática una vez conectado. El código se muestra
      enseguida, igual que en los otros juegos, mientras conecta. */
   const BROKERS_TF=["wss://broker.emqx.io:8084/mqtt","wss://broker.hivemq.com:8884/mqtt","wss://test.mosquitto.org:8081/mqtt"];
-  /* Si la librería mqtt (que el juego carga de unpkg al abrir) no llegó a
-     cargar, se baja de nuevo (unpkg y después jsdelivr). */
+  /* Si la librería mqtt (que el juego carga al abrir) no llegó a cargar,
+     se vuelve a pedir: copia local, unpkg y después jsdelivr. */
   function cargarMqtt(cb){
     if(typeof mqtt!=="undefined"){cb(true);return;}
-    const urls=["https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js","https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js"];
+    const urls=["lib/mqtt.min.js?v=5.10.1","https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js","https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js"];
     const probar=k=>{if(typeof mqtt!=="undefined"){cb(true);return;}if(k>=urls.length){cb(false);return;}
       const sc=document.createElement("script");sc.src=urls[k];sc.onload=()=>cb(typeof mqtt!=="undefined");sc.onerror=()=>probar(k+1);document.head.appendChild(sc);};
     probar(0);
