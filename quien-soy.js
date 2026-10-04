@@ -80,7 +80,6 @@ const QuienSoy=(()=>{
     resultados.push({w:palabras[idx],ok});Vistas.marcar("quien_soy_"+cat.id,palabras[idx]);idx++;
     const j=q("qsJuego");j.classList.remove("flash-ok","flash-paso");void j.offsetWidth;j.classList.add(ok?"flash-ok":"flash-paso");
     if(typeof bip==="function"){if(ok){bip(660,.15,"sine",.06);bip(990,.22,"triangle",.04);}}
-    if(!ok&&typeof sonidoErrorExt==="function")sonidoErrorExt();
     if(typeof vibrar==="function")vibrar(ok?30:15);
     mostrar();
   }
