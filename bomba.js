@@ -82,7 +82,7 @@ const Bomba=(()=>{
           const nuevas=ps.slice(consumido[i]||0);consumido[i]=ps.length;
           const w=nuevas[nuevas.length-1];
           oido("✘ "+w.toLowerCase()+(usadas.has(w)?" (ya la dijeron)":w===sil?" (solo la sílaba)":" (no cuenta)"));
-          if(typeof sonidoErrorExt==="function"&&Date.now()>silencioError){silencioError=Date.now()+1200;sonidoErrorExt();}
+          if(Date.now()>silencioError){silencioError=Date.now()+1200;if(typeof sonidoErrorExt==="function")sonidoErrorExt();if(typeof cruzErrorExt==="function")cruzErrorExt();}
           if(typeof vibrar==="function")vibrar([40,40,40]);
           continue;
         }
