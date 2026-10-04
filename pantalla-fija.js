@@ -13,19 +13,29 @@ const PantallaFija=(()=>{
   function alAtras(){if(activo)try{history.pushState({fija:1},"");}catch(e){}}
   document.addEventListener("visibilitychange",alVolver);
   window.addEventListener("popstate",alAtras);
+  /* Pantalla completa apenas se abre el juego (todavía con el toque del
+     usuario): así el aviso de Chrome "Para salir de la pantalla completa…"
+     sale en la pantalla de inicio y no tapa el número/palabra al jugar.
+     Se queda en pantalla completa entre rondas; solo sale con salir(). */
+  function entrar(){
+    try{const el=document.documentElement;
+      if(!document.fullscreenElement&&el.requestFullscreen)return el.requestFullscreen({navigationUI:"hide"}).catch(()=>{});}catch(e){}
+    return Promise.resolve();
+  }
+  function bloquearOrientacion(o){try{if(o&&screen.orientation&&screen.orientation.lock){orientacion=o;screen.orientation.lock(o).catch(()=>{});}}catch(e){}}
+  function desbloquearOrientacion(){try{if(orientacion&&screen.orientation&&screen.orientation.unlock)screen.orientation.unlock();}catch(e){}orientacion="";}
   function activar(opts={}){
     const yaEstaba=activo;activo=true;
     if(!yaEstaba)try{history.pushState({fija:1},"");}catch(e){}
-    try{const el=document.documentElement;
-      if(!document.fullscreenElement&&el.requestFullscreen){
-        const p=el.requestFullscreen({navigationUI:"hide"});
-        if(p&&p.then)p.then(()=>{if(opts.orientacion&&screen.orientation&&screen.orientation.lock){orientacion=opts.orientacion;screen.orientation.lock(opts.orientacion).catch(()=>{});}}).catch(()=>{});
-      }}catch(e){}
+    const p=entrar();
+    if(opts.orientacion)(p&&p.then?p:Promise.resolve()).then(()=>{if(activo)bloquearOrientacion(opts.orientacion);});
     pedirWake();
   }
-  function desactivar(){
-    activo=false;soltarWake();
-    try{if(orientacion&&screen.orientation&&screen.orientation.unlock)screen.orientation.unlock();}catch(e){}orientacion="";
+  /* Fin de la ronda: la pantalla ya se puede apagar y "atrás" vuelve a andar,
+     pero sigue en pantalla completa para la próxima ronda. */
+  function desactivar(){activo=false;soltarWake();desbloquearOrientacion();}
+  function salir(){
+    desactivar();
     try{if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen().catch(()=>{});}catch(e){}
   }
   function mantener(el,ms,cb){
@@ -43,6 +53,6 @@ const PantallaFija=(()=>{
     const texto="¿Jugamos a "+nombre+" en Girá y Adiviná? Entrá acá: "+base+"?ext="+id;
     try{window.open("https://wa.me/?text="+encodeURIComponent(texto),"_blank");}catch(e){}
   }
-  return{activar,desactivar,mantener,invitar,activo:()=>activo};
+  return{entrar,activar,desactivar,salir,mantener,invitar,activo:()=>activo};
 })();
 window.PantallaFija=PantallaFija;
