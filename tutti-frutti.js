@@ -331,7 +331,7 @@ const TuttiFrutti=(()=>{
       <p class="imp-ayuda">Letra <b>${on.letra}</b> · <b>10</b> única · <b>5</b> repetida · <b>20</b> si sos el único · <b>0</b> si no vale.<br>⚠️ = mal escrita (vale 0): tocá <b class="tf-ver-ej">👆 ver error</b> para ver lo correcto. Con el botón de la derecha votás: ❌ anula, ✔ perdona.</p>
       <ul class="tf-resps">${filas}</ul>
       <div class="qs-sub">🏆 Puntos (con esta ronda)</div><ul class="imp-tabla" id="tfTabla"></ul>
-      ${on.host?((on.rj||1)>=(on.tot||RONDAS)?`<button type="button" class="mg-principal" id="tfMas">🎲 Una ronda más</button><button type="button" id="tfOtra">🏆 Terminar y ver ganador</button>`:`<button type="button" class="mg-principal" id="tfOtra">🎲 Siguiente ronda (${(on.rj||1)+1} de ${on.tot||RONDAS})</button>`):`<p class="imp-ayuda">Esperando al anfitrión…</p>`}</div>`);
+      ${on.host?((on.rj||1)>=(on.tot||RONDAS)?`<button type="button" class="mg-principal" id="tfOtra">🏆 Ver ganador de la partida</button>`:`<button type="button" class="mg-principal" id="tfOtra">🎲 Siguiente ronda (${(on.rj||1)+1} de ${on.tot||RONDAS})</button>`):`<p class="imp-ayuda">Esperando al anfitrión…</p>`}</div>`);
     raiz.querySelector(".tf-resps").onclick=e=>{
       const f=e.target.closest(".tf-fila");if(!f||!f.dataset.a)return;const a=f.dataset.a,i=Number(f.dataset.i);
       if(e.target.closest(".tf-votar")){const st=on.votos[a+"|"+i];const ya=!!(st&&st.has(on.pid));mandar({t:"voto",n:on.n,a,i,v:!ya});return;}
@@ -349,7 +349,6 @@ const TuttiFrutti=(()=>{
         difundirSala();
       };
       q("tfOtra").onclick=()=>{cerrar();if((on.rj||1)>=(on.tot||RONDAS)){mandar({t:"final",n:on.n,ganadas:on.ganadas,rg:on.rg,jug:on.jug,tot:on.tot||RONDAS});return;}nuevaRonda();};
-      const mas=raiz.querySelector("#tfMas");if(mas)mas.onclick=()=>{cerrar();on.tot=(on.tot||RONDAS)+1;nuevaRonda();};
     }
   }
   /* Mini popup: por qué está mal y cuál es la forma correcta (solo informa). */
@@ -399,7 +398,7 @@ const TuttiFrutti=(()=>{
     const orden=on.jug.map(j=>[j,sumar(pr[j.pid]),(on.ganadas[j.pid]||0)+sumar(pr[j.pid])]).sort((a,b)=>b[2]-a[2]);
     const mejor=on.jug.map(j=>[j,sumar(pr[j.pid])]).sort((a,b)=>b[1]-a[1]);
     const t=raiz.querySelector("#tfTitulo");
-    if(t){const empate=mejor.length>1&&mejor[0][1]===mejor[1][1];const nr="Ronda "+(on.rj||1)+" de "+(on.tot||RONDAS)+": ";t.textContent=nr+(empate?"empate 🤝":mejor[0][0].nombre+" (+"+mejor[0][1]+") 🏆");}
+    if(t){const empate=mejor.length>1&&mejor[0][1]===mejor[1][1];const nr=((on.rj||1)>=(on.tot||RONDAS)?"Última ronda":"Ronda "+(on.rj||1)+" de "+(on.tot||RONDAS))+": ";t.textContent=nr+(empate?"empate 🤝":mejor[0][0].nombre+" (+"+mejor[0][1]+") 🏆");}
     const tabla=raiz.querySelector("#tfTabla");
     if(tabla)tabla.innerHTML=orden.map(([j,r,tot])=>`<li><span>${esc(j.nombre)}</span><b>${tot} <small>(+${r})</small></b></li>`).join("");
   }
