@@ -23,9 +23,10 @@ const RuedaDeLetras=(()=>{
   function mezclar(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=azar(i+1);[b[i],b[j]]=[b[j],b[i]];}return b;}
   function elegir(n){
     const c=configNivel(n),fuentes=RUEDA_DATOS.filter(d=>d.base.length===c.letras);
-    const sinRepetirSesion=fuentes.filter(d=>!usadasSesion.has(d.base));
-    const origen=sinRepetirSesion.length?sinRepetirSesion:fuentes;
-    const fuente=origen[azar(origen.length)];
+    const noVistas=Vistas.filtrar("rueda",fuentes,d=>d.base);
+    const sinRepetirSesion=noVistas.filter(d=>!usadasSesion.has(d.base));
+    const origen=sinRepetirSesion.length?sinRepetirSesion:noVistas;
+    const fuente=origen[azar(origen.length)];Vistas.marcar("rueda",fuente.base);
     const candidatas=fuente.palabras.filter(w=>w!==fuente.base&&w.length>=c.min&&w.length<=c.max);
     if(candidatas.length<c.palabras-1)throw Error("Faltan palabras en "+fuente.base);
     usadasSesion.add(fuente.base);

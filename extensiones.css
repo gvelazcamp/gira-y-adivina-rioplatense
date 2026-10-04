@@ -273,3 +273,12 @@ body.ext-abierta{overflow:hidden}
 .ah-mini svg{display:block;width:100%}
 .ah-mini g>*{opacity:0;transition:opacity .25s}.ah-mini g>.on{opacity:1}
 .ah-mini.perdida g{stroke:#FF7E8B}.ah-mini.perdida{border-color:#FF7E8B}
+/* Rosco: resumen de respuestas */
+.rr-resumen{display:grid;gap:4px;margin:10px 0;max-height:34dvh;overflow-y:auto;text-align:left}
+.rr-res-fila{display:grid;grid-template-columns:22px minmax(0,1fr) minmax(0,1.1fr) auto;gap:6px;align-items:center;background:#1B0F2A;border-radius:9px;padding:5px 7px;font-size:.78rem}
+.rr-res-fila:has(span:nth-child(5)){grid-template-columns:22px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)}
+.rr-res-fila b{color:#F5B301;font-family:'Archivo Black',sans-serif}
+.rr-res-palabra{font-weight:900;color:#F6EFE2;overflow-wrap:anywhere}
+.rr-res-fila span small{display:block;font-size:.58rem;color:#B9A9CC;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rr-res-ok{color:#37D6C0;font-weight:800;overflow-wrap:anywhere}.rr-res-mal{color:#FF7E8B;font-weight:800;overflow-wrap:anywhere}.rr-res-nada{color:#8F80A3;font-weight:800}
+.dl-extra{max-height:36dvh;overflow-y:auto;margin:6px 0 10px}.dl-extra .rr-resumen{max-height:none;margin:0}

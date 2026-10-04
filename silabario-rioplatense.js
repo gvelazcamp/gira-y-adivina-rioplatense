@@ -61,13 +61,14 @@ const SilabarioRioplatense=(()=>{
   function armarRonda(){
     const preferidas=SILABARIO_DATOS.filter(d=>nivel<3?d.nivel<=2:d.nivel>=2);
     const pool=preferidas.length?preferidas:SILABARIO_DATOS;
+    const noVistas=Vistas.filtrar("silabario",pool,d=>d.respuesta).filter(d=>!usadasSesion.has(d.respuesta));
     const sinRepetir=pool.filter(d=>!usadasSesion.has(d.respuesta));
-    const elegidas=(sinRepetir.length?intentarCuadrado(sinRepetir):null)||intentarCuadrado(pool)||(()=>{
+    const elegidas=(noVistas.length?intentarCuadrado(noVistas):null)||(sinRepetir.length?intentarCuadrado(sinRepetir):null)||intentarCuadrado(pool)||(()=>{
       const candidatas=mezclar(pool),out=[];let suma=0;
       for(const palabra of candidatas){const n=palabra.silabas.length;if(suma+n<=config.fichas){out.push(palabra);suma+=n;}}
       return out;
     })();
-    elegidas.forEach(d=>usadasSesion.add(d.respuesta));
+    elegidas.forEach(d=>usadasSesion.add(d.respuesta));Vistas.marcar("silabario",elegidas.map(d=>d.respuesta));
     return elegidas;
   }
   function construirFichas(objetivo){

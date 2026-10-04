@@ -76,11 +76,12 @@ const AhorcadoRioplatense=(()=>{
     setTimeout(cb,reducido?30:AHORCADO_CONFIG.giroMs);
   }
   function elegirPalabra(excluir){
-    const libres=AHORCADO_DATOS.filter(d=>!excluir.some(u=>u.palabra===d.palabra));
+    const libres=Vistas.filtrar("ahorcado",AHORCADO_DATOS.filter(d=>!excluir.some(u=>u.palabra===d.palabra)),d=>d.palabra);
     const cats=[...new Set(libres.map(d=>d.categoria))];
     const catId=cats[Math.floor(Math.random()*cats.length)];
     const opciones=libres.filter(d=>d.categoria===catId);
-    return opciones[Math.floor(Math.random()*opciones.length)];
+    const elegida=opciones[Math.floor(Math.random()*opciones.length)];
+    Vistas.marcar("ahorcado",elegida.palabra);return elegida;
   }
   function dibujarPalabra(revelar){
     $("#ahPalabra").innerHTML=palabra.palabra.split("").map(c=>{

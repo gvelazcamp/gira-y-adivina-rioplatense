@@ -45,10 +45,11 @@ const FrasesEnGiro=(()=>{
   }
   function elegir(n){
     const grupo=configNivel(n).grupo;
-    const posibles=FRASES_EN_GIRO_DATOS.map((d,id)=>({...d,id})).filter(d=>d.nivel===grupo);
+    const posibles=Vistas.filtrar("frases",FRASES_EN_GIRO_DATOS.map((d,id)=>({...d,id})).filter(d=>d.nivel===grupo),d=>d.texto);
     const recientes=new Set(datos.recientes.slice(-Math.min(8,posibles.length-1)));
     const libres=posibles.filter(d=>!recientes.has(d.id));
-    return (libres.length?libres:posibles)[azar((libres.length?libres:posibles).length)];
+    const elegida=(libres.length?libres:posibles)[azar((libres.length?libres:posibles).length)];
+    Vistas.marcar("frases",elegida.texto);return elegida;
   }
   function sonido(f=750){if(typeof bip==="function")bip(f,.075,"sine",.05);}
   function sonidoAcierto(){
