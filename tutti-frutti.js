@@ -353,9 +353,11 @@ const TuttiFrutti=(()=>{
     if(typeof vibrar==="function")vibrar([80,50,80]);
     pantalla(`<div class="imp-centro"><div class="imp-rol">${quien?"✋ ¡BASTA!":"⏰ ¡Tiempo!"}</div>
       <p class="imp-ayuda">${quien?(quien===on.pid?"¡Completaste todo primero!":"<b>"+esc(nombre||"Alguien")+"</b> completó todo primero."):"Nadie llegó a completar todo."}</p>
-      <p class="imp-ayuda">Juntando las respuestas…</p></div>`);
+      <p class="imp-ayuda">Juntando las respuestas…</p>
+      ${on.host?`<button type="button" class="bb-pasar" id="tfYa">▶ Continuar</button>`:""}</div>`);
+    const ya=raiz&&raiz.querySelector("#tfYa");if(ya)ya.onclick=()=>{if(on&&on.fase==="cortada")publicarResultado();};
     if(!on.envie){on.envie=true;mandar({t:"resp",n:on.n,r:on.mias});}
-    if(on.host)on.timers.push(setTimeout(()=>{if(on&&on.fase==="cortada")publicarResultado();},3500));
+    if(on.host)on.timers.push(setTimeout(()=>{if(on&&on.fase==="cortada")publicarResultado();},2500));
   }
   /* Puntos como el Tutti Frutti de verdad, por categoría: 10 si nadie más
      puso lo mismo, 5 si se repite, 20 si sos el único que la completó, 0 si
@@ -483,7 +485,7 @@ const TuttiFrutti=(()=>{
       <p class="imp-ayuda">${on.tot||RONDAS} rondas: gana el que ganó más rondas (si empatan, el de más puntos).</p>
       <ol class="kar-podio">${orden.map(([j,rg,p],k)=>`<li style="--c:#E5197C"><span>${k+1}</span><i>${esc((j.nombre||"?")[0].toUpperCase())}</i><b>${esc(j.nombre)}${j.pid===on.pid?" (vos)":""}</b><em>${rg} ${rg===1?"ronda":"rondas"} · ${p} pts</em></li>`).join("")}</ol>
       ${on.host?`<button type="button" class="mg-principal" id="tfRevancha">🔄 Revancha</button>`:`<p class="imp-ayuda">Esperando que el anfitrión arranque la revancha…</p>`}</div>`);
-    if(on.host)q("tfRevancha").onclick=()=>{on.ganadas={};on.rg={};on.rj=0;on.tot=RONDAS;on.usadas=[];difundirSala();nuevaRonda();};
+    if(on.host)q("tfRevancha").onclick=()=>{on.ganadas={};on.rg={};on.rj=0;on.tot=RONDAS;difundirSala();nuevaRonda();};
   }
   /* Link ?tutti=<SALA>&de=<nombre>: abre el juego y se une solo. */
   function abrirInvitacion(sala,de){
