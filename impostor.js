@@ -81,7 +81,7 @@ const Impostor=(()=>{
   function ver(){
     const i=ronda.turno,esImp=ronda.impostores.includes(i),ultimo=i===cant-1;
     pantallaJuego(`<div class="imp-centro">${esImp
-      ?`<div class="imp-carta imp-mala"><div class="imp-rol">🕵️ SOS EL IMPOSTOR</div><p>Disimulá: escuchá a los demás y decí algo que encaje.</p></div>`
+      ?`<div class="imp-carta imp-mala"><div class="imp-rol">🕵️ SOS EL IMPOSTOR</div><div class="imp-pista">Categoría: ${ronda.cat.emoji} ${esc(ronda.cat.nombre)}</div><p>Disimulá: escuchá a los demás y decí algo que encaje.</p></div>`
       :`<div class="imp-carta"><small>Tu palabra es</small><div class="imp-palabra">${esc(ronda.palabra)}</div><p>No la digas: decí algo relacionado.</p></div>`}
       <button type="button" class="bb-pasar" id="impListo">${ultimo?"Ya la vi · Empezar ➜":"Ya la vi · Ocultar y pasar ➜"}</button></div>`);
     /* Igual para todos (sin sonido): que nadie se dé cuenta de quién es el impostor. */

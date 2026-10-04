@@ -329,3 +329,4 @@ body.pf-activo #extAtras,body.pf-activo #extCerrar,body.pf-activo .ext-volver{vi
 .imp-dos-btn{display:flex;flex-direction:column;gap:12px;width:100%;align-items:center}.bb-pasar.imp-gris{background:#49305B;box-shadow:0 6px 0 #2A1A3C}
 .imp-fin{text-align:center}.imp-tabla{list-style:none;padding:0;margin:0 0 10px;display:flex;flex-direction:column;gap:5px;max-height:30vh;overflow-y:auto}.imp-tabla li{display:flex;justify-content:space-between;background:#FFFFFF12;border-radius:10px;padding:7px 12px;font-weight:800}.imp-tabla li b{color:#FFD65C}
 .imp-panel p{margin-bottom:8px!important}.imp-panel .qs-sub{margin-top:8px}.imp-cats{display:flex!important;flex-wrap:wrap;gap:6px!important}.mg-panel .imp-cats button{width:auto;flex:1 1 auto;min-height:36px;padding:6px 10px;font-size:.8rem}.imp-nombres input{padding:7px 10px}.mg-panel .imp-dos button{min-height:38px}
+.imp-pista{margin-top:10px;font-weight:800;color:#FFD65C}
