@@ -35,6 +35,7 @@ window.sonidoErrorExt=sonidoErrorExt;
    la versión vieja, que usa uno solo). Los mensajes repetidos (mismo texto
    por dos servidores en menos de 1,5 s) se descartan.
    Misma firma que conectar(): conectar(alConectar, alFallar, asignar). */
+window.GYA_VERSION_SALAS="v4 (multi+supabase)";
 const MultiBroker=(()=>{
   const LISTA=["wss://broker.emqx.io:8084/mqtt","wss://broker.hivemq.com:8884/mqtt","wss://test.mosquitto.org:8081/mqtt","wss://mqtt.eclipseprojects.io:443/mqtt"];
   function cargarLib(cb){
@@ -74,6 +75,9 @@ const MultiBroker=(()=>{
   }
   function conectar(alConectar,alFallar,asignar){
     const clis=[],subs=new Set(),oyentes=[],vistos=new Map();let sb=null;
+    /* Diagnóstico para el mensaje de error: estado de cada servidor. */
+    const NOMBRES=["emqx","hivemq","mosquitto","eclipse"],est={emqx:"…",hivemq:"…",mosquitto:"…",eclipse:"…",supabase:"…"};
+    const detalle=()=>Object.entries(est).map(([k,v])=>k+" "+v).join(" · ")+" · "+window.GYA_VERSION_SALAS;
     let listo=false,fallo=false,cerrado=false,caidos=0,timer=0;
     const w={
       get connected(){return clis.some(c=>c.connected)||!!(sb&&sb.connected);},
@@ -83,7 +87,7 @@ const MultiBroker=(()=>{
       on(ev,f){if(ev==="message")oyentes.push(f);return w;},
       end(){cerrado=true;clearTimeout(timer);clis.forEach(c=>{try{c.end(true);}catch(e){}});if(sb)try{sb.end();}catch(e){}}
     };
-    const fallar=motivo=>{if(listo||fallo)return;fallo=true;window.gyaFalloConexion=motivo;w.end();if(alFallar)alFallar();};
+    const fallar=motivo=>{if(listo||fallo)return;fallo=true;window.gyaFalloConexion=motivo+" — "+detalle();w.end();if(alFallar)alFallar();};
     const recibir=(t,pl)=>{
       const txt=String(pl),clave=t+"|"+txt,ahora=Date.now();
       const antes=vistos.get(clave);if(antes&&ahora-antes<1500)return;
@@ -92,23 +96,24 @@ const MultiBroker=(()=>{
     };
     const yaConectado=()=>{if(!listo&&!fallo&&!cerrado){listo=true;clearTimeout(timer);alConectar();}};
     if(asignar)asignar(w);
-    sb=clienteSupabase(yaConectado);
+    sb=clienteSupabase(()=>{est.supabase="✓";yaConectado();});
+    if(!sb)est.supabase=typeof window.supabase==="undefined"?"sin librería":"✗";
     if(sb)sb.on("message",recibir);
     cargarLib(ok=>{
       if(cerrado)return;
-      if(!ok){if(!sb)fallar("sin librería");return;}
-      LISTA.forEach(url=>{
-        let c,primera=true;
-        try{c=mqtt.connect(url,{clientId:"gyx"+Math.random().toString(16).slice(2),connectTimeout:8000,reconnectPeriod:3000,clean:true});}catch(e){caidos++;return;}
+      if(!ok){NOMBRES.forEach(n=>est[n]="sin librería");if(!sb)fallar("sin librería");return;}
+      LISTA.forEach((url,ix)=>{
+        let c,primera=true;const nom=NOMBRES[ix];
+        try{c=mqtt.connect(url,{clientId:"gyx"+Math.random().toString(16).slice(2),connectTimeout:8000,reconnectPeriod:3000,clean:true});}catch(e){est[nom]="error: "+String(e&&e.message||e).slice(0,40);caidos++;return;}
         clis.push(c);
         c.on("connect",()=>{
           if(cerrado){try{c.end(true);}catch(e){}return;}
-          subs.forEach(t=>{try{c.subscribe(t);}catch(e){}});
+          est[nom]="✓";subs.forEach(t=>{try{c.subscribe(t);}catch(e){}});
           yaConectado();
         });
         c.on("message",recibir);
-        c.on("error",()=>{});
-        c.on("close",()=>{if(primera&&!listo){primera=false;caidos++;if(caidos>=LISTA.length&&!sb)fallar("los servidores no responden");}});
+        c.on("error",e=>{if(est[nom]!=="✓")est[nom]="✗ "+String(e&&e.message||"").slice(0,30);});
+        c.on("close",()=>{if(est[nom]==="…")est[nom]="✗";if(primera&&!listo){primera=false;caidos++;if(caidos>=LISTA.length&&!sb)fallar("los servidores no responden");}});
       });
     });
     timer=setTimeout(()=>fallar("los servidores no responden"),15000);
