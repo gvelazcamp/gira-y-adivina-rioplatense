@@ -27,6 +27,15 @@ const sonidoErrorExt=(()=>{let a=null;return function(){
     a.currentTime=0;a.play().catch(()=>{});}catch(e){}
 };})();
 window.sonidoErrorExt=sonidoErrorExt;
+/* Cruz roja grande (estilo Got Talent) para acompañar el sonido de error. */
+const cruzErrorExt=(()=>{let el=null,t=0;return function(){
+  try{
+    if(!el){el=document.createElement("div");el.className="ext-cruz";el.innerHTML='<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M24 24 L76 76 M76 24 L24 76"/></svg>';}
+    document.body.appendChild(el);el.classList.remove("on");void el.offsetWidth;el.classList.add("on");
+    clearTimeout(t);t=setTimeout(()=>el.remove(),900);
+  }catch(e){}
+};})();
+window.cruzErrorExt=cruzErrorExt;
 const Duelo=(()=>{
   const CHARS="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let cliente=null,juego=null,sala=null,soyHost=false,rival=null,activo=false;
