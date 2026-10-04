@@ -10,10 +10,10 @@ const Mimica=(()=>{
     {id:"media",nombre:"Media",pts:2,icono:"🎬",lista:()=>window.MIMICA_MEDIA||[],ej:"Películas, series, deportes y personajes"},
     {id:"dificil",nombre:"Difícil",pts:3,icono:"🔥",lista:()=>window.MIMICA_DIFICIL||[],ej:"Animales raros, máquinas y oficios"}];
   const COLORES=["#FF4D6D","#3D8BFF"],POR_DEF=["Rojos","Azules"];
-  let raiz=null,equipos=["",""],tiempo=60,meta=20,partidas=0;
+  let raiz=null,equipos=["",""],tiempo=60,meta=20,partidas=0,usar=[true,true,true];
   let pts=[0,0],turno=0,turnos=0,mazos=[[],[],[]],idx=[0,0,0],hechas=[],fin=0,timer=0,jugando=false,bloqueo=0,actual=null;
-  function cargar(){try{const d=JSON.parse(localStorage.getItem(CLAVE));if(d&&typeof d==="object"){if(Array.isArray(d.equipos))equipos=[String(d.equipos[0]||""),String(d.equipos[1]||"")];if(TIEMPOS.includes(d.tiempo))tiempo=d.tiempo;if(METAS.includes(d.meta))meta=d.meta;partidas=Number(d.partidas)||0;}}catch(e){}}
-  function guardar(){try{localStorage.setItem(CLAVE,JSON.stringify({equipos,tiempo,meta,partidas}));}catch(e){}}
+  function cargar(){try{const d=JSON.parse(localStorage.getItem(CLAVE));if(d&&typeof d==="object"){if(Array.isArray(d.equipos))equipos=[String(d.equipos[0]||""),String(d.equipos[1]||"")];if(TIEMPOS.includes(d.tiempo))tiempo=d.tiempo;if(METAS.includes(d.meta))meta=d.meta;partidas=Number(d.partidas)||0;if(Array.isArray(d.usar)&&d.usar.length===3&&d.usar.some(Boolean))usar=d.usar.map(Boolean);}}catch(e){}}
+  function guardar(){try{localStorage.setItem(CLAVE,JSON.stringify({equipos,tiempo,meta,partidas,usar}));}catch(e){}}
   cargar();
   const q=id=>raiz.querySelector("#"+id);
   const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
@@ -28,8 +28,8 @@ const Mimica=(()=>{
       <div class="mim-cartel"><div class="mim-focos">🎭</div><h3>Mímica rioplatense</h3><p>Actuá <b>sin hablar</b>. Tu equipo adivina.</p></div>
       <div class="mg-panel mim-caja"><div class="qs-sub">👥 Equipos</div>
       <div class="mim-equipos">${[0,1].map(i=>`<label class="mim-eq" style="--c:${COLORES[i]}"><i></i><input id="mimE${i}" maxlength="14" placeholder="${POR_DEF[i]}" value="${esc(equipos[i])}"></label>`).join("")}</div>
-      <div class="qs-sub">🃏 Cada carta vale</div>
-      <div class="mim-niveles">${NIVELES.map((n,i)=>`<div class="mim-nv n${i}"><span>${n.icono}</span><b>${n.nombre}</b><em>+${n.pts}</em><small>${n.ej}</small></div>`).join("")}</div>
+      <div class="qs-sub">🃏 Cartas en juego <small>(tocá para elegir)</small></div>
+      <div class="mim-niveles" id="mimN">${NIVELES.map((n,i)=>`<button type="button" class="mim-nv n${i}" data-n="${i}"><i>✔</i><span>${n.icono}</span><b>${n.nombre}</b><em>+${n.pts}</em><small>${n.ej}</small></button>`).join("")}</div>
       <div class="qs-sub">⏱️ Tiempo por turno</div>
       <div class="qns-rangos imp-dos" id="mimT">${TIEMPOS.map(t=>`<button type="button" data-v="${t}">${t} s</button>`).join("")}</div>
       <div class="qs-sub">🏆 Gana el que llega a</div>
@@ -37,7 +37,8 @@ const Mimica=(()=>{
       <button type="button" class="mg-principal" id="mimEmpezar">🎭 Abrir el telón</button>
       <div class="mim-dos"><button type="button" id="mimComo">❓ Cómo se juega</button><button type="button" id="mimWpp">💬 Invitar</button></div>
       <div class="mim-como" id="mimComoTxt" hidden><ol><li>Pasale el celular al que actúa; su equipo no mira.</li><li>Elige una carta: cuanto más difícil, más puntos.</li><li>La actúa sin hablar ni señalar cosas. Si adivinan, ✔ y elige otra.</li><li>Si se traba, <b>Pasar</b> (no suma) y elige otra.</li><li>Cuando suena el tiempo, le toca al otro equipo.</li></ol></div></div></div>`;
-    const pintar=()=>{raiz.querySelectorAll("#mimT button").forEach(b=>b.classList.toggle("activo",Number(b.dataset.v)===tiempo));raiz.querySelectorAll("#mimM button").forEach(b=>b.classList.toggle("activo",Number(b.dataset.v)===meta));};pintar();
+    const pintar=()=>{raiz.querySelectorAll("#mimT button").forEach(b=>b.classList.toggle("activo",Number(b.dataset.v)===tiempo));raiz.querySelectorAll("#mimM button").forEach(b=>b.classList.toggle("activo",Number(b.dataset.v)===meta));raiz.querySelectorAll("#mimN button").forEach(b=>b.classList.toggle("activo",usar[Number(b.dataset.n)]));};pintar();
+    q("mimN").onclick=e=>{const b=e.target.closest("button[data-n]");if(!b)return;const n=Number(b.dataset.n);if(usar[n]&&usar.filter(Boolean).length===1){if(typeof mostrarToast==="function")mostrarToast("🃏","Tiene que quedar al menos una carta");return;}usar[n]=!usar[n];guardar();pintar();};
     [0,1].forEach(i=>q("mimE"+i).oninput=e=>{equipos[i]=e.target.value;guardar();});
     q("mimT").onclick=e=>{const b=e.target.closest("button[data-v]");if(b){tiempo=Number(b.dataset.v);guardar();pintar();}};
     q("mimM").onclick=e=>{const b=e.target.closest("button[data-v]");if(b){meta=Number(b.dataset.v);guardar();pintar();}};
@@ -63,8 +64,8 @@ const Mimica=(()=>{
     actual=null;
     pantalla(`<div class="mim-tope">${anillo()}<div><small>${esc(nom(turno))}</small><b>+${hechas.filter(h=>h.ok).reduce((s,h)=>s+h.pts,0)}</b></div></div>
       <div class="imp-centro mim-centro"><div class="mim-elige">Elegí una carta</div>
-      <div class="mim-cartas">${NIVELES.map((n,i)=>`<button type="button" class="mim-carta n${i}" data-n="${i}"><span>${n.icono}</span><b>${n.nombre}</b><em>+${n.pts}</em></button>`).join("")}</div>
-      <p class="imp-ayuda">Más difícil, más puntos.</p></div>`,"mim-jugando");
+      <div class="mim-cartas" style="grid-template-columns:repeat(${usar.filter(Boolean).length},1fr)">${NIVELES.map((n,i)=>!usar[i]?"":`<button type="button" class="mim-carta n${i}" data-n="${i}"><span>${n.icono}</span><b>${n.nombre}</b><em>+${n.pts}</em></button>`).join("")}</div>
+      <p class="imp-ayuda">${usar.filter(Boolean).length>1?"Más difícil, más puntos.":"Tocá la carta para ver la frase."}</p></div>`,"mim-jugando");
     raiz.querySelectorAll(".mim-carta").forEach(b=>b.addEventListener("pointerdown",e=>{e.preventDefault();if(!jugando||Date.now()<bloqueo)return;bloqueo=Date.now()+300;mostrar(Number(b.dataset.n));}));
     pintarReloj();
   }
