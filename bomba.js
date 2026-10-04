@@ -10,7 +10,11 @@ const Bomba=(()=>{
   const CLAVE="gya_bomba";
   const SILABAS=["CA","CO","CU","MA","ME","MI","MO","PA","PE","PI","PO","LA","LO","LI","TA","TE","TO","RE","RO","SA","SE","SO","DE","DO","NA","NE","NO","BA","BO","BU","GA","GO","VA","VE","FA","FI","JA","JU","RA","RI","CHA","CHI","CHO","LLA","LLO","TRA","TRE","PRE","PRO","BRA","BLA","CLA","PLA","GRA","FRA","CRE","MEN","CON","TER","POR","SAL","MAR","CAN","TAR","PAN","SOL","DOR","ITO","ADA","ERO","OSO","ADO","ENTE","ANTE","ICO","ERA","ILLA","ÓN","EZ","AJE"];
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  let silencioError=0,voz=null,conVoz=!!SR,usadas=new Set(),consumido={},cerrado=-1,fallosVoz=0;
+  /* En Android, si la página hace sonidos mientras el reconocimiento de voz
+     escucha, el celular corta la escucha (aborted) y no llega nada. Con
+     árbitro por voz en Android el tic-tac es con vibración, sin sonido. */
+  const ANDROID=/Android/i.test(navigator.userAgent||"");
+  let silencioError=0,textoOido="",cortes=[],voz=null,conVoz=!!SR,usadas=new Set(),consumido={},cerrado=-1,fallosVoz=0;
   let raiz=null,rondas=0,jugando=false,explota=0,inicioT=0,tic=0,pasadas=0,ultima="",bloqueoToque=0;
   function cargar(){try{const d=JSON.parse(localStorage.getItem(CLAVE));if(d&&typeof d==="object"){rondas=Number(d.rondas)||0;if(SR&&typeof d.voz==="boolean")conVoz=d.voz;}}catch(e){}}
   function guardar(){try{localStorage.setItem(CLAVE,JSON.stringify({rondas,voz:conVoz}));}catch(e){}}
@@ -61,7 +65,8 @@ const Bomba=(()=>{
     if(!SR||voz)return;
     try{voz=new SR();}catch(e){voz=null;return;}
     voz.lang="es-UY";voz.continuous=true;voz.interimResults=true;voz.maxAlternatives=1;consumido={};cerrado=-1;fallosVoz=0;
-    voz.onstart=()=>oido("🎤 Escuchando…");
+    voz.onstart=()=>{if(!/^[✔✘]/.test(textoOido))oido("🎤 Escuchando…");};
+    voz.onspeechstart=()=>{if(!/^[✔✘]/.test(textoOido))oido("🎤 Te escucho…");};
     voz.onresult=e=>{
       if(!jugando)return;fallosVoz=0;
       const sil=norm(ultima);
@@ -93,14 +98,20 @@ const Bomba=(()=>{
       }
     };
     voz.onerror=e=>{const err=e&&e.error||"";if(err==="no-speech"||err==="aborted")return;fallosVoz++;
-      if(err==="not-allowed"||err==="service-not-allowed"){oido("🎤 Sin permiso de micrófono: usá el botón");pararVoz();}
-      else if(err==="network")oido("🎤 Sin internet para escuchar: usá el botón");
-      else if(err==="language-not-supported"&&voz)voz.lang="es-AR";};
-    voz.onend=()=>{consumido={};cerrado=-1;if(jugando&&voz&&fallosVoz<6)setTimeout(()=>{if(jugando&&voz)try{voz.start();}catch(e){}},fallosVoz?400:60);};
+      if(err==="not-allowed"||err==="service-not-allowed"){oido("🎤 Sin permiso de micrófono: usá el botón Pasar");pararVoz();}
+      else if(err==="network")oido("🎤 Sin internet para escuchar: usá el botón Pasar");
+      else if(err==="audio-capture")oido("🎤 El micrófono está ocupado por otra app");
+      else if(err==="language-not-supported"&&voz)voz.lang=voz.lang==="es-UY"?"es-AR":"es-ES";
+      else oido("🎤 Problema con la voz ("+err+")");};
+    /* Si la escucha se corta sola muchas veces seguidas sin oír nada, se avisa. */
+    voz.onend=()=>{consumido={};cerrado=-1;
+      const ahora=Date.now();cortes=cortes.filter(t=>ahora-t<10000);cortes.push(ahora);
+      if(cortes.length>=10&&!/^[✔✘]/.test(textoOido))oido("🎤 La voz se corta en este celular: usá el botón Pasar");
+      if(jugando&&voz&&fallosVoz<6)setTimeout(()=>{if(jugando&&voz)try{voz.start();}catch(e){}},fallosVoz?500:250);};
     try{voz.start();}catch(e){voz=null;}
   }
   function pararVoz(){if(voz){try{voz.onend=null;voz.abort();}catch(e){}voz=null;}}
-  function oido(t){if(raiz){const o=raiz.querySelector("#bbOido");if(o)o.textContent=t;}}
+  function oido(t){textoOido=t;if(raiz){const o=raiz.querySelector("#bbOido");if(o)o.textContent=t;}}
   function acierto(w){
     if(typeof bip==="function"){bip(660,.15,"sine",.07);bip(990,.25,"triangle",.05);}
     oido("✔ "+w.toLowerCase());
@@ -120,7 +131,8 @@ const Bomba=(()=>{
     if(ahora>=explota){boom();return;}
     const avance=Math.min(1,(ahora-inicioT)/(explota-inicioT));
     const intervalo=Math.max(110,700-avance*590);
-    if(typeof bip==="function")bip(avance>.75?1200:950,.04,"square",.035);
+    if(voz&&ANDROID){if(typeof vibrar==="function")vibrar(avance>.75?25:12);}
+    else if(typeof bip==="function")bip(avance>.75?1200:950,.04,"square",.035);
     const m=q("bbMecha");m.classList.remove("late");void m.offsetWidth;m.classList.add("late");
     tic=setTimeout(tictac,intervalo);
   }
