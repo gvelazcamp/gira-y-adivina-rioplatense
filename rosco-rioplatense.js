@@ -63,9 +63,8 @@ const RoscoRioplatense=(()=>{
   function mensaje(texto,tipo=""){const el=$("#rrMensaje");el.textContent=texto;el.className="rr-mensaje "+tipo;}
   function sonido(acierto){
     if(typeof bip!=="function")return;
-    // Acorde luminoso para acertar; tono grave y áspero para fallar.
+    // Acorde luminoso para acertar; al fallar solo vibra.
     if(acierto){bip(660,.2,"sine",.065);bip(990,.3,"triangle",.04);}
-    else sonidoErrorExt();
     if(typeof vibrar==="function")vibrar(acierto?25:[45,40,45]);
   }
   function enfocar(){if(raiz&&!document.hidden){$("#rrEntrada").focus({preventScroll:true});ajustarPantalla();}}

@@ -136,7 +136,7 @@ const MemoriaEnGiro=(()=>{
       nivel++;
       panel("¡Todos los pares!","+"+bonus+" puntos por el tiempo que sobró. Total: "+puntos+" · mejor marca: "+datos.mejor+". Las cartas que encontraste quedaron a salvo en los giros.","Siguiente nivel",comenzar);
     }else{
-      puntos=0;racha=0;sonidoErrorExt();if(typeof vibrar==="function")vibrar(85);
+      puntos=0;racha=0;if(typeof vibrar==="function")vibrar(85);
       pintarCartas();
       if(duelo){Duelo.enviarFinal({valor:puntos});Duelo.mostrarResultado({valor:puntos},{etiqueta:"puntos · "+pares+" de "+config.pares+" pares",onVolver:()=>{duelo=false;abrir(raiz.parentElement);}});return;}
       panel("Se terminó el tiempo","Encontraste "+pares+" de "+config.pares+" pares. Se cortó la racha"+(puntosPrevios?" y perdiste "+puntosPrevios+" puntos de esta partida":"")+". Mejor marca: "+datos.mejor+".","Otra ronda del nivel "+nivel,comenzar);
@@ -156,7 +156,7 @@ const MemoriaEnGiro=(()=>{
       pintarCartas();
     }else{
       fase="fallo";fallos++;racha=0;falloMs=850;tiempoMs=Math.max(0,tiempoMs-3000);
-      sonidoErrorExt();if(typeof vibrar==="function")vibrar(60);
+      if(typeof vibrar==="function")vibrar(60);
       avisar("No son iguales. −3 segundos. "+(puedeGirar()?"Mirá bien antes del próximo giro.":"Probá otra pareja."));
       pintarCartas();
     }
