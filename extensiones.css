@@ -411,3 +411,5 @@ body.pf-activo #extAtras,body.pf-activo #extCerrar,body.pf-activo .ext-volver{vi
 .tf-fila.tf-anulada .tf-pal.tf-mal{text-decoration:none;color:#FFE29A}
 .tf-ver,.tf-ver-ej{display:inline-block;background:#F5B301;color:#1A0F26;font-weight:900;font-size:.68rem;border-radius:999px;padding:2px 7px;white-space:nowrap;animation:tfLatir 1.6s ease-in-out infinite}
 @keyframes tfLatir{50%{transform:scale(1.08)}}
+
+.kar-anular{background:none;border:1px solid #FF4D6D88;color:#FF8FA3;border-radius:999px;padding:8px 16px;font-weight:800;font-size:.9rem;margin:2px 0 10px;cursor:pointer}
