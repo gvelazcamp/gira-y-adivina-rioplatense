@@ -10,7 +10,7 @@ const Bomba=(()=>{
   const CLAVE="gya_bomba";
   const SILABAS=["CA","CO","CU","MA","ME","MI","MO","PA","PE","PI","PO","LA","LO","LI","TA","TE","TO","RE","RO","SA","SE","SO","DE","DO","NA","NE","NO","BA","BO","BU","GA","GO","VA","VE","FA","FI","JA","JU","RA","RI","CHA","CHI","CHO","LLA","LLO","TRA","TRE","PRE","PRO","BRA","BLA","CLA","PLA","GRA","FRA","CRE","MEN","CON","TER","POR","SAL","MAR","CAN","TAR","PAN","SOL","DOR","ITO","ADA","ERO","OSO","ADO","ENTE","ANTE","ICO","ERA","ILLA","ÓN","EZ","AJE"];
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  let silencioError=0,voz=null,conVoz=!!SR,usadas=new Set(),consumido={},fallosVoz=0;
+  let silencioError=0,voz=null,conVoz=!!SR,usadas=new Set(),consumido={},cerrado=-1,fallosVoz=0;
   let raiz=null,rondas=0,jugando=false,explota=0,inicioT=0,tic=0,pasadas=0,ultima="",bloqueoToque=0;
   function cargar(){try{const d=JSON.parse(localStorage.getItem(CLAVE));if(d&&typeof d==="object"){rondas=Number(d.rondas)||0;if(SR&&typeof d.voz==="boolean")conVoz=d.voz;}}catch(e){}}
   function guardar(){try{localStorage.setItem(CLAVE,JSON.stringify({rondas,voz:conVoz}));}catch(e){}}
@@ -60,18 +60,21 @@ const Bomba=(()=>{
   function escuchar(){
     if(!SR||voz)return;
     try{voz=new SR();}catch(e){voz=null;return;}
-    voz.lang="es-UY";voz.continuous=true;voz.interimResults=true;voz.maxAlternatives=1;consumido={};fallosVoz=0;
+    voz.lang="es-UY";voz.continuous=true;voz.interimResults=true;voz.maxAlternatives=1;consumido={};cerrado=-1;fallosVoz=0;
     voz.onstart=()=>oido("🎤 Escuchando…");
     voz.onresult=e=>{
       if(!jugando)return;fallosVoz=0;
       const sil=norm(ultima);
-      for(let i=e.resultIndex;i<e.results.length;i++){
+      /* Las frases que ya dieron un acierto quedan cerradas: cuando el celular
+         termina de procesarlas (resultado final, a veces con otras palabras)
+         no se vuelven a juzgar contra la sílaba nueva. */
+      for(let i=Math.max(e.resultIndex,cerrado+1);i<e.results.length;i++){
         const ps=norm(e.results[i][0].transcript).split(" ").filter(Boolean);
         for(let k=consumido[i]||0;k<ps.length;k++){
           const w=ps[k];
           if(w.length>sil.length&&w.includes(sil)&&!usadas.has(w)){
             /* Lo ya oído no cuenta para la sílaba que viene. */
-            for(let j=0;j<e.results.length;j++)consumido[j]=norm(e.results[j][0].transcript).split(" ").filter(Boolean).length;
+            cerrado=e.results.length-1;
             usadas.add(w);acierto(w);return;
           }
         }
@@ -93,7 +96,7 @@ const Bomba=(()=>{
       if(err==="not-allowed"||err==="service-not-allowed"){oido("🎤 Sin permiso de micrófono: usá el botón");pararVoz();}
       else if(err==="network")oido("🎤 Sin internet para escuchar: usá el botón");
       else if(err==="language-not-supported"&&voz)voz.lang="es-AR";};
-    voz.onend=()=>{consumido={};if(jugando&&voz&&fallosVoz<6)setTimeout(()=>{if(jugando&&voz)try{voz.start();}catch(e){}},fallosVoz?400:60);};
+    voz.onend=()=>{consumido={};cerrado=-1;if(jugando&&voz&&fallosVoz<6)setTimeout(()=>{if(jugando&&voz)try{voz.start();}catch(e){}},fallosVoz?400:60);};
     try{voz.start();}catch(e){voz=null;}
   }
   function pararVoz(){if(voz){try{voz.onend=null;voz.abort();}catch(e){}voz=null;}}
