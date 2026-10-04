@@ -69,6 +69,7 @@ const EXTENSIONES=[
   {id:"cien-rioplatenses",nombre:"100 Rioplatenses Dicen",descripcion:"Girá por un tema y descubrí el panel",icono:"logo-cien-rioplatenses.svg",estado:CIEN_HABILITADO?"disponible":"proximamente",abrir:contenedor=>CienRioplatenses.abrir(contenedor),record:()=>CienRioplatenses.mejorPuntaje()+" puntos"},
   {id:"ahorcado-rioplatense",nombre:"Ahorcado Rioplatense",descripcion:"La ruleta elige la categoría, adiviná la palabra",icono:"logo-ahorcado-rioplatense.svg",estado:AHORCADO_HABILITADO?"disponible":"proximamente",abrir:contenedor=>AhorcadoRioplatense.abrir(contenedor),record:()=>AhorcadoRioplatense.mejorPuntaje()+" puntos"},
   {id:"contra-reloj-rioplatense",grupo:"previa",nombre:"Contra Reloj",descripcion:"Describí 5 palabras antes de que termine el tiempo · 4+ jugadores",icono:"logo-contra-reloj-rioplatense.svg",estado:"disponible",insignia:"👥 4+",abrir:contenedor=>ContraRelojRioplatense.abrir(contenedor),record:()=>ContraRelojRioplatense.mejorPuntaje()+" puntos"},
+  {id:"impostor",grupo:"previa",nombre:"Impostor",descripcion:"Todos tienen la misma palabra… menos uno",icono:"logo-impostor.svg",estado:"disponible",insignia:"👥 3+",abrir:contenedor=>Impostor.abrir(contenedor),record:()=>Impostor.partidasJugadas()+" rondas"},
   {id:"quien-soy",grupo:"previa",nombre:"¿Quién soy?",descripcion:"Celular en la frente: adiviná la palabra",icono:"logo-quien-soy.svg",estado:"disponible",abrir:contenedor=>QuienSoy.abrir(contenedor),record:()=>QuienSoy.mejorPuntaje()+" aciertos"},
   {id:"bomba",grupo:"previa",nombre:"Bomba",descripcion:"Decí una palabra y pasala antes de que explote",icono:"logo-bomba.svg",estado:"disponible",abrir:contenedor=>Bomba.abrir(contenedor),record:()=>Bomba.rondasJugadas()+" rondas"},
   {id:"que-numero-soy",grupo:"previa",nombre:"¿Qué número soy?",descripcion:"Número gigante en pantalla completa, sin que se apague",icono:"logo-que-numero-soy.svg",estado:"disponible",abrir:contenedor=>QueNumeroSoy.abrir(contenedor),record:()=>QueNumeroSoy.rondasJugadas()+" rondas"},
@@ -149,7 +150,7 @@ const Extensiones=(()=>{
     shell.querySelector("#extTitulo").textContent=ext.nombre;
     ext.abrir(contenido);shell.scrollTop=0;
   }
-  function salirJuego(){for(const juego of [window.SopaFugaz,window.RuedaDeLetras,window.PalabraSecreta,window.FrasesEnGiro,window.MemoriaEnGiro,window.RoscoRioplatense,window.SilabarioRioplatense,window.CienRioplatenses,window.AhorcadoRioplatense,window.ContraRelojRioplatense,window.MoonTap,window.QueNumeroSoy,window.QuienSoy,window.Bomba])if(juego)juego.salir();}
+  function salirJuego(){for(const juego of [window.SopaFugaz,window.RuedaDeLetras,window.PalabraSecreta,window.FrasesEnGiro,window.MemoriaEnGiro,window.RoscoRioplatense,window.SilabarioRioplatense,window.CienRioplatenses,window.AhorcadoRioplatense,window.ContraRelojRioplatense,window.MoonTap,window.QueNumeroSoy,window.QuienSoy,window.Bomba,window.Impostor])if(juego)juego.salir();}
   function cerrar(){if(!shell)return;salirJuego();shell.hidden=true;document.body.classList.remove("ext-abierta");vista="";if(typeof sincronizarMusica==="function")sincronizarMusica();}
   return{abrirLobby,abrirJuego,cerrar};
 })();

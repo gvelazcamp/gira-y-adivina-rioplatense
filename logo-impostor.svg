@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Impostor">
+  <defs><linearGradient id="fondo" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#C2185B"/><stop offset="1" stop-color="#160B24"/></linearGradient></defs>
+  <rect width="512" height="512" rx="112" fill="url(#fondo)"/>
+  <ellipse cx="256" cy="210" rx="170" ry="34" fill="#0B0614"/>
+  <path d="M150 210 Q160 96 256 92 Q352 96 362 210Z" fill="#0B0614"/>
+  <rect x="150" y="176" width="212" height="22" fill="#E5197C"/>
+  <path d="M146 260 Q256 228 366 260 L366 300 Q256 270 146 300Z" fill="#FFD65C"/>
+  <circle cx="206" cy="282" r="14" fill="#0B0614"/><circle cx="306" cy="282" r="14" fill="#0B0614"/>
+  <path d="M176 360 Q256 330 336 360 Q300 420 256 424 Q212 420 176 360Z" fill="#2A1A3C"/>
+  <text x="256" y="404" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="54" fill="#FFF9E9">?</text>
+</svg>
