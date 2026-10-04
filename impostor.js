@@ -32,17 +32,15 @@ const Impostor=(()=>{
       <div class="imp-nombres" id="impNombres"></div>
       <div class="qs-sub">🕵️ Impostores</div>
       <div class="qns-rangos imp-dos" id="impImp"><button type="button" data-n="1">1 impostor</button><button type="button" data-n="2">2 impostores</button></div>
-      <div class="qs-sub">🗂️ Categoría</div>
-      <div class="qs-cats imp-cats" id="impCats">${cats().map(c=>`<button type="button" data-cat="${c.id}">${c.emoji} ${esc(c.nombre)}</button>`).join("")}<button type="button" data-cat="mezcla">🎲 Mezcla</button></div>
       <button type="button" class="bb-voz" id="impPista"></button>
-      <button type="button" class="mg-principal" id="impEmpezar">🕵️ Repartir palabras</button>
+      <div class="qs-sub">🗂️ Tocá una categoría para repartir las palabras</div>
+      <div class="qs-cats imp-cats" id="impCats">${cats().map(c=>`<button type="button" data-cat="${c.id}">${c.emoji} ${esc(c.nombre)}</button>`).join("")}<button type="button" data-cat="mezcla">🎲 Mezcla</button></div>
       <button type="button" id="impWpp">💬 Invitar por WhatsApp</button>
     </div>`;
     const pintar=()=>{
       q("impCant").textContent=cant;
       if(cant<6&&cantImp===2)cantImp=1;
       raiz.querySelectorAll("#impImp button").forEach(b=>{b.classList.toggle("activo",Number(b.dataset.n)===cantImp);b.disabled=Number(b.dataset.n)===2&&cant<6;});
-      raiz.querySelectorAll("#impCats button").forEach(b=>b.classList.toggle("activo",b.dataset.cat===catId));
       q("impPista").innerHTML=pista?"💡 Pista para el impostor: <b>SÍ</b><small>Ve la categoría (más fácil para disimular)</small>":"💡 Pista para el impostor: <b>NO</b><small>No ve nada (más difícil)</small>";
       const cont=q("impNombres"),previos=[...cont.querySelectorAll("input")].map(i=>i.value);
       previos.forEach((v,i)=>nombres[i]=v);
@@ -53,9 +51,8 @@ const Impostor=(()=>{
     q("impMenos").onclick=()=>{if(cant>MIN){cant--;guardar();pintar();}};
     q("impMas").onclick=()=>{if(cant<MAX){cant++;guardar();pintar();}};
     q("impImp").onclick=e=>{const b=e.target.closest("button[data-n]");if(!b||b.disabled)return;cantImp=Number(b.dataset.n);guardar();pintar();};
-    q("impCats").onclick=e=>{const b=e.target.closest("button[data-cat]");if(!b)return;catId=b.dataset.cat;guardar();pintar();};
+    q("impCats").onclick=e=>{const b=e.target.closest("button[data-cat]");if(!b)return;catId=b.dataset.cat;guardar();nuevaRonda();};
     q("impPista").onclick=()=>{pista=!pista;guardar();pintar();};
-    q("impEmpezar").onclick=()=>{guardar();nuevaRonda();};
     q("impWpp").onclick=()=>PantallaFija.invitar("impostor","Impostor");
   }
   function elegirPalabra(){
