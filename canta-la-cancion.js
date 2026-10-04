@@ -110,7 +110,7 @@ const CantaLaCancion=(()=>{
         if(!conWhisper())return;
         estTxt="pasando";pintarLetra();
         VozATexto.transcribir(blob,p=>{if(mia===ronda){pctTxt=p;if(estTxt==="pasando"&&p<100){estTxt="bajando";}else if(p>=100&&estTxt==="bajando")estTxt="pasando";pintarLetra();}})
-          .then(t=>{if(mia!==ronda)return;txtAudio=t;estTxt=t?"listo":"nada";pintarLetra();})
+          .then(t=>{if(mia!==ronda)return;txtAudio=sinRepetir(t);estTxt=t?"listo":"nada";pintarLetra();})
           .catch(()=>{if(mia!==ronda)return;estTxt="error";pintarLetra();});
       };
       grab.start();
@@ -132,15 +132,20 @@ const CantaLaCancion=(()=>{
     if(!SR||voz)return;
     try{voz=new SR();}catch(e){voz=null;return;}
     voz.lang="es-UY";voz.continuous=true;voz.interimResults=true;
-    let previo="";
+    /* Android repite: cada resultado trae la frase entera hasta ahí
+       ("recordar", "recordar todo", "recordar todo lo"…). Si un pedazo
+       empieza con el anterior lo reemplaza; si ya estaba incluido, se saltea. */
+    let previos=[];
+    const unir=(lista,seg)=>{seg=seg.trim();if(!seg)return lista;const n=N(seg),u=lista.length?N(lista[lista.length-1]):"";
+      if(u&&n.startsWith(u))lista[lista.length-1]=seg;else if(!(u&&u.startsWith(n)))lista.push(seg);return lista;};
     voz.onresult=e=>{
       if(!jugando)return;
-      let t="";for(let i=0;i<e.results.length;i++)t+=" "+e.results[i][0].transcript;
-      oidoTxt=(previo+" "+t).replace(/\s+/g," ").trim();
+      const segs=previos.slice();for(let i=0;i<e.results.length;i++)unir(segs,e.results[i][0].transcript);
+      oidoTxt=sinRepetir(segs.join(" "));voz._segs=segs;
       const o=raiz&&raiz.querySelector("#ctaOido");if(o&&oidoTxt)o.textContent="🎶 "+oidoTxt.split(" ").slice(-6).join(" ");
     };
     voz.onerror=e=>{const err=e&&e.error||"";if(err&&err!=="no-speech")errVoz=err;if(err==="language-not-supported"&&voz)voz.lang=voz.lang==="es-UY"?"es-AR":"es-ES";else if(err==="not-allowed"||err==="service-not-allowed")pararVoz();};
-    voz.onend=()=>{previo=oidoTxt;if(jugando&&voz)setTimeout(()=>{if(jugando&&voz)try{voz.start();}catch(e){}},250);};
+    voz.onend=()=>{if(voz&&voz._segs)previos=voz._segs.slice();if(jugando&&voz)setTimeout(()=>{if(jugando&&voz)try{voz.start();}catch(e){}},250);};
     try{voz.start();oyendo=true;}catch(e){voz=null;errVoz="start";}
   }
   function pararVoz(){if(voz){try{voz.onend=null;voz.abort();}catch(e){}voz=null;}const eq=raiz&&raiz.querySelector("#ctaEq");if(eq)eq.classList.add("quieto");}
@@ -152,6 +157,16 @@ const CantaLaCancion=(()=>{
     if(quedan<=0){terminar();return;}
     timer=setTimeout(reloj,100);
   }
+  /* Saca repeticiones de más (Whisper y Android a veces repiten en loop):
+     una palabra o frase corta no puede aparecer más de 2 veces seguidas. */
+  const sinRepetir=t=>{let w=String(t||"").replace(/\s+/g," ").trim().split(" ").filter(Boolean);
+    for(let k=1;k<=4;k++){const r=[];let i=0;
+      while(i<w.length){const g=w.slice(i,i+k).map(N).join(" ");let veces=1;
+        while(i+k*(veces+1)<=w.length&&w.slice(i+k*veces,i+k*(veces+1)).map(N).join(" ")===g)veces++;
+        if(veces>1){for(let v=0;v<Math.min(veces,2);v++)r.push(...w.slice(i+k*v,i+k*(v+1)));i+=k*veces;}
+        else{r.push(w[i]);i++;}}
+      w=r;}
+    return w.join(" ");};
   const resaltar=t=>{const pal=N(palabra).split(" ").map(w=>w.replace(/[^a-zñ0-9]/g,"")).filter(Boolean);
     return esc(t).split(/(\s+)/).map(w=>pal.some(p=>N(w).startsWith(p)&&N(w).length<=p.length+2)?`<mark>${w}</mark>`:w).join("");};
   /* Caja "El celular escuchó" del jurado (texto en vivo o el de la grabación). */
