@@ -115,6 +115,45 @@ const TuttiFrutti=(()=>{
   }
   function parar(){jugando=false;clearTimeout(timer);}
   function salir(){parar();cerrarSala();if(raiz)PantallaFija.salir();if(raiz)raiz.remove();raiz=null;}
+  /* ===== Control de respuestas =====
+     Listas propias (tutti-frutti-datos.js) para Nombre, Apellido, Lugar, Animal,
+     Color, Fruta, Comida y Profesión; Wikipedia para Famoso, Marca y Película;
+     diccionario por letra (assets/diccionario/es-<l>.txt) para Cosa y como
+     respaldo. Nunca rechaza: marca ✓ o ⚠️ y al final se vota. */
+  const NORM=t=>String(t||"").toLowerCase().replace(/ñ/g,"\u0001").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\u0001/g,"ñ").replace(/[^a-zñ0-9 ]+/g," ").replace(/\s+/g," ").trim();
+  const CLAVE_CAT={"Nombre":"nombre","Apellido":"apellido","País o ciudad":"lugar","Animal":"animal","Color":"color","Fruta o verdura":"fruta","Comida":"comida","Profesión":"profesion","Famoso":"wiki","Película o serie":"wiki","Marca":"wiki","Cosa":"dic"};
+  const sets={},dics={},cacheWiki=new Map();
+  function setDe(k){if(!sets[k]){const t=(window.TUTTI_LISTAS||{})[k]||"";sets[k]=new Set(t.split(",").map(NORM).filter(Boolean));}return sets[k];}
+  const variantes=v=>{const sinArt=v.replace(/^(el|la|los|las|un|una) /,"");const out=new Set([v,sinArt]);[v,sinArt].forEach(x=>{if(x.endsWith("es"))out.add(x.slice(0,-2));if(x.endsWith("s"))out.add(x.slice(0,-1));out.add(x.split(" ")[0]);});[...out].forEach(x=>{/* femenino → masculino: abogada→abogado, doctora→doctor, gata→gato */if(x.endsWith("a")){out.add(x.slice(0,-1)+"o");out.add(x.slice(0,-1));}});return[...out].filter(Boolean);};
+  function cargarDic(l){
+    l=NORM(l)[0];if(!l)return Promise.resolve(null);
+    if(dics[l])return dics[l];
+    dics[l]=fetch("assets/diccionario/es-"+l+".txt").then(r=>r.ok?r.text():"").then(t=>new Set(t.split("\n"))).catch(()=>null);
+    return dics[l];
+  }
+  async function enDiccionario(v){const d=await cargarDic(v);if(!d||!d.size)return null;return variantes(v).some(x=>d.has(x))||v.split(" ").every(w=>w.length<3||d.has(w));}
+  async function enWikipedia(v){
+    if(cacheWiki.has(v))return cacheWiki.get(v);
+    const pr=(async()=>{try{
+      const ctrl=typeof AbortController!=="undefined"?new AbortController():null;const t=setTimeout(()=>ctrl&&ctrl.abort(),4500);
+      const r=await fetch("https://es.wikipedia.org/w/api.php?action=opensearch&limit=8&namespace=0&format=json&origin=*&search="+encodeURIComponent(v),ctrl?{signal:ctrl.signal}:{});
+      clearTimeout(t);const d=await r.json();const titulos=(d&&d[1])||[];
+      return titulos.some(x=>{const n=NORM(x);return n===v||n.startsWith(v+" ")||n.startsWith(v);});
+    }catch(e){return null;}})();
+    cacheWiki.set(v,pr);return pr;
+  }
+  /* Devuelve true (✓), false (⚠️) o null (no se pudo revisar). */
+  async function revisar(cat,valor){
+    const v=NORM(valor);if(!v)return null;
+    const k=CLAVE_CAT[cat];
+    if(k==="wiki")return enWikipedia(v);
+    if(k==="dic")return enDiccionario(v);
+    if(k&&variantes(v).some(x=>setDe(k).has(x)))return true;
+    if(k==="nombre"||k==="apellido"||k==="lugar")return false;
+    return false;
+  }
+  const NOM_CAT={"Nombre":"nombre","Apellido":"apellido","País o ciudad":"país o ciudad","Animal":"animal","Color":"color","Fruta o verdura":"fruta o verdura","Comida":"comida","Profesión":"profesión","Famoso":"famoso","Película o serie":"película o serie","Marca":"marca","Cosa":"cosa"};
+
   /* ======================= SALA (cada uno con su celular) ======================= */
   const CHARS="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",MAXJ=10;
   const N=t=>String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase().trim();
@@ -221,7 +260,7 @@ const TuttiFrutti=(()=>{
       if(eraHost){cerrarSala();if(raiz){configurar();estado("El anfitrión cerró la sala.");}return;}
       if(on.host)difundirSala();pintarJugadores();
     }else if(m.t==="ronda"){
-      on.n=m.n;on.letra=m.letra;on.cats=m.cats;on.tiempo=m.tiempo;on.fase="jugando";on.resps={};on.ganador=null;on.basta=null;on.mias=Array(on.cats.length).fill("");on.envie=false;
+      on.n=m.n;on.letra=m.letra;on.cats=m.cats;on.tiempo=m.tiempo;on.fase="jugando";on.resps={};on.votos={};on.ganador=null;on.basta=null;on.mias=Array(on.cats.length).fill("");on.envie=false;
       jugarOnline();
     }else if(m.t==="basta"&&m.n===on.n){
       if(!on.basta){on.basta=m.pid;if(on.host)on.ganador=m.pid;}
@@ -229,6 +268,10 @@ const TuttiFrutti=(()=>{
     }else if(m.t==="resp"&&m.n===on.n){
       on.resps[m.pid]=Array.isArray(m.r)?m.r.map(x=>String(x||"").slice(0,30)):[];
       if(on.host&&on.jug.every(j=>on.resps[j.pid]))publicarResultado();
+    }else if(m.t==="voto"&&m.n===on.n){
+      const k=m.a+"|"+m.i;on.votos=on.votos||{};const st=on.votos[k]=on.votos[k]||new Set();
+      if(m.v)st.add(m.pid);else st.delete(m.pid);
+      pintarVotos();
     }else if(m.t==="resultado"&&m.n===on.n&&!on.host){
       on.resps=m.resps||{};on.ganador=m.ganador;on.ganadas=m.ganadas||on.ganadas;on.jug=m.jug||on.jug;mostrarResultado();
     }
@@ -274,10 +317,12 @@ const TuttiFrutti=(()=>{
       if(v&&typeof sonidoErrorExt==="function")sonidoErrorExt();
       const inp=q("tfInput");inp.classList.remove("tf-mal");void inp.offsetWidth;inp.classList.add("tf-mal");return;
     }
+    const cat=on.cats[on.pend[0]];
     guardarCampo();on.pend.shift();
     if(typeof bip==="function")bip(880,.06,"sine",.04);
     if(!on.pend.length){mandar({t:"basta",n:on.n});return;}
     pintarCampo();
+    revisar(cat,v).then(ok=>{if(ok===false&&on&&on.fase==="jugando"){const m=raiz&&raiz.querySelector("#tfMsg");if(m&&!m.textContent)m.textContent="⚠️ «"+v+"» no la encontré como "+NOM_CAT[cat]+". Al final la pueden votar.";}});
   }
   function relojOnline(){
     if(!raiz||!on||on.fase!=="jugando")return;
@@ -307,18 +352,38 @@ const TuttiFrutti=(()=>{
     mandar({t:"resultado",n:on.n,resps:on.resps,ganador:on.ganador,ganadas:on.ganadas,jug:on.jug});
     mostrarResultado();
   }
+  const necesarios=()=>Math.max(1,Math.floor((on.jug.length-1)/2)+1);
+  const anulada=(a,i)=>{const st=on.votos&&on.votos[a+"|"+i];return!!st&&st.size>=necesarios();};
+  const ganadorAnulado=()=>!!on.ganador&&on.cats.some((c,i)=>anulada(on.ganador,i));
   function mostrarResultado(){
-    if(!raiz||!on)return;on.fase="resultado";
-    const g=on.ganador,gn=(on.jug.find(j=>j.pid===g)||{}).nombre;
+    if(!raiz||!on)return;on.fase="resultado";on.votos=on.votos||{};
+    const g=on.ganador;
     if(g===on.pid&&typeof bip==="function")[523,659,784,1047].forEach((f,i)=>setTimeout(()=>bip(f,.22,"triangle",.05),i*140));
-    const filas=on.jug.map(j=>{const r=on.resps[j.pid]||[];return`<li class="${j.pid===g?"tf-gano":""}"><b>${j.pid===g?"🏆 ":""}${esc(j.nombre)}</b><span>${on.cats.map((c,i)=>`<em>${esc(c)}:</em> ${esc(r[i]||"—")}`).join(" · ")}</span></li>`;}).join("");
-    const tabla=on.jug.slice().sort((a,b)=>(on.ganadas[b.pid]||0)-(on.ganadas[a.pid]||0)).map(j=>`<li><span>${esc(j.nombre)}</span><b>${on.ganadas[j.pid]||0}</b></li>`).join("");
-    pantalla(`<div class="mg-panel imp-panel imp-fin"><h3>${g?"🏆 ¡Ganó "+esc(gn||"")+"!":"⏰ Nadie completó todo"}</h3>
-      <p class="imp-ayuda">Letra <b>${on.letra}</b> · fíjense que las respuestas valgan 😉</p>
+    const filas=on.jug.map(j=>{const r=on.resps[j.pid]||[];return`<li class="${j.pid===g?"tf-gano":""}"><b>${j.pid===g?"🏆 ":""}${esc(j.nombre)}${j.pid===on.pid?" (vos)":""}</b><div class="tf-chips">${on.cats.map((c,i)=>{const v=r[i]||"";return`<button type="button" class="tf-chip" data-a="${j.pid}" data-i="${i}" ${!v||j.pid===on.pid?"disabled":""}><em>${esc(c)}</em> ${esc(v||"—")} <i class="tf-marca" data-c="${esc(c)}" data-v="${esc(v)}">${v?"…":""}</i><span class="tf-votos"></span></button>`;}).join("")}</div></li>`;}).join("");
+    pantalla(`<div class="mg-panel imp-panel imp-fin"><h3 id="tfTitulo"></h3>
+      <p class="imp-ayuda">Letra <b>${on.letra}</b> · ✓ encontrada · ⚠️ no la encontré.<br>Tocá una respuesta de otro para votarla ❌ si no vale.</p>
+      <p class="imp-ayuda tf-aviso" id="tfAviso"></p>
       <ul class="tf-resps">${filas}</ul>
-      <div class="qs-sub">🏆 Rondas ganadas</div><ul class="imp-tabla">${tabla}</ul>
+      <div class="qs-sub">🏆 Rondas ganadas</div><ul class="imp-tabla" id="tfTabla"></ul>
       ${on.host?`<button type="button" class="mg-principal" id="tfOtra">🎲 Otra letra</button><button type="button" id="tfRevancha">🔄 Revancha (de cero)</button>`:`<p class="imp-ayuda">Esperando que el anfitrión saque otra letra…</p>`}</div>`);
-    if(on.host){q("tfOtra").onclick=nuevaRonda;q("tfRevancha").onclick=()=>{on.ganadas={};on.usadas=[];partidas++;guardar();difundirSala();nuevaRonda();};}
+    raiz.querySelector(".tf-resps").onclick=e=>{const b=e.target.closest(".tf-chip");if(!b||b.disabled)return;const a=b.dataset.a,i=Number(b.dataset.i);const st=on.votos[a+"|"+i];const ya=!!(st&&st.has(on.pid));mandar({t:"voto",n:on.n,a,i,v:!ya});};
+    raiz.querySelectorAll(".tf-marca").forEach(el=>{const v=el.dataset.v;if(!v)return;revisar(el.dataset.c,v).then(ok=>{el.textContent=ok===true?"✓":ok===false?"⚠️":"";el.className="tf-marca "+(ok===true?"ok":ok===false?"mal":"");});});
+    pintarVotos();
+    if(on.host){
+      const cerrarRonda=()=>{if(ganadorAnulado()&&on.ganadas[g]>0){on.ganadas[g]--;}difundirSala();};
+      q("tfOtra").onclick=()=>{cerrarRonda();nuevaRonda();};
+      q("tfRevancha").onclick=()=>{on.ganadas={};on.usadas=[];partidas++;guardar();difundirSala();nuevaRonda();};
+    }
+  }
+  function pintarVotos(){
+    if(!raiz||!on||on.fase!=="resultado")return;
+    raiz.querySelectorAll(".tf-chip").forEach(b=>{const k=b.dataset.a+"|"+b.dataset.i,st=on.votos[k],n=st?st.size:0;
+      b.querySelector(".tf-votos").textContent=n?" ❌"+n:"";b.classList.toggle("tf-anulada",anulada(b.dataset.a,Number(b.dataset.i)));b.classList.toggle("tf-mivoto",!!(st&&st.has(on.pid)));});
+    const g=on.ganador,gn=(on.jug.find(j=>j.pid===g)||{}).nombre,pierde=ganadorAnulado();
+    const t=raiz.querySelector("#tfTitulo");if(t)t.textContent=!g?"⏰ Nadie completó todo":pierde?"❌ "+(gn||"")+" pierde la ronda":"🏆 ¡Ganó "+(gn||"")+"!";
+    const av=raiz.querySelector("#tfAviso");if(av)av.textContent=pierde?"Le anularon una respuesta a "+(gn||"")+" (votos de los demás), así que no se lleva la ronda.":"";
+    const tabla=raiz.querySelector("#tfTabla");
+    if(tabla)tabla.innerHTML=on.jug.map(j=>[j,(on.ganadas[j.pid]||0)-(pierde&&j.pid===g&&on.ganadas[j.pid]>0?1:0)]).sort((a,b)=>b[1]-a[1]).map(([j,n])=>`<li><span>${esc(j.nombre)}</span><b>${n}</b></li>`).join("");
   }
   /* Link ?tutti=<SALA>&de=<nombre>: abre el juego y se une solo. */
   function abrirInvitacion(sala,de){
@@ -326,6 +391,6 @@ const TuttiFrutti=(()=>{
     Extensiones.abrirJuego("tutti-frutti");
     setTimeout(()=>{if(raiz)unirse(sala,de);},300);
   }
-  return{abrir,salir,abrirInvitacion,enter:()=>{try{confirmarCampo();}catch(e){}},partidasJugadas:()=>{cargar();return partidas;}};
+  return{abrir,salir,abrirInvitacion,_revisar:(c,v)=>revisar(c,v),enter:()=>{try{confirmarCampo();}catch(e){}},partidasJugadas:()=>{cargar();return partidas;}};
 })();
 window.TuttiFrutti=TuttiFrutti;
