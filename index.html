@@ -34,7 +34,8 @@
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Outfit:wght@400;500;700&display=swap"></noscript>
 <script src="ui-icons.js?v=1" defer></script>
 <link rel="stylesheet" href="extensiones.css?v=54">
-<script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js" defer></script>
+<!-- mqtt.js guardado en el propio juego (lib/): si unpkg anda mal, las salas igual conectan. Si el archivo local fallara, se prueba unpkg. -->
+<script src="lib/mqtt.min.js?v=5.10.1" defer onerror="(function(){var s=document.createElement('script');s.src='https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js';document.head.appendChild(s);})()"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" defer></script>
 <style>
 :root{--noche:#160B24;--noche2:#241239;--oro:#F5B301;--magenta:#E5197C;--agua:#37D6C0;--crema:#F6EFE2;--tinta:#1A1024}
@@ -10799,7 +10800,7 @@ document.addEventListener("keydown",e=>{
 <script src="mimica.js?v=2"></script>
 <script src="canta-la-cancion-datos.js?v=1"></script>
 <script src="canta-la-cancion.js?v=1"></script>
-<script src="tutti-frutti.js?v=5"></script>
+<script src="tutti-frutti.js?v=6"></script>
 <script src="extensiones.js?v=35"></script>
 <script src="sala-tv.js?v=1"></script>
 </body>
