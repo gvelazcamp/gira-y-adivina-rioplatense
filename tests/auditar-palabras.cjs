@@ -5,7 +5,7 @@
 
    Reglas (errores):
    1. Una respuesta no puede estar en dos juegos de respuesta única:
-      Ahorcado, Contra Reloj, Rosco, Silabario, Sopa Fugaz.
+      Ahorcado, Contra Reloj, Quién soy, Rosco, Silabario, Sopa Fugaz.
    2. Una pista/definición/pregunta/frase no puede repetirse entre juegos
       (incluye 100 Rioplatenses y Frases en Giro).
    3. Dentro de un juego de respuesta única no se repite una respuesta,
@@ -19,7 +19,7 @@
 const fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
 const root=path.resolve(__dirname,"..");
 const ctx={};ctx.window=ctx;vm.createContext(ctx);
-for(const f of["ahorcado-rioplatense-datos.js","cien-rioplatenses-datos.js","contra-reloj-rioplatense-datos.js","frases-en-giro-datos.js","palabra-secreta-datos.js","rosco-rioplatense-datos.js","rueda-de-letras-datos.js","silabario-rioplatense-datos.js","sopa-fugaz-datos.js"])
+for(const f of["ahorcado-rioplatense-datos.js","cien-rioplatenses-datos.js","contra-reloj-rioplatense-datos.js","frases-en-giro-datos.js","palabra-secreta-datos.js","quien-soy-datos.js","rosco-rioplatense-datos.js","rueda-de-letras-datos.js","silabario-rioplatense-datos.js","sopa-fugaz-datos.js"])
   vm.runInContext(fs.readFileSync(path.join(root,f),"utf8").replace(/^(const|let) /gm,"var "),ctx);
 
 const norm=s=>String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toUpperCase().replace(/[^A-Z0-9Ñ]+/g," ").trim();
@@ -29,6 +29,7 @@ const add=(obj,juego,item)=>{(obj[juego]=obj[juego]||[]).push(item);};
 
 ctx.AHORCADO_DATOS.forEach(d=>add(unicas,"Ahorcado",{r:d.palabra,nivel:1,donde:d.categoria}));
 ctx.CONTRA_RELOJ_TARJETAS.forEach((t,i)=>t.forEach(w=>add(unicas,"Contra Reloj",{r:w,nivel:1,donde:"tarjeta "+(i+1)})));
+ctx.QUIEN_SOY_CATEGORIAS.forEach(c=>c.palabras.forEach(w=>add(unicas,"Quién soy",{r:w,nivel:1,donde:c.nombre})));
 ctx.ROSCO_DATOS.forEach(d=>{add(unicas,"Rosco",{r:d.palabra,nivel:d.nivel,donde:"letra "+d.letra+" nivel "+d.nivel});add(pistas,"Rosco",{p:d.definicion,donde:d.palabra});});
 ctx.SILABARIO_DATOS.forEach(d=>{add(unicas,"Silabario",{r:d.respuesta,nivel:d.nivel,donde:d.categoria+" nivel "+d.nivel});add(pistas,"Silabario",{p:d.pista,donde:d.respuesta});});
 [["inicial",ctx.SOPA_DATOS.inicial],...ctx.SOPA_DATOS.categorias.map(c=>[c.nombre,c])].forEach(([n,c])=>c.palabras.forEach(w=>add(unicas,"Sopa Fugaz",{r:w,nivel:1,donde:n})));
