@@ -126,22 +126,59 @@ const TuttiFrutti=(()=>{
     on={cli:null,sala,host,pid:Math.random().toString(36).slice(2,10),jug:[],ganadas:{},usadas:[],n:0,letra:"",cats:cats.slice(),tiempo,fase:"lobby",resps:{},ganador:null,basta:null,timers:[]};
     if(host)on.jug=[{pid:on.pid,nombre:yo()}];
   }
+  /* Conexión propia (como Contra Reloj online): prueba los brokers en orden,
+     con reconexión automática una vez conectado. El código se muestra
+     enseguida, igual que en los otros juegos, mientras conecta. */
+  const BROKERS_TF=["wss://broker.emqx.io:8084/mqtt","wss://broker.hivemq.com:8884/mqtt","wss://test.mosquitto.org:8081/mqtt"];
+  /* Si la librería mqtt (que el juego carga de unpkg al abrir) no llegó a
+     cargar, se baja de nuevo (unpkg y después jsdelivr). */
+  function cargarMqtt(cb){
+    if(typeof mqtt!=="undefined"){cb(true);return;}
+    const urls=["https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js","https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js"];
+    const probar=k=>{if(typeof mqtt!=="undefined"){cb(true);return;}if(k>=urls.length){cb(false);return;}
+      const sc=document.createElement("script");sc.src=urls[k];sc.onload=()=>cb(typeof mqtt!=="undefined");sc.onerror=()=>probar(k+1);document.head.appendChild(sc);};
+    probar(0);
+  }
   function conectarSala(listo){
-    estado("Conectando…");
-    if(typeof conectar!=="function"){estado("No se pudo conectar. Revisá internet.");return;}
-    conectar(()=>{if(!on||!on.cli)return;on.cli.subscribe(tema());on.cli.on("message",(t,pl)=>{if(t!==tema())return;let m;try{m=JSON.parse(pl.toString());}catch(e){return;}if(m.pid===on.pid)return;manejar(m);});listo();},
-      ()=>estado("No se pudo conectar. Probá con otra red (datos del celular)."),cl=>{if(on)on.cli=cl;else try{cl.end(true);}catch(e){}});
+    const mio=on;if(!mio)return;let i=0,yaListo=false;
+    const reintentar=v=>{const b=raiz&&raiz.querySelector("#tfReintentar");if(b)b.hidden=!v;};
+    reintentar(false);
+    const intento=()=>{
+      if(on!==mio)return;
+      if(typeof mqtt==="undefined"){estado("Conectando…");cargarMqtt(ok=>{if(on!==mio)return;if(ok)intento();else{estado("No se pudo cargar la conexión. Revisá internet y tocá Reintentar.");reintentar(true);}});return;}
+      estado("Conectando…");
+      let ok=false,muerto=false,cli=null;
+      const siguiente=()=>{if(ok||muerto)return;muerto=true;try{cli&&cli.end(true);}catch(e){}i++;
+        if(on!==mio)return;
+        if(i<BROKERS_TF.length)intento();else{estado("No se pudo conectar. Probá con datos del celular o tocá Reintentar.");reintentar(true);}};
+      try{cli=mqtt.connect(BROKERS_TF[i],{clientId:"gya_tf_"+mio.pid+Math.random().toString(36).slice(2,6),clean:true,connectTimeout:6000,reconnectPeriod:2000});}catch(e){siguiente();return;}
+      cli.on("connect",()=>{
+        if(on!==mio){try{cli.end(true);}catch(e){}return;}
+        mio.cli=cli;cli.subscribe(tema());
+        if(!ok){ok=true;
+          cli.on("message",(t,pl)=>{if(on!==mio||t!==tema())return;let m;try{m=JSON.parse(pl.toString());}catch(e){return;}if(m.pid===mio.pid)return;manejar(m);});
+          estado("");if(!yaListo){yaListo=true;listo();}
+        }else{estado("");if(mio.host)difundirSala();else mandar({t:"hola",nombre:yo()});}
+      });
+      cli.on("offline",()=>{if(ok&&on===mio)estado("Sin conexión. Reintentando…");});
+      cli.on("error",()=>{if(!ok)siguiente();});
+      cli.on("close",()=>{if(!ok)siguiente();});
+    };
+    mio.reconectar=()=>{i=0;intento();};
+    intento();
   }
   function crearSala(){
     nuevaSala(true,Array.from({length:4},()=>CHARS[Math.floor(Math.random()*CHARS.length)]).join(""));
-    conectarSala(()=>{lobby();on.timers.push(setInterval(()=>{if(on&&on.host&&on.fase!=="jugando")difundirSala();},3000));});
+    lobby();
+    conectarSala(()=>{on.timers.push(setInterval(()=>{if(on&&on.host&&on.fase!=="jugando")difundirSala();},3000));difundirSala();});
   }
   function unirse(sala,de){
     nuevaSala(false,sala);
-    conectarSala(()=>{lobby(de);const hola=()=>{if(on&&!on.jug.some(j=>j.pid===on.pid))mandar({t:"hola",nombre:yo()});};hola();on.timers.push(setInterval(hola,2000));});
+    lobby(de);
+    conectarSala(()=>{const hola=()=>{if(on&&!on.jug.some(j=>j.pid===on.pid))mandar({t:"hola",nombre:yo()});};hola();on.timers.push(setInterval(hola,2000));});
   }
   function cerrarSala(){
-    if(!on)return;
+    if(!on)return;on.reconectar=null;
     try{if(on.cli&&on.cli.connected)on.cli.publish(tema(),JSON.stringify({t:"chau",pid:on.pid}));}catch(e){}
     on.timers.forEach(t=>{clearInterval(t);clearTimeout(t);});
     const c=on.cli;on=null;if(c)setTimeout(()=>{try{c.end(true);}catch(e){}},300);
@@ -158,11 +195,12 @@ const TuttiFrutti=(()=>{
       :`<p>${de?"Sala de <b>"+esc(de)+"</b>. ":""}Esperando que el anfitrión empiece…</p><div class="dl-codigo tf-cod">${on.sala}</div>`}
       <div class="qs-sub">👥 En la sala</div><ul class="imp-tabla" id="tfJugs"></ul>
       ${on.host?`<button type="button" class="mg-principal" id="tfArrancar">🎲 Empezar</button>`:""}
-      <p class="imp-ayuda" id="tfEstado" role="status"></p></div>`);
+      <p class="imp-ayuda" id="tfEstado" role="status"></p><button type="button" id="tfReintentar" hidden>🔄 Reintentar</button></div>`);
     pintarJugadores();
+    q("tfReintentar").onclick=()=>{if(on&&on.reconectar)on.reconectar();};
     if(on.host){
       q("tfWpp").onclick=()=>{const texto="¡Juguemos Tutti Frutti en Girá y Adiviná! Entrá con este link: "+linkInvitacion()+" (código "+on.sala+")";try{window.open("https://wa.me/?text="+encodeURIComponent(texto),"_blank");}catch(e){}};
-      q("tfArrancar").onclick=()=>{if(on.jug.length<2){estado("Falta que se una al menos un jugador más.");return;}nuevaRonda();};
+      q("tfArrancar").onclick=()=>{if(!on.cli||!on.cli.connected){estado("Todavía conectando… esperá un segundo.");return;}if(on.jug.length<2){estado("Falta que se una al menos un jugador más.");return;}nuevaRonda();};
     }
   }
   function pintarJugadores(){
