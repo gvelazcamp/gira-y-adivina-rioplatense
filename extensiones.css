@@ -292,3 +292,4 @@ body.ext-abierta{overflow:hidden}
 .qns-barra{position:absolute;left:0;right:0;bottom:0;height:6px;background:#FFFFFF14}.qns-barra i{display:block;height:100%;width:0;background:#E5197C}
 .qns-fin{background:#0A0412F2}
 body.qns-bloqueado{overscroll-behavior:none}
+.ext-seccion{font-family:'Archivo Black',sans-serif;color:#F5B301;font-size:1.05rem;margin:18px 2px 10px;text-align:left}.ext-hero+.ext-seccion{margin-top:4px}
