@@ -14,7 +14,7 @@ const Bomba=(()=>{
      escucha, el celular corta la escucha (aborted) y no llega nada. Con
      árbitro por voz en Android el tic-tac es con vibración, sin sonido. */
   const ANDROID=/Android/i.test(navigator.userAgent||"");
-  let silencioError=0,textoOido="",cortes=[],voz=null,conVoz=!!SR,usadas=new Set(),consumido={},cerrado=-1,fallosVoz=0;
+  let pausaVoz=0,silencioError=0,textoOido="",cortes=[],voz=null,conVoz=!!SR,usadas=new Set(),consumido={},cerrado=-1,fallosVoz=0;
   let raiz=null,rondas=0,jugando=false,explota=0,inicioT=0,tic=0,pasadas=0,ultima="",bloqueoToque=0;
   function cargar(){try{const d=JSON.parse(localStorage.getItem(CLAVE));if(d&&typeof d==="object"){rondas=Number(d.rondas)||0;if(SR&&typeof d.voz==="boolean")conVoz=d.voz;}}catch(e){}}
   function guardar(){try{localStorage.setItem(CLAVE,JSON.stringify({rondas,voz:conVoz}));}catch(e){}}
@@ -90,7 +90,7 @@ const Bomba=(()=>{
           const nuevas=ps.slice(consumido[i]||0);consumido[i]=ps.length;
           const w=nuevas[nuevas.length-1];
           oido("✘ "+w.toLowerCase()+(usadas.has(w)?" (ya la dijeron)":w===sil?" (solo la sílaba)":" (no cuenta)"));
-          if(Date.now()>silencioError){silencioError=Date.now()+1200;if(typeof sonidoErrorExt==="function")sonidoErrorExt();}
+          if(Date.now()>silencioError){silencioError=Date.now()+1200;sonarSinCortar(()=>{if(typeof sonidoErrorExt==="function")sonidoErrorExt();},1350);}
           if(typeof vibrar==="function")vibrar([40,40,40]);
           continue;
         }
@@ -105,15 +105,24 @@ const Bomba=(()=>{
       else oido("🎤 Problema con la voz ("+err+")");};
     /* Si la escucha se corta sola muchas veces seguidas sin oír nada, se avisa. */
     voz.onend=()=>{consumido={};cerrado=-1;
-      const ahora=Date.now();cortes=cortes.filter(t=>ahora-t<10000);cortes.push(ahora);
+      const ahora=Date.now();cortes=cortes.filter(t=>ahora-t<10000);if(ahora>pausaVoz)cortes.push(ahora);
       if(cortes.length>=10&&!/^[✔✘]/.test(textoOido))oido("🎤 La voz se corta en este celular: usá el botón Pasar");
-      if(jugando&&voz&&fallosVoz<6)setTimeout(()=>{if(jugando&&voz)try{voz.start();}catch(e){}},fallosVoz?500:250);};
+      if(jugando&&voz&&fallosVoz<6)setTimeout(()=>{if(jugando&&voz)try{voz.start();}catch(e){}},Math.max(fallosVoz?500:250,pausaVoz-Date.now()));};
     try{voz.start();}catch(e){voz=null;}
+  }
+  /* En Android el micrófono abierto silencia los sonidos de la página: para
+     que se oiga el acierto o el error, se corta la escucha un momento, suena
+     y después se vuelve a escuchar (onend espera hasta pausaVoz). */
+  function sonarSinCortar(fn,ms){
+    if(!(voz&&ANDROID)){fn();return;}
+    pausaVoz=Date.now()+ms;
+    try{voz.abort();}catch(e){}
+    setTimeout(fn,120);
   }
   function pararVoz(){if(voz){try{voz.onend=null;voz.abort();}catch(e){}voz=null;}}
   function oido(t){textoOido=t;if(raiz){const o=raiz.querySelector("#bbOido");if(o)o.textContent=t;}}
   function acierto(w){
-    if(typeof bip==="function"){bip(660,.15,"sine",.07);bip(990,.25,"triangle",.05);}
+    sonarSinCortar(()=>{if(typeof bip==="function"){bip(660,.15,"sine",.07);bip(990,.25,"triangle",.05);}},450);
     oido("✔ "+w.toLowerCase());
     const s=q("bbSilaba");s.classList.remove("ok");void s.offsetWidth;s.classList.add("ok");
     bloqueoToque=0;pasar();
