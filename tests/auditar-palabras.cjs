@@ -30,7 +30,7 @@ const add=(obj,juego,item)=>{(obj[juego]=obj[juego]||[]).push(item);};
 
 ctx.AHORCADO_DATOS.forEach(d=>add(unicas,"Ahorcado",{r:d.palabra,nivel:1,donde:d.categoria}));
 ctx.CONTRA_RELOJ_TARJETAS.forEach((t,i)=>t.forEach(w=>add(unicas,"Contra Reloj",{r:w,nivel:1,donde:"tarjeta "+(i+1)})));
-ctx.MIMICA_FRASES.forEach(w=>add(unicas,"Mímica",{r:w,nivel:1,donde:"frase"}));
+ctx.MIMICA_FRASES.concat(ctx.MIMICA_MEDIA||[],ctx.MIMICA_DIFICIL||[]).forEach(w=>add(unicas,"Mímica",{r:w,nivel:1,donde:"frase"}));
 ctx.IMPOSTOR_CATEGORIAS.forEach(c=>c.palabras.forEach(w=>add(unicas,"Impostor",{r:w,nivel:1,donde:c.nombre})));
 ctx.QUIEN_SOY_CATEGORIAS.forEach(c=>c.palabras.forEach(w=>add(unicas,"Quién soy",{r:w,nivel:1,donde:c.nombre})));
 ctx.ROSCO_DATOS.forEach(d=>{add(unicas,"Rosco",{r:d.palabra,nivel:d.nivel,donde:"letra "+d.letra+" nivel "+d.nivel});add(pistas,"Rosco",{p:d.definicion,donde:d.palabra});});
