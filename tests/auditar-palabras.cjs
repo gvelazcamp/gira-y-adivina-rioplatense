@@ -5,7 +5,7 @@
 
    Reglas (errores):
    1. Una respuesta no puede estar en dos juegos de respuesta única:
-      Ahorcado, Contra Reloj, Impostor, Quién soy, Rosco, Silabario, Sopa Fugaz.
+      Ahorcado, Contra Reloj, Impostor, Mímica, Quién soy, Rosco, Silabario, Sopa Fugaz.
    2. Una pista/definición/pregunta/frase no puede repetirse entre juegos
       (incluye 100 Rioplatenses y Frases en Giro).
    3. Dentro de un juego de respuesta única no se repite una respuesta,
@@ -14,12 +14,13 @@
    Avisos (no bloquean, por cómo son esos juegos):
    - 100 Rioplatenses: las respuestas son "lo que diría la gente" (Yerba,
      Termo, Agua…); si se sacan, la encuesta deja de tener sentido.
+   - Canta la Canción: palabras comunes que tienen que aparecer en una canción.
    - Palabra Secreta y Rueda de Letras: usan diccionario de palabras
      comunes (5 letras / anagramas), es normal que compartan. */
 const fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
 const root=path.resolve(__dirname,"..");
 const ctx={};ctx.window=ctx;vm.createContext(ctx);
-for(const f of["ahorcado-rioplatense-datos.js","cien-rioplatenses-datos.js","contra-reloj-rioplatense-datos.js","frases-en-giro-datos.js","impostor-datos.js","palabra-secreta-datos.js","quien-soy-datos.js","rosco-rioplatense-datos.js","rueda-de-letras-datos.js","silabario-rioplatense-datos.js","sopa-fugaz-datos.js"])
+for(const f of["ahorcado-rioplatense-datos.js","canta-la-cancion-datos.js","cien-rioplatenses-datos.js","contra-reloj-rioplatense-datos.js","frases-en-giro-datos.js","impostor-datos.js","mimica-datos.js","palabra-secreta-datos.js","quien-soy-datos.js","rosco-rioplatense-datos.js","rueda-de-letras-datos.js","silabario-rioplatense-datos.js","sopa-fugaz-datos.js"])
   vm.runInContext(fs.readFileSync(path.join(root,f),"utf8").replace(/^(const|let) /gm,"var "),ctx);
 
 const norm=s=>String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toUpperCase().replace(/[^A-Z0-9Ñ]+/g," ").trim();
@@ -29,6 +30,7 @@ const add=(obj,juego,item)=>{(obj[juego]=obj[juego]||[]).push(item);};
 
 ctx.AHORCADO_DATOS.forEach(d=>add(unicas,"Ahorcado",{r:d.palabra,nivel:1,donde:d.categoria}));
 ctx.CONTRA_RELOJ_TARJETAS.forEach((t,i)=>t.forEach(w=>add(unicas,"Contra Reloj",{r:w,nivel:1,donde:"tarjeta "+(i+1)})));
+ctx.MIMICA_FRASES.forEach(w=>add(unicas,"Mímica",{r:w,nivel:1,donde:"frase"}));
 ctx.IMPOSTOR_CATEGORIAS.forEach(c=>c.palabras.forEach(w=>add(unicas,"Impostor",{r:w,nivel:1,donde:c.nombre})));
 ctx.QUIEN_SOY_CATEGORIAS.forEach(c=>c.palabras.forEach(w=>add(unicas,"Quién soy",{r:w,nivel:1,donde:c.nombre})));
 ctx.ROSCO_DATOS.forEach(d=>{add(unicas,"Rosco",{r:d.palabra,nivel:d.nivel,donde:"letra "+d.letra+" nivel "+d.nivel});add(pistas,"Rosco",{p:d.definicion,donde:d.palabra});});
@@ -36,6 +38,7 @@ ctx.SILABARIO_DATOS.forEach(d=>{add(unicas,"Silabario",{r:d.respuesta,nivel:d.ni
 [["inicial",ctx.SOPA_DATOS.inicial],...ctx.SOPA_DATOS.categorias.map(c=>[c.nombre,c])].forEach(([n,c])=>c.palabras.forEach(w=>add(unicas,"Sopa Fugaz",{r:w,nivel:1,donde:n})));
 ctx.CIEN_PREGUNTAS.forEach(q=>{add(pistas,"100 Rioplatenses",{p:q.pregunta,donde:q.id});q.respuestas.forEach(a=>add(avisos,"100 Rioplatenses",{r:a.texto}));});
 ctx.FRASES_EN_GIRO_DATOS.forEach(d=>{add(pistas,"Frases en Giro",{p:d.texto,donde:"nivel "+d.nivel});add(pistas,"Frases en Giro (pista)",{p:d.pista,donde:"nivel "+d.nivel});});
+ctx.CANTA_PALABRAS.forEach(w=>add(avisos,"Canta la Canción",{r:w}));
 ctx.PALABRA_SECRETAS.forEach(w=>add(avisos,"Palabra Secreta",{r:w}));
 ctx.RUEDA_DATOS.forEach(d=>d.palabras.forEach(w=>add(avisos,"Rueda de Letras",{r:w})));
 

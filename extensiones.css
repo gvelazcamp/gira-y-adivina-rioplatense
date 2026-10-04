@@ -332,3 +332,14 @@ body.pf-activo #extAtras,body.pf-activo #extCerrar,body.pf-activo .ext-volver{vi
 .imp-pista{margin-top:10px;font-weight:800;color:#FFD65C}
 /* Que no se pueda seleccionar (resaltar) el texto grande al tocarlo. */
 .bb-silaba,.qs-palabra,.qns-num,.imp-palabra,.imp-nombre{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;pointer-events:none}
+/* Mímica, Canta la Canción, Tutti Frutti */
+.mim-marcador{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;margin-bottom:6px}.mim-marcador div{background:#FFFFFF12;border:1px solid #FFFFFF22;border-radius:12px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center;font-weight:800}.mim-marcador div.activo{border-color:#F5B301;background:#F5B30122}.mim-marcador b{font-family:'Archivo Black',sans-serif;color:#FFD65C;font-size:1.3rem}
+.mim-centro{justify-content:center;min-height:100%}.mim-frase{font-family:'Archivo Black',sans-serif;color:#FFD65C;line-height:1.1;text-align:center;text-shadow:0 4px 0 #B38600;margin:10px 0 24px;word-break:break-word;user-select:none;-webkit-user-select:none;pointer-events:none}
+.mim-btns{display:grid;grid-template-columns:1fr 1.4fr;gap:12px;width:100%}.mim-btns .bb-pasar{min-width:0;margin:0;font-size:1.15rem;padding:0 8px}.bb-pasar.mim-ok{background:#1FA866;box-shadow:0 6px 0 #0F6B40}
+.cta-palabra{font-size:min(16vw,4rem)}.cta-vidas{font-size:1.6rem;letter-spacing:4px}.cta-tabla li.fuera{opacity:.45}
+.mg-panel .imp-cats button.tf-on{background:#F5B301;color:#1A0F26}
+.tf-letra{font-family:'Archivo Black',sans-serif;font-size:min(34vw,9rem);line-height:1;color:#FFFFFF66}.tf-letra.tf-final{color:#FFD65C;text-shadow:0 6px 0 #B38600;animation:bbNueva .35s}
+.tf-cats{list-style:none;margin:6px 0;padding:0;display:flex;flex-wrap:wrap;justify-content:center;gap:6px}.tf-cats li{background:#FFFFFF14;border:1px solid #FFFFFF2A;border-radius:999px;padding:6px 12px;font-weight:800;font-size:.9rem}
+.bb-pasar:disabled{opacity:.6}
+.tf-filas{list-style:none;padding:0;margin:0 0 10px;display:flex;flex-direction:column;gap:6px;max-height:42vh;overflow-y:auto}.tf-filas li{display:grid;grid-template-columns:1fr auto auto auto auto;align-items:center;gap:6px;background:#FFFFFF10;border-radius:12px;padding:6px 8px}.tf-filas li span{font-weight:800;text-align:left;line-height:1.1}.tf-filas li small{display:block;font-size:.72rem;color:#FFFFFF88}.tf-filas li b{font-family:'Archivo Black',sans-serif;color:#FFD65C;min-width:34px;text-align:center}.mg-panel .tf-filas button{width:auto;min-height:36px;margin:0;padding:4px 9px;font-size:.85rem}
+.mg-panel .tf-catsel button:last-child:not(.tf-on){background:#1E9B7A}.cta-tabla{width:100%;max-width:340px}
