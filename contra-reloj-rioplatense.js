@@ -60,6 +60,7 @@ const ContraRelojRioplatense=(()=>{
 
   /* SONIDOS CORTOS */
   function pitidoError(){
+    if(typeof sonidoErrorExt==="function"){sonidoErrorExt();return;}
     try{const A=window.AudioContext||window.webkitAudioContext,c=new A(),o=c.createOscillator(),g=c.createGain();o.type="square";o.frequency.value=190;g.gain.value=.22;o.connect(g);g.connect(c.destination);o.start();o.frequency.exponentialRampToValueAtTime(95,c.currentTime+.26);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.31);o.stop(c.currentTime+.33);setTimeout(()=>c.close().catch(()=>{}),600);}catch(e){}
   }
   function pitidoFin(){

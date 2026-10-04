@@ -19,6 +19,14 @@ const Vistas={
   }
 };
 window.Vistas=Vistas;
+/* Sonido de error común a todas las extensiones (buzzer). Respeta el
+   botón de sonido del juego, igual que bip(). */
+const sonidoErrorExt=(()=>{let a=null;return function(){
+  try{if(typeof sonidoPermitido==="function"&&!sonidoPermitido())return;
+    if(!a){a=new Audio("assets/audio/error-extensiones.mp3");a.volume=.5;}
+    a.currentTime=0;a.play().catch(()=>{});}catch(e){}
+};})();
+window.sonidoErrorExt=sonidoErrorExt;
 const Duelo=(()=>{
   const CHARS="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let cliente=null,juego=null,sala=null,soyHost=false,rival=null,activo=false;

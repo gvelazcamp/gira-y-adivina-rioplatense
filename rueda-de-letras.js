@@ -74,7 +74,7 @@ const RuedaDeLetras=(()=>{
       const ganados=w.length*RUEDA_CONFIG.puntosExtraPorLetra;
       puntos+=ganados;guardarEnCajon(w);hud();feedback();mensaje(w+" extra · +"+ganados+" puntos");
     }else{
-      errores++;mensaje("Esa palabra no está en el diccionario");
+      errores++;sonidoErrorExt();mensaje("Esa palabra no está en el diccionario");
       const r=raiz.querySelector("#rlRueda");r.classList.remove("error");void r.offsetWidth;r.classList.add("error");
     }
   }
