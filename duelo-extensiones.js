@@ -116,7 +116,7 @@ const Duelo=(()=>{
       conectar(()=>{
         cliente.subscribe(temaIn());cliente.on("message",recibir);estado("Sala lista. Esperando al otro jugador…");
         cbRivalListo=r=>{estado("");cerrarCapa();if(onListo)onListo(true,r);};
-      },()=>estado("No se pudo conectar. Probá con otra red (datos del celular)."),cl=>{cliente=cl;});
+      },()=>estado("No se pudo conectar ("+(window.gyaFalloConexion||"sin respuesta")+"). Probá con otra red (datos del celular)."),cl=>{cliente=cl;});
       const quien=(perfil&&perfil.nombre)||"Un amigo";
       const texto="¡"+quien+" te desafía a "+nombreJuego+" en Girá y Adiviná! 👥 Tocá el link y apretá UNIRME: "+linkInvitacion()+" (código "+sala+")";
       c.querySelector("#dlWpp").onclick=()=>window.open("https://wa.me/?text="+encodeURIComponent(texto),"_blank");
@@ -137,7 +137,7 @@ const Duelo=(()=>{
         cbRivalListo=r=>{estado("");cerrarCapa();if(onListo)onListo(false,r);};
         const hola=()=>mandar({tipo:"hola",nombre:(perfil&&perfil.nombre)||"Jugador",avatar:(perfil&&perfil.avatar)||null,frame:(typeof frameEquipado!=="undefined"?frameEquipado:null)});
         hola();holaTimer=setInterval(hola,2000);
-      },()=>estado("No se pudo conectar. Probá con otra red (datos del celular)."),cl=>{cliente=cl;});
+      },()=>estado("No se pudo conectar ("+(window.gyaFalloConexion||"sin respuesta")+"). Probá con otra red (datos del celular)."),cl=>{cliente=cl;});
     };
     c.querySelector("#dlEntrar").onclick=entrar;
     c.querySelector("#dlInput").onkeydown=e=>{if(e.key==="Enter")entrar();};

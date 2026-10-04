@@ -5,7 +5,7 @@
    descriptor y a los rivales; los compañeros del descriptor no la ven. */
 const ContraRelojOnline=(()=>{
   const LETRAS="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  const BROKERS=["wss://broker.emqx.io:8084/mqtt","wss://broker.hivemq.com:8884/mqtt"];
+  const BROKERS=["wss://broker.emqx.io:8084/mqtt","wss://broker.hivemq.com:8884/mqtt","wss://mqtt.eclipseprojects.io:443/mqtt"];
   const PID_OK=/^p[a-z0-9]{4,12}$/,SALA_OK=/^[A-HJ-NP-Z2-9]{4}$/,ESTADOS_OK=["pending","correct","invalid"],MAX_JUG=18;
   let c=null,mq=null,sala="",pid="",miNombre="",soyHost=false,grupos=2,estadoSala=null,privado=null,tTurno=null,micOnline=false,listoConexion=false;
   let meta=15,jugados={},ganadorG=0,ultimoFestejo="",jug={},puntos={},empezada=false,grupoActivo=1,turno=null,rotacion={},tHost=null,mazo=[],idxMazo=-1,tDadoHost=null;
