@@ -7,10 +7,10 @@
    Vistas evita repetir palabras entre días. */
 const Impostor=(()=>{
   const CLAVE="gya_impostor",MIN=3,MAX=12;
-  let raiz=null,cant=4,nombres=[],cantImp=1,pista=true,catId="mezcla",partidas=0;
+  let raiz=null,cant=4,nombres=[],cantImp=1,catId="mezcla",partidas=0;
   let ronda=null,puntos={};
-  function cargar(){try{const d=JSON.parse(localStorage.getItem(CLAVE));if(d&&typeof d==="object"){cant=Math.min(MAX,Math.max(MIN,Number(d.cant)||4));nombres=Array.isArray(d.nombres)?d.nombres.map(String):[];cantImp=d.cantImp===2?2:1;pista=d.pista!==false;catId=d.catId||"mezcla";partidas=Number(d.partidas)||0;}}catch(e){}}
-  function guardar(){try{localStorage.setItem(CLAVE,JSON.stringify({cant,nombres,cantImp,pista,catId,partidas}));}catch(e){}}
+  function cargar(){try{const d=JSON.parse(localStorage.getItem(CLAVE));if(d&&typeof d==="object"){cant=Math.min(MAX,Math.max(MIN,Number(d.cant)||4));nombres=Array.isArray(d.nombres)?d.nombres.map(String):[];cantImp=d.cantImp===2?2:1;catId=d.catId||"mezcla";partidas=Number(d.partidas)||0;}}catch(e){}}
+  function guardar(){try{localStorage.setItem(CLAVE,JSON.stringify({cant,nombres,cantImp,catId,partidas}));}catch(e){}}
   cargar();
   const q=id=>raiz.querySelector("#"+id);
   const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
@@ -32,7 +32,6 @@ const Impostor=(()=>{
       <div class="imp-nombres" id="impNombres"></div>
       <div class="qs-sub">🕵️ Impostores</div>
       <div class="qns-rangos imp-dos" id="impImp"><button type="button" data-n="1">1 impostor</button><button type="button" data-n="2">2 impostores</button></div>
-      <button type="button" class="bb-voz" id="impPista"></button>
       <div class="qs-sub">🗂️ Tocá una categoría para repartir las palabras</div>
       <div class="qs-cats imp-cats" id="impCats">${cats().map(c=>`<button type="button" data-cat="${c.id}">${c.emoji} ${esc(c.nombre)}</button>`).join("")}<button type="button" data-cat="mezcla">🎲 Mezcla</button></div>
       <button type="button" id="impWpp">💬 Invitar por WhatsApp</button>
@@ -41,7 +40,6 @@ const Impostor=(()=>{
       q("impCant").textContent=cant;
       if(cant<6&&cantImp===2)cantImp=1;
       raiz.querySelectorAll("#impImp button").forEach(b=>{b.classList.toggle("activo",Number(b.dataset.n)===cantImp);b.disabled=Number(b.dataset.n)===2&&cant<6;});
-      q("impPista").innerHTML=pista?"💡 Pista para el impostor: <b>SÍ</b><small>Ve la categoría (más fácil para disimular)</small>":"💡 Pista para el impostor: <b>NO</b><small>No ve nada (más difícil)</small>";
       const cont=q("impNombres"),previos=[...cont.querySelectorAll("input")].map(i=>i.value);
       previos.forEach((v,i)=>nombres[i]=v);
       cont.innerHTML="";
@@ -52,7 +50,6 @@ const Impostor=(()=>{
     q("impMas").onclick=()=>{if(cant<MAX){cant++;guardar();pintar();}};
     q("impImp").onclick=e=>{const b=e.target.closest("button[data-n]");if(!b||b.disabled)return;cantImp=Number(b.dataset.n);guardar();pintar();};
     q("impCats").onclick=e=>{const b=e.target.closest("button[data-cat]");if(!b)return;catId=b.dataset.cat;guardar();nuevaRonda();};
-    q("impPista").onclick=()=>{pista=!pista;guardar();pintar();};
     q("impWpp").onclick=()=>PantallaFija.invitar("impostor","Impostor");
   }
   function elegirPalabra(){
@@ -84,7 +81,7 @@ const Impostor=(()=>{
   function ver(){
     const i=ronda.turno,esImp=ronda.impostores.includes(i),ultimo=i===cant-1;
     pantallaJuego(`<div class="imp-centro">${esImp
-      ?`<div class="imp-carta imp-mala"><div class="imp-rol">🕵️ SOS EL IMPOSTOR</div>${pista?`<div class="imp-pista">Pista: ${ronda.cat.emoji} ${esc(ronda.cat.nombre)}</div>`:""}<p>Disimulá: escuchá a los demás y decí algo que encaje.</p></div>`
+      ?`<div class="imp-carta imp-mala"><div class="imp-rol">🕵️ SOS EL IMPOSTOR</div><p>Disimulá: escuchá a los demás y decí algo que encaje.</p></div>`
       :`<div class="imp-carta"><small>Tu palabra es</small><div class="imp-palabra">${esc(ronda.palabra)}</div><p>No la digas: decí algo relacionado.</p></div>`}
       <button type="button" class="bb-pasar" id="impListo">${ultimo?"Ya la vi · Empezar ➜":"Ya la vi · Ocultar y pasar ➜"}</button></div>`);
     /* Igual para todos (sin sonido): que nadie se dé cuenta de quién es el impostor. */
