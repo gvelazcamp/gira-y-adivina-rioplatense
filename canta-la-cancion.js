@@ -1,17 +1,19 @@
 /* Canta la Canción (karaoke): aparece una palabra y el jugador de turno
    tiene que cantar un pedacito de una canción que la tenga antes de que se
    acabe el tiempo. Árbitro por voz (SpeechRecognition): si en lo que canta
-   aparece la palabra, suena el acierto y suma 1 punto; si se acaba el
+   aparece la palabra dentro de una frase (MIN_PAL palabras o más; decir la
+   palabra sola no vale), suena el acierto y suma 1 punto (los demás pueden
+   anularlo con "No valió"); si se acaba el
    tiempo, suena el error. Sin voz (o si falla), los demás marcan a mano.
    Se juegan N vueltas y gana el que suma más. En Android, mientras el
    micrófono escucha, la página no hace sonidos (cortan la escucha): el
    tic-tac va con vibración. Pantalla fija (PantallaFija). Datos en gya_canta. */
 const CantaLaCancion=(()=>{
-  const CLAVE="gya_canta",TIEMPOS=[15,20,30],VUELTAS=[2,3,5];
+  const CLAVE="gya_canta",TIEMPOS=[15,20,30],VUELTAS=[2,3,5],MIN_PAL=5;
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   const ANDROID=/Android/i.test(navigator.userAgent||"");
   let raiz=null,est={cant:3,nombres:[]},tiempo=20,vueltas=3,conVoz=!!SR,partidas=0;
-  let pts=[],turno=0,jugados=0,mazo=[],idx=0,palabra="",fin=0,timer=0,jugando=false,bloqueo=0,voz=null,oidoTxt="";
+  let pts=[],turno=0,jugados=0,mazo=[],idx=0,palabra="",fin=0,timer=0,jugando=false,bloqueo=0,voz=null,oidoTxt="",porVoz=false;
   function cargar(){try{const d=JSON.parse(localStorage.getItem(CLAVE));if(d&&typeof d==="object"){est.cant=Math.min(12,Math.max(2,Number(d.cant)||3));est.nombres=Array.isArray(d.nombres)?d.nombres.map(String):[];if(TIEMPOS.includes(d.tiempo))tiempo=d.tiempo;if(VUELTAS.includes(d.vueltas))vueltas=d.vueltas;if(SR&&typeof d.voz==="boolean")conVoz=d.voz;partidas=Number(d.partidas)||0;}}catch(e){}}
   function guardar(){try{localStorage.setItem(CLAVE,JSON.stringify({cant:est.cant,nombres:est.nombres,tiempo,vueltas,voz:conVoz,partidas}));}catch(e){}}
   cargar();
@@ -29,7 +31,7 @@ const CantaLaCancion=(()=>{
   function configurar(){
     parar();PantallaFija.desactivar();
     raiz.innerHTML=`<div class="mg-panel imp-panel kar-panel"><h3>🎤 Canta la Canción</h3>
-      <p>Sale una palabra y tenés que <b>cantar un pedacito de una canción</b> que la tenga. ${SR?"El celular te escucha: si la cantás, suma.":"Los demás deciden si la cantaste."}</p>
+      <p>Sale una palabra y tenés que <b>cantar un pedacito de una canción</b> que la tenga. ${SR?"El celular te escucha: tenés que cantar <b>una frase entera</b> con la palabra (decirla sola no vale). Si alguien hace trampa, los demás la anulan.":"Los demás deciden si la cantaste."}</p>
       <div class="qs-sub">👥 Jugadores</div><div id="ctaJug"></div>
       <div class="qs-sub">⏱️ Tiempo para cantar</div>
       <div class="qns-rangos" id="ctaT">${TIEMPOS.map(t=>`<button type="button" data-v="${t}">${t} s</button>`).join("")}</div>
@@ -64,7 +66,7 @@ const CantaLaCancion=(()=>{
       <div class="kar-vuelta">Vuelta ${vuelta} de ${vueltas}</div>
       <div class="kar-turno" style="--c:${COLORES[turno%COLORES.length]}"><i>${esc(iniciales(turno))}</i></div>
       <div class="kar-le">Le toca cantar a</div><div class="kar-nombre">${esc(nom(turno))}</div>
-      <p class="kar-ayuda">${conVoz?"Tocá el micrófono y cantá: el celular te escucha.":"Tocá cuando estés listo."} Tenés <b>${tiempo} s</b>.</p>
+      <p class="kar-ayuda">${conVoz?"Tocá el micrófono y cantá <b>una frase entera</b> de la canción: decir la palabra sola no vale.":"Tocá cuando estés listo."} Tenés <b>${tiempo} s</b>.</p>
       <button type="button" class="kar-mic" id="ctaListo" aria-label="Empezar a cantar"><span>🎤</span></button>
       ${marcador()}</div>`);
     q("ctaListo").onclick=jugar;
@@ -76,15 +78,17 @@ const CantaLaCancion=(()=>{
       <div class="kar-le">🎤 ${esc(nom(turno))} · cantá una canción con</div>
       <div class="kar-cartel"><span>${esc(palabra)}</span></div>
       <div class="kar-reloj"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="54" class="kar-aro"/><circle cx="60" cy="60" r="54" class="kar-avance" id="ctaAro" style="stroke-dasharray:${C};stroke-dashoffset:0"/></svg><b id="ctaReloj">${tiempo}</b></div>
-      ${conVoz?`<div class="kar-eq" id="ctaEq"><i></i><i></i><i></i><i></i><i></i></div><div class="kar-oido" id="ctaOido">Escuchando…</div>`:""}
+      ${conVoz?`<div class="kar-eq" id="ctaEq"><i></i><i></i><i></i><i></i><i></i></div><div class="kar-oido" id="ctaOido">Escuchando… cantá la frase entera</div>`:""}
       <div class="kar-btns ${conVoz?"chicos":""}"><button type="button" class="bb-pasar imp-gris" id="ctaNo">✘ No pudo</button><button type="button" class="bb-pasar mim-ok" id="ctaSi">✔ La cantó</button></div></div>`,"cantando");
+    porVoz=false;
     q("ctaNo").addEventListener("pointerdown",e=>{e.preventDefault();responder(false);});
     q("ctaSi").addEventListener("pointerdown",e=>{e.preventDefault();responder(true);});
     fin=Date.now()+tiempo*1000;
     if(conVoz)escuchar();
     reloj();
   }
-  /* Árbitro por voz: si la palabra aparece en lo que se escucha, es acierto. */
+  /* Árbitro por voz: es acierto si la palabra aparece y se cantó una frase
+     (MIN_PAL palabras o más en lo escuchado). La palabra sola no alcanza. */
   function escuchar(){
     if(!SR||voz)return;
     try{voz=new SR();}catch(e){voz=null;return;}
@@ -94,9 +98,12 @@ const CantaLaCancion=(()=>{
       if(!jugando)return;
       let txt="";for(let i=0;i<e.results.length;i++){for(let a=0;a<e.results[i].length;a++)txt+=" "+e.results[i][a].transcript;}
       const n=" "+N(txt)+" ";
+      let prin="";for(let i=0;i<e.results.length;i++)prin+=" "+e.results[i][0].transcript;
+      const cant=N(prin).split(" ").filter(Boolean).length;
       const ult=N(e.results[e.results.length-1][0].transcript).split(" ").slice(-5).join(" ");
-      const o=raiz&&raiz.querySelector("#ctaOido");if(o&&ult)o.textContent="🎶 "+ult;
-      if(metas.some(m=>n.includes(" "+m+" ")))responder(true);
+      const esta=metas.some(m=>n.includes(" "+m+" "));
+      const o=raiz&&raiz.querySelector("#ctaOido");if(o&&ult)o.textContent=esta&&cant<MIN_PAL?"🎶 "+ult+" … ¡seguí cantando la frase!":"🎶 "+ult;
+      if(esta&&cant>=MIN_PAL){porVoz=true;responder(true);}
     };
     voz.onerror=e=>{const err=e&&e.error||"";const o=raiz&&raiz.querySelector("#ctaOido");
       if(err==="not-allowed"||err==="service-not-allowed"){if(o)o.textContent="🎤 Sin permiso de micrófono: marquen a mano";pararVoz();}
@@ -128,10 +135,16 @@ const CantaLaCancion=(()=>{
     pantalla(`<div class="kar-centro">
       <div class="kar-veredicto ${ok?"bien":"mal"}">${ok?"🎶 ¡La cantó!":porTiempo?"⏰ ¡Se acabó el tiempo!":"✘ No pudo"}</div>
       <div class="kar-le">La palabra era</div><div class="kar-cartel chico"><span>${esc(palabra)}</span></div>
-      ${ok?`<p class="kar-ayuda"><b>${esc(nom(turno))}</b> suma 1 punto.</p>`:""}
+      ${ok?`<p class="kar-ayuda" id="ctaSuma"><b>${esc(nom(turno))}</b> suma 1 punto.</p>`:""}
+      ${ok&&porVoz?`<button type="button" class="kar-anular" id="ctaAnular">✘ No valió (no era una canción)</button>`:""}
       ${marcador()}
       <button type="button" class="bb-pasar" id="ctaSig">${ultimo?"🏆 Ver ganador":"Siguiente ➜"}</button></div>`,ok?"festeja":"");
     q("ctaSig").onclick=()=>{if(ultimo){ganador();return;}turno=(turno+1)%est.cant;previa();};
+    const an=raiz.querySelector("#ctaAnular");
+    if(an)an.onclick=()=>{pts[turno]=Math.max(0,pts[turno]-1);porVoz=false;if(typeof sonidoErrorExt==="function")sonidoErrorExt();if(typeof vibrar==="function")vibrar([60,40,60]);
+      an.remove();const v=raiz.querySelector(".kar-veredicto");if(v){v.className="kar-veredicto mal";v.textContent="✘ No valió";}
+      const su=q("ctaSuma");if(su)su.innerHTML="Los demás la anularon: <b>no suma</b>.";const m=raiz.querySelector(".kar-marcador");if(m)m.outerHTML=marcador();
+      const esc_=raiz.querySelector(".kar-escena");if(esc_)esc_.classList.remove("festeja");};
   }
   function ganador(){
     partidas++;guardar();
