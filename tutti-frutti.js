@@ -130,7 +130,7 @@ const TuttiFrutti=(()=>{
   /* Conexión propia (como Contra Reloj online): prueba los brokers en orden,
      con reconexión automática una vez conectado. El código se muestra
      enseguida, igual que en los otros juegos, mientras conecta. */
-  const BROKERS_TF=["wss://broker.emqx.io:8084/mqtt","wss://broker.hivemq.com:8884/mqtt","wss://test.mosquitto.org:8081/mqtt"];
+  const BROKERS_TF=["wss://broker.emqx.io:8084/mqtt","wss://broker.hivemq.com:8884/mqtt","wss://test.mosquitto.org:8081/mqtt","wss://mqtt.eclipseprojects.io:443/mqtt"];
   /* Si la librería mqtt (que el juego carga al abrir) no llegó a cargar,
      se vuelve a pedir: copia local, unpkg y después jsdelivr. */
   function cargarMqtt(cb){
@@ -151,7 +151,7 @@ const TuttiFrutti=(()=>{
       let ok=false,muerto=false,cli=null;
       const siguiente=()=>{if(ok||muerto)return;muerto=true;try{cli&&cli.end(true);}catch(e){}i++;
         if(on!==mio)return;
-        if(i<BROKERS_TF.length)intento();else{estado("No se pudo conectar. Probá con datos del celular o tocá Reintentar.");reintentar(true);}};
+        if(i<BROKERS_TF.length)intento();else{estado("No se pudo conectar (los servidores no responden). Probá con datos del celular o tocá Reintentar.");reintentar(true);}};
       try{cli=mqtt.connect(BROKERS_TF[i],{clientId:"gya_tf_"+mio.pid+Math.random().toString(36).slice(2,6),clean:true,connectTimeout:6000,reconnectPeriod:2000});}catch(e){siguiente();return;}
       cli.on("connect",()=>{
         if(on!==mio){try{cli.end(true);}catch(e){}return;}

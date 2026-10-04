@@ -2599,15 +2599,26 @@ const enviar=o=>{try{
   mq.publish(tema(canal),JSON.stringify(payload));
 }catch(e){}};
 
-const BROKERS=["wss://broker.emqx.io:8084/mqtt","wss://broker.hivemq.com:8884/mqtt","wss://test.mosquitto.org:8081/mqtt"];
+/* El 4.º (Eclipse) usa el puerto 443, el de cualquier página web: sirve si
+   una red (wifi de trabajo, algunos routers) bloquea los puertos 8084/8884/8081.
+   Va al final para no cambiar los índices 0-2 que usa la Sala TV en el código. */
+const BROKERS=["wss://broker.emqx.io:8084/mqtt","wss://broker.hivemq.com:8884/mqtt","wss://test.mosquitto.org:8081/mqtt","wss://mqtt.eclipseprojects.io:443/mqtt"];
 /* asignar: a qué variable global queda el cliente conectado (por defecto
    "mq", la de la sala de juego activa). El listener de invitaciones usa
    su propia conexión aparte ("mqInv") para no pisar la de una partida. */
 function conectar(alConectar,alFallar,asignar,i){
   const esTV=(modo==="tvhost"||modo==="tvguest")&&!asignar;
   const asignarCliente=asignar||(c=>{mq=c;});
-  const fijo=esTV&&modo==="tvguest"&&/^[0-2][A-Z2-9]{5}$/.test(sala)?Number(sala[0]):null;
+  const fijo=esTV&&modo==="tvguest"&&/^[0-3][A-Z2-9]{5}$/.test(sala)?Number(sala[0]):null;
   i=i===undefined?(fijo===null?0:fijo):i;
+  /* Si mqtt.js no llegó a cargar, se pide la copia local una vez y se reintenta. */
+  if(typeof mqtt==="undefined"&&!conectar.libPedida){
+    conectar.libPedida=true;
+    const sc=document.createElement("script");sc.src="lib/mqtt.min.js?v=5.10.1";
+    sc.onload=()=>conectar(alConectar,alFallar,asignar,i);sc.onerror=()=>{window.gyaFalloConexion="sin librería";alFallar();};
+    document.head.appendChild(sc);return;
+  }
+  window.gyaFalloConexion=typeof mqtt==="undefined"?"sin librería":"los servidores no responden";
   if(typeof mqtt==="undefined"||i>=BROKERS.length||(fijo!==null&&i!==fijo))return alFallar();
   let listo=false,muerto=false;
   const c=mqtt.connect(BROKERS[i],{clientId:"lr"+Math.random().toString(16).slice(2),
@@ -10765,7 +10776,7 @@ document.addEventListener("keydown",e=>{
   if(e.code==="Space"&&!$("bGirar").disabled){e.preventDefault();$("bGirar").click();}
 });
 </script>
-<script src="duelo-extensiones.js?v=11"></script>
+<script src="duelo-extensiones.js?v=12"></script>
 <script src="sopa-fugaz-datos.js?v=3"></script>
 <script src="sopa-fugaz.js?v=7"></script>
 <script src="rueda-de-letras-datos.js?v=1"></script>
@@ -10786,7 +10797,7 @@ document.addEventListener("keydown",e=>{
 <script src="ahorcado-rioplatense.js?v=11"></script>
 <script src="contra-reloj-rioplatense-datos.js?v=2"></script>
 <script src="contra-reloj-rioplatense-voz.js?v=1"></script>
-<script src="contra-reloj-rioplatense-online.js?v=6"></script>
+<script src="contra-reloj-rioplatense-online.js?v=7"></script>
 <script src="contra-reloj-rioplatense.js?v=10"></script>
 <script src="moon-tap.js?v=5"></script>
 <script src="pantalla-fija.js?v=5"></script>
@@ -10800,7 +10811,7 @@ document.addEventListener("keydown",e=>{
 <script src="mimica.js?v=2"></script>
 <script src="canta-la-cancion-datos.js?v=1"></script>
 <script src="canta-la-cancion.js?v=1"></script>
-<script src="tutti-frutti.js?v=6"></script>
+<script src="tutti-frutti.js?v=7"></script>
 <script src="extensiones.js?v=35"></script>
 <script src="sala-tv.js?v=1"></script>
 </body>
