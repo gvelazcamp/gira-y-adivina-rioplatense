@@ -1,21 +1,21 @@
 /* Canta la Canción (karaoke): aparece una palabra y el jugador de turno
-   tiene que cantar un pedacito de una canción que la tenga antes de que se
-   acabe el tiempo. Árbitro por voz (SpeechRecognition): si en lo que canta
-   aparece la palabra dentro de una frase (MIN_PAL palabras o más; decir la
-   palabra sola no vale), suena el acierto y suma 1 punto (los demás pueden
-   anularlo con "No valió"); si se acaba el
-   tiempo, suena el error. Sin voz (o si falla), los demás marcan a mano.
-   Se juegan N vueltas y gana el que suma más. En Android, mientras el
-   micrófono escucha, la página no hace sonidos (cortan la escucha): el
-   tic-tac va con vibración. Pantalla fija (PantallaFija). Datos en gya_canta. */
+   canta un pedacito de una canción que la tenga hasta que se acaba el
+   tiempo (o toca "Terminé"). Después el jurado (los demás) vota 👍/👎:
+   mayoría (empate vale) suma 1 punto. Si está activado, se graba el canto
+   (MediaRecorder) para escucharlo de nuevo; donde se puede, también se
+   muestra lo que entendió el reconocimiento de voz (en celulares solo si no
+   se graba, porque los dos se pelean el micrófono). Mientras se canta no
+   hay sonidos (cortan el micrófono en Android): el tic-tac va con vibración.
+   Se juegan N vueltas y gana el que suma más. Pantalla fija (PantallaFija). Datos en gya_canta. */
 const CantaLaCancion=(()=>{
-  const CLAVE="gya_canta",TIEMPOS=[15,20,30],VUELTAS=[2,3,5],MIN_PAL=5;
+  const CLAVE="gya_canta",TIEMPOS=[15,20,30],VUELTAS=[2,3,5];
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  const ANDROID=/Android/i.test(navigator.userAgent||"");
-  let raiz=null,est={cant:3,nombres:[]},tiempo=20,vueltas=3,conVoz=!!SR,partidas=0;
-  let pts=[],turno=0,jugados=0,mazo=[],idx=0,palabra="",fin=0,timer=0,jugando=false,bloqueo=0,voz=null,oidoTxt="",porVoz=false;
-  function cargar(){try{const d=JSON.parse(localStorage.getItem(CLAVE));if(d&&typeof d==="object"){est.cant=Math.min(12,Math.max(2,Number(d.cant)||3));est.nombres=Array.isArray(d.nombres)?d.nombres.map(String):[];if(TIEMPOS.includes(d.tiempo))tiempo=d.tiempo;if(VUELTAS.includes(d.vueltas))vueltas=d.vueltas;if(SR&&typeof d.voz==="boolean")conVoz=d.voz;partidas=Number(d.partidas)||0;}}catch(e){}}
-  function guardar(){try{localStorage.setItem(CLAVE,JSON.stringify({cant:est.cant,nombres:est.nombres,tiempo,vueltas,voz:conVoz,partidas}));}catch(e){}}
+  const ANDROID=/Android/i.test(navigator.userAgent||""),MOVIL=ANDROID||/iPhone|iPad|iPod/i.test(navigator.userAgent||"");
+  const GRABA=!!(window.MediaRecorder&&navigator.mediaDevices&&navigator.mediaDevices.getUserMedia);
+  let raiz=null,est={cant:3,nombres:[]},tiempo=20,vueltas=3,grabar=true,partidas=0;
+  let pts=[],turno=0,jugados=0,mazo=[],idx=0,palabra="",fin=0,timer=0,jugando=false,bloqueo=0,voz=null,oidoTxt="",votos={},grab=null,flujo=null,audioURL="",audio=null;
+  function cargar(){try{const d=JSON.parse(localStorage.getItem(CLAVE));if(d&&typeof d==="object"){est.cant=Math.min(12,Math.max(2,Number(d.cant)||3));est.nombres=Array.isArray(d.nombres)?d.nombres.map(String):[];if(TIEMPOS.includes(d.tiempo))tiempo=d.tiempo;if(VUELTAS.includes(d.vueltas))vueltas=d.vueltas;if(typeof d.grabar==="boolean")grabar=d.grabar;partidas=Number(d.partidas)||0;}}catch(e){}}
+  function guardar(){try{localStorage.setItem(CLAVE,JSON.stringify({cant:est.cant,nombres:est.nombres,tiempo,vueltas,grabar,partidas}));}catch(e){}}
   cargar();
   const q=id=>raiz.querySelector("#"+id);
   const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
@@ -31,24 +31,24 @@ const CantaLaCancion=(()=>{
   function configurar(){
     parar();PantallaFija.desactivar();
     raiz.innerHTML=`<div class="mg-panel imp-panel kar-panel"><h3>🎤 Canta la Canción</h3>
-      <p>Sale una palabra y tenés que <b>cantar un pedacito de una canción</b> que la tenga. ${SR?"El celular te escucha: tenés que cantar <b>una frase entera</b> con la palabra (decirla sola no vale). Si alguien hace trampa, los demás la anulan.":"Los demás deciden si la cantaste."}</p>
+      <p>Sale una palabra y tenés que <b>cantar un pedacito de una canción</b> que la tenga. Cuando termina el tiempo, <b>el jurado</b> (los demás) vota si valió.</p>
       <div class="qs-sub">👥 Jugadores</div><div id="ctaJug"></div>
       <div class="qs-sub">⏱️ Tiempo para cantar</div>
       <div class="qns-rangos" id="ctaT">${TIEMPOS.map(t=>`<button type="button" data-v="${t}">${t} s</button>`).join("")}</div>
       <div class="qs-sub">🔁 Vueltas</div>
       <div class="qns-rangos" id="ctaV">${VUELTAS.map(t=>`<button type="button" data-v="${t}">${t} vueltas</button>`).join("")}</div>
-      ${SR?`<button type="button" class="bb-voz" id="ctaVoz"></button>`:""}
+      ${GRABA?`<button type="button" class="bb-voz" id="ctaVoz"></button>`:""}
       <button type="button" class="mg-principal" id="ctaEmpezar">🎤 Empezar</button>
       <button type="button" id="ctaWpp">💬 Invitar por WhatsApp</button></div>`;
     PantallaFija.editorJugadores(q("ctaJug"),est,{min:2,max:12,alCambiar:guardar});
     const pintar=()=>{
       raiz.querySelectorAll("#ctaT button").forEach(b=>b.classList.toggle("activo",Number(b.dataset.v)===tiempo));
       raiz.querySelectorAll("#ctaV button").forEach(b=>b.classList.toggle("activo",Number(b.dataset.v)===vueltas));
-      const bv=raiz.querySelector("#ctaVoz");if(bv)bv.innerHTML=conVoz?"🎤 Árbitro por voz: <b>SÍ</b><small>El celular escucha y decide solo</small>":"🎤 Árbitro por voz: <b>NO</b><small>Los demás tocan si la cantó o no</small>";
+      const bv=raiz.querySelector("#ctaVoz");if(bv)bv.innerHTML=grabar?"🎙️ Grabar el canto: <b>SÍ</b><small>El jurado lo puede escuchar de nuevo antes de votar</small>":"🎙️ Grabar el canto: <b>NO</b><small>El jurado vota con lo que escuchó</small>";
     };pintar();
     q("ctaT").onclick=e=>{const b=e.target.closest("button[data-v]");if(b){tiempo=Number(b.dataset.v);guardar();pintar();}};
     q("ctaV").onclick=e=>{const b=e.target.closest("button[data-v]");if(b){vueltas=Number(b.dataset.v);guardar();pintar();}};
-    const bv=raiz.querySelector("#ctaVoz");if(bv)bv.onclick=()=>{conVoz=!conVoz;guardar();pintar();};
+    const bv=raiz.querySelector("#ctaVoz");if(bv)bv.onclick=()=>{grabar=!grabar;guardar();pintar();};
     q("ctaEmpezar").onclick=empezar;
     q("ctaWpp").onclick=()=>PantallaFija.invitar("canta-la-cancion","Canta la Canción");
   }
@@ -66,7 +66,7 @@ const CantaLaCancion=(()=>{
       <div class="kar-vuelta">Vuelta ${vuelta} de ${vueltas}</div>
       <div class="kar-turno" style="--c:${COLORES[turno%COLORES.length]}"><i>${esc(iniciales(turno))}</i></div>
       <div class="kar-le">Le toca cantar a</div><div class="kar-nombre">${esc(nom(turno))}</div>
-      <p class="kar-ayuda">${conVoz?"Tocá el micrófono y cantá <b>una frase entera</b> de la canción: decir la palabra sola no vale.":"Tocá cuando estés listo."} Tenés <b>${tiempo} s</b>.</p>
+      <p class="kar-ayuda">Tocá el micrófono y cantá un pedacito de una canción con la palabra. Tenés <b>${tiempo} s</b>; si terminás antes, tocá <b>Terminé</b>.</p>
       <button type="button" class="kar-mic" id="ctaListo" aria-label="Empezar a cantar"><span>🎤</span></button>
       ${marcador()}</div>`);
     q("ctaListo").onclick=jugar;
@@ -78,38 +78,41 @@ const CantaLaCancion=(()=>{
       <div class="kar-le">🎤 ${esc(nom(turno))} · cantá una canción con</div>
       <div class="kar-cartel"><span>${esc(palabra)}</span></div>
       <div class="kar-reloj"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="54" class="kar-aro"/><circle cx="60" cy="60" r="54" class="kar-avance" id="ctaAro" style="stroke-dasharray:${C};stroke-dashoffset:0"/></svg><b id="ctaReloj">${tiempo}</b></div>
-      ${conVoz?`<div class="kar-eq" id="ctaEq"><i></i><i></i><i></i><i></i><i></i></div><div class="kar-oido" id="ctaOido">Escuchando… cantá la frase entera</div>`:""}
-      <div class="kar-btns ${conVoz?"chicos":""}"><button type="button" class="bb-pasar imp-gris" id="ctaNo">✘ No pudo</button><button type="button" class="bb-pasar mim-ok" id="ctaSi">✔ La cantó</button></div></div>`,"cantando");
-    porVoz=false;
-    q("ctaNo").addEventListener("pointerdown",e=>{e.preventDefault();responder(false);});
-    q("ctaSi").addEventListener("pointerdown",e=>{e.preventDefault();responder(true);});
+      <div class="kar-eq" id="ctaEq"><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="kar-oido" id="ctaOido">${grabar&&GRABA?"🔴 Grabando… cantá tranquilo hasta el final":"Cantá tranquilo hasta el final"}</div>
+      <button type="button" class="bb-pasar imp-gris kar-termine" id="ctaFin">✋ Terminé</button></div>`,"cantando");
+    q("ctaFin").addEventListener("pointerdown",e=>{e.preventDefault();if(Date.now()>=bloqueo)terminar();});
     fin=Date.now()+tiempo*1000;
-    if(conVoz)escuchar();
+    if(grabar&&GRABA)grabarAudio();
+    if(SR&&(!grabar||!GRABA||!MOVIL))escuchar();
     reloj();
   }
-  /* Árbitro por voz: es acierto si la palabra aparece y se cantó una frase
-     (MIN_PAL palabras o más en lo escuchado). La palabra sola no alcanza. */
+  /* Grabación del canto para que el jurado lo escuche de nuevo. */
+  function grabarAudio(){
+    audioURL&&URL.revokeObjectURL(audioURL);audioURL="";const trozos=[];
+    navigator.mediaDevices.getUserMedia({audio:true}).then(st=>{
+      if(!jugando){st.getTracks().forEach(t=>t.stop());return;}
+      flujo=st;try{grab=new MediaRecorder(st);}catch(e){st.getTracks().forEach(t=>t.stop());flujo=null;return;}
+      grab.ondataavailable=e=>{if(e.data&&e.data.size)trozos.push(e.data);};
+      grab.onstop=()=>{if(trozos.length){audioURL=URL.createObjectURL(new Blob(trozos,{type:trozos[0].type||"audio/webm"}));const b=raiz&&raiz.querySelector("#ctaOir");if(b)b.hidden=false;}};
+      grab.start();
+    }).catch(()=>{const o=raiz&&raiz.querySelector("#ctaOido");if(o)o.textContent="🎤 Sin permiso de micrófono: el jurado decide igual";});
+  }
+  function pararGrabacion(){try{if(grab&&grab.state!=="inactive")grab.stop();}catch(e){}grab=null;if(flujo){flujo.getTracks().forEach(t=>t.stop());flujo=null;}}
+  /* Lo que el celular entiende se muestra al jurado (no decide nada). */
   function escuchar(){
     if(!SR||voz)return;
     try{voz=new SR();}catch(e){voz=null;return;}
-    voz.lang="es-UY";voz.continuous=true;voz.interimResults=true;voz.maxAlternatives=3;
-    const meta=N(palabra),metas=[meta,meta+"s",meta+"es"];
+    voz.lang="es-UY";voz.continuous=true;voz.interimResults=true;
+    let previo="";
     voz.onresult=e=>{
       if(!jugando)return;
-      let txt="";for(let i=0;i<e.results.length;i++){for(let a=0;a<e.results[i].length;a++)txt+=" "+e.results[i][a].transcript;}
-      const n=" "+N(txt)+" ";
-      let prin="";for(let i=0;i<e.results.length;i++)prin+=" "+e.results[i][0].transcript;
-      const cant=N(prin).split(" ").filter(Boolean).length;
-      const ult=N(e.results[e.results.length-1][0].transcript).split(" ").slice(-5).join(" ");
-      const esta=metas.some(m=>n.includes(" "+m+" "));
-      const o=raiz&&raiz.querySelector("#ctaOido");if(o&&ult)o.textContent=esta&&cant<MIN_PAL?"🎶 "+ult+" … ¡seguí cantando la frase!":"🎶 "+ult;
-      if(esta&&cant>=MIN_PAL){porVoz=true;responder(true);}
+      let t="";for(let i=0;i<e.results.length;i++)t+=" "+e.results[i][0].transcript;
+      oidoTxt=(previo+" "+t).replace(/\s+/g," ").trim();
+      const o=raiz&&raiz.querySelector("#ctaOido");if(o&&oidoTxt)o.textContent="🎶 "+oidoTxt.split(" ").slice(-6).join(" ");
     };
-    voz.onerror=e=>{const err=e&&e.error||"";const o=raiz&&raiz.querySelector("#ctaOido");
-      if(err==="not-allowed"||err==="service-not-allowed"){if(o)o.textContent="🎤 Sin permiso de micrófono: marquen a mano";pararVoz();}
-      else if(err==="network"){if(o)o.textContent="🎤 Sin internet para escuchar: marquen a mano";}
-      else if(err==="language-not-supported"&&voz)voz.lang=voz.lang==="es-UY"?"es-AR":"es-ES";};
-    voz.onend=()=>{if(jugando&&voz)setTimeout(()=>{if(jugando&&voz)try{voz.start();}catch(e){}},250);};
+    voz.onerror=e=>{const err=e&&e.error||"";if(err==="language-not-supported"&&voz)voz.lang=voz.lang==="es-UY"?"es-AR":"es-ES";else if(err==="not-allowed"||err==="service-not-allowed")pararVoz();};
+    voz.onend=()=>{previo=oidoTxt;if(jugando&&voz)setTimeout(()=>{if(jugando&&voz)try{voz.start();}catch(e){}},250);};
     try{voz.start();}catch(e){voz=null;}
   }
   function pararVoz(){if(voz){try{voz.onend=null;voz.abort();}catch(e){}voz=null;}const eq=raiz&&raiz.querySelector("#ctaEq");if(eq)eq.classList.add("quieto");}
@@ -117,34 +120,47 @@ const CantaLaCancion=(()=>{
     if(!raiz||!jugando)return;
     const quedan=Math.max(0,fin-Date.now()),r=Math.ceil(quedan/1000),el=q("ctaReloj"),aro=q("ctaAro");
     if(aro){const C=2*Math.PI*54;aro.style.strokeDashoffset=String(C*(1-quedan/(tiempo*1000)));aro.classList.toggle("urgente",r<=5);}
-    if(el&&el.textContent!==String(r)){el.textContent=r;if(r<=5&&r>0){if(voz&&ANDROID){if(typeof vibrar==="function")vibrar(20);}else sonar(880,.07);}}
-    if(quedan<=0){responder(false,true);return;}
+    if(el&&el.textContent!==String(r)){el.textContent=r;if(r<=5&&r>0&&typeof vibrar==="function")vibrar(20);}
+    if(quedan<=0){terminar();return;}
     timer=setTimeout(reloj,100);
   }
-  function responder(ok,porTiempo){
-    if(!jugando||(!porTiempo&&Date.now()<bloqueo))return;
-    jugando=false;clearTimeout(timer);pararVoz();
-    /* Un instante después de cortar el micrófono, para que el sonido se oiga (Android). */
-    setTimeout(()=>{
-      if(ok){sonar(660,.15,"sine",.07);sonar(990,.25,"triangle",.05);if(typeof vibrar==="function")vibrar(40);}
-      else{if(typeof sonidoErrorExt==="function")sonidoErrorExt();if(typeof vibrar==="function")vibrar([60,40,60]);}
-    },ANDROID?150:0);
-    if(ok)pts[turno]++;
+  /* Fin del canto: el jurado (los demás) vota si vale. */
+  function terminar(){
+    if(!jugando)return;
+    jugando=false;clearTimeout(timer);pararVoz();pararGrabacion();
+    setTimeout(()=>{sonar(523,.12);setTimeout(()=>sonar(392,.2),140);},ANDROID?150:0);
+    votos={};
+    const jueces=pts.map((_,i)=>i).filter(i=>i!==turno);
+    const pal=N(palabra),oido=oidoTxt?esc(oidoTxt).replace(new RegExp("(^|\\s)("+pal.replace(/[^a-zñ0-9]/g,"")+"\\w{0,2})(?=\\s|$)","gi"),"$1<mark>$2</mark>"):"";
+    pantalla(`<div class="kar-centro">
+      <div class="kar-veredicto">🧑‍⚖️ ¿Vale?</div>
+      <div class="kar-le">${esc(nom(turno))} tenía que cantar</div><div class="kar-cartel chico"><span>${esc(palabra)}</span></div>
+      ${oido?`<div class="kar-letra"><small>El celular escuchó:</small>“${oido}”</div>`:""}
+      <button type="button" class="kar-oir" id="ctaOir" ${audioURL?"":"hidden"}>▶ Escuchar de nuevo</button>
+      <div class="kar-le">Jurado: ¿era una canción con la palabra?</div>
+      <div class="kar-jurado">${jueces.map(i=>`<div class="kar-juez" data-i="${i}" style="--c:${COLORES[i%COLORES.length]}"><i>${esc(iniciales(i))}</i><b>${esc(nom(i))}</b><button type="button" data-v="1">👍</button><button type="button" data-v="0">👎</button></div>`).join("")}</div>
+      <p class="kar-ayuda">Gana la mayoría. Si hay empate, vale.</p></div>`);
+    q("ctaOir").onclick=()=>{if(!audioURL)return;if(audio){audio.pause();}audio=new Audio(audioURL);audio.play().catch(()=>{});};
+    raiz.querySelectorAll(".kar-juez button").forEach(b=>b.onclick=()=>{
+      const j=b.closest(".kar-juez"),i=Number(j.dataset.i);votos[i]=b.dataset.v==="1";
+      j.querySelectorAll("button").forEach(x=>x.classList.toggle("activo",x===b));
+      if(Object.keys(votos).length===jueces.length)setTimeout(()=>{if(raiz&&raiz.querySelector(".kar-jurado"))veredicto();},450);
+    });
+  }
+  function veredicto(){
+    if(audio){audio.pause();audio=null;}
+    const v=Object.values(votos),si=v.filter(Boolean).length,ok=si>=v.length-si;
+    if(ok){sonar(660,.15,"sine",.07);sonar(990,.25,"triangle",.05);if(typeof vibrar==="function")vibrar(40);pts[turno]++;}
+    else{if(typeof sonidoErrorExt==="function")sonidoErrorExt();if(typeof vibrar==="function")vibrar([60,40,60]);}
     jugados++;
     const ultimo=jugados>=est.cant*vueltas;
     pantalla(`<div class="kar-centro">
-      <div class="kar-veredicto ${ok?"bien":"mal"}">${ok?"🎶 ¡La cantó!":porTiempo?"⏰ ¡Se acabó el tiempo!":"✘ No pudo"}</div>
-      <div class="kar-le">La palabra era</div><div class="kar-cartel chico"><span>${esc(palabra)}</span></div>
-      ${ok?`<p class="kar-ayuda" id="ctaSuma"><b>${esc(nom(turno))}</b> suma 1 punto.</p>`:""}
-      ${ok&&porVoz?`<button type="button" class="kar-anular" id="ctaAnular">✘ No valió (no era una canción)</button>`:""}
+      <div class="kar-veredicto ${ok?"bien":"mal"}">${ok?"🎶 ¡Vale!":"✘ No vale"}</div>
+      <div class="kar-le">El jurado votó ${si} 👍 · ${v.length-si} 👎</div><div class="kar-cartel chico"><span>${esc(palabra)}</span></div>
+      <p class="kar-ayuda"><b>${esc(nom(turno))}</b> ${ok?"suma 1 punto.":"no suma."}</p>
       ${marcador()}
       <button type="button" class="bb-pasar" id="ctaSig">${ultimo?"🏆 Ver ganador":"Siguiente ➜"}</button></div>`,ok?"festeja":"");
     q("ctaSig").onclick=()=>{if(ultimo){ganador();return;}turno=(turno+1)%est.cant;previa();};
-    const an=raiz.querySelector("#ctaAnular");
-    if(an)an.onclick=()=>{pts[turno]=Math.max(0,pts[turno]-1);porVoz=false;if(typeof sonidoErrorExt==="function")sonidoErrorExt();if(typeof vibrar==="function")vibrar([60,40,60]);
-      an.remove();const v=raiz.querySelector(".kar-veredicto");if(v){v.className="kar-veredicto mal";v.textContent="✘ No valió";}
-      const su=q("ctaSuma");if(su)su.innerHTML="Los demás la anularon: <b>no suma</b>.";const m=raiz.querySelector(".kar-marcador");if(m)m.outerHTML=marcador();
-      const esc_=raiz.querySelector(".kar-escena");if(esc_)esc_.classList.remove("festeja");};
   }
   function ganador(){
     partidas++;guardar();
@@ -159,7 +175,7 @@ const CantaLaCancion=(()=>{
       <button type="button" class="bb-pasar imp-gris" id="ctaCambiar">⚙️ Cambiar jugadores</button></div>`,"festeja");
     q("ctaRevancha").onclick=empezar;q("ctaCambiar").onclick=configurar;
   }
-  function parar(){jugando=false;clearTimeout(timer);pararVoz();}
+  function parar(){jugando=false;clearTimeout(timer);pararVoz();pararGrabacion();if(audio){audio.pause();audio=null;}}
   function salir(){parar();if(raiz)PantallaFija.salir();if(raiz)raiz.remove();raiz=null;}
   return{abrir,salir,partidasJugadas:()=>{cargar();return partidas;}};
 })();
