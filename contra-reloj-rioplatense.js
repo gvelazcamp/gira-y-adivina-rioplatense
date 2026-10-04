@@ -209,7 +209,7 @@ const ContraRelojRioplatense=(()=>{
       if(!SR_DISPONIBLE())aviso("Este navegador no tiene árbitro automático (probá con Chrome). Se graba la ronda y marcás a mano.");
       if(necesitaMicPropio()){try{await micPreparar();}catch(e){aviso("El modo Árbitro necesita permiso de micrófono. "+(e.message||""));return;}}
     }
-    mazo=mezclar(tarjetas());ronda=0;total=0;dado=null;rondaSinCerrar=false;
+    {const nuevas=Vistas.filtrar("contrareloj",tarjetas(),t=>t[0]);mazo=[...mezclar(nuevas),...mezclar(tarjetas().filter(t=>!nuevas.includes(t)))];}ronda=0;total=0;dado=null;rondaSinCerrar=false;
     guardarNum(K_PARTIDAS,num(K_PARTIDAS)+1);
     previaLocal();
   }
@@ -234,7 +234,7 @@ const ContraRelojRioplatense=(()=>{
   function pintarLocal(){filas($("#lWords"),tarjeta,estados,{editable:activa,alAcertar:acertarLocal});$("#lHits").textContent=contar(estados)+"/5";}
   function rondaLocal(){
     limpiarTimers();activa=false;pantalla("#localGame");
-    tarjeta=mazo[ronda%mazo.length];estados=Array(5).fill("pending");
+    tarjeta=mazo[ronda%mazo.length];Vistas.marcar("contrareloj",tarjeta[0]);estados=Array(5).fill("pending");
     $("#lRound").textContent="G"+grupoTurno();$("#lHits").textContent="0/5";$("#lPenalty").textContent="−"+(dado??0);
     $("#lPhase").textContent="MIRÁ LA TARJETA";$("#lStatus").textContent="Tenés 3 segundos para verla.";
     $("#lRec").hidden=modo!=="arbitro";$("#lRec").classList.remove("crr-on");

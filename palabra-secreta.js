@@ -48,11 +48,11 @@ const PalabraSecreta=(()=>{
     Duelo.mostrarLobby("Palabra Secreta","palabra",{detalle:"Los dos adivinan la <b>misma palabra</b>, cada uno en su tablero. Gana el que la descubre en <b>menos intentos</b>.",onListo:soyHost=>{
       const arrancar=w=>{duelo=true;practica=true;partida=nueva(w);borrador="";Duelo.mostrarBadge();Duelo.actualizarBadge("0/6");if(raiz){raiz.querySelector("#psAyudaPanel").hidden=true;tablero();mensaje("👥 Duelo: misma palabra para los dos.");}};
       Duelo.onProgresoRival(p=>Duelo.actualizarBadge((p.gano?"✓ ":"")+(Number(p.n)||0)+"/6"));
-      if(soyHost){const cand=PALABRA_SECRETAS.filter(w=>w!==palabraDia());const w=cand[Math.floor(Math.random()*cand.length)];Duelo.enviarRonda({palabra:w});arrancar(w);}
+      if(soyHost){const cand=Vistas.filtrar("palabra",PALABRA_SECRETAS.filter(w=>w!==palabraDia()),w=>w);const w=cand[Math.floor(Math.random()*cand.length)];Vistas.marcar("palabra",w);Duelo.enviarRonda({palabra:w});arrancar(w);}
       else Duelo.onRondaRecibida(d=>{if(typeof d.palabra==="string"&&d.palabra.length===5)arrancar(d.palabra.toUpperCase());});
     }});
   }
-  function iniciarPractica(){practica=true;const candidatas=PALABRA_SECRETAS.filter(w=>w!==palabraDia());partida=nueva(candidatas[Math.floor(Math.random()*candidatas.length)]);borrador="";tablero();mensaje("Palabra extra: no modifica tu racha de hoy.");}
+  function iniciarPractica(){practica=true;const candidatas=Vistas.filtrar("palabra",PALABRA_SECRETAS.filter(w=>w!==palabraDia()),w=>w);partida=nueva(candidatas[Math.floor(Math.random()*candidatas.length)]);Vistas.marcar("palabra",partida.objetivo);borrador="";tablero();mensaje("Palabra extra: no modifica tu racha de hoy.");}
   function abrir(contenedor){salir();raiz=contenedor;iniciarDiaria();pantalla();tablero();document.addEventListener("visibilitychange",alVisibilidad);iniciarMusicaJuego();if(!datos.ayudaVista)ayuda();}
   function salir(){token++;animando=false;if(duelo&&typeof Duelo!=="undefined")Duelo.salir();duelo=false;document.removeEventListener("visibilitychange",alVisibilidad);detenerMusicaJuego();raiz=null;partida=null;borrador="";}
   return{abrir,salir,tecla,indiceDia,palabraDia,evaluar,rachaActual,estadisticasGuardadas:()=>({...datos}),textoCompartir};

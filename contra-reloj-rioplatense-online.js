@@ -119,7 +119,7 @@ const ContraRelojOnline=(()=>{
     sala=nuevoCodigo();pid=nuevoPid();soyHost=true;
     jug={[pid]:{pid,name:miNombre,team:1,host:true,voiceReady:false}};
     puntos={};for(let i=1;i<=grupos;i++)puntos[i]=0;
-    empezada=false;turno=null;rotacion={};mazo=[...c.tarjetas()].sort(()=>Math.random()-.5);idxMazo=-1;
+    empezada=false;turno=null;rotacion={};{const todas=c.tarjetas(),nuevas=Vistas.filtrar("contrareloj",todas,t=>t[0]);const mz=a=>[...a].sort(()=>Math.random()-.5);mazo=[...mz(nuevas),...mz(todas.filter(t=>!nuevas.includes(t)))];}idxMazo=-1;
     vincularVoz();
     conexion("Conectando…");
     conectar(()=>{$("#roomCode").textContent=sala;c.pantalla("#onlineLobby");$("#hostLobbyActions").hidden=false;$("#teamPicker").hidden=true;difundir();});
@@ -159,7 +159,7 @@ const ContraRelojOnline=(()=>{
     if(!gruposConGente().includes(grupoActivo))grupoActivo=siguienteGrupo(grupoActivo);
     const desc=elegirDescriptor(grupoActivo);if(!desc)return;
     idxMazo=(idxMazo+1)%mazo.length;
-    turno={id:Math.random().toString(36).slice(2,9),team:grupoActivo,describer:desc,startAt:null,endAt:null,status:"awaiting_die",statuses:Array(5).fill("pending"),card:mazo[idxMazo],die:null,points:null};
+    turno={id:Math.random().toString(36).slice(2,9),team:grupoActivo,describer:desc,startAt:null,endAt:null,status:"awaiting_die",statuses:Array(5).fill("pending"),card:(Vistas.marcar("contrareloj",mazo[idxMazo][0]),mazo[idxMazo]),die:null,points:null};
     privado=null;difundir();
   }
   function tirarDadoHost(){

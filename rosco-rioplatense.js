@@ -7,7 +7,7 @@ const ROSCO_CONFIG={
 };
 const RoscoRioplatense=(()=>{
   const CLAVE="gya_rosco_rioplatense";
-  let datos=cargar(),raiz=null,shell=null,items=[],estados=[],actual=-1,destino=-1,angulo=0;
+  let datos=cargar(),raiz=null,shell=null,items=[],estados=[],respuestas=[],actual=-1,destino=-1,angulo=0;
   let nivel=1,config=null,fase="inicio",tiempo=0,espera=0,ultimo=0,intervalo=null,ultimoTac=0,duelo=false,usadasSesion=new Set();
   let audioMusica=null;
   function iniciarMusicaJuego(){
@@ -39,12 +39,12 @@ const RoscoRioplatense=(()=>{
     return letras.map(letra=>{
       const banco=ROSCO_DATOS.filter(d=>d.letra===letra);
       const preferidas=banco.filter(d=>nivel<3?d.nivel<=2:d.nivel>=2);
-      const opciones=preferidas.length?preferidas:banco;
+      const opciones=Vistas.filtrar("rosco",preferidas.length?preferidas:banco,d=>d.palabra);
       const sinRepetirSesion=opciones.filter(d=>!usadasSesion.has(d.palabra));
       const base=sinRepetirSesion.length?sinRepetirSesion:opciones;
       const nuevas=base.filter(d=>d.palabra!==datos.ultimas[letra]);
       const elegida=mezclar(nuevas.length?nuevas:base)[0];
-      datos.ultimas[letra]=elegida.palabra;usadasSesion.add(elegida.palabra);return elegida;
+      datos.ultimas[letra]=elegida.palabra;usadasSesion.add(elegida.palabra);Vistas.marcar("rosco",elegida.palabra);return elegida;
     });
   }
   function pendientes(){return estados.map((s,i)=>s==="pendiente"?i:-1).filter(i=>i>=0);}
@@ -96,7 +96,7 @@ const RoscoRioplatense=(()=>{
   }
   function iniciar(){duelo=false;config=configNivel(nivel);items=armarRonda();guardar();arrancarRonda();}
   function arrancarRonda(){
-    estados=items.map(()=>"pendiente");
+    estados=items.map(()=>"pendiente");respuestas=items.map(()=>"");
     actual=-1;destino=-1;angulo=0;tiempo=config.segundos*1000;ultimo=performance.now();
     $("#rrPanel").hidden=true;$("#rrEntrada").value="";$("#rrJuego").hidden=false;
     const disco=$("#rrDisco");disco.replaceChildren();disco.style.transition="none";disco.style.transform="rotate(0deg)";
@@ -122,9 +122,10 @@ const RoscoRioplatense=(()=>{
   function enviar(){
     if(!raiz||fase!=="resolver"||document.hidden)return;
     tic();if(fase!=="resolver")return;
+    const crudo=$("#rrEntrada").value.trim().slice(0,30);
     const valor=normalizar($("#rrEntrada").value);if(!valor){mensaje("Escribí una palabra o tocá Pasapalabra.");enfocar();return;}
     const d=items[actual],ok=[d.palabra,...(d.alternativas||[])].some(p=>normalizar(p)===valor);
-    estados[actual]=ok?"acierto":"error";fase="respuesta";espera=ROSCO_CONFIG.pausaMs;
+    estados[actual]=ok?"acierto":"error";respuestas[actual]=crudo;fase="respuesta";espera=ROSCO_CONFIG.pausaMs;
     $("#rrEntrada").value="";sonido(ok);mensaje(ok?"¡Bien! +100 puntos · "+d.palabra:"Era "+d.palabra,ok?"acierto":"error");
     if(typeof objSumar==="function")objSumar("roscoLetras",1);
     if(ok&&typeof logroDesbloquear==="function")logroDesbloquear("roscoPrimera");
@@ -143,15 +144,29 @@ const RoscoRioplatense=(()=>{
     acciones.forEach(([texto,accion],i)=>{const b=document.createElement("button");b.type="button";b.textContent=texto;b.className=i===0?"rr-principal":"";b.onclick=()=>accion(b);tarjeta.appendChild(b);});
     capa.appendChild(tarjeta);
   }
+  /* Resumen final: por letra, la palabra correcta, lo que escribiste vos y
+     (en duelo) lo que escribió el rival. ✓ acertó · ✕ erró · — no respondió. */
+  const escH=t=>String(t??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  function marcaDe(d,txt){if(!txt)return["nada","—"];const ok=[d.palabra,...(d.alternativas||[])].some(p=>normalizar(p)===normalizar(txt));return[ok?"ok":"mal",escH(txt.toLowerCase())+(ok?" ✓":" ✕")];}
+  function tablaRespuestas(mias,rival,nombreRival){
+    const yo=(typeof perfil!=="undefined"&&perfil&&perfil.nombre)||"Vos";
+    return'<div class="rr-resumen">'+items.map((d,i)=>{
+      const[c1,t1]=marcaDe(d,mias[i]);
+      let fila='<div class="rr-res-fila"><b>'+d.letra+'</b><span class="rr-res-palabra">'+escH(d.palabra.toLowerCase())+'</span><span class="rr-res-'+c1+'"><small>'+escH(yo)+'</small>'+t1+'</span>';
+      if(rival){const[c2,t2]=marcaDe(d,Array.isArray(rival)?rival[i]:"");fila+='<span class="rr-res-'+c2+'"><small>'+escH(nombreRival||"Rival")+'</small>'+t2+'</span>';}
+      return fila+'</div>';
+    }).join("")+'</div>';
+  }
   function terminar(){
     if(fase==="fin")return;fase="fin";actual=-1;$("#rrEntrada").blur();
     const aciertos=conteo("acierto"),errores=conteo("error"),faltan=pendientes().length;
-    const bonus=faltan===0?Math.max(0,Math.ceil(tiempo/1000))*ROSCO_CONFIG.bonoSegundo:0;
+    const bonus=faltan===0&&aciertos>0?Math.max(0,Math.ceil(tiempo/1000))*ROSCO_CONFIG.bonoSegundo:0;
     const puntos=aciertos*ROSCO_CONFIG.puntosAcierto+bonus;
     if(duelo){
       datos.mejor=Math.max(datos.mejor,puntos);guardar();hud();
-      Duelo.enviarFinal({valor:aciertos});
-      Duelo.mostrarResultado({valor:aciertos},{etiqueta:"aciertos sobre "+items.length,onVolver:()=>{duelo=false;abrir(raiz.parentElement);}});
+      const mias=[...respuestas];
+      Duelo.enviarFinal({valor:aciertos,respuestas:mias});
+      Duelo.mostrarResultado({valor:aciertos},{etiqueta:"aciertos sobre "+items.length,extra:fr=>tablaRespuestas(mias,fr&&Array.isArray(fr.respuestas)?fr.respuestas.map(x=>String(x||"").slice(0,30)):null,(Duelo.rivalActual()||{}).nombre),onVolver:()=>{duelo=false;abrir(raiz.parentElement);}});
       return;
     }
     const avanzar=faltan===0&&aciertos>=Math.ceil(items.length*ROSCO_CONFIG.proporcionAvance);
@@ -166,9 +181,8 @@ const RoscoRioplatense=(()=>{
     acciones.push(["Compartir resultado",b=>compartir(b,puntos,aciertos,errores,faltan)]);
     panel(faltan?"¡Se terminó el tiempo!":errores?"Rosco terminado":"¡Rosco perfecto!",
       aciertos+" aciertos · "+errores+" errores · "+faltan+" sin responder. "+puntos+" puntos"+(bonus?" ("+bonus+" por tiempo)":"")+". Récord: "+datos.mejor+"."+(avanzar?" ¡Desbloqueaste el nivel "+(nivel+1)+"!":" Acertá al menos "+Math.ceil(items.length*ROSCO_CONFIG.proporcionAvance)+" y terminá la vuelta para avanzar."),acciones);
-    const revision=document.createElement("details"),sum=document.createElement("summary");sum.textContent="Repasar las respuestas";revision.appendChild(sum);
-    items.forEach((d,i)=>{const p=document.createElement("p");p.textContent=(estados[i]==="acierto"?"✓ ":estados[i]==="error"?"✕ ":"· ")+d.letra+" · "+d.palabra+" — "+d.definicion;revision.appendChild(p);});
-    $(".rr-panel").appendChild(revision);$(".rr-principal").focus({preventScroll:true});
+    const revision=document.createElement("div");revision.innerHTML=tablaRespuestas(respuestas,null);
+    $(".rr-panel").insertBefore(revision,$(".rr-panel button"));$(".rr-principal").focus({preventScroll:true});
   }
   function compartir(b,puntos,aciertos,errores,faltan){
     const texto="🎡 El Rosco · nivel "+nivel+" · "+puntos+" puntos\n✓ "+aciertos+" · ✕ "+errores+" · pendientes "+faltan+"\nGirá y Adiviná: "+location.origin+location.pathname;

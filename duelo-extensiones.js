@@ -4,6 +4,21 @@
    Cada juego solo necesita: abrir el lobby, mandar la ronda (el host) o recibirla
    (el guest), avisar el progreso propio y mandar el resultado final. El badge flotante
    y la pantalla de resultado final las dibuja este archivo, iguales para cualquier juego. */
+/* Vistas: historial persistente (localStorage, por juego) de palabras/preguntas
+   que ya salieron, para que entrando otro día no se repitan hasta haber visto
+   todo el banco; cuando se agota, ese grupo vuelve a empezar. */
+const Vistas={
+  clave:j=>"gya_vistas_"+j,
+  cargar(j){try{const a=JSON.parse(localStorage.getItem(this.clave(j)));return new Set(Array.isArray(a)?a:[]);}catch(e){return new Set();}},
+  guardar(j,s){try{localStorage.setItem(this.clave(j),JSON.stringify([...s]));}catch(e){}},
+  marcar(j,ids){const s=this.cargar(j);[].concat(ids).forEach(x=>s.add(String(x)));this.guardar(j,s);},
+  filtrar(j,lista,id){
+    const s=this.cargar(j),libres=lista.filter(x=>!s.has(String(id(x))));
+    if(libres.length)return libres;
+    lista.forEach(x=>s.delete(String(id(x))));this.guardar(j,s);return lista;
+  }
+};
+window.Vistas=Vistas;
 const Duelo=(()=>{
   const CHARS="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let cliente=null,juego=null,sala=null,soyHost=false,rival=null,activo=false;
@@ -141,7 +156,7 @@ const Duelo=(()=>{
   function quitarBadge(){if(badgeEl){badgeEl.remove();badgeEl=null;}}
   /* --- Final: mandar mi resultado y mostrar la comparación --- */
   function enviarFinal(datos){mandar({tipo:"final",datos});}
-  function mostrarResultado(miResultado,{etiqueta="aciertos",onVolver}={}){
+  function mostrarResultado(miResultado,{etiqueta="aciertos",onVolver,extra}={}){
     quitarBadge();
     const c=activaCapa();
     const pintar=()=>{
@@ -152,6 +167,7 @@ const Duelo=(()=>{
         '<span class="dl-vsversus">VS</span>'+
         '<div class="dl-vsjugador'+(gano==="rival"?" dl-gano":"")+'">'+avatarHtml(rival&&rival.avatar,rival&&rival.frame)+'<small>'+((rival&&rival.nombre)||"Rival")+'</small><b>'+(finalRival?finalRival.valor:"…")+'</b></div>'+
         '</div><p class="dl-sub">'+etiqueta+(finalRival?"":" · todavía está jugando")+'</p>'+
+        (extra?'<div class="dl-extra">'+extra(finalRival)+'</div>':'')+
         (finalRival&&!rivalSeFue?(revancha.rival&&!revancha.yo?'<p class="dl-revancha-aviso">🔥 '+((rival&&rival.nombre)||"Tu rival")+' quiere la revancha</p>':'')+
           (revancha.yo?'<p class="dl-revancha-aviso">⏳ Esperando que '+((rival&&rival.nombre)||"tu rival")+' acepte la revancha…</p>':'<button type="button" id="dlRevancha" class="dl-principal dl-revancha">🔄 '+(revancha.rival?"¡Dale, revancha!":"Revancha")+'</button>'):'')+
         (rivalSeFue?'<p class="dl-revancha-aviso">'+((rival&&rival.nombre)||"Tu rival")+' salió de la sala.</p>':'')+
