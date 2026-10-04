@@ -3,13 +3,14 @@
    momento secreto (entre 15 y 45 s): pierde quien la tenga en la mano.
    El tic-tac se acelera. Con "árbitro por voz" (SpeechRecognition) no hace
    falta tocar Pasar: si la palabra que se dice tiene la sílaba (y no se
-   repitió en la ronda), suena el acierto y pasa sola. Pantalla completa, sin apagarse y sin "atrás"
+   repitió en la ronda), suena el acierto y pasa sola; si no cuenta, suena
+   el error. Pantalla completa, sin apagarse y sin "atrás"
    (PantallaFija). Para cortar antes: mantener ✕. Récord en gya_bomba. */
 const Bomba=(()=>{
   const CLAVE="gya_bomba";
   const SILABAS=["CA","CO","CU","MA","ME","MI","MO","PA","PE","PI","PO","LA","LO","LI","TA","TE","TO","RE","RO","SA","SE","SO","DE","DO","NA","NE","NO","BA","BO","BU","GA","GO","VA","VE","FA","FI","JA","JU","RA","RI","CHA","CHI","CHO","LLA","LLO","TRA","TRE","PRE","PRO","BRA","BLA","CLA","PLA","GRA","FRA","CRE","MEN","CON","TER","POR","SAL","MAR","CAN","TAR","PAN","SOL","DOR","ITO","ADA","ERO","OSO","ADO","ENTE","ANTE","ICO","ERA","ILLA","ÓN","EZ","AJE"];
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  let voz=null,conVoz=!!SR,usadas=new Set(),consumido={},fallosVoz=0;
+  let silencioError=0,voz=null,conVoz=!!SR,usadas=new Set(),consumido={},fallosVoz=0;
   let raiz=null,rondas=0,jugando=false,explota=0,inicioT=0,tic=0,pasadas=0,ultima="",bloqueoToque=0;
   function cargar(){try{const d=JSON.parse(localStorage.getItem(CLAVE));if(d&&typeof d==="object"){rondas=Number(d.rondas)||0;if(SR&&typeof d.voz==="boolean")conVoz=d.voz;}}catch(e){}}
   function guardar(){try{localStorage.setItem(CLAVE,JSON.stringify({rondas,voz:conVoz}));}catch(e){}}
@@ -74,6 +75,17 @@ const Bomba=(()=>{
             for(let j=0;j<e.results.length;j++)consumido[j]=norm(e.results[j][0].transcript).split(" ").filter(Boolean).length;
             usadas.add(w);acierto(w);return;
           }
+        }
+        /* Frase terminada sin palabra válida: sonido de error (sílaba sola,
+           repetida o sin la sílaba). Solo con el resultado final, no con
+           los parciales, para no sonar mientras la persona sigue hablando. */
+        if(e.results[i].isFinal&&ps.length>(consumido[i]||0)){
+          const nuevas=ps.slice(consumido[i]||0);consumido[i]=ps.length;
+          const w=nuevas[nuevas.length-1];
+          oido("✘ "+w.toLowerCase()+(usadas.has(w)?" (ya la dijeron)":w===sil?" (solo la sílaba)":" (no cuenta)"));
+          if(typeof sonidoErrorExt==="function"&&Date.now()>silencioError){silencioError=Date.now()+1200;sonidoErrorExt();}
+          if(typeof vibrar==="function")vibrar([40,40,40]);
+          continue;
         }
         if(ps.length)oido("🎤 "+ps.slice(-2).join(" ").toLowerCase());
       }
