@@ -6,10 +6,10 @@
    mantener(el,ms,cb): botón que hay que dejar apretado ms para salir;
    pinta el avance en la variable CSS --p del botón (0 a 1). */
 const PantallaFija=(()=>{
-  let activo=false,wake=null,orientacion="";
-  async function pedirWake(){try{if(activo&&"wakeLock" in navigator&&!wake&&document.visibilityState==="visible"){wake=await navigator.wakeLock.request("screen");wake.addEventListener("release",()=>{wake=null;});}}catch(e){wake=null;}}
+  let activo=false,siempre=false,wake=null,orientacion="";
+  async function pedirWake(){try{if((activo||siempre)&&"wakeLock" in navigator&&!wake&&document.visibilityState==="visible"){wake=await navigator.wakeLock.request("screen");wake.addEventListener("release",()=>{wake=null;});}}catch(e){wake=null;}}
   function soltarWake(){try{if(wake)wake.release();}catch(e){}wake=null;}
-  function alVolver(){if(activo&&document.visibilityState==="visible")pedirWake();}
+  function alVolver(){if((activo||siempre)&&document.visibilityState==="visible")pedirWake();}
   function alAtras(){if(activo)try{history.pushState({fija:1},"");}catch(e){}}
   document.addEventListener("visibilitychange",alVolver);
   window.addEventListener("popstate",alAtras);
@@ -25,7 +25,7 @@ const PantallaFija=(()=>{
   function bloquearOrientacion(o){try{if(o&&screen.orientation&&screen.orientation.lock){orientacion=o;screen.orientation.lock(o).catch(()=>{});}}catch(e){}}
   function desbloquearOrientacion(){try{if(orientacion&&screen.orientation&&screen.orientation.unlock)screen.orientation.unlock();}catch(e){}orientacion="";}
   function activar(opts={}){
-    const yaEstaba=activo;activo=true;
+    const yaEstaba=activo;activo=true;document.body.classList.add("pf-activo");
     if(!yaEstaba)try{history.pushState({fija:1},"");}catch(e){}
     const p=entrar();
     if(opts.orientacion)(p&&p.then?p:Promise.resolve()).then(()=>{if(activo)bloquearOrientacion(opts.orientacion);});
@@ -33,9 +33,12 @@ const PantallaFija=(()=>{
   }
   /* Fin de la ronda: la pantalla ya se puede apagar y "atrás" vuelve a andar,
      pero sigue en pantalla completa para la próxima ronda. */
-  function desactivar(){activo=false;soltarWake();desbloquearOrientacion();}
+  function desactivar(){activo=false;document.body.classList.remove("pf-activo");if(!siempre)soltarWake();desbloquearOrientacion();}
+  /* Solo "no apagar la pantalla" mientras el juego está abierto (Contra Reloj),
+     sin bloquear el "atrás". Se corta con salir(). */
+  function prender(){siempre=true;pedirWake();}
   function salir(){
-    desactivar();
+    siempre=false;desactivar();soltarWake();
     try{if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen().catch(()=>{});}catch(e){}
   }
   function mantener(el,ms,cb){
@@ -53,6 +56,6 @@ const PantallaFija=(()=>{
     const texto="¿Jugamos a "+nombre+" en Girá y Adiviná? Entrá acá: "+base+"?ext="+id;
     try{window.open("https://wa.me/?text="+encodeURIComponent(texto),"_blank");}catch(e){}
   }
-  return{entrar,activar,desactivar,salir,mantener,invitar,activo:()=>activo};
+  return{entrar,activar,desactivar,prender,salir,mantener,invitar,activo:()=>activo};
 })();
 window.PantallaFija=PantallaFija;

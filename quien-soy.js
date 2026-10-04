@@ -49,17 +49,17 @@ const QuienSoy=(()=>{
       <div class="qs-tope"><span id="qsCat">${cat.emoji} ${esc(cat.nombre)}</span><b id="qsReloj">${tiempo}</b><button type="button" class="qs-salir" id="qsSalir" aria-label="Mantené para salir">✕</button></div>
       <div class="qs-zona qs-paso" data-z="paso"><span>⟵ Paso</span></div><div class="qs-zona qs-ok" data-z="ok"><span>¡Acerté! ⟶</span></div>
       <div class="qs-palabra" id="qsPalabra"></div>
-      <div class="qns-pie" id="qsPie">Mantené ✕ para salir</div>
+      <div class="qns-pie" id="qsPie">🔒 Dejá apretada la ✕ 3 segundos para terminar la partida</div>
     </div>`;
     PantallaFija.activar({orientacion:"landscape"});
     const juego=q("qsJuego");
     ["touchstart","touchmove","contextmenu","dblclick"].forEach(t=>juego.addEventListener(t,e=>{if(e.cancelable)e.preventDefault();},{passive:false}));
     raiz.querySelectorAll(".qs-zona").forEach(z=>z.addEventListener("pointerdown",e=>{e.preventDefault();responder(z.dataset.z==="ok");}));
-    PantallaFija.mantener(q("qsSalir"),1500,terminar);
+    PantallaFija.mantener(q("qsSalir"),3000,terminar);
     /* Cuenta regresiva para llegar a ponérselo en la frente. */
     let n=3;jugando=false;const pal=q("qsPalabra");pal.classList.add("qns-cuenta");q("qsPie").textContent="Ponete el celular en la frente";
     const paso=()=>{if(!raiz)return;if(n>0){pal.textContent=n;if(typeof bip==="function")bip(520,.08);n--;cuenta=setTimeout(paso,1000);return;}
-      pal.classList.remove("qns-cuenta");q("qsPie").textContent="Mantené ✕ para salir";jugando=true;fin=Date.now()+tiempo*1000;mostrar();reloj();};
+      pal.classList.remove("qns-cuenta");q("qsPie").textContent="🔒 Dejá apretada la ✕ 3 segundos para terminar la partida";jugando=true;fin=Date.now()+tiempo*1000;mostrar();reloj();};
     paso();
   }
   function mostrar(){
