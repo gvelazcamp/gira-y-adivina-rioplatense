@@ -151,6 +151,8 @@ const TuttiFrutti=(()=>{
     if(k==="wiki")return enWikipedia(v);
     if(k==="dic")return enDiccionario(v);
     if(k&&variantes(v).some(x=>setDe(k).has(x)))return true;
+    /* Comida también acepta frutas y verduras (palta, papa, banana…). */
+    if(k==="comida"&&variantes(v).some(x=>setDe("fruta").has(x)))return true;
     if(k==="nombre"||k==="apellido"||k==="lugar")return false;
     return false;
   }
@@ -425,7 +427,7 @@ const TuttiFrutti=(()=>{
         const sg=d&&d.query&&d.query.searchinfo&&d.query.searchinfo.suggestion;return sg?lindo(sg):null;}catch(e){return null;}
     }
     let cand=[];
-    if(k&&k!=="dic")cand=[...setDe(k)];
+    if(k&&k!=="dic")cand=[...setDe(k)].concat(k==="comida"?[...setDe("fruta")]:[]);
     else{
       /* También la letra que "suena igual": Girafa → Jirafa, Vaca/Baca, Zapato/Sapato… */
       const ALT={g:["j"],j:["g"],b:["v"],v:["b"],s:["c","z"],c:["s","z","k"],z:["s","c"],y:["l"],l:["y"],h:[v[1]||""],k:["c","q"],q:["c","k"]};
