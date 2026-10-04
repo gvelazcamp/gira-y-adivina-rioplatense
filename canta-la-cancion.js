@@ -12,10 +12,10 @@ const CantaLaCancion=(()=>{
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   const ANDROID=/Android/i.test(navigator.userAgent||"");
   const GRABA=!!(window.MediaRecorder&&navigator.mediaDevices&&navigator.mediaDevices.getUserMedia);
-  let raiz=null,est={cant:3,nombres:[]},tiempo=20,vueltas=3,jurado=SR?"texto":"audio",partidas=0;
-  let pts=[],turno=0,jugados=0,mazo=[],idx=0,palabra="",fin=0,timer=0,jugando=false,bloqueo=0,voz=null,oidoTxt="",oyendo=false,errVoz="",volMax=0,votos={},grab=null,flujo=null,audioURL="",audio=null,medidor=null;
-  function cargar(){try{const d=JSON.parse(localStorage.getItem(CLAVE));if(d&&typeof d==="object"){est.cant=Math.min(12,Math.max(2,Number(d.cant)||3));est.nombres=Array.isArray(d.nombres)?d.nombres.map(String):[];if(TIEMPOS.includes(d.tiempo))tiempo=d.tiempo;if(VUELTAS.includes(d.vueltas))vueltas=d.vueltas;if(d.jurado==="audio"||d.jurado==="texto")jurado=d.jurado;partidas=Number(d.partidas)||0;}}catch(e){}}
-  function guardar(){try{localStorage.setItem(CLAVE,JSON.stringify({cant:est.cant,nombres:est.nombres,tiempo,vueltas,jurado,partidas}));}catch(e){}}
+  let raiz=null,est={cant:3,nombres:[]},tiempo=20,vueltas=3,jurado="audio",partidas=0;
+  let pts=[],turno=0,jugados=0,mazo=[],idx=0,palabra="",fin=0,timer=0,jugando=false,bloqueo=0,voz=null,oidoTxt="",ronda=0,txtAudio="",estTxt="",pctTxt=0,oyendo=false,errVoz="",volMax=0,votos={},grab=null,flujo=null,audioURL="",audio=null,medidor=null;
+  function cargar(){try{const d=JSON.parse(localStorage.getItem(CLAVE));if(d&&typeof d==="object"){est.cant=Math.min(12,Math.max(2,Number(d.cant)||3));est.nombres=Array.isArray(d.nombres)?d.nombres.map(String):[];if(TIEMPOS.includes(d.tiempo))tiempo=d.tiempo;if(VUELTAS.includes(d.vueltas))vueltas=d.vueltas;if(d.jurado2==="audio"||d.jurado2==="texto")jurado=d.jurado2;partidas=Number(d.partidas)||0;}}catch(e){}}
+  function guardar(){try{localStorage.setItem(CLAVE,JSON.stringify({cant:est.cant,nombres:est.nombres,tiempo,vueltas,jurado2:jurado,partidas}));}catch(e){}}
   cargar();
   const q=id=>raiz.querySelector("#"+id);
   const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
@@ -38,7 +38,7 @@ const CantaLaCancion=(()=>{
       <div class="qs-sub">🔁 Vueltas</div>
       <div class="qns-rangos" id="ctaV">${VUELTAS.map(t=>`<button type="button" data-v="${t}">${t} vueltas</button>`).join("")}</div>
       ${GRABA&&SR?`<div class="qs-sub">🧑‍⚖️ Qué ve el jurado</div>
-      <div class="qns-rangos imp-dos" id="ctaJur"><button type="button" data-v="texto">📝 Texto</button><button type="button" data-v="audio">🎙️ Audio</button></div>
+      <div class="qns-rangos imp-dos" id="ctaJur"><button type="button" data-v="audio">🎙️ Audio + texto</button><button type="button" data-v="texto">📝 Solo texto</button></div>
       <p class="kar-ayuda" id="ctaJurTxt"></p>`:""}
       <button type="button" class="mg-principal" id="ctaEmpezar">🎤 Empezar</button>
       <button type="button" id="ctaWpp">💬 Invitar por WhatsApp</button></div>`;
@@ -47,7 +47,7 @@ const CantaLaCancion=(()=>{
       raiz.querySelectorAll("#ctaT button").forEach(b=>b.classList.toggle("activo",Number(b.dataset.v)===tiempo));
       raiz.querySelectorAll("#ctaV button").forEach(b=>b.classList.toggle("activo",Number(b.dataset.v)===vueltas));
       raiz.querySelectorAll("#ctaJur button").forEach(b=>b.classList.toggle("activo",b.dataset.v===jurado));
-      const jt=raiz.querySelector("#ctaJurTxt");if(jt)jt.textContent=jurado==="texto"?"El jurado lee lo que entendió el celular.":"El jurado puede escuchar de nuevo lo que cantaste.";
+      const jt=raiz.querySelector("#ctaJurTxt");if(jt)jt.textContent=jurado==="texto"?"El jurado lee lo que entendió el celular (al instante).":"Se graba: el jurado lo escucha de nuevo y, en unos segundos, lo lee. La primera vez baja unos 40 MB (mejor con wifi).";
     };pintar();
     q("ctaT").onclick=e=>{const b=e.target.closest("button[data-v]");if(b){tiempo=Number(b.dataset.v);guardar();pintar();}};
     q("ctaV").onclick=e=>{const b=e.target.closest("button[data-v]");if(b){vueltas=Number(b.dataset.v);guardar();pintar();}};
@@ -60,6 +60,7 @@ const CantaLaCancion=(()=>{
     mazo=mezclar(libres).concat(mezclar(todas.filter(x=>!libres.includes(x))));idx=0;
     pts=Array(est.cant).fill(0);turno=0;jugados=0;
     PantallaFija.activar();previa();
+    if(conWhisper())VozATexto.precargar().catch(()=>{});
   }
   function pantalla(html,clase=""){raiz.innerHTML=`<div class="qns-pantalla kar-escena ${clase}"><button type="button" class="pf-salir" id="ctaSalir">✕ Salir</button>${html}</div>`;PantallaFija.confirmar(q("ctaSalir"),configurar);}
   const marcador=()=>`<div class="kar-marcador">${pts.map((_,i)=>ficha(i,i===turno?"activa":"")).join("")}</div>`;
@@ -87,11 +88,12 @@ const CantaLaCancion=(()=>{
     q("ctaFin").addEventListener("pointerdown",e=>{e.preventDefault();if(Date.now()>=bloqueo)terminar();});
     fin=Date.now()+tiempo*1000;
     /* Audio o texto, no los dos: en Android la grabación deja sorda a la voz a texto. */
-    oyendo=false;errVoz="";audioURL&&URL.revokeObjectURL(audioURL);audioURL="";
+    oyendo=false;errVoz="";audioURL&&URL.revokeObjectURL(audioURL);audioURL="";ronda++;txtAudio="";pctTxt=0;estTxt=conWhisper()?"espera":"";
     if(usaAudio())grabarAudio();else if(SR)escuchar();
     reloj();
   }
   const usaAudio=()=>GRABA&&(jurado==="audio"||!SR);
+  const conWhisper=()=>usaAudio()&&window.VozATexto&&VozATexto.disponible();
   /* Grabación del canto para que el jurado lo escuche de nuevo. */
   function grabarAudio(){
     audioURL&&URL.revokeObjectURL(audioURL);audioURL="";const trozos=[];
@@ -100,7 +102,17 @@ const CantaLaCancion=(()=>{
       flujo=st;try{grab=new MediaRecorder(st);}catch(e){st.getTracks().forEach(t=>t.stop());flujo=null;return;}
       grab.ondataavailable=e=>{if(e.data&&e.data.size)trozos.push(e.data);};
       volMax=0;medirVolumen(st);
-      grab.onstop=()=>{if(trozos.length&&volMax>=0.01){audioURL=URL.createObjectURL(new Blob(trozos,{type:trozos[0].type||"audio/webm"}));const b=raiz&&raiz.querySelector("#ctaOir");if(b)b.hidden=false;}};
+      const mia=ronda;
+      grab.onstop=()=>{if(mia!==ronda)return;
+        if(!(trozos.length&&volMax>=0.01)){estTxt=estTxt==="espera"?"vacio":estTxt;pintarLetra();return;}
+        const blob=new Blob(trozos,{type:trozos[0].type||"audio/webm"});
+        audioURL=URL.createObjectURL(blob);const b=raiz&&raiz.querySelector("#ctaOir");if(b)b.hidden=false;
+        if(!conWhisper())return;
+        estTxt="pasando";pintarLetra();
+        VozATexto.transcribir(blob,p=>{if(mia===ronda){pctTxt=p;if(estTxt==="pasando"&&p<100){estTxt="bajando";}else if(p>=100&&estTxt==="bajando")estTxt="pasando";pintarLetra();}})
+          .then(t=>{if(mia!==ronda)return;txtAudio=t;estTxt=t?"listo":"nada";pintarLetra();})
+          .catch(()=>{if(mia!==ronda)return;estTxt="error";pintarLetra();});
+      };
       grab.start();
     }).catch(()=>{const o=raiz&&raiz.querySelector("#ctaOido");if(o)o.textContent="🎤 Sin permiso de micrófono: el jurado decide igual";});
   }
@@ -140,6 +152,17 @@ const CantaLaCancion=(()=>{
     if(quedan<=0){terminar();return;}
     timer=setTimeout(reloj,100);
   }
+  const resaltar=t=>{const pal=N(palabra).split(" ").map(w=>w.replace(/[^a-zñ0-9]/g,"")).filter(Boolean);
+    return esc(t).split(/(\s+)/).map(w=>pal.some(p=>N(w).startsWith(p)&&N(w).length<=p.length+2)?`<mark>${w}</mark>`:w).join("");};
+  /* Caja "El celular escuchó" del jurado (texto en vivo o el de la grabación). */
+  function pintarLetra(){
+    const el=raiz&&raiz.querySelector("#ctaLetra");if(!el)return;
+    let h;
+    if(conWhisper())h=estTxt==="listo"?`“${resaltar(txtAudio)}”`:estTxt==="bajando"?`⏳ Bajando el traductor de voz… ${pctTxt}%<br><small>Solo la primera vez</small>`:estTxt==="pasando"||estTxt==="espera"?"⏳ Pasando a texto…":estTxt==="vacio"?"(no se grabó sonido)":estTxt==="error"?"(no se pudo pasar a texto: escuchen el audio)":"(no se entendió la letra: escuchen el audio)";
+    else if(usaAudio()){el.hidden=true;return;}
+    else h=oidoTxt?`“${resaltar(oidoTxt)}”`:!SR?"(este celular no permite pasar la voz a texto)":errVoz==="network"?"(sin internet para pasar la voz a texto)":errVoz==="not-allowed"||errVoz==="service-not-allowed"?"(sin permiso para pasar la voz a texto)":"(no llegó a entender la letra)";
+    el.hidden=false;el.innerHTML=`<small>El celular escuchó:</small>${h}`;
+  }
   /* Fin del canto: el jurado (los demás) vota si vale. */
   function terminar(){
     if(!jugando)return;
@@ -147,15 +170,15 @@ const CantaLaCancion=(()=>{
     setTimeout(()=>{sonar(523,.12);setTimeout(()=>sonar(392,.2),140);},ANDROID?150:0);
     votos={};
     const jueces=pts.map((_,i)=>i).filter(i=>i!==turno);
-    const pal=N(palabra),oido=oidoTxt?esc(oidoTxt).replace(new RegExp("(^|\\s)("+pal.replace(/[^a-zñ0-9]/g,"")+"\\w{0,2})(?=\\s|$)","gi"),"$1<mark>$2</mark>"):"";
     pantalla(`<div class="kar-centro">
       <div class="kar-veredicto">🧑‍⚖️ ¿Vale?</div>
       <div class="kar-le">${esc(nom(turno))} tenía que cantar</div><div class="kar-cartel chico"><span>${esc(palabra)}</span></div>
       <button type="button" class="kar-oir" id="ctaOir" ${audioURL?"":"hidden"}>▶ Escuchar de nuevo</button>
-      ${usaAudio()?"":`<div class="kar-letra"><small>El celular escuchó:</small>${oido?`“${oido}”`:!SR?"(este celular no permite pasar la voz a texto)":errVoz==="network"?"(sin internet para pasar la voz a texto)":errVoz==="not-allowed"||errVoz==="service-not-allowed"?"(sin permiso para pasar la voz a texto)":"(no llegó a entender la letra)"}</div>`}
+      <div class="kar-letra" id="ctaLetra"></div>
       <div class="kar-le">Jurado: ¿era una canción con la palabra?</div>
       <div class="kar-jurado">${jueces.map(i=>`<div class="kar-juez" data-i="${i}" style="--c:${COLORES[i%COLORES.length]}"><i>${esc(iniciales(i))}</i><b>${esc(nom(i))}</b><button type="button" data-v="1">👍</button><button type="button" data-v="0">👎</button></div>`).join("")}</div>
       <p class="kar-ayuda">Gana la mayoría. Si hay empate, vale.</p></div>`);
+    pintarLetra();
     q("ctaOir").onclick=()=>{if(!audioURL)return;if(audio){audio.pause();}audio=new Audio(audioURL);audio.play().catch(()=>{});};
     raiz.querySelectorAll(".kar-juez button").forEach(b=>b.onclick=()=>{
       const j=b.closest(".kar-juez"),i=Number(j.dataset.i);votos[i]=b.dataset.v==="1";
