@@ -127,46 +127,18 @@ const TuttiFrutti=(()=>{
     on={cli:null,sala,host,pid:Math.random().toString(36).slice(2,10),jug:[],ganadas:{},usadas:[],n:0,letra:"",cats:cats.slice(),tiempo,fase:"lobby",resps:{},ganador:null,basta:null,timers:[]};
     if(host)on.jug=[{pid:on.pid,nombre:yo()}];
   }
-  /* Conexión propia (como Contra Reloj online): prueba los brokers en orden,
-     con reconexión automática una vez conectado. El código se muestra
-     enseguida, igual que en los otros juegos, mientras conecta. */
-  const BROKERS_TF=["wss://broker.emqx.io:8084/mqtt","wss://broker.hivemq.com:8884/mqtt","wss://test.mosquitto.org:8081/mqtt","wss://mqtt.eclipseprojects.io:443/mqtt"];
-  /* Si la librería mqtt (que el juego carga al abrir) no llegó a cargar,
-     se vuelve a pedir: copia local, unpkg y después jsdelivr. */
-  function cargarMqtt(cb){
-    if(typeof mqtt!=="undefined"){cb(true);return;}
-    const urls=["lib/mqtt.min.js?v=5.10.1","https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js","https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js"];
-    const probar=k=>{if(typeof mqtt!=="undefined"){cb(true);return;}if(k>=urls.length){cb(false);return;}
-      const sc=document.createElement("script");sc.src=urls[k];sc.onload=()=>cb(typeof mqtt!=="undefined");sc.onerror=()=>probar(k+1);document.head.appendChild(sc);};
-    probar(0);
-  }
   function conectarSala(listo){
-    const mio=on;if(!mio)return;let i=0,yaListo=false;
+    const mio=on;if(!mio)return;
     const reintentar=v=>{const b=raiz&&raiz.querySelector("#tfReintentar");if(b)b.hidden=!v;};
-    reintentar(false);
-    const intento=()=>{
-      if(on!==mio)return;
-      if(typeof mqtt==="undefined"){estado("Conectando…");cargarMqtt(ok=>{if(on!==mio)return;if(ok)intento();else{estado("No se pudo cargar la conexión. Revisá internet y tocá Reintentar.");reintentar(true);}});return;}
-      estado("Conectando…");
-      let ok=false,muerto=false,cli=null;
-      const siguiente=()=>{if(ok||muerto)return;muerto=true;try{cli&&cli.end(true);}catch(e){}i++;
-        if(on!==mio)return;
-        if(i<BROKERS_TF.length)intento();else{estado("No se pudo conectar (los servidores no responden). Probá con datos del celular o tocá Reintentar.");reintentar(true);}};
-      try{cli=mqtt.connect(BROKERS_TF[i],{clientId:"gya_tf_"+mio.pid+Math.random().toString(36).slice(2,6),clean:true,connectTimeout:6000,reconnectPeriod:2000});}catch(e){siguiente();return;}
-      cli.on("connect",()=>{
-        if(on!==mio){try{cli.end(true);}catch(e){}return;}
-        mio.cli=cli;cli.subscribe(tema());
-        if(!ok){ok=true;
-          cli.on("message",(t,pl)=>{if(on!==mio||t!==tema())return;let m;try{m=JSON.parse(pl.toString());}catch(e){return;}if(m.pid===mio.pid)return;manejar(m);});
-          estado("");if(!yaListo){yaListo=true;listo();}
-        }else{estado("");if(mio.host)difundirSala();else mandar({t:"hola",nombre:yo()});}
-      });
-      cli.on("offline",()=>{if(ok&&on===mio)estado("Sin conexión. Reintentando…");});
-      cli.on("error",()=>{if(!ok)siguiente();});
-      cli.on("close",()=>{if(!ok)siguiente();});
-    };
-    mio.reconectar=()=>{i=0;intento();};
-    intento();
+    reintentar(false);estado("Conectando…");
+    MultiBroker.conectar(()=>{
+      if(on!==mio){try{mio.cli&&mio.cli.end(true);}catch(e){}return;}
+      mio.cli.subscribe(tema());
+      mio.cli.on("message",(t,pl)=>{if(on!==mio||t!==tema())return;let m;try{m=JSON.parse(pl.toString());}catch(e){return;}if(m.pid===mio.pid)return;manejar(m);});
+      estado("");listo();
+    },()=>{if(on!==mio)return;estado("No se pudo conectar ("+(window.gyaFalloConexion||"sin respuesta")+"). Probá con datos del celular o tocá Reintentar.");reintentar(true);},
+    cl=>{if(on===mio)mio.cli=cl;else try{cl.end(true);}catch(e){}});
+    mio.reconectar=()=>conectarSala(listo);
   }
   function crearSala(){
     nuevaSala(true,Array.from({length:4},()=>CHARS[Math.floor(Math.random()*CHARS.length)]).join(""));
