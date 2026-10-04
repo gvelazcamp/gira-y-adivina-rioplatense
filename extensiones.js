@@ -120,7 +120,7 @@ const Extensiones=(()=>{
     salirJuego();
     mostrar();vista="lobby";
     shell.querySelector("#extTitulo").textContent="Extensiones Girá y Adiviná";
-    contenido.innerHTML='<div class="ext-hero"><span>✦ MÁS JUEGOS, MÁS DESAFÍOS</span><h2>Extensiones</h2><p>Elegí un juego del universo Girá y Adiviná. Jugá gratis, sin gastar vidas ni monedas.</p></div><h3 class="ext-seccion">🎉 Juegos de previa</h3><div class="ext-lista" id="extListaPrevia"></div><h3 class="ext-seccion">🎮 Más juegos</h3><div class="ext-lista" id="extListaResto"></div>';
+    contenido.innerHTML='<div class="ext-hero"><span>✦ MÁS JUEGOS, MÁS DESAFÍOS</span><h2>Extensiones</h2><p>Elegí un juego del universo Girá y Adiviná. Jugá gratis, sin gastar vidas ni monedas.</p></div><h3 class="ext-seccion">🎮 Más juegos</h3><div class="ext-lista" id="extListaResto"></div><h3 class="ext-seccion">🎉 Juegos de previa</h3><div class="ext-lista" id="extListaPrevia"></div>';
     /* "Juegos de previa": los de juntarse en grupo (grupo:"previa") van en su propia sección. */
     const previa=contenido.querySelector("#extListaPrevia"),resto=contenido.querySelector("#extListaResto");
     EXTENSIONES.filter(extensionVisible).forEach(ext=>{
