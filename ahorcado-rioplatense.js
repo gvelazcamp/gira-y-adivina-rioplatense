@@ -119,7 +119,6 @@ const AhorcadoRioplatense=(()=>{
     if(typeof bip==="function"){
       if(acierto){bip(660,.2,"sine",.065);bip(990,.3,"triangle",.04);}
       else if(duelo)sonidoErrorExt();
-      else bip(220,.18,"sine",.05);
     }
     if(typeof vibrar==="function")vibrar(acierto?25:[45,40,45]);
   }
