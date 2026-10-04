@@ -87,7 +87,8 @@ const Impostor=(()=>{
       ?`<div class="imp-carta imp-mala"><div class="imp-rol">🕵️ SOS EL IMPOSTOR</div>${pista?`<div class="imp-pista">Pista: ${ronda.cat.emoji} ${esc(ronda.cat.nombre)}</div>`:""}<p>Disimulá: escuchá a los demás y decí algo que encaje.</p></div>`
       :`<div class="imp-carta"><small>Tu palabra es</small><div class="imp-palabra">${esc(ronda.palabra)}</div><p>No la digas: decí algo relacionado.</p></div>`}
       <button type="button" class="bb-pasar" id="impListo">${ultimo?"Ya la vi · Empezar ➜":"Ya la vi · Ocultar y pasar ➜"}</button></div>`);
-    if(esImp){sonar(196,.25,"sawtooth",.04);if(typeof vibrar==="function")vibrar([60,50,60]);}else if(typeof vibrar==="function")vibrar(20);
+    /* Igual para todos (sin sonido): que nadie se dé cuenta de quién es el impostor. */
+    if(typeof vibrar==="function")vibrar(20);
     q("impListo").onclick=()=>{ronda.turno++;if(ronda.turno<cant)pase();else charla();};
   }
   function charla(){
