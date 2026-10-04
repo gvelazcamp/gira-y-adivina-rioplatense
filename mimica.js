@@ -3,7 +3,7 @@
    Gana el primer equipo que llega a la meta (al cerrar la vuelta, así los
    dos jugaron lo mismo). Pantalla fija (PantallaFija). Datos en gya_mimica. */
 const Mimica=(()=>{
-  const CLAVE="gya_mimica",TIEMPOS=[60,90],METAS=[10,15,20];
+  const CLAVE="gya_mimica",TIEMPOS=[45,60],METAS=[10,15,20];
   let raiz=null,equipos=["",""],tiempo=60,meta=10,partidas=0;
   let pts=[0,0],turno=0,turnos=0,mazo=[],idx=0,hechas=[],fin=0,timer=0,cuenta=0,jugando=false,bloqueo=0;
   function cargar(){try{const d=JSON.parse(localStorage.getItem(CLAVE));if(d&&typeof d==="object"){if(Array.isArray(d.equipos))equipos=[String(d.equipos[0]||""),String(d.equipos[1]||"")];if(TIEMPOS.includes(d.tiempo))tiempo=d.tiempo;if(METAS.includes(d.meta))meta=d.meta;partidas=Number(d.partidas)||0;}}catch(e){}}
