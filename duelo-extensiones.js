@@ -44,16 +44,44 @@ const MultiBroker=(()=>{
       const sc=document.createElement("script");sc.src=urls[k];sc.onload=()=>cb(typeof mqtt!=="undefined");sc.onerror=()=>probar(k+1);document.head.appendChild(sc);};
     probar(0);
   }
+  /* Canal extra por Supabase Realtime (el mismo servidor del Ranking, por el
+     puerto 443): si los servidores MQTT públicos no responden desde una red,
+     los mensajes igual pasan por acá. Un canal por tema; lo que se manda
+     antes de que el canal esté listo queda en cola. */
+  function clienteSupabase(alListo){
+    let supa=null;try{supa=typeof obtenerSupa==="function"?obtenerSupa():null;}catch(e){}
+    if(!supa||typeof supa.channel!=="function")return null;
+    const canales=new Map(),oyentes=[];let conectado=false;
+    const avisarListo=()=>{if(!conectado){conectado=true;if(alListo)alListo();}};
+    const canal=t=>{
+      if(canales.has(t))return canales.get(t);
+      const ch=supa.channel("gya-"+t.replace(/[^A-Za-z0-9_-]/g,"-"),{config:{broadcast:{self:false}}});
+      const st={ch,listo:false,oir:false,cola:[]};
+      ch.on("broadcast",{event:"m"},msg=>{const m=msg&&msg.payload&&msg.payload.m;if(st.oir&&typeof m==="string")oyentes.forEach(f=>f(t,m));});
+      ch.subscribe(estado=>{if(estado==="SUBSCRIBED"){st.listo=true;avisarListo();st.cola.splice(0).forEach(m=>{try{ch.send({type:"broadcast",event:"m",payload:{m}});}catch(e){}});}});
+      canales.set(t,st);return st;
+    };
+    /* Canal de prueba para saber si Supabase responde desde esta red. */
+    canal("gya-ping");
+    return{
+      get connected(){return conectado;},
+      subscribe(t){canal(t).oir=true;},
+      unsubscribe(t){const st=canales.get(t);if(st)st.oir=false;},
+      publish(t,m){const st=canal(t);m=String(m);if(st.listo){try{st.ch.send({type:"broadcast",event:"m",payload:{m}});}catch(e){}}else st.cola.push(m);},
+      on(ev,f){if(ev==="message")oyentes.push(f);},
+      end(){canales.forEach(st=>{try{supa.removeChannel(st.ch);}catch(e){}});canales.clear();}
+    };
+  }
   function conectar(alConectar,alFallar,asignar){
-    const clis=[],subs=new Set(),oyentes=[],vistos=new Map();
+    const clis=[],subs=new Set(),oyentes=[],vistos=new Map();let sb=null;
     let listo=false,fallo=false,cerrado=false,caidos=0,timer=0;
     const w={
-      get connected(){return clis.some(c=>c.connected);},
-      subscribe(t){subs.add(t);clis.forEach(c=>{if(c.connected)try{c.subscribe(t);}catch(e){}});},
-      unsubscribe(t){subs.delete(t);clis.forEach(c=>{try{c.unsubscribe(t);}catch(e){}});},
-      publish(t,m){clis.forEach(c=>{if(c.connected)try{c.publish(t,m);}catch(e){}});},
+      get connected(){return clis.some(c=>c.connected)||!!(sb&&sb.connected);},
+      subscribe(t){subs.add(t);clis.forEach(c=>{if(c.connected)try{c.subscribe(t);}catch(e){}});if(sb)sb.subscribe(t);},
+      unsubscribe(t){subs.delete(t);clis.forEach(c=>{try{c.unsubscribe(t);}catch(e){}});if(sb)sb.unsubscribe(t);},
+      publish(t,m){clis.forEach(c=>{if(c.connected)try{c.publish(t,m);}catch(e){}});if(sb)sb.publish(t,m);},
       on(ev,f){if(ev==="message")oyentes.push(f);return w;},
-      end(){cerrado=true;clearTimeout(timer);clis.forEach(c=>{try{c.end(true);}catch(e){}});}
+      end(){cerrado=true;clearTimeout(timer);clis.forEach(c=>{try{c.end(true);}catch(e){}});if(sb)try{sb.end();}catch(e){}}
     };
     const fallar=motivo=>{if(listo||fallo)return;fallo=true;window.gyaFalloConexion=motivo;w.end();if(alFallar)alFallar();};
     const recibir=(t,pl)=>{
@@ -62,10 +90,13 @@ const MultiBroker=(()=>{
       vistos.set(clave,ahora);if(vistos.size>300){for(const [k,v] of vistos)if(ahora-v>5000)vistos.delete(k);}
       oyentes.forEach(f=>{try{f(t,pl);}catch(e){}});
     };
+    const yaConectado=()=>{if(!listo&&!fallo&&!cerrado){listo=true;clearTimeout(timer);alConectar();}};
+    if(asignar)asignar(w);
+    sb=clienteSupabase(yaConectado);
+    if(sb)sb.on("message",recibir);
     cargarLib(ok=>{
       if(cerrado)return;
-      if(!ok){fallar("sin librería");return;}
-      if(asignar)asignar(w);
+      if(!ok){if(!sb)fallar("sin librería");return;}
       LISTA.forEach(url=>{
         let c,primera=true;
         try{c=mqtt.connect(url,{clientId:"gyx"+Math.random().toString(16).slice(2),connectTimeout:8000,reconnectPeriod:3000,clean:true});}catch(e){caidos++;return;}
@@ -73,14 +104,14 @@ const MultiBroker=(()=>{
         c.on("connect",()=>{
           if(cerrado){try{c.end(true);}catch(e){}return;}
           subs.forEach(t=>{try{c.subscribe(t);}catch(e){}});
-          if(!listo&&!fallo){listo=true;clearTimeout(timer);alConectar();}
+          yaConectado();
         });
         c.on("message",recibir);
         c.on("error",()=>{});
-        c.on("close",()=>{if(primera&&!listo){primera=false;caidos++;if(caidos>=LISTA.length)fallar("los servidores no responden");}});
+        c.on("close",()=>{if(primera&&!listo){primera=false;caidos++;if(caidos>=LISTA.length&&!sb)fallar("los servidores no responden");}});
       });
-      timer=setTimeout(()=>fallar("los servidores no responden"),15000);
     });
+    timer=setTimeout(()=>fallar("los servidores no responden"),15000);
   }
   return{conectar};
 })();
