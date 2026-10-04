@@ -33,7 +33,7 @@ const TuttiFrutti=(()=>{
   function configurar(){
     parar();cerrarSala();PantallaFija.desactivar();
     raiz.innerHTML=`<div class="mg-panel imp-panel"><h3>🍓 Tutti Frutti</h3>
-      <p>Sale una letra y hay que completar las categorías. <b>El primero que completa todo gana</b> la ronda.</p>
+      <p>Sale una letra y hay que completar las categorías. El primero que completa todo canta <b>BASTA</b>. Puntos: <b>10</b> única, <b>5</b> repetida, <b>20</b> si sos el único.</p>
       ${ajustesHtml()}
       <div id="tfZona"><button type="button" class="mg-principal" id="tfCrear">📱 Crear sala (cada uno con su celular)</button>
       <div class="tf-unirse"><input id="tfCodigo" maxlength="4" placeholder="CÓDIGO" autocomplete="off" autocapitalize="characters"><button type="button" id="tfUnirse">🔑 Unirme</button></div>
@@ -240,7 +240,7 @@ const TuttiFrutti=(()=>{
   }
   function pintarJugadores(){
     const ul=raiz&&raiz.querySelector("#tfJugs");if(!ul||!on)return;
-    ul.innerHTML=on.jug.map(j=>`<li><span>${esc(j.nombre)}${j.pid===on.pid?" (vos)":""}</span><b>${on.ganadas[j.pid]?"🏆 "+on.ganadas[j.pid]:""}</b></li>`).join("");
+    ul.innerHTML=on.jug.map(j=>`<li><span>${esc(j.nombre)}${j.pid===on.pid?" (vos)":""}</span><b>${on.ganadas[j.pid]?on.ganadas[j.pid]+" pts":""}</b></li>`).join("");
   }
   function nuevaRonda(){
     let libres=LETRAS.filter(l=>!on.usadas.includes(l));if(!libres.length){on.usadas=[];libres=LETRAS.slice();}
@@ -273,7 +273,7 @@ const TuttiFrutti=(()=>{
       if(m.v)st.add(m.pid);else st.delete(m.pid);
       pintarVotos();
     }else if(m.t==="resultado"&&m.n===on.n&&!on.host){
-      on.resps=m.resps||{};on.ganador=m.ganador;on.ganadas=m.ganadas||on.ganadas;on.jug=m.jug||on.jug;mostrarResultado();
+      on.resps=m.resps||{};on.ganador=m.ganador;on.ganadas=m.ganadas||on.ganadas;on.jug=m.jug||on.jug;on.marcas=m.marcas||{};mostrarResultado();
     }
   }
   /* Ronda: animación de la letra y después una categoría por vez. */
@@ -345,45 +345,71 @@ const TuttiFrutti=(()=>{
     if(!on.envie){on.envie=true;mandar({t:"resp",n:on.n,r:on.mias});}
     if(on.host)on.timers.push(setTimeout(()=>{if(on&&on.fase==="cortada")publicarResultado();},3500));
   }
-  function publicarResultado(){
-    if(!on||!on.host||on.fase==="resultado")return;
-    if(on.ganador)on.ganadas[on.ganador]=(on.ganadas[on.ganador]||0)+1;
-    on.fase="resultado";
-    mandar({t:"resultado",n:on.n,resps:on.resps,ganador:on.ganador,ganadas:on.ganadas,jug:on.jug});
+  /* Puntos como el Tutti Frutti de verdad, por categoría: 10 si nadie más
+     puso lo mismo, 5 si se repite, 20 si sos el único que la completó, 0 si
+     está vacía, no vale o la anularon. El anfitrión revisa las respuestas
+     (✓/⚠️) y manda las marcas a todos, así todos calculan igual. Votos:
+     a una ✓ se la vota ❌ para anularla; a una ⚠️ (mal escrita o que no
+     encontré) se la vota ✔ para salvarla. Alcanza la mayoría de los demás. */
+  async function publicarResultado(){
+    if(!on||!on.host||on.fase==="resultado"||on.calculando)return;
+    on.calculando=true;
+    const marcas={};
+    await Promise.all(on.jug.map(async j=>{const r=on.resps[j.pid]||[];marcas[j.pid]=await Promise.all(on.cats.map((c,i)=>r[i]?revisar(c,r[i]).then(x=>x===null?true:x).catch(()=>true):Promise.resolve(false)));}));
+    on.calculando=false;if(!on||on.fase==="resultado")return;
+    on.fase="resultado";on.marcas=marcas;
+    mandar({t:"resultado",n:on.n,resps:on.resps,ganador:on.ganador,ganadas:on.ganadas,jug:on.jug,marcas});
     mostrarResultado();
   }
   const necesarios=()=>Math.max(1,Math.floor((on.jug.length-1)/2)+1);
-  const anulada=(a,i)=>{const st=on.votos&&on.votos[a+"|"+i];return!!st&&st.size>=necesarios();};
-  const ganadorAnulado=()=>!!on.ganador&&on.cats.some((c,i)=>anulada(on.ganador,i));
+  const votosDe=(a,i)=>{const st=on.votos&&on.votos[a+"|"+i];return st?st.size:0;};
+  const marca=(a,i)=>!!(on.marcas&&on.marcas[a]&&on.marcas[a][i]);
+  /* ¿La respuesta vale? ✓ y no anulada, o ⚠️ pero salvada por votos. */
+  function vale(a,i){const r=(on.resps[a]||[])[i];if(!r)return false;return marca(a,i)?votosDe(a,i)<necesarios():votosDe(a,i)>=necesarios();}
+  function puntosRonda(){
+    const pts={};on.jug.forEach(j=>pts[j.pid]=Array(on.cats.length).fill(0));
+    on.cats.forEach((c,i)=>{
+      const validos=on.jug.filter(j=>vale(j.pid,i));
+      validos.forEach(j=>{
+        const n=NORM(on.resps[j.pid][i]);
+        const iguales=validos.filter(o=>o.pid!==j.pid&&NORM(on.resps[o.pid][i])===n).length;
+        pts[j.pid][i]=validos.length===1?20:iguales?5:10;
+      });
+    });
+    return pts;
+  }
+  const sumar=a=>a.reduce((x,y)=>x+y,0);
   function mostrarResultado(){
-    if(!raiz||!on)return;on.fase="resultado";on.votos=on.votos||{};
+    if(!raiz||!on)return;on.fase="resultado";on.votos=on.votos||{};on.marcas=on.marcas||{};
     const g=on.ganador;
-    if(g===on.pid&&typeof bip==="function")[523,659,784,1047].forEach((f,i)=>setTimeout(()=>bip(f,.22,"triangle",.05),i*140));
-    const filas=on.jug.map(j=>{const r=on.resps[j.pid]||[];return`<li class="${j.pid===g?"tf-gano":""}"><b>${j.pid===g?"🏆 ":""}${esc(j.nombre)}${j.pid===on.pid?" (vos)":""}</b><div class="tf-chips">${on.cats.map((c,i)=>{const v=r[i]||"";return`<button type="button" class="tf-chip" data-a="${j.pid}" data-i="${i}" ${!v||j.pid===on.pid?"disabled":""}><em>${esc(c)}</em> ${esc(v||"—")} <i class="tf-marca" data-c="${esc(c)}" data-v="${esc(v)}">${v?"…":""}</i><span class="tf-votos"></span></button>`;}).join("")}</div></li>`;}).join("");
+    const filas=on.jug.map(j=>{const r=on.resps[j.pid]||[];return`<li data-p="${j.pid}"><b>${esc(j.nombre)}${j.pid===on.pid?" (vos)":""}${j.pid===g?" · 🏁 cantó BASTA":""}<span class="tf-sub" data-sub="${j.pid}"></span></b><div class="tf-chips">${on.cats.map((c,i)=>{const v=r[i]||"";return`<button type="button" class="tf-chip" data-a="${j.pid}" data-i="${i}" ${!v||j.pid===on.pid?"disabled":""}><em>${esc(c)}</em> ${esc(v||"—")} <i class="tf-marca">${v?(marca(j.pid,i)?"✓":"⚠️"):""}</i><span class="tf-votos"></span><b class="tf-pts"></b></button>`;}).join("")}</div></li>`;}).join("");
     pantalla(`<div class="mg-panel imp-panel imp-fin"><h3 id="tfTitulo"></h3>
-      <p class="imp-ayuda">Letra <b>${on.letra}</b> · ✓ encontrada · ⚠️ no la encontré.<br>Tocá una respuesta de otro para votarla ❌ si no vale.</p>
-      <p class="imp-ayuda tf-aviso" id="tfAviso"></p>
+      <p class="imp-ayuda">Letra <b>${on.letra}</b> · <b>10</b> única · <b>5</b> repetida · <b>20</b> si sos el único · <b>0</b> si no vale.<br>⚠️ = mal escrita o no la encontré (vale 0). Tocá una respuesta de otro para votarla: ❌ anula una ✓, ✔ salva una ⚠️.</p>
       <ul class="tf-resps">${filas}</ul>
-      <div class="qs-sub">🏆 Rondas ganadas</div><ul class="imp-tabla" id="tfTabla"></ul>
+      <div class="qs-sub">🏆 Puntos (con esta ronda)</div><ul class="imp-tabla" id="tfTabla"></ul>
       ${on.host?`<button type="button" class="mg-principal" id="tfOtra">🎲 Otra letra</button><button type="button" id="tfRevancha">🔄 Revancha (de cero)</button>`:`<p class="imp-ayuda">Esperando que el anfitrión saque otra letra…</p>`}</div>`);
     raiz.querySelector(".tf-resps").onclick=e=>{const b=e.target.closest(".tf-chip");if(!b||b.disabled)return;const a=b.dataset.a,i=Number(b.dataset.i);const st=on.votos[a+"|"+i];const ya=!!(st&&st.has(on.pid));mandar({t:"voto",n:on.n,a,i,v:!ya});};
-    raiz.querySelectorAll(".tf-marca").forEach(el=>{const v=el.dataset.v;if(!v)return;revisar(el.dataset.c,v).then(ok=>{el.textContent=ok===true?"✓":ok===false?"⚠️":"";el.className="tf-marca "+(ok===true?"ok":ok===false?"mal":"");});});
+    if(on.ganador===on.pid&&typeof bip==="function")[523,659,784].forEach((f,i)=>setTimeout(()=>bip(f,.2,"triangle",.05),i*130));
     pintarVotos();
     if(on.host){
-      const cerrarRonda=()=>{if(ganadorAnulado()&&on.ganadas[g]>0){on.ganadas[g]--;}difundirSala();};
-      q("tfOtra").onclick=()=>{cerrarRonda();nuevaRonda();};
+      q("tfOtra").onclick=()=>{const pr=puntosRonda();on.jug.forEach(j=>on.ganadas[j.pid]=(on.ganadas[j.pid]||0)+sumar(pr[j.pid]));difundirSala();nuevaRonda();};
       q("tfRevancha").onclick=()=>{on.ganadas={};on.usadas=[];partidas++;guardar();difundirSala();nuevaRonda();};
     }
   }
   function pintarVotos(){
     if(!raiz||!on||on.fase!=="resultado")return;
-    raiz.querySelectorAll(".tf-chip").forEach(b=>{const k=b.dataset.a+"|"+b.dataset.i,st=on.votos[k],n=st?st.size:0;
-      b.querySelector(".tf-votos").textContent=n?" ❌"+n:"";b.classList.toggle("tf-anulada",anulada(b.dataset.a,Number(b.dataset.i)));b.classList.toggle("tf-mivoto",!!(st&&st.has(on.pid)));});
-    const g=on.ganador,gn=(on.jug.find(j=>j.pid===g)||{}).nombre,pierde=ganadorAnulado();
-    const t=raiz.querySelector("#tfTitulo");if(t)t.textContent=!g?"⏰ Nadie completó todo":pierde?"❌ "+(gn||"")+" pierde la ronda":"🏆 ¡Ganó "+(gn||"")+"!";
-    const av=raiz.querySelector("#tfAviso");if(av)av.textContent=pierde?"Le anularon una respuesta a "+(gn||"")+" (votos de los demás), así que no se lleva la ronda.":"";
+    const pr=puntosRonda();
+    raiz.querySelectorAll(".tf-chip").forEach(b=>{const a=b.dataset.a,i=Number(b.dataset.i),k=a+"|"+i,st=on.votos[k],n=st?st.size:0,ok=marca(a,i),v=(on.resps[a]||[])[i];
+      b.querySelector(".tf-votos").textContent=n?(ok?" ❌":" ✔")+n:"";
+      b.querySelector(".tf-pts").textContent=v?" +"+pr[a][i]:"";
+      b.classList.toggle("tf-anulada",!!v&&!vale(a,i));b.classList.toggle("tf-mivoto",!!(st&&st.has(on.pid)));});
+    raiz.querySelectorAll("[data-sub]").forEach(el=>{el.textContent="  +"+sumar(pr[el.dataset.sub]||[])+" pts";});
+    const orden=on.jug.map(j=>[j,sumar(pr[j.pid]),(on.ganadas[j.pid]||0)+sumar(pr[j.pid])]).sort((a,b)=>b[2]-a[2]);
+    const mejor=on.jug.map(j=>[j,sumar(pr[j.pid])]).sort((a,b)=>b[1]-a[1]);
+    const t=raiz.querySelector("#tfTitulo");
+    if(t){const empate=mejor.length>1&&mejor[0][1]===mejor[1][1];t.textContent=empate?"🤝 Ronda empatada":"🏆 Ronda para "+mejor[0][0].nombre+" (+"+mejor[0][1]+")";}
     const tabla=raiz.querySelector("#tfTabla");
-    if(tabla)tabla.innerHTML=on.jug.map(j=>[j,(on.ganadas[j.pid]||0)-(pierde&&j.pid===g&&on.ganadas[j.pid]>0?1:0)]).sort((a,b)=>b[1]-a[1]).map(([j,n])=>`<li><span>${esc(j.nombre)}</span><b>${n}</b></li>`).join("");
+    if(tabla)tabla.innerHTML=orden.map(([j,r,tot])=>`<li><span>${esc(j.nombre)}</span><b>${tot} <small>(+${r})</small></b></li>`).join("");
   }
   /* Link ?tutti=<SALA>&de=<nombre>: abre el juego y se une solo. */
   function abrirInvitacion(sala,de){
