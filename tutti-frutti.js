@@ -384,13 +384,18 @@ const TuttiFrutti=(()=>{
   function mostrarResultado(){
     if(!raiz||!on)return;on.fase="resultado";on.votos=on.votos||{};on.marcas=on.marcas||{};
     const g=on.ganador;
-    const filas=on.jug.map(j=>{const r=on.resps[j.pid]||[];return`<li data-p="${j.pid}"><b>${esc(j.nombre)}${j.pid===on.pid?" (vos)":""}${j.pid===g?" · 🏁 cantó BASTA":""}<span class="tf-sub" data-sub="${j.pid}"></span></b><div class="tf-chips">${on.cats.map((c,i)=>{const v=r[i]||"";return`<button type="button" class="tf-chip" data-a="${j.pid}" data-i="${i}" ${!v||j.pid===on.pid?"disabled":""}><em>${esc(c)}</em> ${esc(v||"—")} <i class="tf-marca">${v?(marca(j.pid,i)?"✓":"⚠️"):""}</i><span class="tf-votos"></span><b class="tf-pts"></b></button>`;}).join("")}</div></li>`;}).join("");
+    const filas=on.jug.map(j=>{const r=on.resps[j.pid]||[];return`<li class="tf-jug${j.pid===g?" tf-gano":""}"><div class="tf-jug-cab"><b>${esc(j.nombre)}${j.pid===on.pid?" (vos)":""}</b>${j.pid===g?`<span class="tf-basta">🏁 BASTA</span>`:""}<span class="tf-sub" data-sub="${j.pid}"></span></div>
+      <div class="tf-tabla"><div class="tf-fila tf-titulos"><span>Categoría</span><span>Palabra</span><span>Pts</span><span></span></div>${on.cats.map((c,i)=>{const v=r[i]||"";const ok=marca(j.pid,i);return`<div class="tf-fila" data-a="${j.pid}" data-i="${i}"><span class="tf-cat">${esc(c)}</span><span class="tf-pal${v&&!ok?" tf-mal":""}" ${v&&!ok?`data-ver="1"`:""}>${esc(v||"—")}${v?(ok?" <i class=\"tf-marca ok\">✓</i>":" <i class=\"tf-marca mal\">⚠️</i>"):""}</span><b class="tf-pts"></b>${v&&j.pid!==on.pid?`<button type="button" class="tf-votar" aria-label="Votar"></button>`:"<span></span>"}</div>`;}).join("")}</div></li>`;}).join("");
     pantalla(`<div class="mg-panel imp-panel imp-fin"><h3 id="tfTitulo"></h3>
-      <p class="imp-ayuda">Letra <b>${on.letra}</b> · <b>10</b> única · <b>5</b> repetida · <b>20</b> si sos el único · <b>0</b> si no vale.<br>⚠️ = mal escrita o no la encontré (vale 0). Tocá una respuesta de otro para votarla: ❌ anula una ✓, ✔ salva una ⚠️.</p>
+      <p class="imp-ayuda">Letra <b>${on.letra}</b> · <b>10</b> única · <b>5</b> repetida · <b>20</b> si sos el único · <b>0</b> si no vale.<br>⚠️ = mal escrita (vale 0): tocala para ver lo correcto. Con el botón de la derecha votás: ❌ anula, ✔ perdona.</p>
       <ul class="tf-resps">${filas}</ul>
       <div class="qs-sub">🏆 Puntos (con esta ronda)</div><ul class="imp-tabla" id="tfTabla"></ul>
       ${on.host?`<button type="button" class="mg-principal" id="tfOtra">🎲 Otra letra</button><button type="button" id="tfRevancha">🔄 Revancha (de cero)</button>`:`<p class="imp-ayuda">Esperando que el anfitrión saque otra letra…</p>`}</div>`);
-    raiz.querySelector(".tf-resps").onclick=e=>{const b=e.target.closest(".tf-chip");if(!b||b.disabled)return;const a=b.dataset.a,i=Number(b.dataset.i);const st=on.votos[a+"|"+i];const ya=!!(st&&st.has(on.pid));mandar({t:"voto",n:on.n,a,i,v:!ya});};
+    raiz.querySelector(".tf-resps").onclick=e=>{
+      const f=e.target.closest(".tf-fila");if(!f||!f.dataset.a)return;const a=f.dataset.a,i=Number(f.dataset.i);
+      if(e.target.closest(".tf-votar")){const st=on.votos[a+"|"+i];const ya=!!(st&&st.has(on.pid));mandar({t:"voto",n:on.n,a,i,v:!ya});return;}
+      if(e.target.closest("[data-ver]"))explicar(on.cats[i],(on.resps[a]||[])[i]);
+    };
     if(on.ganador===on.pid&&typeof bip==="function")[523,659,784].forEach((f,i)=>setTimeout(()=>bip(f,.2,"triangle",.05),i*130));
     pintarVotos();
     if(on.host){
@@ -398,13 +403,49 @@ const TuttiFrutti=(()=>{
       q("tfRevancha").onclick=()=>{on.ganadas={};on.usadas=[];partidas++;guardar();difundirSala();nuevaRonda();};
     }
   }
+  /* Mini popup: por qué está mal y cuál es la forma correcta (solo informa). */
+  const lev=(a,b)=>{const m=a.length,n=b.length;if(Math.abs(m-n)>3)return 99;let prev=Array.from({length:n+1},(_,k)=>k);for(let x=1;x<=m;x++){const cur=[x];for(let y=1;y<=n;y++)cur[y]=Math.min(prev[y]+1,cur[y-1]+1,prev[y-1]+(a[x-1]===b[y-1]?0:1));prev=cur;}return prev[n];};
+  const lindo=t=>t.replace(/\b\w/g,c=>c.toUpperCase());
+  async function sugerir(cat,valor){
+    const v=NORM(valor),k=CLAVE_CAT[cat];if(!v)return null;
+    if(k==="wiki"){
+      try{const r=await fetch("https://es.wikipedia.org/w/api.php?action=query&list=search&srlimit=1&srinfo=suggestion&format=json&origin=*&srsearch="+encodeURIComponent(valor));const d=await r.json();
+        const t=d&&d.query&&d.query.search&&d.query.search[0]&&d.query.search[0].title;if(t)return t.replace(/\s*\(.*?\)\s*$/,"");
+        const sg=d&&d.query&&d.query.searchinfo&&d.query.searchinfo.suggestion;return sg?lindo(sg):null;}catch(e){return null;}
+    }
+    let cand=[];
+    if(k&&k!=="dic")cand=[...setDe(k)];
+    else{
+      /* También la letra que "suena igual": Girafa → Jirafa, Vaca/Baca, Zapato/Sapato… */
+      const ALT={g:["j"],j:["g"],b:["v"],v:["b"],s:["c","z"],c:["s","z","k"],z:["s","c"],y:["l"],l:["y"],h:[v[1]||""],k:["c","q"],q:["c","k"]};
+      for(const l of [v[0]].concat(ALT[v[0]]||[]).filter(Boolean)){const d=await cargarDic(l);if(d)cand=cand.concat([...d]);}
+    }
+    /* Distancia "como suena" (ll=y, v=b, z/ce/ci=s, h muda, c/qu=k, ge/gi=j)
+       y desempate por letras: Martiyo → Martillo, Milaneza → Milanesa. */
+    const fon=t=>t.replace(/h/g,"").replace(/ll/g,"y").replace(/v/g,"b").replace(/z/g,"s").replace(/c([ei])/g,"s$1").replace(/qu/g,"k").replace(/c/g,"k").replace(/g([ei])/g,"j$1").replace(/x/g,"ks").replace(/(.)\1+/g,"$1");
+    const fv=fon(v),tope=v.length<=4?1:v.length<=8?2:3;
+    let mejor=null,puntaje=1e9;
+    for(const c of cand){if(c===v||Math.abs(c.length-v.length)>tope+1)continue;const df=lev(fv,fon(c));if(df>tope)continue;const p=df*10+lev(v,c);if(p<puntaje){puntaje=p;mejor=c;if(p<=1)break;}}
+    return mejor?lindo(mejor):null;
+  }
+  function explicar(cat,valor){
+    if(!valor)return;
+    const viejo=document.querySelector(".tf-pop");if(viejo)viejo.remove();
+    const p=document.createElement("div");p.className="tf-pop";
+    p.innerHTML=`<div class="tf-pop-caja"><div class="tf-pop-cab">⚠️ ${esc(cat)}</div><div class="tf-pop-mal">«${esc(valor)}»</div><div class="tf-pop-txt" id="tfPopTxt">Buscando la forma correcta…</div><button type="button" class="tf-pop-ok">Entendido</button></div>`;
+    p.onclick=e=>{if(e.target===p||e.target.closest(".tf-pop-ok"))p.remove();};
+    document.body.appendChild(p);
+    sugerir(cat,valor).then(sg=>{const t=p.querySelector("#tfPopTxt");if(!t)return;
+      t.innerHTML=sg?`Lo correcto es <b>${esc(sg)}</b>.<br><small>Por eso vale 0: estaba mal escrita.</small>`:`No la encontré como ${esc(NOM_CAT[cat]||cat)} y no hay una parecida.<br><small>Por eso vale 0.</small>`;});
+  }
   function pintarVotos(){
     if(!raiz||!on||on.fase!=="resultado")return;
     const pr=puntosRonda();
-    raiz.querySelectorAll(".tf-chip").forEach(b=>{const a=b.dataset.a,i=Number(b.dataset.i),k=a+"|"+i,st=on.votos[k],n=st?st.size:0,ok=marca(a,i),v=(on.resps[a]||[])[i];
-      b.querySelector(".tf-votos").textContent=n?(ok?" ❌":" ✔")+n:"";
-      b.querySelector(".tf-pts").textContent=v?" +"+pr[a][i]:"";
-      b.classList.toggle("tf-anulada",!!v&&!vale(a,i));b.classList.toggle("tf-mivoto",!!(st&&st.has(on.pid)));});
+    raiz.querySelectorAll(".tf-fila[data-a]").forEach(b=>{const a=b.dataset.a,i=Number(b.dataset.i),k=a+"|"+i,st=on.votos[k],n=st?st.size:0,ok=marca(a,i),v=(on.resps[a]||[])[i],mio=!!(st&&st.has(on.pid));
+      b.querySelector(".tf-pts").textContent=v?"+"+pr[a][i]:"0";
+      const bt=b.querySelector(".tf-votar");if(bt)bt.textContent=(ok?"❌":"✔")+(n?" "+n:"");
+      if(bt)bt.classList.toggle("activo",mio);
+      b.classList.toggle("tf-anulada",!!v&&!vale(a,i));});
     raiz.querySelectorAll("[data-sub]").forEach(el=>{el.textContent="  +"+sumar(pr[el.dataset.sub]||[])+" pts";});
     const orden=on.jug.map(j=>[j,sumar(pr[j.pid]),(on.ganadas[j.pid]||0)+sumar(pr[j.pid])]).sort((a,b)=>b[2]-a[2]);
     const mejor=on.jug.map(j=>[j,sumar(pr[j.pid])]).sort((a,b)=>b[1]-a[1]);
@@ -419,6 +460,6 @@ const TuttiFrutti=(()=>{
     Extensiones.abrirJuego("tutti-frutti");
     setTimeout(()=>{if(raiz)unirse(sala,de);},300);
   }
-  return{abrir,salir,abrirInvitacion,_revisar:(c,v)=>revisar(c,v),enter:()=>{try{confirmarCampo();}catch(e){}},partidasJugadas:()=>{cargar();return partidas;}};
+  return{abrir,salir,abrirInvitacion,_revisar:(c,v)=>revisar(c,v),_sugerir:(c,v)=>sugerir(c,v),enter:()=>{try{confirmarCampo();}catch(e){}},partidasJugadas:()=>{cargar();return partidas;}};
 })();
 window.TuttiFrutti=TuttiFrutti;
