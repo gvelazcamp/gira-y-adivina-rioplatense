@@ -212,6 +212,7 @@ const ContraRelojRioplatense=(()=>{
     }
     {const nuevas=Vistas.filtrar("contrareloj",tarjetas(),t=>t[0]);mazo=[...mezclar(nuevas),...mezclar(tarjetas().filter(t=>!nuevas.includes(t)))];}ronda=0;total=0;dado=null;rondaSinCerrar=false;
     guardarNum(K_PARTIDAS,num(K_PARTIDAS)+1);
+    if(window.PantallaFija)PantallaFija.activar();
     previaLocal();
   }
   function previaLocal(){
@@ -296,14 +297,22 @@ const ContraRelojRioplatense=(()=>{
     guardarNum(K_ACIERTOS,num(K_ACIERTOS)+h);
     if(lPuntos[g]>num(K_RECORD))guardarNum(K_RECORD,lPuntos[g]);
   }
-  function aInicio(){limpiarTimers();activa=false;cerrarRondaLocal();arbitroDetener();micCerrar();pantalla("#home");}
+  function aInicio(){limpiarTimers();activa=false;cerrarRondaLocal();arbitroDetener();micCerrar();if(window.PantallaFija)PantallaFija.desactivar();pantalla("#home");}
 
+  /* Botón de salir de la partida: hay que dejarlo apretado 3 segundos. */
+  function salirMantenido(b){
+    b.textContent="DEJÁ APRETADO 3 SEGUNDOS PARA TERMINAR LA PARTIDA";b.classList.add("pf-mantener");
+    if(window.PantallaFija)PantallaFija.mantener(b,3000,aInicio);else b.onclick=aInicio;
+  }
   function abrir(contenedor){
     salir();
     if(!document.getElementById("crrEstilos")){const st=document.createElement("style");st.id="crrEstilos";st.textContent=CSS;document.head.appendChild(st);}
     raiz=document.createElement("div");raiz.className="crr";
     raiz.innerHTML='<button type="button" class="ext-volver" id="crr-volver">⟵ Extensiones</button><main class="crr-app">'+HTML+EXTRA+'</main>';
     contenedor.appendChild(raiz);
+    /* Juego de previa: pantalla completa y sin apagarse mientras está abierto;
+       durante una partida local, "atrás" bloqueado y salir es dejando apretado 3 s. */
+    if(window.PantallaFija){PantallaFija.entrar();PantallaFija.prender();}
     $("#volver").onclick=()=>Extensiones.abrirLobby();
     $("#lHourglass").innerHTML=relojSVG();$("#oHourglass").innerHTML=relojSVG();
     $("#normalBtn").onclick=()=>configLocal("normal");
@@ -318,16 +327,16 @@ const ContraRelojRioplatense=(()=>{
     $("#lwHome").onclick=aInicio;
     $("#lPreRoll").onclick=tirarLocal;
     $("#lPreStart").onclick=rondaLocal;
-    $("#lPreHome").onclick=aInicio;
+    salirMantenido($("#lPreHome"));
     $("#lFinish").onclick=terminarLocal;
-    $("#lExit").onclick=aInicio;
+    salirMantenido($("#lExit"));
     $("#lNext").onclick=()=>{
       cerrarRondaLocal();
       const g=ganador(lPuntos,lGrupos,lMeta,(ronda+1)%lGrupos===0);
       if(g){pantalla("#localWinner");$("#lwTitulo").textContent="¡Ganó el Grupo "+g+"!";marcador($("#lwScores"),lPuntos,lGrupos,g,0);fanfarria();return;}
       ronda++;previaLocal();
     };
-    $("#lResultHome").onclick=aInicio;
+    salirMantenido($("#lResultHome"));
     $("#avisoOk").onclick=()=>{$("#aviso").hidden=true;};
     $("#rulesBtn").onclick=()=>{$("#rules").hidden=false;};
     $("#closeRules").onclick=()=>{$("#rules").hidden=true;};
@@ -353,6 +362,7 @@ const ContraRelojRioplatense=(()=>{
     if(window.ContraRelojOnline)ContraRelojOnline.salir();
     arbitroDetener();micCerrar();
     if(audioUrl){try{URL.revokeObjectURL(audioUrl);}catch(e){}audioUrl="";}
+    if(raiz&&window.PantallaFija)PantallaFija.salir();
     raiz=null;
   }
   addEventListener("pagehide",()=>{if(raiz)salir();});

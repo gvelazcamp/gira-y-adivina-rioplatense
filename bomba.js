@@ -33,13 +33,13 @@ const Bomba=(()=>{
       <div class="bb-mecha" id="bbMecha">💣</div>
       <div class="bb-silaba" id="bbSilaba"></div>
       <button type="button" class="bb-pasar" id="bbPasar">Pasar ➜</button>
-      <div class="qns-pie">Mantené ✕ para salir</div>
+      <div class="qns-pie">🔒 Dejá apretada la ✕ 3 segundos para terminar la partida</div>
     </div>`;
     PantallaFija.activar();
     const juego=q("bbJuego");
     ["touchmove","contextmenu","dblclick"].forEach(t=>juego.addEventListener(t,e=>{if(e.cancelable)e.preventDefault();},{passive:false}));
     q("bbPasar").addEventListener("pointerdown",e=>{e.preventDefault();pasar();});
-    PantallaFija.mantener(q("bbSalir"),1500,()=>{parar();PantallaFija.desactivar();if(raiz)inicio();});
+    PantallaFija.mantener(q("bbSalir"),3000,()=>{parar();PantallaFija.desactivar();if(raiz)inicio();});
     pasadas=0;jugando=true;inicioT=Date.now();explota=inicioT+15000+Math.random()*30000;
     q("bbSilaba").textContent=silaba();
     tictac();

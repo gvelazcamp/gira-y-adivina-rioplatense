@@ -27,7 +27,7 @@ const QueNumeroSoy=(()=>{
     </div>
     <div class="qns-pantalla" id="qnsPantalla" hidden>
       <div class="qns-num" id="qnsNum"></div>
-      <div class="qns-pie" id="qnsPie">Mantené apretado 3 s para terminar</div>
+      <div class="qns-pie" id="qnsPie">🔒 Dejá apretado 3 segundos para terminar la partida</div>
       <div class="qns-barra"><i id="qnsBarra"></i></div>
     </div>
     <div class="qns-pantalla qns-fin" id="qnsFin" hidden>
@@ -62,7 +62,7 @@ const QueNumeroSoy=(()=>{
       if(!raiz||!bloqueado)return;
       if(n>0){num.textContent=n;n--;cuenta=setTimeout(paso,1000);return;}
       num.classList.remove("qns-cuenta");num.textContent=numero;
-      pie.textContent="Mantené apretado 3 s para terminar";
+      pie.textContent="🔒 Dejá apretado 3 segundos para terminar la partida";
       if(typeof vibrar==="function")vibrar(40);
     };
     clearTimeout(cuenta);paso();
