@@ -4,6 +4,8 @@
      por una (tiene que empezar con la letra) y el primero que completa todo
      canta BASTA y gana la ronda. Después se ven las respuestas de todos.
      Invitación: ?tutti=<SALA>&de=<nombre>.
+   - Música (assets/audio/tutti-frutti-musica.mp3, Denis Pavlov Music en
+     Pixabay) mientras se completan las categorías; se corta con el BASTA.
    Pantalla fija (PantallaFija). Datos en gya_tutti. */
 const TuttiFrutti=(()=>{
   const CLAVE="gya_tutti",TIEMPOS=[60,90,120];
@@ -28,8 +30,17 @@ const TuttiFrutti=(()=>{
     q("tfT").onclick=e=>{const b=e.target.closest("button[data-v]");if(b){tiempo=Number(b.dataset.v);guardar();pintar();avisar();}};
     q("tfCats").onclick=e=>{const b=e.target.closest("button[data-c]");if(!b)return;const c=b.dataset.c;if(cats.includes(c)){if(cats.length>3)cats=cats.filter(x=>x!==c);}else cats=CATEGORIAS.filter(x=>x===c||cats.includes(x));guardar();pintar();avisar();};
   }
+  /* Música mientras se escribe (respeta el botón de música del juego). */
+  let audioMusica=null;
+  function iniciarMusica(){
+    try{if(typeof sonidoPermitido==="function"&&!sonidoPermitido())return;
+      if(!audioMusica){audioMusica=new Audio("assets/audio/tutti-frutti-musica.mp3");audioMusica.loop=true;audioMusica.volume=.28;}
+      if(audioMusica.paused)audioMusica.play().catch(()=>{});}catch(e){}
+  }
+  function detenerMusica(){try{if(audioMusica)audioMusica.pause();}catch(e){}}
+  document.addEventListener("visibilitychange",()=>{if(document.hidden)detenerMusica();else if(raiz&&on&&on.fase==="jugando"&&on.fin)iniciarMusica();});
   function configurar(){
-    parar();cerrarSala();PantallaFija.desactivar();
+    detenerMusica();parar();cerrarSala();PantallaFija.desactivar();
     raiz.innerHTML=`<div class="mg-panel imp-panel"><h3>🍓 Tutti Frutti</h3>
       <p>Se juegan <b>3 rondas</b> y gana el mejor de 3. El primero que completa todo canta <b>BASTA</b>. Puntos: <b>10</b> única, <b>5</b> repetida, <b>20</b> si sos el único.</p>
       ${ajustesHtml()}
@@ -43,7 +54,7 @@ const TuttiFrutti=(()=>{
   function estado(t){const e=raiz&&raiz.querySelector("#tfEstado");if(e)e.textContent=t;}
   function pantalla(html){raiz.innerHTML=`<div class="qns-pantalla imp-juego"><button type="button" class="pf-salir" id="tfSalir">✕ Salir</button>${html}</div>`;PantallaFija.confirmar(q("tfSalir"),configurar);}
   function parar(){jugando=false;clearTimeout(timer);}
-  function salir(){parar();cerrarSala();if(raiz)PantallaFija.salir();if(raiz)raiz.remove();raiz=null;}
+  function salir(){detenerMusica();parar();cerrarSala();if(raiz)PantallaFija.salir();if(raiz)raiz.remove();raiz=null;}
   /* ===== Control de respuestas =====
      Listas propias (tutti-frutti-datos.js) para Nombre, Apellido, Lugar, Animal,
      Color, Fruta, Comida y Profesión; Wikipedia para Famoso, Marca y Película;
@@ -229,6 +240,8 @@ const TuttiFrutti=(()=>{
   function campos(){
     if(!raiz||!on||on.fase!=="jugando"||on.basta)return;
     on.fin=Date.now()+on.tiempo*1000;on.pend=on.cats.map((_,i)=>i);
+    if(audioMusica)try{audioMusica.currentTime=0;}catch(e){}
+    iniciarMusica();
     pantalla(`<div class="qs-tope"><span>🍓 Letra ${on.letra}</span><b id="tfReloj">${on.tiempo}</b><span></span></div>
       <div class="imp-centro tf-campo"><div class="tf-letra tf-final tf-chica">${on.letra}</div>
       <div class="tf-prog" id="tfProg"></div>
@@ -275,6 +288,7 @@ const TuttiFrutti=(()=>{
   /* BASTA (o tiempo): todos mandan lo que tienen; el anfitrión junta y publica. */
   function cortarRonda(quien){
     if(!on||on.fase!=="jugando")return;
+    detenerMusica();
     if(on.pend&&q("tfInput")){const v=(q("tfInput").value||"").trim();if(v.length>=2&&N(v)[0]===on.letra)guardarCampo();}
     on.fase="cortada";
     const nombre=(on.jug.find(j=>j.pid===quien)||{}).nombre;
@@ -323,6 +337,7 @@ const TuttiFrutti=(()=>{
   }
   const sumar=a=>a.reduce((x,y)=>x+y,0);
   function mostrarResultado(){
+    detenerMusica();
     if(!raiz||!on)return;on.fase="resultado";on.votos=on.votos||{};on.marcas=on.marcas||{};
     const g=on.ganador;
     const filas=on.jug.map(j=>{const r=on.resps[j.pid]||[];return`<li class="tf-jug${j.pid===g?" tf-gano":""}"><div class="tf-jug-cab"><b>${esc(j.nombre)}${j.pid===on.pid?" (vos)":""}</b>${j.pid===g?`<span class="tf-basta">🏁 BASTA</span>`:""}<span class="tf-sub" data-sub="${j.pid}"></span></div>
@@ -404,6 +419,7 @@ const TuttiFrutti=(()=>{
   }
   /* Final del mejor de 3: gana el que ganó más rondas; si empatan, el de más puntos. */
   function mostrarFinal(){
+    detenerMusica();
     if(!raiz||!on)return;on.fase="final";
     const orden=on.jug.map(j=>[j,on.rg[j.pid]||0,on.ganadas[j.pid]||0]).sort((a,b)=>b[1]-a[1]||b[2]-a[2]);
     const top=orden[0],ganan=orden.filter(o=>o[1]===top[1]&&o[2]===top[2]).map(o=>o[0].nombre);
