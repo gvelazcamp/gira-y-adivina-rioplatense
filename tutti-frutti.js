@@ -52,7 +52,7 @@ const TuttiFrutti=(()=>{
     q("tfUnirse").onclick=()=>{const c=(q("tfCodigo").value||"").toUpperCase().trim();if(/^[A-HJ-NP-Z2-9]{4}$/.test(c))unirse(c);else estado("Escribí el código de 4 letras que te pasaron.");};
   }
   function estado(t){const e=raiz&&raiz.querySelector("#tfEstado");if(e)e.textContent=t;}
-  function pantalla(html){raiz.innerHTML=`<div class="qns-pantalla imp-juego"><button type="button" class="pf-salir" id="tfSalir">✕ Salir</button>${html}</div>`;PantallaFija.confirmar(q("tfSalir"),configurar);}
+  function pantalla(html){raiz.innerHTML=`<div class="qns-pantalla imp-juego"><button type="button" class="pf-salir" id="tfSalir">✕ Salir</button>${html}</div>`;PantallaFija.confirmar(q("tfSalir"),configurar);actualizarChat();}
   function parar(){jugando=false;clearTimeout(timer);}
   function salir(){if(typeof cerrarObjeciones==="function")cerrarObjeciones();detenerMusica();parar();cerrarSala();if(raiz)PantallaFija.salir();if(raiz)raiz.remove();raiz=null;}
   /* ===== Control de respuestas =====
@@ -194,6 +194,7 @@ const TuttiFrutti=(()=>{
     try{if(on.cli&&on.cli.connected)on.cli.publish(tema(),JSON.stringify({t:"chau",pid:on.pid}));}catch(e){}
     on.timers.forEach(t=>{clearInterval(t);clearTimeout(t);});
     const c=on.cli;on=null;if(c)setTimeout(()=>{try{c.end(true);}catch(e){}},300);
+    actualizarChat();
   }
   function difundirSala(){mandar({t:"sala",jug:on.jug,ganadas:on.ganadas,rg:on.rg||{},cats:on.cats,tiempo:on.tiempo,fase:on.fase});}
   function textoInvitacion(){return "¡Juguemos Tutti Frutti en Girá y Adiviná! 🍓 Tocá para unirte: "+linkInvitacion()+" (código "+on.sala+")";}
@@ -207,6 +208,7 @@ const TuttiFrutti=(()=>{
      la misma pantalla de las categorías (se pueden seguir cambiando). */
   function zonaAnfitrion(){
     const z=raiz&&raiz.querySelector("#tfZona");if(!z){lobby();return;}
+    setTimeout(actualizarChat,0);
     z.innerHTML=`<div class="qs-sub">🔑 Código de la sala</div><div class="dl-codigo tf-cod">${on.sala}</div>
       <button type="button" id="tfWpp">📲 Invitar por WhatsApp</button>
       <button type="button" id="tfCopiar">📋 Copiar invitación</button>
@@ -248,8 +250,46 @@ const TuttiFrutti=(()=>{
     on.rj=(on.rj||0)+1;on.tot=on.tot||RONDAS;
     mandar({t:"ronda",n:on.n+1,rj:on.rj,tot:on.tot,letra:l,cats:on.cats,tiempo:on.tiempo});
   }
+  /* Chat de la sala (fuera de la ronda): para hablar las objeciones. Viaja por
+     la misma sala ({t:"chat"}); las objeciones y defensas se anotan solas. */
+  let chatBtn=null,chatPanel=null,noLeidos=0;
+  function actualizarChat(){
+    const ver=!!(on&&raiz&&on.fase!=="jugando");
+    if(!ver){if(chatBtn)chatBtn.hidden=true;cerrarChat();if(!on)noLeidos=0;return;}
+    if(!chatBtn){chatBtn=document.createElement("button");chatBtn.type="button";chatBtn.className="tf-chat-btn";chatBtn.setAttribute("aria-label","Chat");chatBtn.innerHTML='💬<i hidden></i>';chatBtn.onclick=abrirChat;document.body.appendChild(chatBtn);}
+    chatBtn.hidden=!!chatPanel;const i=chatBtn.querySelector("i");i.hidden=!noLeidos;i.textContent=noLeidos>9?"9+":noLeidos;
+  }
+  function abrirChat(){
+    if(!on)return;noLeidos=0;
+    if(!chatPanel){
+      chatPanel=document.createElement("div");chatPanel.className="tf-chat";
+      chatPanel.innerHTML=`<div class="tf-chat-cab"><b>💬 Chat de la sala</b><button type="button" data-x="1" aria-label="Cerrar">✕</button></div>
+        <ul class="tf-chat-lista"></ul>
+        <div class="tf-chat-rapidos">${["😂","👍","👎","🤔","🔥","🙏"].map(e=>`<button type="button" data-e="${e}">${e}</button>`).join("")}</div>
+        <form class="tf-chat-escribir"><input maxlength="140" placeholder="Escribí algo…" autocomplete="off" enterkeyhint="send"><button type="submit">➤</button></form>`;
+      chatPanel.addEventListener("click",e=>{if(e.target.closest("[data-x]")){cerrarChat();actualizarChat();return;}const r=e.target.closest("[data-e]");if(r)enviarChat(r.dataset.e);});
+      chatPanel.querySelector("form").onsubmit=e=>{e.preventDefault();const inp=chatPanel.querySelector("input");enviarChat(inp.value);inp.value="";};
+      ["pointerdown","touchstart","keydown"].forEach(t=>chatPanel.addEventListener(t,ev=>ev.stopPropagation()));
+      document.body.appendChild(chatPanel);
+    }
+    pintarChat();actualizarChat();
+  }
+  function cerrarChat(){if(chatPanel){chatPanel.remove();chatPanel=null;}}
+  function pintarChat(){
+    if(!chatPanel||!on)return;const l=chatPanel.querySelector(".tf-chat-lista");
+    l.innerHTML=(on.chat||[]).map(c=>c.sis?`<li class="sis">${esc(c.txt)}</li>`:`<li class="${c.pid===on.pid?"mio":""}"><small>${esc(c.nombre)}</small>${esc(c.txt)}</li>`).join("")||`<li class="sis">Escriban acá para hablar las respuestas 👇</li>`;
+    l.scrollTop=l.scrollHeight;
+  }
+  function enviarChat(t){t=String(t||"").trim().slice(0,140);if(!t||!on)return;mandar({t:"chat",id:Math.random().toString(36).slice(2,9),nombre:yo(),txt:t});}
+  function anotarChat(txt){if(!on)return;on.chat=on.chat||[];on.chat.push({sis:true,txt});if(on.chat.length>80)on.chat.shift();if(chatPanel)pintarChat();}
   function manejar(m){
     if(!on)return;
+    if(m.t==="chat"){
+      on.chat=on.chat||[];if(on.chat.some(x=>x.id===m.id))return;
+      on.chat.push({id:m.id,pid:m.pid,nombre:String(m.nombre||"Jugador").slice(0,14),txt:String(m.txt||"").slice(0,140)});if(on.chat.length>80)on.chat.shift();
+      if(chatPanel)pintarChat();else if(m.pid!==on.pid){noLeidos++;if(typeof vibrar==="function")vibrar(20);actualizarChat();}
+      return;
+    }
     if(m.t==="hola"&&on.host){
       if(!on.jug.some(j=>j.pid===m.pid)){if(on.jug.length>=MAXJ)return;on.jug.push({pid:m.pid,nombre:String(m.nombre||"Jugador").slice(0,14)});}
       difundirSala();pintarJugadores();
@@ -272,6 +312,7 @@ const TuttiFrutti=(()=>{
     }else if(m.t==="voto"&&m.n===on.n){
       const k=m.a+"|"+m.i;on.votos=on.votos||{};const st=on.votos[k]=on.votos[k]||new Set();
       if(m.v)st.add(m.pid);else st.delete(m.pid);
+      if(m.v&&marca(m.a,m.i)){const qn=(on.jug.find(j=>j.pid===m.pid)||{}).nombre||"Alguien",au=(on.jug.find(j=>j.pid===m.a)||{}).nombre||"alguien";anotarChat("🙋 "+qn+" objetó «"+((on.resps[m.a]||[])[m.i]||"")+"» de "+au+" ("+(on.cats[m.i]||"")+")");}
       /* Le objetaron una respuesta mía: me pregunta si estoy de acuerdo. */
       if(m.v&&m.a===on.pid&&m.pid!==on.pid&&on.fase==="resultado"&&marca(m.a,m.i)&&!(on.acepta||{})[k]&&!(on.defiende||{})[k])objecion(m.pid,m.i);
       pintarVotos();
@@ -279,6 +320,7 @@ const TuttiFrutti=(()=>{
       const k=m.a+"|"+m.i;on.acepta=on.acepta||{};on.defiende=on.defiende||{};
       if(m.ok){on.acepta[k]=true;delete on.defiende[k];}else on.defiende[k]=true;
       const quien=(on.jug.find(j=>j.pid===m.a)||{}).nombre||"Alguien",pal=(on.resps[m.a]||[])[m.i]||"",cat=on.cats[m.i]||"";
+      anotarChat(m.ok?"👍 "+quien+" aceptó: «"+pal+"» no vale":"🗣️ "+quien+" defiende «"+pal+"» ("+cat+")");
       if(m.a!==on.pid&&typeof mostrarToast==="function")mostrarToast(m.ok?"👍":"🗣️",m.ok?quien+" aceptó: «"+pal+"» no vale.":quien+" defiende «"+pal+"» ("+cat+"). ¡Hablenlo! Para anularla tiene que votar ❌ la mayoría de todos, o que "+quien+" se convenza.",m.ok?"Objeción aceptada":"No está de acuerdo");
       pintarVotos();
     }else if(m.t==="final"){
@@ -484,6 +526,7 @@ const TuttiFrutti=(()=>{
       <button type="button" class="mg-principal" data-r="si">👍 Sí, no vale</button><button type="button" data-r="no">🗣️ No, la defiendo</button></div>`;
     c.addEventListener("click",ev=>{const r=ev.target.closest("button[data-r]");if(!r)return;c.remove();colaObj.shift();
       if(on&&on.fase==="resultado")mandar({t:"objecion",n:on.n,a:on.pid,i:o.i,ok:r.dataset.r==="si"});
+      if(r.dataset.r==="no")setTimeout(abrirChat,300);
       if(r.dataset.r==="no"&&typeof mostrarToast==="function")mostrarToast("🗣️","Avisamos a todos que la defendés. Hablenlo: si te convencen, tocá «👍 Acepto» en tu respuesta.","La defendés");
       setTimeout(mostrarObjecion,250);});
     document.body.appendChild(c);
