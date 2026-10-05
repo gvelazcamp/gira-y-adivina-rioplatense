@@ -1,12 +1,13 @@
 /* ¿Quién soy?: el clásico de la frente (tipo Heads Up). Se elige una
    categoría y el celular muestra una palabra gigante; los demás la
-   describen y el que tiene el celular en la frente adivina. Tocar la
-   mitad derecha = ¡Acerté!, la izquierda = Paso. Pantalla completa, sin
+   describen y el que tiene el celular en la frente adivina. Un toque en
+   cualquier lado = ¡Acerté!; dos toques rápidos = Paso (no hace falta
+   saber dónde tocar con el celular en la frente). Pantalla completa, sin
    apagarse y sin "atrás" (PantallaFija). Para cortar antes: ✕ Salir y confirmar.
    Récord en gya_quien_soy; Vistas evita repetir palabras entre días. */
 const QuienSoy=(()=>{
   const CLAVE="gya_quien_soy",TIEMPOS=[60,90,120];
-  let raiz=null,cat=null,tiempo=60,mejor=0,partidas=0,jugando=false,palabras=[],idx=0,resultados=[],fin=0,timer=0,cuenta=0,bloqueoToque=0;
+  let raiz=null,cat=null,tiempo=60,mejor=0,partidas=0,jugando=false,palabras=[],idx=0,resultados=[],fin=0,timer=0,cuenta=0,bloqueoToque=0,toqueEspera=0;
   function cargar(){try{const d=JSON.parse(localStorage.getItem(CLAVE));if(d&&typeof d==="object"){mejor=Number(d.mejor)||0;partidas=Number(d.partidas)||0;if(TIEMPOS.includes(d.tiempo))tiempo=d.tiempo;}}catch(e){}}
   function guardar(){try{localStorage.setItem(CLAVE,JSON.stringify({mejor,partidas,tiempo}));}catch(e){}}
   cargar();
@@ -22,7 +23,7 @@ const QuienSoy=(()=>{
     const cats=window.QUIEN_SOY_CATEGORIAS||[];
     raiz.innerHTML=`<div class="mg-panel qs-panel"><h3>¿Quién soy?</h3>
       <p>Ponete el celular en la frente. Los demás te describen la palabra sin decirla y vos adiviná.</p>
-      <p class="qns-nota">👉 Tocá la <b>derecha</b> si acertaste y la <b>izquierda</b> para pasar.</p>
+      <p class="qns-nota">👉 <b>Un toque</b> en cualquier lado si acertaste · <b>dos toques rápidos</b> para pasar.</p>
       <div class="qs-sub">⏱️ Tiempo</div>
       <div class="qns-rangos" id="qsTiempos">${TIEMPOS.map(t=>`<button type="button" data-t="${t}">${t} s</button>`).join("")}</div>
       <div class="qs-sub">Elegí la categoría para empezar</div>
@@ -47,14 +48,18 @@ const QuienSoy=(()=>{
     palabras=elegirPalabras(id);idx=0;resultados=[];
     raiz.innerHTML=`<div class="qns-pantalla qs-juego" id="qsJuego">
       <div class="qs-tope"><span id="qsCat">${cat.emoji} ${esc(cat.nombre)}</span><b id="qsReloj">${tiempo}</b><button type="button" class="pf-salir" id="qsSalir">✕ Salir</button></div>
-      <div class="qs-zona qs-paso" data-z="paso"><span>⟵ Paso</span></div><div class="qs-zona qs-ok" data-z="ok"><span>¡Acerté! ⟶</span></div>
+      <div class="qs-zona qs-toda"><span>👆 1 toque = ¡Acerté! · 👆👆 2 toques = Paso</span></div>
       <div class="qs-palabra" id="qsPalabra"></div>
       <div class="qns-pie" id="qsPie"></div>
     </div>`;
     PantallaFija.activar({orientacion:"landscape"});
     const juego=q("qsJuego");
     ["touchstart","touchmove","contextmenu","dblclick"].forEach(t=>juego.addEventListener(t,e=>{if(e.target.closest(".pf-salir"))return;if(e.cancelable)e.preventDefault();},{passive:false}));
-    raiz.querySelectorAll(".qs-zona").forEach(z=>z.addEventListener("pointerdown",e=>{e.preventDefault();responder(z.dataset.z==="ok");}));
+    /* Un toque = acierto (se espera un instante por si viene el segundo); dos = paso. */
+    raiz.querySelector(".qs-zona").addEventListener("pointerdown",e=>{e.preventDefault();
+      if(!jugando||Date.now()<bloqueoToque)return;
+      if(toqueEspera){clearTimeout(toqueEspera);toqueEspera=0;responder(false);return;}
+      toqueEspera=setTimeout(()=>{toqueEspera=0;responder(true);},320);});
     PantallaFija.confirmar(q("qsSalir"),terminar);
     /* Cuenta regresiva para llegar a ponérselo en la frente. */
     let n=3;jugando=false;const pal=q("qsPalabra");pal.classList.add("qns-cuenta");q("qsPie").textContent="Ponete el celular en la frente";q("qsPie").hidden=false;
@@ -76,7 +81,7 @@ const QuienSoy=(()=>{
   }
   function responder(ok){
     if(!jugando||Date.now()<bloqueoToque)return;
-    bloqueoToque=Date.now()+450;
+    bloqueoToque=Date.now()+250;
     resultados.push({w:palabras[idx],ok});Vistas.marcar("quien_soy_"+cat.id,palabras[idx]);idx++;
     const j=q("qsJuego");j.classList.remove("flash-ok","flash-paso");void j.offsetWidth;j.classList.add(ok?"flash-ok":"flash-paso");
     if(typeof bip==="function"){if(ok){bip(660,.15,"sine",.06);bip(990,.22,"triangle",.04);}}
@@ -84,7 +89,7 @@ const QuienSoy=(()=>{
     mostrar();
   }
   function terminar(){
-    clearTimeout(timer);clearTimeout(cuenta);
+    clearTimeout(timer);clearTimeout(cuenta);clearTimeout(toqueEspera);toqueEspera=0;
     const habiaJugado=jugando||resultados.length;jugando=false;PantallaFija.desactivar();
     if(!raiz)return;
     if(!habiaJugado){inicio();return;}
@@ -99,7 +104,7 @@ const QuienSoy=(()=>{
     q("qsOtra").onclick=()=>empezar(cat.id);q("qsCambiar").onclick=inicio;
     if(typeof bip==="function"){bip(523,.15);setTimeout(()=>bip(784,.25),160);}
   }
-  function salir(){clearTimeout(timer);clearTimeout(cuenta);if(raiz||jugando)PantallaFija.salir();jugando=false;if(raiz)raiz.remove();raiz=null;}
+  function salir(){clearTimeout(timer);clearTimeout(cuenta);clearTimeout(toqueEspera);toqueEspera=0;if(raiz||jugando)PantallaFija.salir();jugando=false;if(raiz)raiz.remove();raiz=null;}
   return{abrir,salir,mejorPuntaje:()=>{cargar();return mejor;}};
 })();
 window.QuienSoy=QuienSoy;
