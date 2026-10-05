@@ -54,7 +54,7 @@ const TuttiFrutti=(()=>{
   function estado(t){const e=raiz&&raiz.querySelector("#tfEstado");if(e)e.textContent=t;}
   function pantalla(html){raiz.innerHTML=`<div class="qns-pantalla imp-juego"><button type="button" class="pf-salir" id="tfSalir">✕ Salir</button>${html}</div>`;PantallaFija.confirmar(q("tfSalir"),configurar);}
   function parar(){jugando=false;clearTimeout(timer);}
-  function salir(){detenerMusica();parar();cerrarSala();if(raiz)PantallaFija.salir();if(raiz)raiz.remove();raiz=null;}
+  function salir(){if(typeof cerrarObjeciones==="function")cerrarObjeciones();detenerMusica();parar();cerrarSala();if(raiz)PantallaFija.salir();if(raiz)raiz.remove();raiz=null;}
   /* ===== Control de respuestas =====
      Listas propias (tutti-frutti-datos.js) para Nombre, Apellido, Lugar, Animal,
      Color, Fruta, Comida y Profesión; Wikipedia para Famoso, Marca y Película;
@@ -261,7 +261,7 @@ const TuttiFrutti=(()=>{
       if(eraHost){cerrarSala();if(raiz){configurar();estado("El anfitrión cerró la sala.");}return;}
       if(on.host)difundirSala();pintarJugadores();
     }else if(m.t==="ronda"){
-      on.n=m.n;on.rj=m.rj||on.rj;on.tot=m.tot||on.tot||RONDAS;on.letra=m.letra;on.cats=m.cats;on.tiempo=m.tiempo;on.fase="jugando";on.resps={};on.votos={};on.ganador=null;on.basta=null;on.mias=Array(on.cats.length).fill("");on.envie=false;
+      on.n=m.n;on.rj=m.rj||on.rj;on.tot=m.tot||on.tot||RONDAS;on.letra=m.letra;on.cats=m.cats;on.tiempo=m.tiempo;on.fase="jugando";on.resps={};on.votos={};on.acepta={};on.defiende={};on.ganador=null;on.basta=null;on.mias=Array(on.cats.length).fill("");on.envie=false;
       jugarOnline();
     }else if(m.t==="basta"&&m.n===on.n){
       if(!on.basta){on.basta=m.pid;if(on.host)on.ganador=m.pid;}
@@ -272,6 +272,14 @@ const TuttiFrutti=(()=>{
     }else if(m.t==="voto"&&m.n===on.n){
       const k=m.a+"|"+m.i;on.votos=on.votos||{};const st=on.votos[k]=on.votos[k]||new Set();
       if(m.v)st.add(m.pid);else st.delete(m.pid);
+      /* Le objetaron una respuesta mía: me pregunta si estoy de acuerdo. */
+      if(m.v&&m.a===on.pid&&m.pid!==on.pid&&on.fase==="resultado"&&marca(m.a,m.i)&&!(on.acepta||{})[k]&&!(on.defiende||{})[k])objecion(m.pid,m.i);
+      pintarVotos();
+    }else if(m.t==="objecion"&&m.n===on.n){
+      const k=m.a+"|"+m.i;on.acepta=on.acepta||{};on.defiende=on.defiende||{};
+      if(m.ok){on.acepta[k]=true;delete on.defiende[k];}else on.defiende[k]=true;
+      const quien=(on.jug.find(j=>j.pid===m.a)||{}).nombre||"Alguien",pal=(on.resps[m.a]||[])[m.i]||"",cat=on.cats[m.i]||"";
+      if(m.a!==on.pid&&typeof mostrarToast==="function")mostrarToast(m.ok?"👍":"🗣️",m.ok?quien+" aceptó: «"+pal+"» no vale.":quien+" defiende «"+pal+"» ("+cat+"). ¡Hablenlo! Para anularla tiene que votar ❌ la mayoría de todos, o que "+quien+" se convenza.",m.ok?"Objeción aceptada":"No está de acuerdo");
       pintarVotos();
     }else if(m.t==="final"){
       on.ganadas=m.ganadas||on.ganadas;on.rg=m.rg||{};on.jug=m.jug||on.jug;on.tot=m.tot||on.tot;mostrarFinal();
@@ -281,6 +289,7 @@ const TuttiFrutti=(()=>{
   }
   /* Ronda: animación de la letra y después una categoría por vez. */
   function jugarOnline(){
+    cerrarObjeciones();
     PantallaFija.activar();
     pantalla(`<div class="imp-centro"><div class="imp-quien">🎲 Ronda ${on.rj||1} de ${on.tot||RONDAS} · sorteando la letra…</div><div class="tf-letra" id="tfLetra">?</div></div>`);
     let k=0;const giro=()=>{if(!raiz||!on)return;const el=q("tfLetra");if(!el)return;
@@ -373,7 +382,11 @@ const TuttiFrutti=(()=>{
   const votosDe=(a,i)=>{const st=on.votos&&on.votos[a+"|"+i];return st?st.size:0;};
   const marca=(a,i)=>!!(on.marcas&&on.marcas[a]&&on.marcas[a][i]);
   /* ¿La respuesta vale? ✓ y no anulada, o ⚠️ pero salvada por votos. */
-  function vale(a,i){const r=(on.resps[a]||[])[i];if(!r)return false;return marca(a,i)?votosDe(a,i)<necesarios():votosDe(a,i)>=necesarios();}
+  function vale(a,i){const r=(on.resps[a]||[])[i];if(!r)return false;if(on.acepta&&on.acepta[a+"|"+i])return false;
+    /* Si el autor la defiende, para anularla hace falta la mayoría de TODOS
+       (él cuenta como voto a favor): con 2 jugadores no se puede anular sola. */
+    if(marca(a,i)&&on.defiende&&on.defiende[a+"|"+i])return votosDe(a,i)<Math.floor(on.jug.length/2)+1;
+    return marca(a,i)?votosDe(a,i)<necesarios():votosDe(a,i)>=necesarios();}
   function puntosRonda(){
     const pts={};on.jug.forEach(j=>pts[j.pid]=Array(on.cats.length).fill(0));
     on.cats.forEach((c,i)=>{
@@ -400,6 +413,7 @@ const TuttiFrutti=(()=>{
       ${on.host?((on.rj||1)>=(on.tot||RONDAS)?`<button type="button" class="mg-principal" id="tfOtra">🏆 Ver ganador de la partida</button>`:`<button type="button" class="mg-principal" id="tfOtra">🎲 Siguiente ronda (${(on.rj||1)+1} de ${on.tot||RONDAS})</button>`):`<p class="imp-ayuda">Esperando al anfitrión…</p>`}</div>`);
     raiz.querySelector(".tf-resps").onclick=e=>{
       const f=e.target.closest(".tf-fila");if(!f||!f.dataset.a)return;const a=f.dataset.a,i=Number(f.dataset.i);
+      if(e.target.closest(".tf-ceder")){mandar({t:"objecion",n:on.n,a:on.pid,i,ok:true});return;}
       if(e.target.closest(".tf-votar")){const st=on.votos[a+"|"+i];const ya=!!(st&&st.has(on.pid));mandar({t:"voto",n:on.n,a,i,v:!ya});return;}
       if(e.target.closest("[data-ver]"))explicar(on.cats[i],(on.resps[a]||[])[i]);
     };
@@ -452,6 +466,28 @@ const TuttiFrutti=(()=>{
     sugerir(cat,valor).then(sg=>{const t=p.querySelector("#tfPopTxt");if(!t)return;
       t.innerHTML=sg?`Lo correcto es <b>${esc(sg)}</b>.<br><small>Por eso vale 0: estaba mal escrita.</small>`:`No la encontré como ${esc(NOM_CAT[cat]||cat)} y no hay una parecida.<br><small>Por eso vale 0.</small>`;});
   }
+  /* Objeción: al autor le aparece quién la objetó y elige si está de acuerdo
+     (no vale) o la defiende (lo hablan y decide el voto de la mayoría). */
+  const colaObj=[];
+  function objecion(quien,i){
+    if(colaObj.some(o=>o.i===i))return;colaObj.push({quien,i});if(colaObj.length===1)mostrarObjecion();
+  }
+  function cerrarObjeciones(){colaObj.length=0;document.querySelectorAll(".tf-objecion").forEach(x=>x.remove());}
+  function mostrarObjecion(){
+    const o=colaObj[0];if(!o||!on||on.fase!=="resultado"){colaObj.length=0;return;}
+    const k=on.pid+"|"+o.i;if((on.acepta||{})[k]||(on.defiende||{})[k]){colaObj.shift();mostrarObjecion();return;}
+    const nom=(on.jug.find(j=>j.pid===o.quien)||{}).nombre||"Alguien",pal=(on.resps[on.pid]||[])[o.i]||"",cat=on.cats[o.i]||"";
+    if(typeof vibrar==="function")vibrar([40,60,40]);
+    const c=document.createElement("div");c.className="pf-confirmar tf-objecion";
+    c.innerHTML=`<div class="mg-panel pf-caja"><div class="bb-icono">🙋</div><h3>${esc(nom)} objetó tu respuesta</h3>
+      <p class="tf-obj-pal"><small>${esc(cat)}</small><b>${esc(pal)}</b></p><p class="imp-ayuda">¿Estás de acuerdo en que no vale?</p>
+      <button type="button" class="mg-principal" data-r="si">👍 Sí, no vale</button><button type="button" data-r="no">🗣️ No, la defiendo</button></div>`;
+    c.addEventListener("click",ev=>{const r=ev.target.closest("button[data-r]");if(!r)return;c.remove();colaObj.shift();
+      if(on&&on.fase==="resultado")mandar({t:"objecion",n:on.n,a:on.pid,i:o.i,ok:r.dataset.r==="si"});
+      if(r.dataset.r==="no"&&typeof mostrarToast==="function")mostrarToast("🗣️","Avisamos a todos que la defendés. Hablenlo: si te convencen, tocá «👍 Acepto» en tu respuesta.","La defendés");
+      setTimeout(mostrarObjecion,250);});
+    document.body.appendChild(c);
+  }
   function pintarVotos(){
     if(!raiz||!on||on.fase!=="resultado")return;
     const pr=puntosRonda();
@@ -459,7 +495,11 @@ const TuttiFrutti=(()=>{
       b.querySelector(".tf-pts").textContent=v?"+"+pr[a][i]:"0";
       const bt=b.querySelector(".tf-votar");if(bt)bt.textContent=(ok?"❌":"✔")+(n?" "+n:"");
       if(bt)bt.classList.toggle("activo",mio);
-      b.classList.toggle("tf-anulada",!!v&&!vale(a,i));});
+      b.classList.toggle("tf-anulada",!!v&&!vale(a,i));b.classList.toggle("tf-defendida",!!(on.defiende&&on.defiende[k]));
+      /* En mi respuesta defendida: botón para aceptar la objeción después de hablarlo. */
+      if(a===on.pid&&v){const ult=b.lastElementChild;const ceder=on.defiende&&on.defiende[k]&&n>0;
+        if(ceder&&!b.querySelector(".tf-ceder")){const x=document.createElement("button");x.type="button";x.className="tf-ceder";x.textContent="👍 Acepto";ult.replaceWith(x);}
+        else if(!ceder&&b.querySelector(".tf-ceder")){const sp=document.createElement("span");b.querySelector(".tf-ceder").replaceWith(sp);}}});
     raiz.querySelectorAll("[data-sub]").forEach(el=>{el.textContent="  +"+sumar(pr[el.dataset.sub]||[])+" pts";});
     const orden=on.jug.map(j=>[j,sumar(pr[j.pid]),(on.ganadas[j.pid]||0)+sumar(pr[j.pid])]).sort((a,b)=>b[2]-a[2]);
     const mejor=on.jug.map(j=>[j,sumar(pr[j.pid])]).sort((a,b)=>b[1]-a[1]);
@@ -470,7 +510,7 @@ const TuttiFrutti=(()=>{
   }
   /* Final del mejor de 3: gana el que ganó más rondas; si empatan, el de más puntos. */
   function mostrarFinal(){
-    detenerMusica();
+    detenerMusica();cerrarObjeciones();
     if(!raiz||!on)return;on.fase="final";
     const orden=on.jug.map(j=>[j,on.rg[j.pid]||0,on.ganadas[j.pid]||0]).sort((a,b)=>b[1]-a[1]||b[2]-a[2]);
     const top=orden[0],ganan=orden.filter(o=>o[1]===top[1]&&o[2]===top[2]).map(o=>o[0].nombre);
