@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Memoria en cadena">
+  <defs><linearGradient id="fondo" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#1E9B7A"/><stop offset="1" stop-color="#0E1A24"/></linearGradient></defs>
+  <rect width="512" height="512" rx="112" fill="url(#fondo)"/>
+  <text x="256" y="300" text-anchor="middle" font-size="200" font-family="Noto Color Emoji,Apple Color Emoji,Segoe UI Emoji,sans-serif">🧠</text>
+  <g fill="none" stroke="#FFD65C" stroke-width="22"><rect x="70" y="350" width="130" height="70" rx="35"/><rect x="190" y="350" width="130" height="70" rx="35"/><rect x="310" y="350" width="130" height="70" rx="35"/></g>
+</svg>
