@@ -82,10 +82,10 @@ Los 18 juegos siguientes aparecen en `EXTENSIONES`. En esta revisión los flags 
 | Ahorcado Rioplatense | `ahorcado-rioplatense.js` | La ruleta selecciona categoría y se adivina la palabra. |
 | Contra Reloj | `contra-reloj-rioplatense.js` | Previa, 4+ jugadores; describir 5 palabras; ronda de 30 s y previa de 3 s. Módulos separados para online y voz. |
 | Impostor | `impostor.js` | Previa, 3+ jugadores; una persona no recibe la misma palabra. |
-| Mímica rioplatense | `mimica.js` | Previa, 4+ jugadores; actuar para que el equipo adivine. |
-| Canta la Canción | `canta-la-cancion.js` | Previa; cantar una canción que contenga la palabra. |
-| Tutti Frutti | `tutti-frutti.js` | Previa con celulares y sala; 3 rondas, tiempos configurables de 60/90/120 s, categorías y validación de respuestas. |
-| ¿Quién soy? | `quien-soy.js` | Previa; celular en la frente y adivinar la palabra. |
+| Mímica rioplatense | `mimica.js` | Previa, 4+ jugadores; actuar para que el equipo adivine. Dificultades Fácil +1 / Media +2 / Difícil +3 elegidas en el menú (una o varias) y frases al azar de esas. |
+| Canta la Canción | `canta-la-cancion.js` | Previa; cantar una canción que contenga la palabra. Se graba el canto y un jurado (los demás) vota 👍/👎; sin voz a texto. |
+| Tutti Frutti | `tutti-frutti.js` | Previa con celulares y sala (hasta 10 jugadores, `MAXJ`); 3 rondas fijas, tiempos 60/90/120 s, categorías, validación de respuestas, objeciones con respuesta del autor, chat de la sala y música. |
+| ¿Quién soy? | `quien-soy.js` | Previa; celular en la frente y adivinar la palabra. Tiempos 30/40/50 s; un toque en cualquier lado = acerté, dos toques = paso. |
 | Bomba | `bomba.js` | Previa; decir una palabra y pasar el celular antes de la explosión. |
 | ¿Qué número soy? | `que-numero-soy.js` | Previa; número grande con pantalla fija. |
 | Moon Tap | `moon-tap.js` | Acierto por timing sobre un aro; está integrado al lobby. |
@@ -381,3 +381,42 @@ Cantidades de archivos, sin contar directorios. Inventario de presencia, no veri
 | `store-screenshots` | 5 |
 | `tests` | 14 |
 
+
+## Registro de cambios
+
+```text
+Fecha: 04-05/10/2026 (sesión Claude Code, PRs #825–#843)
+Pedido de Gonzalo: mejorar juegos de previa.
+Cambios confirmados (mergeados en main):
+- Mímica (#825–#827): diseño de teatro, equipos con color, metas 10/20/30, dificultades Fácil/Media/Difícil
+  (MIMICA_FRASES / MIMICA_MEDIA / MIMICA_DIFICIL en mimica-datos.js) elegidas en el menú; frases al azar.
+  Difícil = cosas concretas que se adivinan pero cuesta actuar (Gonzalo rechazó situaciones largas/abstractas).
+- Canta la Canción (#828–#836): se canta hasta el final o "Terminé"; jurado vota 👍/👎 (mayoría, empate vale);
+  se graba el canto para "Escuchar de nuevo". Se probó voz a texto (SpeechRecognition y Whisper en el
+  navegador) y se descartó: en Android grabación y reconocimiento no comparten el micrófono y Whisper tiny
+  entendía mal el canto. Decisión de Gonzalo: solo audio.
+- Tutti Frutti: partida termina en la 3ª ronda sin "ronda más" (#837); música assets/audio/tutti-frutti-musica.mp3
+  (Denis Pavlov Music, Pixabay) mientras se escribe (#840); Wikipedia con control de tipo para marca, famoso,
+  película, animal, comida, color y profesión + apellidos raros (#841); objeción: el autor elige "Sí, no vale" o
+  "No, la defiendo" (defendida necesita mayoría de TODOS para anularse; botón "👍 Acepto") (#842);
+  chat de la sala fuera de la ronda (#843).
+- ¿Quién soy? (#838–#839): 1 toque = acerté, 2 toques = paso; tiempos 30/40/50 s.
+Comprobación: Playwright con MQTT/micrófono/Wikipedia simulados; auditor de palabras 0 errores.
+Pendiente o limitación: validación de Wikipedia no probada contra la Wikipedia real (sin acceso desde el entorno).
+```
+
+```text
+Guardado sin publicar (Gonzalo: "dejalo guardado en git para después, no lo publiques")
+Rama: claude/guardado-cadena-trabalenguas
+Contenido: dos juegos de previa terminados — Memoria en cadena (memoria-cadena.js) y Trabalenguas contra reloj
+(trabalenguas.js + trabalenguas-datos.js, con grabación y jurado). Memoria en cadena probado; Trabalenguas sin probar.
+Publicar solo si Gonzalo lo pide.
+```
+
+```text
+Aprendizajes de trabajo
+- Los scripts de Playwright deben guardar capturas con ruta absoluta en el scratchpad: con ruta relativa
+  quedaban en la raíz del repo y se colaron en commits (se borraron en #836 y #840).
+- Gonzalo no quiere insignias "Nuevo" en el lobby.
+- Juegos de un solo celular: sin sonido al pasar; sonido de error (sonidoErrorExt) solo cuando hace falta.
+```

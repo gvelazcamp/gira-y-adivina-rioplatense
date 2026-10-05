@@ -2,6 +2,9 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Cerebro del proyecto (leer siempre)
+Antes de cualquier trabajo, leer `CEREBRO_DEL_PROYECTO.md` (memoria del proyecto que dejó Gonzalo) y respetar sus reglas. Después de cada cambio confirmado (mergeado), agregar una entrada en su sección "Registro de cambios" con la plantilla que trae, y corregir los hechos que hayan quedado viejos. Las cosas que Gonzalo pida guardar "para después" se anotan ahí como pendientes, no se implementan.
+
 ## Overview
 
 "Girá y Adiviná Rioplatense" is a Río de la Plata–themed wheel-of-fortune / word-guessing trivia game. It is a **single-file vanilla HTML/CSS/JS app**: almost all game logic, styles, and markup live in `index.html` (thousands of lines, inline `<style>` and `<script>`). There is no build tooling, no bundler, no package.json, no framework, and no test suite.
