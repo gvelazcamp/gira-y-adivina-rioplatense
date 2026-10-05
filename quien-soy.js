@@ -6,8 +6,8 @@
    apagarse y sin "atrás" (PantallaFija). Para cortar antes: ✕ Salir y confirmar.
    Récord en gya_quien_soy; Vistas evita repetir palabras entre días. */
 const QuienSoy=(()=>{
-  const CLAVE="gya_quien_soy",TIEMPOS=[60,90,120];
-  let raiz=null,cat=null,tiempo=60,mejor=0,partidas=0,jugando=false,palabras=[],idx=0,resultados=[],fin=0,timer=0,cuenta=0,bloqueoToque=0,toqueEspera=0;
+  const CLAVE="gya_quien_soy",TIEMPOS=[30,40,50];
+  let raiz=null,cat=null,tiempo=40,mejor=0,partidas=0,jugando=false,palabras=[],idx=0,resultados=[],fin=0,timer=0,cuenta=0,bloqueoToque=0,toqueEspera=0;
   function cargar(){try{const d=JSON.parse(localStorage.getItem(CLAVE));if(d&&typeof d==="object"){mejor=Number(d.mejor)||0;partidas=Number(d.partidas)||0;if(TIEMPOS.includes(d.tiempo))tiempo=d.tiempo;}}catch(e){}}
   function guardar(){try{localStorage.setItem(CLAVE,JSON.stringify({mejor,partidas,tiempo}));}catch(e){}}
   cargar();
