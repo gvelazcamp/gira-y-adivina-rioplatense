@@ -138,6 +138,9 @@ const TuttiFrutti=(()=>{
     const v=NORM(valor);if(!v)return null;
     const k=CLAVE_CAT[cat];
     if(cat==="Marca"&&marcasSet().has(v))return true;
+    /* Lo que usan los bots siempre es válido (si no, un bot "perdía" por una
+       falla de internet al revisar, como pasó con Nestlé). */
+    if(k==="wiki"||k==="dic"){const B=window.TUTTI_BOTS||{},l=cat==="Famoso"?B.famoso:cat==="Marca"?B.marca:cat==="Cosa"?B.cosa:B.pelicula;if(String(l||"").split(",").some(x=>NORM(x)===v))return true;}
     if(k==="wiki"){const w=await enWikiTipo(v,TIPO_CAT[cat]);return w===null?enWikipedia(v):w;}
     if(k==="dic")return enDiccionario(v);
     if(k&&variantes(v).some(x=>setDe(k).has(x)))return true;
