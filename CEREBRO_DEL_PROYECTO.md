@@ -445,3 +445,14 @@ puerto-madryn/muelle y ushuaia/tren (nevado, Gonzalo lo aprobó aunque la base n
 Limitación: varias tienen letras inventadas grabadas en el borde dorado; el muelle de Madryn sigue con un pie raro.
 Avisar el costo a Gonzalo antes de generar en lote.
 ```
+
+```text
+Fecha: 07/10/2026
+Pedido de Gonzalo: Tutti Frutti "Jugar online" contra bots, como el Jugar online de la rueda.
+Cambios: botón "🌐 Jugar online" en tutti-frutti.js. Simula una sala sin red (on.bots=true, on.cli=null):
+matchmaking falso con NOMBRES_ONLINE/AVATARES_* de index.html, 2 o 3 bots con habilidad (completa cada
+categoría con prob .75-.97) y velocidad (cuándo canta BASTA). Palabras: TUTTI_LISTAS y TUTTI_BOTS (nuevo, en
+tutti-frutti-datos.js: famoso, marca, película, cosa). Al cortar, cada bot entrega lo que llegó a escribir;
+6% de error de tipeo. Contra bots alcanza el voto del jugador para anular (necesarios()=1); chat oculto.
+Comprobación: Playwright, 3 rondas + final, BASTA de un bot y corte por tiempo, sin errores.
+```
