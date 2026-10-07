@@ -456,3 +456,10 @@ tutti-frutti-datos.js: famoso, marca, película, cosa). Al cortar, cada bot entr
 6% de error de tipeo. Contra bots alcanza el voto del jugador para anular (necesarios()=1); chat oculto.
 Comprobación: Playwright, 3 rondas + final, BASTA de un bot y corte por tiempo, sin errores.
 ```
+
+```text
+Fecha: 07/10/2026 — Tutti Frutti online: popup con 3 tipos de rivales (MODOS_BOT): Normal 8-12 s por
+categoría, Difícil 5-7 s, Persona mayor 15-25 s (nombres de BOT_MAYORES). +40% en categorías difíciles
+(Famoso, Marca, Película, Cosa, Profesión) y letras U/I/J/V. Cada bot escribe categoría por categoría; al cortar
+entrega solo las que terminó. Error de tipeo 5% y solo en palabras de más de 6 letras.
+```

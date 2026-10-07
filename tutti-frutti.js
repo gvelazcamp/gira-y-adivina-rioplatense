@@ -50,13 +50,13 @@ const TuttiFrutti=(()=>{
       <p class="imp-ayuda" id="tfEstado" role="status"></p></div></div>`;
     ajustesEventos();
     q("tfCrear").onclick=crearSala;
-    q("tfBots").onclick=jugarBots;
+    q("tfBots").onclick=elegirModoOnline;
     q("tfUnirse").onclick=()=>{const c=(q("tfCodigo").value||"").toUpperCase().trim();if(/^[A-HJ-NP-Z2-9]{4}$/.test(c))unirse(c);else estado("Escribí el código de 4 letras que te pasaron.");};
   }
   function estado(t){const e=raiz&&raiz.querySelector("#tfEstado");if(e)e.textContent=t;}
   function pantalla(html){raiz.innerHTML=`<div class="qns-pantalla imp-juego"><button type="button" class="pf-salir" id="tfSalir">✕ Salir</button>${html}</div>`;PantallaFija.confirmar(q("tfSalir"),configurar);actualizarChat();}
   function parar(){jugando=false;clearTimeout(timer);}
-  function salir(){if(typeof cerrarObjeciones==="function")cerrarObjeciones();detenerMusica();parar();cerrarSala();if(raiz)PantallaFija.salir();if(raiz)raiz.remove();raiz=null;}
+  function salir(){document.querySelectorAll(".tf-modos").forEach(x=>x.remove());if(typeof cerrarObjeciones==="function")cerrarObjeciones();detenerMusica();parar();cerrarSala();if(raiz)PantallaFija.salir();if(raiz)raiz.remove();raiz=null;}
   /* ===== Control de respuestas =====
      Listas propias (tutti-frutti-datos.js) para Nombre, Apellido, Lugar, Animal,
      Color, Fruta, Comida y Profesión; Wikipedia para Famoso, Marca y Película;
@@ -253,23 +253,46 @@ const TuttiFrutti=(()=>{
      BASTA). A veces se equivocan al tipear. No hay red: mandar() solo llama
      a manejar() porque on.cli es null. */
   const BOT_NOMBRES=["Fede_UY","Male98","Tomi_ARG","CamiMdeo","PatoCanario","Vale_Punta","Juli.Salto","Nacho_10","Sofi.Cba","Lucho_MVD"];
+  const BOT_MAYORES=[{n:"Abuelo_Tito",g:"m"},{n:"Marta1958",g:"f"},{n:"Don_Carlos",g:"m"},{n:"Nelly.Salto",g:"f"},{n:"Raúl_Pocitos",g:"m"},{n:"Chela_MVD",g:"f"},{n:"Oscar65",g:"m"},{n:"Beba.Minas",g:"f"}];
+  /* Velocidad humana por categoría (pensar + escribir en el celular):
+     normal 8-12 s, difícil (rivales rápidos) 5-7 s, persona mayor 15-25 s.
+     Las categorías y letras difíciles llevan un 40% más. "hab" es la
+     probabilidad de saber una palabra para cada categoría. */
+  const MODOS_BOT={
+    normal:{nombre:"🙂 Normal",desc:"Rivales a velocidad normal",seg:[8,12],hab:[.85,.95]},
+    dificil:{nombre:"⚡ Difícil",desc:"Rivales rápidos que cantan BASTA enseguida",seg:[5,7],hab:[.93,.99]},
+    mayor:{nombre:"👴 Persona mayor",desc:"Rivales tranquilos, sin apuro",seg:[15,25],hab:[.7,.88]}};
+  const CATS_DIFICILES=["Famoso","Marca","Película o serie","Cosa","Profesión"],LETRAS_DIFICILES="UIJV";
+  const azar=(a,b)=>a+Math.random()*(b-a);
   const avatarImg=a=>a?`<img class="tf-av" src="assets/avatars/${esc(a)}.webp" alt="">`:`<span class="tf-av">🙂</span>`;
-  function elegirBots(n){
-    let pool=(typeof NOMBRES_ONLINE!=="undefined"?NOMBRES_ONLINE.slice():BOT_NOMBRES.map(x=>({n:x,g:Math.random()<.5?"m":"f"})));
+  function elegirBots(n,modo){
+    const M=MODOS_BOT[modo]||MODOS_BOT.normal;
+    let pool=modo==="mayor"?BOT_MAYORES.slice():(typeof NOMBRES_ONLINE!=="undefined"?NOMBRES_ONLINE.slice():BOT_NOMBRES.map(x=>({n:x,g:Math.random()<.5?"m":"f"})));
     pool=pool.filter(p=>p.n.toLowerCase()!==yo().toLowerCase());
     const out=[];
     while(out.length<n&&pool.length){
       const p=pool.splice(Math.floor(Math.random()*pool.length),1)[0];
       const av=p.g==="m"?(typeof AVATARES_M!=="undefined"?AVATARES_M:[]):(typeof AVATARES_F!=="undefined"?AVATARES_F:[]);
-      out.push({nombre:String(p.n).slice(0,14),avatar:av.length?av[Math.floor(Math.random()*av.length)]:null,hab:.75+Math.random()*.22,vel:.45+Math.random()*.4});
+      out.push({nombre:String(p.n).slice(0,14),avatar:av.length?av[Math.floor(Math.random()*av.length)]:null,hab:azar(M.hab[0],M.hab[1]),seg:M.seg});
     }
     return out;
   }
-  function jugarBots(){
-    nuevaSala(true,"BOTS");on.bots=true;
-    const bots=elegirBots(2+Math.floor(Math.random()*2)),miAv=typeof perfil!=="undefined"&&perfil&&perfil.avatar;
+  /* Popup de "Jugar online": elegir contra qué tipo de rivales. */
+  function elegirModoOnline(){
+    if(document.querySelector(".tf-modos"))return;
+    const c=document.createElement("div");c.className="pf-confirmar tf-modos";
+    c.innerHTML=`<div class="mg-panel pf-caja"><h3>🌐 Jugar online</h3><p class="imp-ayuda">¿Contra qué rivales querés jugar?</p>
+      ${Object.entries(MODOS_BOT).map(([k,m])=>`<button type="button" class="tf-modo" data-m="${k}"><b>${m.nombre}</b><small>${m.desc}</small></button>`).join("")}
+      <button type="button" data-x="1">Cancelar</button></div>`;
+    c.addEventListener("click",e=>{const b=e.target.closest("button");if(!b&&e.target!==c)return;c.remove();if(b&&b.dataset.m)jugarBots(b.dataset.m);});
+    document.body.appendChild(c);
+  }
+  function jugarBots(modo){
+    nuevaSala(true,"BOTS");on.bots=true;on.modoBots=modo;
+    const bots=elegirBots(2+Math.floor(Math.random()*2),modo),miAv=typeof perfil!=="undefined"&&perfil&&perfil.avatar;
     PantallaFija.activar();
     pantalla(`<div class="imp-centro"><div class="buscando-spinner"></div><div class="imp-quien" id="tfBusca">🌐 Buscando jugadores online…</div>
+      <p class="imp-ayuda">${esc((MODOS_BOT[modo]||MODOS_BOT.normal).nombre)}</p>
       <ul class="tf-online" id="tfOnline"><li>${avatarImg(miAv)}<b>${esc(yo())} (vos)</b><em>✔ listo</em></li></ul></div>`);
     let t=1200;
     bots.forEach((b,k)=>{t+=700+Math.random()*1100;on.timers.push(setTimeout(()=>{
@@ -291,25 +314,28 @@ const TuttiFrutti=(()=>{
     let w=opc[Math.floor(Math.random()*opc.length)];
     if(k&&k!=="wiki")w=w.split(" ").map(x=>x.charAt(0).toUpperCase()+x.slice(1)).join(" ");
     /* De vez en cuando, error de tipeo (como una persona apurada). */
-    if(Math.random()<.06&&w.length>4){const i=1+Math.floor(Math.random()*(w.length-2));w=w.slice(0,i)+w.slice(i+1);}
+    if(Math.random()<.05&&w.length>6){const i=1+Math.floor(Math.random()*(w.length-2));w=w.slice(0,i)+w.slice(i+1);}
     return w;
   }
+  /* Cada bot "escribe" categoría por categoría: se calcula cuándo termina
+     cada una (acumulado). Si completa todo antes del tiempo, canta BASTA. */
   function planBots(){
-    const n=on.n,T=on.tiempo*1000,t0=Date.now()+2200;
+    const n=on.n,T=on.tiempo*1000,t0=Date.now()+2200,letraDif=LETRAS_DIFICILES.includes(on.letra);
     on.botT0=t0;on.botResp={};
     on.jug.filter(j=>j.bot).forEach(j=>{
       const r=on.cats.map(c=>respuestaBot(c,on.letra,j.bot.hab));on.botResp[j.pid]=r;
-      j.bot.fin=t0+T*(j.bot.vel+Math.random()*.35);
-      if(r.every(Boolean)&&j.bot.fin<t0+T-1500)on.timers.push(setTimeout(()=>{if(on&&on.n===n&&on.fase==="jugando"&&!on.basta)manejar({t:"basta",n,pid:j.pid});},j.bot.fin-Date.now()));
+      let acc=t0;j.bot.listas=r.map((w,i)=>{let d=azar(j.bot.seg[0],j.bot.seg[1])*1000;
+        if(CATS_DIFICILES.includes(on.cats[i]))d*=1.4;if(letraDif)d*=1.4;if(!w)d*=.6;acc+=d;return acc;});
+      j.bot.fin=acc;
+      if(r.every(Boolean)&&j.bot.fin<t0+T)on.timers.push(setTimeout(()=>{if(on&&on.n===n&&on.fase==="jugando"&&!on.basta)manejar({t:"basta",n,pid:j.pid});},j.bot.fin-Date.now()));
     });
   }
-  /* Al cortar la ronda, cada bot entrega lo que llegó a escribir. */
+  /* Al cortar la ronda, cada bot entrega solo lo que llegó a escribir. */
   function respuestasBots(){
     const n=on.n,ahora=Date.now();
     on.jug.filter(j=>j.bot).forEach((j,k)=>{
-      const r=(on.botResp&&on.botResp[j.pid])||[];
-      const frac=j.bot.fin>on.botT0?Math.min(1,Math.max(0,(ahora-on.botT0)/(j.bot.fin-on.botT0))):1;
-      const hechas=Math.round(frac*r.length),parcial=r.map((w,i)=>i<hechas?w:"");
+      const r=(on.botResp&&on.botResp[j.pid])||[],listas=j.bot.listas||[];
+      const parcial=r.map((w,i)=>listas[i]!=null&&listas[i]<=ahora?w:"");
       on.timers.push(setTimeout(()=>{if(on&&on.n===n)manejar({t:"resp",n,pid:j.pid,r:parcial});},400+k*350));
     });
   }
