@@ -420,3 +420,10 @@ Aprendizajes de trabajo
 - Gonzalo no quiere insignias "Nuevo" en el lobby.
 - Juegos de un solo celular: sin sonido al pasar; sonido de error (sonidoErrorExt) solo cuando hace falta.
 ```
+
+```text
+Fecha: 07/10/2026
+Pedido de Gonzalo: archivo para la API key de Ideogram (generar imágenes desde Python en su PC).
+Archivos: .env.example (plantilla sin key) y .gitignore (agrega .env).
+Decisión: la key real va solo en ".env" en la PC de Gonzalo; nunca en el repo ni en el juego (GitHub Pages es público).
+```
