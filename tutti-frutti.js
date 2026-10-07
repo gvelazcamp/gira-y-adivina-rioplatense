@@ -44,11 +44,13 @@ const TuttiFrutti=(()=>{
     raiz.innerHTML=`<div class="mg-panel imp-panel"><h3>🍓 Tutti Frutti</h3>
       <p>Se juegan <b>3 rondas</b> y gana el mejor de 3. El primero que completa todo canta <b>BASTA</b>. Puntos: <b>10</b> única, <b>5</b> repetida, <b>20</b> si sos el único.</p>
       ${ajustesHtml()}
-      <div id="tfZona"><button type="button" class="mg-principal" id="tfCrear">📱 Crear sala (cada uno con su celular)</button>
+      <div id="tfZona"><button type="button" class="mg-principal" id="tfBots">🌐 Jugar online</button>
+      <button type="button" class="mg-principal tf-sec" id="tfCrear">📱 Crear sala con amigos (cada uno con su celular)</button>
       <div class="tf-unirse"><input id="tfCodigo" maxlength="4" placeholder="CÓDIGO" autocomplete="off" autocapitalize="characters"><button type="button" id="tfUnirse">🔑 Unirme</button></div>
       <p class="imp-ayuda" id="tfEstado" role="status"></p></div></div>`;
     ajustesEventos();
     q("tfCrear").onclick=crearSala;
+    q("tfBots").onclick=jugarBots;
     q("tfUnirse").onclick=()=>{const c=(q("tfCodigo").value||"").toUpperCase().trim();if(/^[A-HJ-NP-Z2-9]{4}$/.test(c))unirse(c);else estado("Escribí el código de 4 letras que te pasaron.");};
   }
   function estado(t){const e=raiz&&raiz.querySelector("#tfEstado");if(e)e.textContent=t;}
@@ -244,6 +246,73 @@ const TuttiFrutti=(()=>{
     const ul=raiz&&raiz.querySelector("#tfJugs");if(!ul||!on)return;
     ul.innerHTML=on.jug.map(j=>`<li><span>${esc(j.nombre)}${j.pid===on.pid?" (vos)":""}</span><b>${on.ganadas[j.pid]?on.ganadas[j.pid]+" pts":""}</b></li>`).join("");
   }
+  /* ===== Jugar online (contra jugadores bot, como "Jugar online" de la rueda) =====
+     Se simula una sala: el jugador es el anfitrión y los bots responden con
+     palabras de las listas (TUTTI_LISTAS / TUTTI_BOTS), cada uno con su
+     habilidad (cuántas categorías completa) y su velocidad (cuándo canta
+     BASTA). A veces se equivocan al tipear. No hay red: mandar() solo llama
+     a manejar() porque on.cli es null. */
+  const BOT_NOMBRES=["Fede_UY","Male98","Tomi_ARG","CamiMdeo","PatoCanario","Vale_Punta","Juli.Salto","Nacho_10","Sofi.Cba","Lucho_MVD"];
+  const avatarImg=a=>a?`<img class="tf-av" src="assets/avatars/${esc(a)}.webp" alt="">`:`<span class="tf-av">🙂</span>`;
+  function elegirBots(n){
+    let pool=(typeof NOMBRES_ONLINE!=="undefined"?NOMBRES_ONLINE.slice():BOT_NOMBRES.map(x=>({n:x,g:Math.random()<.5?"m":"f"})));
+    pool=pool.filter(p=>p.n.toLowerCase()!==yo().toLowerCase());
+    const out=[];
+    while(out.length<n&&pool.length){
+      const p=pool.splice(Math.floor(Math.random()*pool.length),1)[0];
+      const av=p.g==="m"?(typeof AVATARES_M!=="undefined"?AVATARES_M:[]):(typeof AVATARES_F!=="undefined"?AVATARES_F:[]);
+      out.push({nombre:String(p.n).slice(0,14),avatar:av.length?av[Math.floor(Math.random()*av.length)]:null,hab:.75+Math.random()*.22,vel:.45+Math.random()*.4});
+    }
+    return out;
+  }
+  function jugarBots(){
+    nuevaSala(true,"BOTS");on.bots=true;
+    const bots=elegirBots(2+Math.floor(Math.random()*2)),miAv=typeof perfil!=="undefined"&&perfil&&perfil.avatar;
+    PantallaFija.activar();
+    pantalla(`<div class="imp-centro"><div class="buscando-spinner"></div><div class="imp-quien" id="tfBusca">🌐 Buscando jugadores online…</div>
+      <ul class="tf-online" id="tfOnline"><li>${avatarImg(miAv)}<b>${esc(yo())} (vos)</b><em>✔ listo</em></li></ul></div>`);
+    let t=1200;
+    bots.forEach((b,k)=>{t+=700+Math.random()*1100;on.timers.push(setTimeout(()=>{
+      if(!on||!on.bots)return;const pid="bot"+k+Math.random().toString(36).slice(2,7);
+      on.jug.push({pid,nombre:b.nombre,bot:b});
+      const ul=raiz&&raiz.querySelector("#tfOnline");if(ul)ul.insertAdjacentHTML("beforeend",`<li class="tf-entra">${avatarImg(b.avatar)}<b>${esc(b.nombre)}</b><em>✔ listo</em></li>`);
+      if(typeof bip==="function")bip(660+k*80,.08,"sine",.04);
+    },t));});
+    on.timers.push(setTimeout(()=>{if(!on||!on.bots)return;const e=raiz&&raiz.querySelector("#tfBusca");if(e)e.textContent="✅ ¡Sala completa! Arranca la partida…";
+      on.timers.push(setTimeout(()=>{if(on&&on.bots&&on.fase==="lobby")nuevaRonda();},1400));},t+700));
+  }
+  function respuestaBot(cat,letra,hab){
+    if(Math.random()>hab)return "";
+    const k=CLAVE_CAT[cat],B=window.TUTTI_BOTS||{},L=window.TUTTI_LISTAS||{};
+    const src=k==="wiki"?(cat==="Famoso"?B.famoso:cat==="Marca"?B.marca:B.pelicula):k==="dic"?B.cosa:L[k];
+    const l=String(letra).toLowerCase();
+    const opc=String(src||"").split(",").map(x=>x.trim()).filter(x=>x.length>1&&NORM(x)[0]===l);
+    if(!opc.length)return "";
+    let w=opc[Math.floor(Math.random()*opc.length)];
+    if(k&&k!=="wiki")w=w.split(" ").map(x=>x.charAt(0).toUpperCase()+x.slice(1)).join(" ");
+    /* De vez en cuando, error de tipeo (como una persona apurada). */
+    if(Math.random()<.06&&w.length>4){const i=1+Math.floor(Math.random()*(w.length-2));w=w.slice(0,i)+w.slice(i+1);}
+    return w;
+  }
+  function planBots(){
+    const n=on.n,T=on.tiempo*1000,t0=Date.now()+2200;
+    on.botT0=t0;on.botResp={};
+    on.jug.filter(j=>j.bot).forEach(j=>{
+      const r=on.cats.map(c=>respuestaBot(c,on.letra,j.bot.hab));on.botResp[j.pid]=r;
+      j.bot.fin=t0+T*(j.bot.vel+Math.random()*.35);
+      if(r.every(Boolean)&&j.bot.fin<t0+T-1500)on.timers.push(setTimeout(()=>{if(on&&on.n===n&&on.fase==="jugando"&&!on.basta)manejar({t:"basta",n,pid:j.pid});},j.bot.fin-Date.now()));
+    });
+  }
+  /* Al cortar la ronda, cada bot entrega lo que llegó a escribir. */
+  function respuestasBots(){
+    const n=on.n,ahora=Date.now();
+    on.jug.filter(j=>j.bot).forEach((j,k)=>{
+      const r=(on.botResp&&on.botResp[j.pid])||[];
+      const frac=j.bot.fin>on.botT0?Math.min(1,Math.max(0,(ahora-on.botT0)/(j.bot.fin-on.botT0))):1;
+      const hechas=Math.round(frac*r.length),parcial=r.map((w,i)=>i<hechas?w:"");
+      on.timers.push(setTimeout(()=>{if(on&&on.n===n)manejar({t:"resp",n,pid:j.pid,r:parcial});},400+k*350));
+    });
+  }
   function nuevaRonda(){
     let libres=LETRAS.filter(l=>!on.usadas.includes(l));if(!libres.length){on.usadas=[];libres=LETRAS.slice();}
     const l=libres[Math.floor(Math.random()*libres.length)];on.usadas.push(l);
@@ -254,7 +323,7 @@ const TuttiFrutti=(()=>{
      la misma sala ({t:"chat"}); las objeciones y defensas se anotan solas. */
   let chatBtn=null,chatPanel=null,noLeidos=0;
   function actualizarChat(){
-    const ver=!!(on&&raiz&&on.fase!=="jugando");
+    const ver=!!(on&&raiz&&!on.bots&&on.fase!=="jugando");
     if(!ver){if(chatBtn)chatBtn.hidden=true;cerrarChat();if(!on)noLeidos=0;return;}
     if(!chatBtn){chatBtn=document.createElement("button");chatBtn.type="button";chatBtn.className="tf-chat-btn";chatBtn.setAttribute("aria-label","Chat");chatBtn.innerHTML='💬<i hidden></i>';chatBtn.onclick=abrirChat;document.body.appendChild(chatBtn);}
     chatBtn.hidden=!!chatPanel;const i=chatBtn.querySelector("i");i.hidden=!noLeidos;i.textContent=noLeidos>9?"9+":noLeidos;
@@ -303,6 +372,7 @@ const TuttiFrutti=(()=>{
     }else if(m.t==="ronda"){
       on.n=m.n;on.rj=m.rj||on.rj;on.tot=m.tot||on.tot||RONDAS;on.letra=m.letra;on.cats=m.cats;on.tiempo=m.tiempo;on.fase="jugando";on.resps={};on.votos={};on.acepta={};on.defiende={};on.ganador=null;on.basta=null;on.mias=Array(on.cats.length).fill("");on.envie=false;
       jugarOnline();
+      if(on.bots)planBots();
     }else if(m.t==="basta"&&m.n===on.n){
       if(!on.basta){on.basta=m.pid;if(on.host)on.ganador=m.pid;}
       cortarRonda(m.pid);
@@ -402,6 +472,7 @@ const TuttiFrutti=(()=>{
       ${on.host?`<button type="button" class="bb-pasar" id="tfYa">▶ Continuar</button>`:""}</div>`);
     const ya=raiz&&raiz.querySelector("#tfYa");if(ya)ya.onclick=()=>{if(on&&on.fase==="cortada")publicarResultado();};
     if(!on.envie){on.envie=true;mandar({t:"resp",n:on.n,r:on.mias});}
+    if(on.bots)respuestasBots();
     if(on.host)on.timers.push(setTimeout(()=>{if(on&&on.fase==="cortada")publicarResultado();},2500));
   }
   /* Puntos como el Tutti Frutti de verdad, por categoría: 10 si nadie más
@@ -420,7 +491,8 @@ const TuttiFrutti=(()=>{
     mandar({t:"resultado",n:on.n,resps:on.resps,ganador:on.ganador,ganadas:on.ganadas,jug:on.jug,marcas});
     mostrarResultado();
   }
-  const necesarios=()=>Math.max(1,Math.floor((on.jug.length-1)/2)+1);
+  /* Contra bots, el único que vota es el jugador: con su voto alcanza. */
+  const necesarios=()=>on.bots?1:Math.max(1,Math.floor((on.jug.length-1)/2)+1);
   const votosDe=(a,i)=>{const st=on.votos&&on.votos[a+"|"+i];return st?st.size:0;};
   const marca=(a,i)=>!!(on.marcas&&on.marcas[a]&&on.marcas[a][i]);
   /* ¿La respuesta vale? ✓ y no anulada, o ⚠️ pero salvada por votos. */
