@@ -438,7 +438,10 @@ assets/collectibles/PROMPT-argentina.md + 3 coleccionables existentes como style
 Gonzalo aprobó el estilo ("seguí así"), aunque es más limpio que el de ChatGPT.
 Ideogram: key como "secreto de red" del entorno (header Api-Key para api.ideogram.ai) y dominio ideogram.ai permitido
 para bajar las imágenes. Nunca en el repo.
-Pendiente: Puerto Iguazú, Gualeguaychú y San Martín de los Andes sin colección (se acabó el saldo de Ideogram).
-Para rehacer cuando haya saldo: rosario/parana (isla flotante), rosario/puente y puerto-madryn/muelle (base cuadrada);
-varias tienen letras inventadas grabadas en el borde dorado.
+Actualización (mismo día, +3 USD de saldo, modo DEFAULT ≈ 6 centavos por imagen; QUALITY ≈ 9-10 centavos):
+se completaron Puerto Iguazú, Gualeguaychú y San Martín de los Andes (14 colecciones de Argentina nuevas en total,
+todas las ciudades del mapa argentino tienen colección); se rehicieron rosario/parana, rosario/puente,
+puerto-madryn/muelle y ushuaia/tren (nevado, Gonzalo lo aprobó aunque la base no es dorada).
+Limitación: varias tienen letras inventadas grabadas en el borde dorado; el muelle de Madryn sigue con un pie raro.
+Avisar el costo a Gonzalo antes de generar en lote.
 ```
