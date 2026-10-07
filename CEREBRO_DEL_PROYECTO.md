@@ -427,3 +427,18 @@ Pedido de Gonzalo: archivo para la API key de Ideogram (generar imágenes desde 
 Archivos: .env.example (plantilla sin key) y .gitignore (agrega .env).
 Decisión: la key real va solo en ".env" en la PC de Gonzalo; nunca en el repo ni en el juego (GitHub Pages es público).
 ```
+
+```text
+Fecha: 07/10/2026
+Pedido de Gonzalo: completar las colecciones de Argentina que faltaban, mismo sistema que Uruguay (4 por ciudad).
+Cambios: 11 colecciones nuevas en COLECCIONES (la-plata, rosario, jujuy, ushuaia, puerto-madryn, villa-carlos-paz,
+posadas, santa-fe, purmamarca, san-miguel-de-tucuman, corrientes). Temas = los 4 sellos del pasaporte de cada ciudad
+(como Buenos Aires). Imágenes generadas con la API de Ideogram v3 (generate-transparent, QUALITY, prompt de
+assets/collectibles/PROMPT-argentina.md + 3 coleccionables existentes como style_reference), recortadas a 700x700 webp.
+Gonzalo aprobó el estilo ("seguí así"), aunque es más limpio que el de ChatGPT.
+Ideogram: key como "secreto de red" del entorno (header Api-Key para api.ideogram.ai) y dominio ideogram.ai permitido
+para bajar las imágenes. Nunca en el repo.
+Pendiente: Puerto Iguazú, Gualeguaychú y San Martín de los Andes sin colección (se acabó el saldo de Ideogram).
+Para rehacer cuando haya saldo: rosario/parana (isla flotante), rosario/puente y puerto-madryn/muelle (base cuadrada);
+varias tienen letras inventadas grabadas en el borde dorado.
+```
