@@ -613,8 +613,13 @@ const TuttiFrutti=(()=>{
     p.innerHTML=`<div class="tf-pop-caja"><div class="tf-pop-cab">⚠️ ${esc(cat)}</div><div class="tf-pop-mal">«${esc(valor)}»</div><div class="tf-pop-txt" id="tfPopTxt">Buscando la forma correcta…</div><button type="button" class="tf-pop-ok">Entendido</button></div>`;
     p.onclick=e=>{if(e.target===p||e.target.closest(".tf-pop-ok"))p.remove();};
     document.body.appendChild(p);
-    sugerir(cat,valor).then(sg=>{const t=p.querySelector("#tfPopTxt");if(!t)return;
-      t.innerHTML=sg?`Lo correcto es <b>${esc(sg)}</b>.<br><small>Por eso vale 0: estaba mal escrita.</small>`:`No la encontré como ${esc(NOM_CAT[cat]||cat)} y no hay una parecida.<br><small>Por eso vale 0.</small>`;});
+    /* Si la "corrección" es la misma palabra (solo cambia un tilde), no está
+       mal escrita: está bien, pero no es de esa categoría (Iglú no es marca). */
+    sugerir(cat,valor).then(async sg=>{const t=p.querySelector("#tfPopTxt");if(!t)return;
+      const nc=esc(NOM_CAT[cat]||cat);
+      if(sg&&NORM(sg)!==NORM(valor)){t.innerHTML=`Lo correcto es <b>${esc(sg)}</b>.<br><small>Por eso vale 0: estaba mal escrita.</small>`;return;}
+      const existe=await enDiccionario(NORM(valor)).catch(()=>null);
+      t.innerHTML=existe||sg?`<b>${esc(sg||valor)}</b> está bien escrita, pero no la encontré como ${nc}.<br><small>Por eso vale 0. Si los demás están de acuerdo en que vale, la pueden salvar con ✔.</small>`:`No la encontré como ${nc} y no hay una parecida.<br><small>Por eso vale 0.</small>`;});
   }
   /* Objeción: al autor le aparece quién la objetó y elige si está de acuerdo
      (no vale) o la defiende (lo hablan y decide el voto de la mayoría). */
@@ -679,6 +684,6 @@ const TuttiFrutti=(()=>{
     Extensiones.abrirJuego("tutti-frutti");
     setTimeout(()=>{if(raiz)unirse(sala,de);},300);
   }
-  return{abrir,salir,abrirInvitacion,_revisar:(c,v)=>revisar(c,v),_sugerir:(c,v)=>sugerir(c,v),enter:()=>{try{confirmarCampo();}catch(e){}},partidasJugadas:()=>{cargar();return partidas;}};
+  return{abrir,salir,abrirInvitacion,_revisar:(c,v)=>revisar(c,v),_explicar:(c,v)=>explicar(c,v),_sugerir:(c,v)=>sugerir(c,v),enter:()=>{try{confirmarCampo();}catch(e){}},partidasJugadas:()=>{cargar();return partidas;}};
 })();
 window.TuttiFrutti=TuttiFrutti;
