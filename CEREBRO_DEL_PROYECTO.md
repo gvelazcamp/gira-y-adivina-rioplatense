@@ -463,3 +463,10 @@ categoría, Difícil 5-7 s, Persona mayor 15-25 s (nombres de BOT_MAYORES). +40%
 (Famoso, Marca, Película, Cosa, Profesión) y letras U/I/J/V. Cada bot escribe categoría por categoría; al cortar
 entrega solo las que terminó. Error de tipeo 5% y solo en palabras de más de 6 letras.
 ```
+
+```text
+Fecha: 07/10/2026 — Tutti Frutti: "ver error" sugería cualquier cosa en Marca/Famoso/Película (tomaba el primer
+resultado de Wikipedia: Rebook → "Somos calentura"). Ahora sugiere de listas propias (TUTTI_MARCAS nuevo, ~170
+marcas, y TUTTI_BOTS) y de Wikipedia solo si el título se parece de verdad (misma distancia fonética que el resto).
+TUTTI_MARCAS también acepta directo en Marca.
+```

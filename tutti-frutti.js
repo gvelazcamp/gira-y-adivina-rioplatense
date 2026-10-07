@@ -137,6 +137,7 @@ const TuttiFrutti=(()=>{
   async function revisar(cat,valor){
     const v=NORM(valor);if(!v)return null;
     const k=CLAVE_CAT[cat];
+    if(cat==="Marca"&&marcasSet().has(v))return true;
     if(k==="wiki"){const w=await enWikiTipo(v,TIPO_CAT[cat]);return w===null?enWikipedia(v):w;}
     if(k==="dic")return enDiccionario(v);
     if(k&&variantes(v).some(x=>setDe(k).has(x)))return true;
@@ -572,14 +573,27 @@ const TuttiFrutti=(()=>{
     }
   }
   /* Mini popup: por qué está mal y cuál es la forma correcta (solo informa). */
+  /* Distancia "como suena" (ll=y, v=b, z/ce/ci=s, h muda, c/qu=k, ge/gi=j)
+     y desempate por letras: Martiyo → Martillo, Milaneza → Milanesa. */
+  const fon=t=>t.replace(/h/g,"").replace(/ll/g,"y").replace(/v/g,"b").replace(/z/g,"s").replace(/c([ei])/g,"s$1").replace(/qu/g,"k").replace(/c/g,"k").replace(/g([ei])/g,"j$1").replace(/x/g,"ks").replace(/(.)\1+/g,"$1");
+  let _marcas=null;const marcasSet=()=>_marcas||(_marcas=new Set(String(window.TUTTI_MARCAS||"").split(",").map(NORM).filter(Boolean)));
   const lev=(a,b)=>{const m=a.length,n=b.length;if(Math.abs(m-n)>3)return 99;let prev=Array.from({length:n+1},(_,k)=>k);for(let x=1;x<=m;x++){const cur=[x];for(let y=1;y<=n;y++)cur[y]=Math.min(prev[y]+1,cur[y-1]+1,prev[y-1]+(a[x-1]===b[y-1]?0:1));prev=cur;}return prev[n];};
   const lindo=t=>t.replace(/\b\w/g,c=>c.toUpperCase());
   async function sugerir(cat,valor){
     const v=NORM(valor),k=CLAVE_CAT[cat];if(!v)return null;
+    const fv=fon(v),tope=v.length<=4?1:v.length<=8?2:3;
+    /* La más parecida "como suena" de una lista (null si ninguna se parece). */
+    const masParecida=lista=>{let mejor=null,puntaje=1e9;for(const c0 of lista){const c=NORM(c0);if(!c||c===v||Math.abs(c.length-v.length)>tope+1)continue;const df=lev(fv,fon(c));if(df>tope)continue;const p=df*10+lev(v,c);if(p<puntaje){puntaje=p;mejor=c0;}}return mejor;};
     if(k==="wiki"){
-      try{const r=await fetch("https://es.wikipedia.org/w/api.php?action=query&list=search&srlimit=1&srinfo=suggestion&format=json&origin=*&srsearch="+encodeURIComponent(valor));const d=await r.json();
-        const t=d&&d.query&&d.query.search&&d.query.search[0]&&d.query.search[0].title;if(t)return t.replace(/\s*\(.*?\)\s*$/,"");
-        const sg=d&&d.query&&d.query.searchinfo&&d.query.searchinfo.suggestion;return sg?lindo(sg):null;}catch(e){return null;}
+      /* Primero las listas propias (Rebook → Reebok); después Wikipedia, pero
+         solo si el título se parece de verdad a lo escrito (antes devolvía el
+         primer resultado aunque no tuviera nada que ver). */
+      const B=window.TUTTI_BOTS||{},propia=cat==="Marca"?[...marcasSet()].concat(String(B.marca||"").split(",")):cat==="Famoso"?String(B.famoso||"").split(","):String(B.pelicula||"").split(",");
+      const loc=masParecida(propia);if(loc)return lindo(loc);
+      try{const r=await fetch("https://es.wikipedia.org/w/api.php?action=query&list=search&srlimit=8&srinfo=suggestion&format=json&origin=*&srsearch="+encodeURIComponent(valor));const d=await r.json();
+        const titulos=((d&&d.query&&d.query.search)||[]).map(x=>x.title.replace(/\s*\(.*?\)\s*$/,""));
+        const sg=d&&d.query&&d.query.searchinfo&&d.query.searchinfo.suggestion;if(sg)titulos.push(sg);
+        const w=masParecida(titulos);return w?lindo(w):null;}catch(e){return null;}
     }
     let cand=[];
     if(k&&k!=="dic")cand=[...setDe(k)].concat(k==="comida"?[...setDe("fruta")]:[]);
@@ -588,10 +602,6 @@ const TuttiFrutti=(()=>{
       const ALT={g:["j"],j:["g"],b:["v"],v:["b"],s:["c","z"],c:["s","z","k"],z:["s","c"],y:["l"],l:["y"],h:[v[1]||""],k:["c","q"],q:["c","k"]};
       for(const l of [v[0]].concat(ALT[v[0]]||[]).filter(Boolean)){const d=await cargarDic(l);if(d)cand=cand.concat([...d]);}
     }
-    /* Distancia "como suena" (ll=y, v=b, z/ce/ci=s, h muda, c/qu=k, ge/gi=j)
-       y desempate por letras: Martiyo → Martillo, Milaneza → Milanesa. */
-    const fon=t=>t.replace(/h/g,"").replace(/ll/g,"y").replace(/v/g,"b").replace(/z/g,"s").replace(/c([ei])/g,"s$1").replace(/qu/g,"k").replace(/c/g,"k").replace(/g([ei])/g,"j$1").replace(/x/g,"ks").replace(/(.)\1+/g,"$1");
-    const fv=fon(v),tope=v.length<=4?1:v.length<=8?2:3;
     let mejor=null,puntaje=1e9;
     for(const c of cand){if(c===v||Math.abs(c.length-v.length)>tope+1)continue;const df=lev(fv,fon(c));if(df>tope)continue;const p=df*10+lev(v,c);if(p<puntaje){puntaje=p;mejor=c;if(p<=1)break;}}
     return mejor?lindo(mejor):null;
