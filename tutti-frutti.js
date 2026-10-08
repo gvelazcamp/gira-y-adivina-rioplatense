@@ -141,6 +141,7 @@ const TuttiFrutti=(()=>{
     const v=NORM(valor);if(!v)return null;
     const k=CLAVE_CAT[cat];
     if(cat==="Marca"&&marcasSet().has(v))return true;
+    if(cat==="Película o serie"&&(pelisSet().has(v)||pelisSet().has(v.replace(/^(el|la|los|las) /,""))))return true;
     /* Lo que usan los bots siempre es válido (si no, un bot "perdía" por una
        falla de internet al revisar, como pasó con Nestlé). */
     if(k==="wiki"||k==="dic"){const B=window.TUTTI_BOTS||{},l=cat==="Famoso"?B.famoso:cat==="Marca"?B.marca:cat==="Cosa"?B.cosa:B.pelicula;if(String(l||"").split(",").some(x=>NORM(x)===v))return true;}
@@ -167,6 +168,7 @@ const TuttiFrutti=(()=>{
   function enListaPropia(cat,valor){
     const v=NORM(valor),k=CLAVE_CAT[cat];if(!v)return false;
     if(cat==="Marca"&&marcasSet().has(v))return true;
+    if(cat==="Película o serie"&&(pelisSet().has(v)||pelisSet().has(v.replace(/^(el|la|los|las) /,""))))return true;
     if(k==="wiki"||k==="dic"){const B=window.TUTTI_BOTS||{},l=cat==="Famoso"?B.famoso:cat==="Marca"?B.marca:cat==="Cosa"?B.cosa:B.pelicula;return String(l||"").split(",").some(x=>NORM(x)===v);}
     return !!k&&(variantes(v).some(x=>setDe(k).has(x))||(k==="comida"&&variantes(v).some(x=>setDe("fruta").has(x))));
   }
@@ -595,7 +597,8 @@ const TuttiFrutti=(()=>{
   /* Distancia "como suena" (ll=y, v=b, z/ce/ci=s, h muda, c/qu=k, ge/gi=j)
      y desempate por letras: Martiyo → Martillo, Milaneza → Milanesa. */
   const fon=t=>t.replace(/h/g,"").replace(/ll/g,"y").replace(/v/g,"b").replace(/z/g,"s").replace(/c([ei])/g,"s$1").replace(/qu/g,"k").replace(/c/g,"k").replace(/g([ei])/g,"j$1").replace(/x/g,"ks").replace(/(.)\1+/g,"$1");
-  let _marcas=null;const marcasSet=()=>_marcas||(_marcas=new Set(String(window.TUTTI_MARCAS||"").split(",").map(NORM).filter(Boolean)));
+  let _marcas=null,_pelis=null;const marcasSet=()=>_marcas||(_marcas=new Set(String(window.TUTTI_MARCAS||"").split(",").map(NORM).filter(Boolean)));
+  const pelisSet=()=>_pelis||(_pelis=new Set(String(window.TUTTI_PELICULAS||"").split(",").map(NORM).filter(Boolean)));
   const lev=(a,b)=>{const m=a.length,n=b.length;if(Math.abs(m-n)>3)return 99;let prev=Array.from({length:n+1},(_,k)=>k);for(let x=1;x<=m;x++){const cur=[x];for(let y=1;y<=n;y++)cur[y]=Math.min(prev[y]+1,cur[y-1]+1,prev[y-1]+(a[x-1]===b[y-1]?0:1));prev=cur;}return prev[n];};
   const lindo=t=>t.replace(/\b\w/g,c=>c.toUpperCase());
   async function sugerir(cat,valor){
@@ -607,7 +610,7 @@ const TuttiFrutti=(()=>{
       /* Primero las listas propias (Rebook → Reebok); después Wikipedia, pero
          solo si el título se parece de verdad a lo escrito (antes devolvía el
          primer resultado aunque no tuviera nada que ver). */
-      const B=window.TUTTI_BOTS||{},propia=cat==="Marca"?[...marcasSet()].concat(String(B.marca||"").split(",")):cat==="Famoso"?String(B.famoso||"").split(","):String(B.pelicula||"").split(",");
+      const B=window.TUTTI_BOTS||{},propia=cat==="Marca"?[...marcasSet()].concat(String(B.marca||"").split(",")):cat==="Famoso"?String(B.famoso||"").split(","):String(B.pelicula||"").split(",").concat([...pelisSet()]);
       const loc=masParecida(propia);if(loc)return lindo(loc);
       try{const r=await fetch("https://es.wikipedia.org/w/api.php?action=query&list=search&srlimit=8&srinfo=suggestion&format=json&origin=*&srsearch="+encodeURIComponent(valor));const d=await r.json();
         const titulos=((d&&d.query&&d.query.search)||[]).map(x=>x.title.replace(/\s*\(.*?\)\s*$/,""));
