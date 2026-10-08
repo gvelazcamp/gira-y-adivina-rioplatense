@@ -425,7 +425,7 @@ const TuttiFrutti=(()=>{
       if(eraHost){cerrarSala();if(raiz){configurar();estado("El anfitrión cerró la sala.");}return;}
       if(on.host)difundirSala();pintarJugadores();
     }else if(m.t==="ronda"){
-      on.n=m.n;on.rj=m.rj||on.rj;on.tot=m.tot||on.tot||RONDAS;on.letra=m.letra;on.cats=m.cats;on.tiempo=m.tiempo;on.fase="jugando";on.resps={};on.votos={};on.acepta={};on.defiende={};on.ganador=null;on.basta=null;on.mias=Array(on.cats.length).fill("");on.envie=false;
+      on.n=m.n;on.rj=m.rj||on.rj;on.tot=m.tot||on.tot||RONDAS;on.letra=m.letra;on.cats=m.cats;on.tiempo=m.tiempo;on.fase="jugando";on.resps={};on.votos={};on.extra={};on.acepta={};on.defiende={};on.ganador=null;on.basta=null;on.mias=Array(on.cats.length).fill("");on.envie=false;
       jugarOnline();
       if(on.bots)planBots();
     }else if(m.t==="basta"&&m.n===on.n){
@@ -434,6 +434,8 @@ const TuttiFrutti=(()=>{
     }else if(m.t==="resp"&&m.n===on.n){
       on.resps[m.pid]=Array.isArray(m.r)?m.r.map(x=>String(x||"").slice(0,30)):[];
       if(on.host&&on.jug.every(j=>on.resps[j.pid]))publicarResultado();
+    }else if(m.t==="extra"&&m.n===on.n){
+      on.extra=on.extra||{};on.extra[m.a+"|"+m.i]=Math.max(0,Math.min(20,Number(m.p)||0));pintarVotos();
     }else if(m.t==="voto"&&m.n===on.n){
       const k=m.a+"|"+m.i;on.votos=on.votos||{};const st=on.votos[k]=on.votos[k]||new Set();
       if(m.v)st.add(m.pid);else st.delete(m.pid);
@@ -566,23 +568,29 @@ const TuttiFrutti=(()=>{
         pts[j.pid][i]=validos.length===1?20:iguales?5:10;
       });
     });
+    /* ⚠️ dudosas: los puntos que le pusieron a mano con el sumador (de 5 en 5, hasta 20). */
+    on.jug.forEach(j=>on.cats.forEach((c,i)=>{const x=extraDe(j.pid,i);if(x!=null&&(on.resps[j.pid]||[])[i]&&!marca(j.pid,i))pts[j.pid][i]=x;}));
     return pts;
   }
   const sumar=a=>a.reduce((x,y)=>x+y,0);
+  const extraDe=(a,i)=>{const x=on.extra&&on.extra[a+"|"+i];return typeof x==="number"?x:null;};
+  /* El sumador lo usan los demás (no el autor); contra bots, vos con todas. */
+  const puedeSumar=a=>on.bots||a!==on.pid;
   function mostrarResultado(){
     detenerMusica();
     if(!raiz||!on)return;on.fase="resultado";on.votos=on.votos||{};on.marcas=on.marcas||{};
     const g=on.ganador;
     const filas=on.jug.map(j=>{const r=on.resps[j.pid]||[];return`<li class="tf-jug${j.pid===g?" tf-gano":""}"><div class="tf-jug-cab"><b>${esc(j.nombre)}${j.pid===on.pid?" (vos)":""}</b>${j.pid===g?`<span class="tf-basta">🏁 BASTA</span>`:""}<span class="tf-sub" data-sub="${j.pid}"></span></div>
-      <div class="tf-tabla"><div class="tf-fila tf-titulos"><span>Categoría</span><span>Palabra</span><span>Pts</span><span></span></div>${on.cats.map((c,i)=>{const v=r[i]||"";const ok=marca(j.pid,i);return`<div class="tf-fila" data-a="${j.pid}" data-i="${i}"><span class="tf-cat">${esc(c)}</span><span class="tf-pal${v&&!ok?" tf-mal":""}" ${v&&!ok?`data-ver="1"`:""}>${esc(v||"—")}${v?(ok?" <i class=\"tf-marca ok\">✓</i>":" <i class=\"tf-marca mal\">⚠️</i><span class=\"tf-ver\">👆 ver error</span>"):""}</span><b class="tf-pts"></b>${v&&j.pid!==on.pid?`<button type="button" class="tf-votar" aria-label="Votar"></button>`:"<span></span>"}</div>`;}).join("")}</div></li>`;}).join("");
+      <div class="tf-tabla"><div class="tf-fila tf-titulos"><span>Categoría</span><span>Palabra</span><span>Pts</span><span></span></div>${on.cats.map((c,i)=>{const v=r[i]||"";const ok=marca(j.pid,i);return`<div class="tf-fila" data-a="${j.pid}" data-i="${i}"><span class="tf-cat">${esc(c)}</span><span class="tf-pal${v&&!ok?" tf-mal":""}" ${v&&!ok?`data-ver="1"`:""}>${esc(v||"—")}${v?(ok?" <i class=\"tf-marca ok\">✓</i>":" <i class=\"tf-marca mal\">⚠️</i><span class=\"tf-ver\">👆 ver error</span>"+(puedeSumar(j.pid)?"<span class=\"tf-sum\"><button type=\"button\" data-d=\"-5\" aria-label=\"Restar\">−</button><b>0</b><button type=\"button\" data-d=\"5\" aria-label=\"Sumar\">+</button></span>":"")):""}</span><b class="tf-pts"></b>${v&&ok&&j.pid!==on.pid?`<button type="button" class="tf-votar" aria-label="Votar"></button>`:"<span></span>"}</div>`;}).join("")}</div></li>`;}).join("");
     pantalla(`<div class="mg-panel imp-panel imp-fin"><h3 id="tfTitulo"></h3>
-      <p class="imp-ayuda">Letra <b>${on.letra}</b> · <b>10</b> única · <b>5</b> repetida · <b>20</b> si sos el único · <b>0</b> si no vale.<br>⚠️ = mal escrita (vale 0): tocá <b class="tf-ver-ej">👆 ver error</b> para ver lo correcto. Con el botón de la derecha votás: ❌ anula, ✔ perdona.</p>
+      <p class="imp-ayuda">Letra <b>${on.letra}</b> · <b>10</b> única · <b>5</b> repetida · <b>20</b> si sos el único · <b>0</b> si no vale.<br>⚠️ = dudosa (vale 0): tocá <b class="tf-ver-ej">👆 ver error</b> para ver por qué. Si en realidad está bien, sumale puntos con ➕ (de 5 en 5, hasta 20). Con ❌ anulás una respuesta.</p>
       <ul class="tf-resps">${filas}</ul>
       <div class="qs-sub">🏆 Puntos (con esta ronda)</div><ul class="imp-tabla" id="tfTabla"></ul>
       ${on.host?((on.rj||1)>=(on.tot||RONDAS)?`<button type="button" class="mg-principal" id="tfOtra">🏆 Ver ganador de la partida</button>`:`<button type="button" class="mg-principal" id="tfOtra">🎲 Siguiente ronda (${(on.rj||1)+1} de ${on.tot||RONDAS})</button>`):`<p class="imp-ayuda">Esperando al anfitrión…</p>`}</div>`);
     raiz.querySelector(".tf-resps").onclick=e=>{
       const f=e.target.closest(".tf-fila");if(!f||!f.dataset.a)return;const a=f.dataset.a,i=Number(f.dataset.i);
       if(e.target.closest(".tf-ceder")){mandar({t:"objecion",n:on.n,a:on.pid,i,ok:true});return;}
+      const sb=e.target.closest(".tf-sum button");if(sb){if(puedeSumar(a))mandar({t:"extra",n:on.n,a,i,p:Math.max(0,Math.min(20,(extraDe(a,i)||0)+Number(sb.dataset.d)))});return;}
       if(e.target.closest(".tf-votar")){const st=on.votos[a+"|"+i];const ya=!!(st&&st.has(on.pid));mandar({t:"voto",n:on.n,a,i,v:!ya});return;}
       if(e.target.closest("[data-ver]"))explicar(on.cats[i],(on.resps[a]||[])[i]);
     };
@@ -687,9 +695,10 @@ const TuttiFrutti=(()=>{
       b.querySelector(".tf-pts").textContent=v?"+"+pr[a][i]:"0";
       const bt=b.querySelector(".tf-votar");if(bt)bt.textContent=(ok?"❌":"✔")+(n?" "+n:"");
       if(bt)bt.classList.toggle("activo",mio);
-      b.classList.toggle("tf-anulada",!!v&&!vale(a,i));
-      /* ⚠️ salvada con ✔: se ve en verde (antes seguía con ⚠️ aunque sumaba). */
-      const salv=!!v&&!ok&&vale(a,i);b.classList.toggle("tf-salvada",salv);const mk=b.querySelector(".tf-marca.mal");if(mk)mk.textContent=salv?"✓":"⚠️";b.classList.toggle("tf-defendida",!!(on.defiende&&on.defiende[k]));
+      const ex=extraDe(a,i),sm=b.querySelector(".tf-sum b");if(sm)sm.textContent=ex||0;
+      b.classList.toggle("tf-anulada",!!v&&!vale(a,i)&&!(ex>0));
+      /* ⚠️ salvada (con ✔ o con puntos a mano): se ve en verde. */
+      const salv=!!v&&!ok&&(vale(a,i)||ex>0);b.classList.toggle("tf-salvada",salv);const mk=b.querySelector(".tf-marca.mal");if(mk)mk.textContent=salv?"✓":"⚠️";b.classList.toggle("tf-defendida",!!(on.defiende&&on.defiende[k]));
       /* En mi respuesta defendida: botón para aceptar la objeción después de hablarlo. */
       if(a===on.pid&&v){const ult=b.lastElementChild;const ceder=on.defiende&&on.defiende[k]&&n>0;
         if(ceder&&!b.querySelector(".tf-ceder")){const x=document.createElement("button");x.type="button";x.className="tf-ceder";x.textContent="👍 Acepto";ult.replaceWith(x);}
