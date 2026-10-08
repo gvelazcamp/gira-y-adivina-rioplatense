@@ -480,3 +480,9 @@ largo quedaba asomado arriba para siempre (top:-120px fijo); ahora se esconde co
 desambiguación de personas vale ("Carlos Núñez"). (5) "ver error" ya no sugiere algo de otra categoría
 (todo terreno → Todoterreno era un auto). Wikipedia no se pudo probar desde la nube (bloqueada).
 ```
+
+```text
+Fecha: 08/10/2026 — Tutti Frutti: las ✓/⚠️ las calcula el anfitrión; si su celular tenía la versión vieja,
+marcas uruguayas nuevas (Enxuta, Columbia, Sisi) salían ⚠️ igual. Ahora cada celular, al recibir el resultado,
+pasa a ✓ lo que está en sus listas propias (reforzarMarcas/enListaPropia). +~90 marcas uruguayas más.
+```
