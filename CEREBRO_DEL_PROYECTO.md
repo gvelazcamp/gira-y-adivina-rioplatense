@@ -509,3 +509,7 @@ Fecha: 08/10/2026 — Tutti Frutti: ~100 marcas más sacadas del listado de empr
 ```text
 Fecha: 08/10/2026 — Tutti Frutti: +169 jugadores de la selección uruguaya en TUTTI_FAMOSOS (lista que pasó Gonzalo, por partidos jugados).
 ```
+
+```text
+Fecha: 08/10/2026 — Tutti Frutti, Famoso: se probó exigir nombre y apellido para apellidos comunes (#860/#861) y Gonzalo pidió volver atrás: cualquier apellido de un famoso vale solo (González, Rodríguez…). No volver a restringirlo sin que lo pida.
+```
