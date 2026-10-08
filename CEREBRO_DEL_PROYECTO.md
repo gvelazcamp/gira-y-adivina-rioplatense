@@ -511,5 +511,9 @@ Fecha: 08/10/2026 — Tutti Frutti: +169 jugadores de la selección uruguaya en 
 ```
 
 ```text
-Fecha: 08/10/2026 — Tutti Frutti, Famoso: se probó exigir nombre y apellido para apellidos comunes (#860/#861) y Gonzalo pidió volver atrás: cualquier apellido de un famoso vale solo (González, Rodríguez…). No volver a restringirlo sin que lo pida.
+Fecha: 08/10/2026 — Tutti Frutti, Famoso: se probó exigir nombre y apellido para apellidos comunes (#860/#861) y Gonzalo pidió volver atrás: cualquier apellido de un famoso vale solo (González, Rodríguez…). (Corrección: era un malentendido, quedó como en #861).
+```
+
+```text
+Fecha: 08/10/2026 — Tutti Frutti, regla FINAL confirmada por Gonzalo: en Famoso los apellidos comunes (COMUNES) van con nombre y apellido ("González" solo no, "Brian Rodríguez" sí); Suárez solo vale (Luis Suárez); apellidos raros solos valen (Cavani). En la categoría Apellido valen todos.
 ```
