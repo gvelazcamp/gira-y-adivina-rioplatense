@@ -470,3 +470,13 @@ resultado de Wikipedia: Rebook → "Somos calentura"). Ahora sugiere de listas p
 marcas, y TUTTI_BOTS) y de Wikipedia solo si el título se parece de verdad (misma distancia fonética que el resto).
 TUTTI_MARCAS también acepta directo en Marca.
 ```
+
+```text
+Fecha: 08/10/2026 — Tutti Frutti, correcciones por partida real: (1) el cartel amarillo (mostrarToast) con texto
+largo quedaba asomado arriba para siempre (top:-120px fijo); ahora se esconde con translate(-50%,-100% - 50px).
+(2) ⚠️ salvada con ✔ se ve en verde "salvada con ✔" (clase tf-salvada; antes seguía ⚠️ aunque sumaba).
+(3) +~235 marcas en TUTTI_MARCAS (Panavox, Enxuta, OCA, Columbia, supermercados, bancos, bebidas uruguayas…).
+(4) Película/Famoso: plurales sueltos no hacen perder ("Domingos en familia"); nombre y apellido con página de
+desambiguación de personas vale ("Carlos Núñez"). (5) "ver error" ya no sugiere algo de otra categoría
+(todo terreno → Todoterreno era un auto). Wikipedia no se pudo probar desde la nube (bloqueada).
+```

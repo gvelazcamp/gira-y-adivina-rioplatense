@@ -430,3 +430,4 @@ body.pf-activo #extAtras,body.pf-activo #extCerrar,body.pf-activo .ext-volver{vi
 .tf-av{width:42px;height:42px;border-radius:50%;object-fit:cover;background:#FFFFFF22;display:grid;place-items:center;font-size:1.4rem}
 @keyframes tfEntra{from{transform:translateX(30px);opacity:0}to{transform:none;opacity:1}}
 .tf-modo{display:flex!important;flex-direction:column;align-items:center;gap:2px;width:100%;margin:6px 0!important;padding:12px!important;border-radius:16px!important}.tf-modo b{font-size:1.15rem}.tf-modo small{opacity:.8;font-weight:600}
+.tf-fila.tf-salvada .tf-pal.tf-mal{background:#2ED18A1F;border-color:#2ED18A}.tf-fila.tf-salvada .tf-marca.mal{color:#2ED18A}.tf-fila.tf-salvada .tf-ver{display:none}.tf-fila.tf-salvada .tf-pal::after{content:"salvada con ✔";font-size:.68rem;font-weight:800;color:#2ED18A}
