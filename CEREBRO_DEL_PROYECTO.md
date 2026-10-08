@@ -486,3 +486,8 @@ Fecha: 08/10/2026 — Tutti Frutti: las ✓/⚠️ las calcula el anfitrión; si
 marcas uruguayas nuevas (Enxuta, Columbia, Sisi) salían ⚠️ igual. Ahora cada celular, al recibir el resultado,
 pasa a ✓ lo que está en sus listas propias (reforzarMarcas/enListaPropia). +~90 marcas uruguayas más.
 ```
+
+```text
+Fecha: 08/10/2026 — Tutti Frutti: TUTTI_PELICULAS nuevo (~250 películas/series, incluye ET, rioplatenses) que vale
+directo en "Película o serie" y se usa para sugerir. OCA e Indian ya valen como Marca (desde #853).
+```
