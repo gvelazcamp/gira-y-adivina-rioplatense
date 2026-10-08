@@ -143,7 +143,6 @@ const TuttiFrutti=(()=>{
     /* Para buscar en Wikipedia se usa lo escrito con su ñ y tildes: "Nunez" no
        encuentra "Carlos Núñez" (la ñ no es una n para el buscador). */
     const q=String(valor).toLowerCase().replace(/[^\p{L}\p{N} ]+/gu," ").replace(/\s+/g," ").trim()||v;
-    if(cat==="Famoso"&&COMUNES.has(v))return false;
     if(cat==="Marca"&&marcasSet().has(v))return true;
     if(cat==="Famoso"&&famSet().has(v))return true;
     if(cat==="Película o serie"&&(pelisSet().has(v)||pelisSet().has(v.replace(/^(el|la|los|las) /,""))))return true;
@@ -604,10 +603,7 @@ const TuttiFrutti=(()=>{
      y desempate por letras: Martiyo → Martillo, Milaneza → Milanesa. */
   const fon=t=>t.replace(/h/g,"").replace(/ll/g,"y").replace(/v/g,"b").replace(/z/g,"s").replace(/c([ei])/g,"s$1").replace(/qu/g,"k").replace(/c/g,"k").replace(/g([ei])/g,"j$1").replace(/x/g,"ks").replace(/(.)\1+/g,"$1");
   let _marcas=null,_pelis=null;const marcasSet=()=>_marcas||(_marcas=new Set(String(window.TUTTI_MARCAS||"").split(",").map(NORM).filter(Boolean)));
-  /* Apellidos comunes: en Famoso no valen solos ("González" es muy fácil),
-     van con nombre y apellido ("Luis Suárez"). Los raros sí ("Cavani"). */
-  const COMUNES=new Set("gonzalez,rodriguez,perez,garcia,martinez,fernandez,lopez,sanchez,gomez,diaz,alvarez,romero,sosa,silva,pereira,pereyra,torres,ruiz,ramirez,flores,benitez,acosta,medina,herrera,aguirre,castro,rojas,morales,gutierrez,ortiz,nunez,cabrera,olivera,mendez,ramos,vazquez,jimenez,gimenez,hernandez,moreno,molina,martin,dominguez,cruz,castillo,romano,rocha,santos,varela,paz,leon,rios,lima,bueno,sosa,ferreira,machado,da silva,de leon,de los santos,cardozo,correa,duarte,ferrari,blanco,rivero,vega,nieto,campos,mora,fonseca,borges,otero,acevedo,araujo,barrios,cortes,moreira,montero,cabral,luna,alonso,navarro,delgado,vidal,arias,sosa,aguilar,mendoza,miranda,garrido,pacheco,caceres,ortega,lima,leal".split(","));
-  let _fam=null;const famSet=()=>{if(!_fam){_fam=new Set();String(window.TUTTI_FAMOSOS||"").split(",").map(NORM).filter(Boolean).forEach(x=>{_fam.add(x);const w=x.split(" ");if(w.length>1)[w.slice(1).join(" "),w[w.length-1]].forEach(a=>{if(!COMUNES.has(a))_fam.add(a);});});}return _fam;};
+  let _fam=null;const famSet=()=>{if(!_fam){_fam=new Set();String(window.TUTTI_FAMOSOS||"").split(",").map(NORM).filter(Boolean).forEach(x=>{_fam.add(x);const w=x.split(" ");if(w.length>1)_fam.add(w.slice(1).join(" ")).add(w[w.length-1]);});}return _fam;};
   const pelisSet=()=>_pelis||(_pelis=new Set(String(window.TUTTI_PELICULAS||"").split(",").map(NORM).filter(Boolean)));
   const lev=(a,b)=>{const m=a.length,n=b.length;if(Math.abs(m-n)>3)return 99;let prev=Array.from({length:n+1},(_,k)=>k);for(let x=1;x<=m;x++){const cur=[x];for(let y=1;y<=n;y++)cur[y]=Math.min(prev[y]+1,cur[y-1]+1,prev[y-1]+(a[x-1]===b[y-1]?0:1));prev=cur;}return prev[n];};
   const lindo=t=>t.replace(/\b\w/g,c=>c.toUpperCase());
@@ -649,7 +645,6 @@ const TuttiFrutti=(()=>{
     document.body.appendChild(p);
     /* Si la "corrección" es la misma palabra (solo cambia un tilde), no está
        mal escrita: está bien, pero no es de esa categoría (Iglú no es marca). */
-    if(cat==="Famoso"&&COMUNES.has(NORM(valor))){p.querySelector("#tfPopTxt").innerHTML=`<b>${esc(valor)}</b> es un apellido muy común: en Famoso va con nombre y apellido (ej. «Luis Suárez»).<br><small>Por eso vale 0.</small>`;return;}
     sugerir(cat,valor).then(async sg=>{const t=p.querySelector("#tfPopTxt");if(!t)return;
       const nc=esc(NOM_CAT[cat]||cat);
       if(sg&&NORM(sg)!==NORM(valor)){t.innerHTML=`Lo correcto es <b>${esc(sg)}</b>.<br><small>Por eso vale 0: estaba mal escrita.</small>`;return;}
