@@ -76,11 +76,11 @@ const TuttiFrutti=(()=>{
     return dics[l];
   }
   async function enDiccionario(v){const d=await cargarDic(v);if(!d||!d.size)return null;return variantes(v).some(x=>d.has(x))||v.split(" ").every(w=>w.length<3||d.has(w));}
-  async function enWikipedia(v,estricto){
-    const ck=(estricto?"!":"")+v;if(cacheWiki.has(ck))return cacheWiki.get(ck);
+  async function enWikipedia(v,estricto,q){
+    q=q||v;const ck=(estricto?"!":"")+q;if(cacheWiki.has(ck))return cacheWiki.get(ck);
     const pr=(async()=>{try{
       const ctrl=typeof AbortController!=="undefined"?new AbortController():null;const t=setTimeout(()=>ctrl&&ctrl.abort(),4500);
-      const r=await fetch("https://es.wikipedia.org/w/api.php?action=opensearch&limit=8&namespace=0&format=json&origin=*&search="+encodeURIComponent(v),ctrl?{signal:ctrl.signal}:{});
+      const r=await fetch("https://es.wikipedia.org/w/api.php?action=opensearch&limit=8&namespace=0&format=json&origin=*&search="+encodeURIComponent(q),ctrl?{signal:ctrl.signal}:{});
       clearTimeout(t);const d=await r.json();const titulos=(d&&d[1])||[];
       return titulos.some(x=>{const n=NORM(x);return n===v||n.startsWith(v+" ")||(!estricto&&n.startsWith(v));});
     }catch(e){return null;}})();
@@ -106,16 +106,16 @@ const TuttiFrutti=(()=>{
     try{const r=await fetch(url,ctrl?{signal:ctrl.signal}:{});return await r.json();}finally{clearTimeout(t);}
   }
   const API="https://es.wikipedia.org/w/api.php?format=json&origin=*&";
-  async function enWikiTipo(v,tipo){
-    const ck=tipo+":"+v;if(cacheWiki.has(ck))return cacheWiki.get(ck);
+  async function enWikiTipo(v,tipo,q){
+    q=q||v;const ck=tipo+":"+q;if(cacheWiki.has(ck))return cacheWiki.get(ck);
     const pr=(async()=>{try{
-      const o=await pedirWiki(API+"action=opensearch&limit=10&namespace=0&search="+encodeURIComponent(v));
+      const o=await pedirWiki(API+"action=opensearch&limit=10&namespace=0&search="+encodeURIComponent(q));
       const sing=v.endsWith("s")?v.slice(0,-1):v;
       /* Plurales sueltos no la hacen perder: "Domingos en familia" = "Domingo en familia". */
       const sinS=t=>t.split(" ").map(w=>w.length>3?w.replace(/s$/,""):w).join(" ");
       const sirve=x=>{const n=NORM(x);return sinS(n)===sinS(v)||[v,sing].some(w=>n===w||n.startsWith(w+" ")&&/\(/.test(x)&&NORM(x.split("(")[0])===w)||(tipo==="famoso"&&n.endsWith(" "+v))||(tipo==="pelicula"&&n.startsWith(v+" "));};
       /* El título tal cual también, por si es una redirección ("Messi" → "Lionel Messi"). */
-      const titulos=[v.replace(/\b\w/g,c=>c.toUpperCase())].concat(((o&&o[1])||[]).filter(sirve)).slice(0,8);
+      const titulos=[...new Set([q,v].map(t=>t.replace(/(^|\s)\S/g,c=>c.toUpperCase())))].concat(((o&&o[1])||[]).filter(sirve)).slice(0,8);
       const d=await pedirWiki(API+"action=query&redirects=1&prop=extracts|description&exintro=1&explaintext=1&exchars=500&titles="+encodeURIComponent(titulos.join("|")));
       const pags=Object.values((d&&d.query&&d.query.pages)||{}).filter(p=>!("missing" in p));
       const re=TIPOS[tipo];
@@ -128,10 +128,10 @@ const TuttiFrutti=(()=>{
   }
   /* Apellidos poco comunes: alguien en Wikipedia que lo tenga como apellido
      ("Negreiro" → "Fulano Negreiro"). */
-  async function apellidoEnWiki(v){
-    const ck="ap:"+v;if(cacheWiki.has(ck))return cacheWiki.get(ck);
+  async function apellidoEnWiki(v,q){
+    q=q||v;const ck="ap:"+q;if(cacheWiki.has(ck))return cacheWiki.get(ck);
     const pr=(async()=>{try{
-      const d=await pedirWiki(API+"action=query&list=search&srlimit=30&srnamespace=0&srsearch="+encodeURIComponent('intitle:"'+v+'"'));
+      const d=await pedirWiki(API+"action=query&list=search&srlimit=30&srnamespace=0&srsearch="+encodeURIComponent('intitle:"'+q+'"'));
       return ((d&&d.query&&d.query.search)||[]).some(r=>{const w=NORM(r.title.split("(")[0]).split(" ");return w.indexOf(v)>0||w.indexOf(v+"s")>0;});
     }catch(e){return null;}})();
     cacheWiki.set(ck,pr);return pr;
@@ -140,12 +140,16 @@ const TuttiFrutti=(()=>{
   async function revisar(cat,valor){
     const v=NORM(valor);if(!v)return null;
     const k=CLAVE_CAT[cat];
+    /* Para buscar en Wikipedia se usa lo escrito con su ñ y tildes: "Nunez" no
+       encuentra "Carlos Núñez" (la ñ no es una n para el buscador). */
+    const q=String(valor).toLowerCase().replace(/[^\p{L}\p{N} ]+/gu," ").replace(/\s+/g," ").trim()||v;
     if(cat==="Marca"&&marcasSet().has(v))return true;
+    if(cat==="Famoso"&&famSet().has(v))return true;
     if(cat==="Película o serie"&&(pelisSet().has(v)||pelisSet().has(v.replace(/^(el|la|los|las) /,""))))return true;
     /* Lo que usan los bots siempre es válido (si no, un bot "perdía" por una
        falla de internet al revisar, como pasó con Nestlé). */
     if(k==="wiki"||k==="dic"){const B=window.TUTTI_BOTS||{},l=cat==="Famoso"?B.famoso:cat==="Marca"?B.marca:cat==="Cosa"?B.cosa:B.pelicula;if(String(l||"").split(",").some(x=>NORM(x)===v))return true;}
-    if(k==="wiki"){const w=await enWikiTipo(v,TIPO_CAT[cat]);return w===null?enWikipedia(v):w;}
+    if(k==="wiki"){const w=await enWikiTipo(v,TIPO_CAT[cat],q);return w===null?enWikipedia(v,false,q):w;}
     if(k==="dic")return enDiccionario(v);
     if(k&&variantes(v).some(x=>setDe(k).has(x)))return true;
     /* Comida también acepta frutas y verduras (palta, papa, banana…). */
@@ -155,11 +159,11 @@ const TuttiFrutti=(()=>{
        con la palabra, ej. "Oriana", "Esquivel (apellido)", "Orlando").
        Comidas, animales, colores, frutas y profesiones → Wikipedia con tipo
        (sin internet, el diccionario). */
-    if(k==="nombre"||k==="lugar"){const w=await enWikipedia(v,true);return w===null?true:w;}
-    if(k==="apellido"){const w=await enWikipedia(v,true);if(w)return true;const a=await apellidoEnWiki(v);return a===null?w===null:a;}
+    if(k==="nombre"||k==="lugar"){const w=await enWikipedia(v,true,q);return w===null?true:w;}
+    if(k==="apellido"){const w=await enWikipedia(v,true,q);if(w)return true;const a=await apellidoEnWiki(v,q);return a===null?w===null:a;}
     /* Animal, comida, fruta, color y profesión: Wikipedia tiene que decir
        que es eso (si no hay internet, se usa el diccionario como antes). */
-    if(k){const w=await enWikiTipo(v,k);if(w!==null)return w;const d=await enDiccionario(v);return d===null?false:d;}
+    if(k){const w=await enWikiTipo(v,k,q);if(w!==null)return w;const d=await enDiccionario(v);return d===null?false:d;}
     return false;
   }
   /* Lo que está en las listas propias vale siempre, aunque el anfitrión tenga
@@ -168,6 +172,7 @@ const TuttiFrutti=(()=>{
   function enListaPropia(cat,valor){
     const v=NORM(valor),k=CLAVE_CAT[cat];if(!v)return false;
     if(cat==="Marca"&&marcasSet().has(v))return true;
+    if(cat==="Famoso"&&famSet().has(v))return true;
     if(cat==="Película o serie"&&(pelisSet().has(v)||pelisSet().has(v.replace(/^(el|la|los|las) /,""))))return true;
     if(k==="wiki"||k==="dic"){const B=window.TUTTI_BOTS||{},l=cat==="Famoso"?B.famoso:cat==="Marca"?B.marca:cat==="Cosa"?B.cosa:B.pelicula;return String(l||"").split(",").some(x=>NORM(x)===v);}
     return !!k&&(variantes(v).some(x=>setDe(k).has(x))||(k==="comida"&&variantes(v).some(x=>setDe("fruta").has(x))));
@@ -598,6 +603,7 @@ const TuttiFrutti=(()=>{
      y desempate por letras: Martiyo → Martillo, Milaneza → Milanesa. */
   const fon=t=>t.replace(/h/g,"").replace(/ll/g,"y").replace(/v/g,"b").replace(/z/g,"s").replace(/c([ei])/g,"s$1").replace(/qu/g,"k").replace(/c/g,"k").replace(/g([ei])/g,"j$1").replace(/x/g,"ks").replace(/(.)\1+/g,"$1");
   let _marcas=null,_pelis=null;const marcasSet=()=>_marcas||(_marcas=new Set(String(window.TUTTI_MARCAS||"").split(",").map(NORM).filter(Boolean)));
+  let _fam=null;const famSet=()=>{if(!_fam){_fam=new Set();String(window.TUTTI_FAMOSOS||"").split(",").map(NORM).filter(Boolean).forEach(x=>{_fam.add(x);const w=x.split(" ");if(w.length>1)_fam.add(w.slice(1).join(" ")).add(w[w.length-1]);});}return _fam;};
   const pelisSet=()=>_pelis||(_pelis=new Set(String(window.TUTTI_PELICULAS||"").split(",").map(NORM).filter(Boolean)));
   const lev=(a,b)=>{const m=a.length,n=b.length;if(Math.abs(m-n)>3)return 99;let prev=Array.from({length:n+1},(_,k)=>k);for(let x=1;x<=m;x++){const cur=[x];for(let y=1;y<=n;y++)cur[y]=Math.min(prev[y]+1,cur[y-1]+1,prev[y-1]+(a[x-1]===b[y-1]?0:1));prev=cur;}return prev[n];};
   const lindo=t=>t.replace(/\b\w/g,c=>c.toUpperCase());
@@ -610,7 +616,7 @@ const TuttiFrutti=(()=>{
       /* Primero las listas propias (Rebook → Reebok); después Wikipedia, pero
          solo si el título se parece de verdad a lo escrito (antes devolvía el
          primer resultado aunque no tuviera nada que ver). */
-      const B=window.TUTTI_BOTS||{},propia=cat==="Marca"?[...marcasSet()].concat(String(B.marca||"").split(",")):cat==="Famoso"?String(B.famoso||"").split(","):String(B.pelicula||"").split(",").concat([...pelisSet()]);
+      const B=window.TUTTI_BOTS||{},propia=cat==="Marca"?[...marcasSet()].concat(String(B.marca||"").split(",")):cat==="Famoso"?String(B.famoso||"").split(",").concat(String(window.TUTTI_FAMOSOS||"").split(",")):String(B.pelicula||"").split(",").concat([...pelisSet()]);
       const loc=masParecida(propia);if(loc)return lindo(loc);
       try{const r=await fetch("https://es.wikipedia.org/w/api.php?action=query&list=search&srlimit=8&srinfo=suggestion&format=json&origin=*&srsearch="+encodeURIComponent(valor));const d=await r.json();
         const titulos=((d&&d.query&&d.query.search)||[]).map(x=>x.title.replace(/\s*\(.*?\)\s*$/,""));
