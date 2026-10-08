@@ -161,6 +161,19 @@ const TuttiFrutti=(()=>{
     if(k){const w=await enWikiTipo(v,k);if(w!==null)return w;const d=await enDiccionario(v);return d===null?false:d;}
     return false;
   }
+  /* Lo que está en las listas propias vale siempre, aunque el anfitrión tenga
+     una versión vieja del juego (pasó con Enxuta/Columbia: las marcas las
+     manda el anfitrión y si su celular no se había actualizado, salían ⚠️). */
+  function enListaPropia(cat,valor){
+    const v=NORM(valor),k=CLAVE_CAT[cat];if(!v)return false;
+    if(cat==="Marca"&&marcasSet().has(v))return true;
+    if(k==="wiki"||k==="dic"){const B=window.TUTTI_BOTS||{},l=cat==="Famoso"?B.famoso:cat==="Marca"?B.marca:cat==="Cosa"?B.cosa:B.pelicula;return String(l||"").split(",").some(x=>NORM(x)===v);}
+    return !!k&&(variantes(v).some(x=>setDe(k).has(x))||(k==="comida"&&variantes(v).some(x=>setDe("fruta").has(x))));
+  }
+  function reforzarMarcas(){
+    if(!on||!on.marcas)return;
+    Object.keys(on.resps||{}).forEach(a=>{const r=on.resps[a]||[],mk=on.marcas[a]=on.marcas[a]||[];on.cats.forEach((c,i)=>{if(r[i]&&!mk[i]&&enListaPropia(c,r[i]))mk[i]=true;});});
+  }
   const NOM_CAT={"Nombre":"nombre","Apellido":"apellido","País o ciudad":"país o ciudad","Animal":"animal","Color":"color","Fruta o verdura":"fruta o verdura","Comida":"comida","Profesión":"profesión","Famoso":"famoso","Película o serie":"película o serie","Marca":"marca","Cosa":"cosa"};
 
   /* ======================= SALA (cada uno con su celular) ======================= */
@@ -429,7 +442,7 @@ const TuttiFrutti=(()=>{
     }else if(m.t==="final"){
       on.ganadas=m.ganadas||on.ganadas;on.rg=m.rg||{};on.jug=m.jug||on.jug;on.tot=m.tot||on.tot;mostrarFinal();
     }else if(m.t==="resultado"&&m.n===on.n&&!on.host){
-      on.resps=m.resps||{};on.ganador=m.ganador;on.ganadas=m.ganadas||on.ganadas;on.jug=m.jug||on.jug;on.marcas=m.marcas||{};mostrarResultado();
+      on.resps=m.resps||{};on.ganador=m.ganador;on.ganadas=m.ganadas||on.ganadas;on.jug=m.jug||on.jug;on.marcas=m.marcas||{};reforzarMarcas();mostrarResultado();
     }
   }
   /* Ronda: animación de la letra y después una categoría por vez. */
