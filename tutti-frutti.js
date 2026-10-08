@@ -111,13 +111,16 @@ const TuttiFrutti=(()=>{
     const pr=(async()=>{try{
       const o=await pedirWiki(API+"action=opensearch&limit=10&namespace=0&search="+encodeURIComponent(v));
       const sing=v.endsWith("s")?v.slice(0,-1):v;
-      const sirve=x=>{const n=NORM(x);return [v,sing].some(w=>n===w||n.startsWith(w+" ")&&/\(/.test(x)&&NORM(x.split("(")[0])===w)||(tipo==="famoso"&&n.endsWith(" "+v))||(tipo==="pelicula"&&n.startsWith(v+" "));};
+      /* Plurales sueltos no la hacen perder: "Domingos en familia" = "Domingo en familia". */
+      const sinS=t=>t.split(" ").map(w=>w.length>3?w.replace(/s$/,""):w).join(" ");
+      const sirve=x=>{const n=NORM(x);return sinS(n)===sinS(v)||[v,sing].some(w=>n===w||n.startsWith(w+" ")&&/\(/.test(x)&&NORM(x.split("(")[0])===w)||(tipo==="famoso"&&n.endsWith(" "+v))||(tipo==="pelicula"&&n.startsWith(v+" "));};
       /* El título tal cual también, por si es una redirección ("Messi" → "Lionel Messi"). */
       const titulos=[v.replace(/\b\w/g,c=>c.toUpperCase())].concat(((o&&o[1])||[]).filter(sirve)).slice(0,8);
       const d=await pedirWiki(API+"action=query&redirects=1&prop=extracts|description&exintro=1&explaintext=1&exchars=500&titles="+encodeURIComponent(titulos.join("|")));
       const pags=Object.values((d&&d.query&&d.query.pages)||{}).filter(p=>!("missing" in p));
       const re=TIPOS[tipo];
-      return pags.some(p=>{const raw=(p.description||"")+" "+(p.extract||"");if(/puede referirse a|desambiguaci/i.test(raw)&&!re.test(NORM(p.description||"")))return false;
+      return pags.some(p=>{const raw=(p.description||"")+" "+(p.extract||"");if(/puede referirse a|desambiguaci/i.test(raw)&&!re.test(NORM(p.description||"")))return tipo==="famoso"&&v.includes(" ")&&re.test(NORM(p.extract||""));
+        /* (Nombre y apellido con varias personas, ej. "Carlos Núñez": alcanza con que sean famosos.) */
         if(tipo==="famoso"&&/\bes un nombre (propio|de pila)\b/.test(NORM(raw)))return false;
         return re.test(NORM(raw))||(tipo==="famoso"&&/\([^)]*\b\d{3,4}\b[^)]*\)\s*(es|fue)\b/.test(raw));});
     }catch(e){return null;}})();
@@ -596,7 +599,9 @@ const TuttiFrutti=(()=>{
       try{const r=await fetch("https://es.wikipedia.org/w/api.php?action=query&list=search&srlimit=8&srinfo=suggestion&format=json&origin=*&srsearch="+encodeURIComponent(valor));const d=await r.json();
         const titulos=((d&&d.query&&d.query.search)||[]).map(x=>x.title.replace(/\s*\(.*?\)\s*$/,""));
         const sg=d&&d.query&&d.query.searchinfo&&d.query.searchinfo.suggestion;if(sg)titulos.push(sg);
-        const w=masParecida(titulos);return w?lindo(w):null;}catch(e){return null;}
+        const w=masParecida(titulos);if(!w)return null;
+        /* Solo si es de la categoría (antes "todo terreno" en Película sugería "Todoterreno", que es un auto). */
+        const t=await enWikiTipo(NORM(w),TIPO_CAT[cat]);return t===false?null:lindo(w);}catch(e){return null;}
     }
     let cand=[];
     if(k&&k!=="dic")cand=[...setDe(k)].concat(k==="comida"?[...setDe("fruta")]:[]);
@@ -654,7 +659,9 @@ const TuttiFrutti=(()=>{
       b.querySelector(".tf-pts").textContent=v?"+"+pr[a][i]:"0";
       const bt=b.querySelector(".tf-votar");if(bt)bt.textContent=(ok?"❌":"✔")+(n?" "+n:"");
       if(bt)bt.classList.toggle("activo",mio);
-      b.classList.toggle("tf-anulada",!!v&&!vale(a,i));b.classList.toggle("tf-defendida",!!(on.defiende&&on.defiende[k]));
+      b.classList.toggle("tf-anulada",!!v&&!vale(a,i));
+      /* ⚠️ salvada con ✔: se ve en verde (antes seguía con ⚠️ aunque sumaba). */
+      const salv=!!v&&!ok&&vale(a,i);b.classList.toggle("tf-salvada",salv);const mk=b.querySelector(".tf-marca.mal");if(mk)mk.textContent=salv?"✓":"⚠️";b.classList.toggle("tf-defendida",!!(on.defiende&&on.defiende[k]));
       /* En mi respuesta defendida: botón para aceptar la objeción después de hablarlo. */
       if(a===on.pid&&v){const ult=b.lastElementChild;const ceder=on.defiende&&on.defiende[k]&&n>0;
         if(ceder&&!b.querySelector(".tf-ceder")){const x=document.createElement("button");x.type="button";x.className="tf-ceder";x.textContent="👍 Acepto";ult.replaceWith(x);}
