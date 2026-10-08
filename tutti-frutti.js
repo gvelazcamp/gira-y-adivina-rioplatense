@@ -561,7 +561,9 @@ const TuttiFrutti=(()=>{
   function puntosRonda(){
     const pts={};on.jug.forEach(j=>pts[j.pid]=Array(on.cats.length).fill(0));
     on.cats.forEach((c,i)=>{
-      const validos=on.jug.filter(j=>vale(j.pid,i));
+      /* Una ⚠️ a la que le sumaron puntos cuenta como respondida para los
+         demás: si no, el otro seguía con 20 ("sos el único") aunque sí respondí. */
+      const validos=on.jug.filter(j=>vale(j.pid,i)||extraDe(j.pid,i)>0);
       validos.forEach(j=>{
         const n=NORM(on.resps[j.pid][i]);
         const iguales=validos.filter(o=>o.pid!==j.pid&&NORM(on.resps[o.pid][i])===n).length;

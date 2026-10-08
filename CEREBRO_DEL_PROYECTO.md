@@ -537,3 +537,7 @@ Fecha: 08/10/2026 — Tutti Frutti: +310 animales en TUTTI_LISTAS.animal (ahora 
 ```text
 Fecha: 08/10/2026 — Tutti Frutti: los 194 países que pasó Gonzalo + nombres comunes (Holanda, Inglaterra, Sudáfrica, Qatar, Myanmar…) en lugar (+62 nuevos). +99 colores (Wikipedia "Anexo:Colores" no se pudo abrir desde la nube; se cargaron de memoria). Colores ~220.
 ```
+
+```text
+Fecha: 08/10/2026 — Tutti Frutti: una ⚠️ con puntos del sumador (extra>0) cuenta como respondida para los demás en puntosRonda (antes el rival seguía con 20 "único"). Palabras del historial aprobadas por Gonzalo: Jaguar, Sussex (servilletas), Nappo (electrodomésticos UY), isla de las tentaciones, inspector de tránsito. Propuesto y no confirmado: ignorar letra suelta al final ("Indian a").
+```
