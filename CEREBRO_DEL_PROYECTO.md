@@ -517,3 +517,7 @@ Fecha: 08/10/2026 — Tutti Frutti, Famoso: se probó exigir nombre y apellido p
 ```text
 Fecha: 08/10/2026 — Tutti Frutti, regla FINAL confirmada por Gonzalo: en Famoso los apellidos comunes (COMUNES) van con nombre y apellido ("González" solo no, "Brian Rodríguez" sí); Suárez solo vale (Luis Suárez); apellidos raros solos valen (Cavani). En la categoría Apellido valen todos.
 ```
+
+```text
+Fecha: 08/10/2026 — Tutti Frutti con bots: Difícil era lento (con letra difícil cantaban BASTA a los ~64 s y una persona rápida les ganaba sola). Ahora Difícil 3-4,5 s por categoría, Normal 6-9 s, extra por categoría/letra difícil 25% (antes 40%): BASTA ~25-35 s. Los bots responden Famoso/Marca/Película también desde TUTTI_FAMOSOS/MARCAS/PELICULAS (más variedad).
+```
