@@ -497,3 +497,7 @@ Fecha: 08/10/2026 — Tutti Frutti: Wikipedia se buscaba con la palabra sin ñ n
 buscador no encontraba "Carlos Núñez". Ahora busca con lo escrito tal cual (q en enWikiTipo/enWikipedia/
 apellidoEnWiki). TUTTI_FAMOSOS nuevo (~300, muchos uruguayos; vale también el apellido solo) acepta directo.
 ```
+
+```text
+Fecha: 08/10/2026 — Tutti Frutti: iPlace agregada a TUTTI_MARCAS.
+```
