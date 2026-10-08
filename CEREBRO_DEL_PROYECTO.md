@@ -525,3 +525,7 @@ Fecha: 08/10/2026 — Tutti Frutti con bots: Difícil era lento (con letra difí
 ```text
 Fecha: 08/10/2026 — Tutti Frutti: sumador de puntos en las ⚠️ dudosas (− 0 +, de 5 en 5 hasta 20) en lugar del ✔. Lo usan los demás jugadores (contra bots, vos en todas, incluida la tuya). Mensaje {t:"extra"}; on.extra[a|i] pisa los puntos de esa casilla y la pinta en verde "vale". Pedido de Gonzalo "hasta que solucionemos todas las palabras".
 ```
+
+```text
+Fecha: 08/10/2026 — Tutti Frutti: historial de palabras en amarillo. El anfitrión anota cada ⚠️ de jugadores (no bots) en Supabase gya_ranking grupo "tutti_dudas" (apodo "Categoría|palabra", estado_juego {cat,palabra,veces,jugador,ultima}). Gonzalo lo ve en Más → Pruebas → "Tutti Frutti · palabras en amarillo" (TuttiFrutti.verDudas) con botón Copiar lista. Probado con Supabase simulado; falta confirmar con el real.
+```

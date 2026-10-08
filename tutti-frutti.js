@@ -544,7 +544,7 @@ const TuttiFrutti=(()=>{
     const marcas={};
     await Promise.all(on.jug.map(async j=>{const r=on.resps[j.pid]||[];marcas[j.pid]=await Promise.all(on.cats.map((c,i)=>r[i]?revisar(c,r[i]).then(x=>x===null?true:x).catch(()=>true):Promise.resolve(false)));}));
     on.calculando=false;if(!on||on.fase==="resultado")return;
-    on.fase="resultado";on.marcas=marcas;
+    on.fase="resultado";on.marcas=marcas;registrarDudas(marcas);
     mandar({t:"resultado",n:on.n,resps:on.resps,ganador:on.ganador,ganadas:on.ganadas,jug:on.jug,marcas});
     mostrarResultado();
   }
@@ -711,6 +711,41 @@ const TuttiFrutti=(()=>{
     const tabla=raiz.querySelector("#tfTabla");
     if(tabla)tabla.innerHTML=orden.map(([j,r,tot])=>`<li><span>${esc(j.nombre)}</span><b>${tot} <small>(+${r})</small></b></li>`).join("");
   }
+  /* Historial de palabras en amarillo (⚠️) para que Gonzalo las revise y las
+     agreguemos a las listas: las anota el anfitrión en Supabase (gya_ranking,
+     grupo "tutti_dudas", una fila por categoría+palabra con cuántas veces salió).
+     Las de los bots no (sus errores de tipeo son a propósito). */
+  const DUDAS="tutti_dudas";
+  function registrarDudas(marcas){
+    try{const supa=typeof obtenerSupa==="function"?obtenerSupa():null;if(!supa)return;
+      on.jug.forEach(j=>{if(j.bot)return;const r=on.resps[j.pid]||[];(marcas[j.pid]||[]).forEach((ok,i)=>{if(r[i]&&!ok)anotarDuda(supa,on.cats[i],r[i],j.nombre);});});
+    }catch(e){}
+  }
+  async function anotarDuda(supa,cat,w,quien){
+    const pal=String(w).trim().slice(0,40),clave=(cat+"|"+NORM(pal)).slice(0,90),ahora=new Date().toISOString();
+    try{
+      const r=await supa.from("gya_ranking").select("estado_juego").eq("grupo",DUDAS).eq("apodo",clave).limit(1);
+      const prev=(r&&r.data&&r.data[0]&&r.data[0].estado_juego)||{};
+      await supa.from("gya_ranking").upsert({grupo:DUDAS,apodo:clave,monedas_totales:0,ciudades_ganadas:0,mejor_racha:0,logros:0,
+        estado_juego:{cat,palabra:pal,veces:(Number(prev.veces)||0)+1,jugador:String(quien||"").slice(0,20),ultima:ahora},actualizado_en:ahora},{onConflict:"grupo,apodo"});
+    }catch(e){}
+  }
+  /* Pantalla para Gonzalo (Pruebas): la lista, de la más nueva a la más vieja. */
+  async function verDudas(){
+    const viejo=document.querySelector(".tf-dudas");if(viejo)viejo.remove();
+    const c=document.createElement("div");c.className="pf-confirmar tf-dudas";
+    c.innerHTML=`<div class="mg-panel pf-caja"><h3>🍉 Palabras en amarillo</h3><p class="imp-ayuda">Las que el Tutti Frutti no reconoció. Pasame las que estén bien y las agrego.</p><div class="tf-dudas-lista">Cargando…</div><button type="button" class="mg-principal" data-c="1">📋 Copiar lista</button><button type="button" data-x="1">Cerrar</button></div>`;
+    document.body.appendChild(c);
+    let filas=[];
+    c.addEventListener("click",e=>{const b=e.target.closest("button");if(e.target===c||(b&&b.dataset.x))c.remove();
+      if(b&&b.dataset.c){const t=filas.map(f=>f.cat+": "+f.palabra+" ("+f.veces+")").join("\n");try{navigator.clipboard.writeText(t);if(typeof mostrarToast==="function")mostrarToast("📋","Lista copiada: pegámela en el chat.","Copiado");}catch(er){}}});
+    const caja=c.querySelector(".tf-dudas-lista");
+    try{const supa=typeof obtenerSupa==="function"?obtenerSupa():null;if(!supa)throw 0;
+      const r=await supa.from("gya_ranking").select("estado_juego,actualizado_en").eq("grupo",DUDAS).order("actualizado_en",{ascending:false}).limit(500);
+      filas=((r&&r.data)||[]).map(x=>x.estado_juego||{}).filter(x=>x.palabra);
+      caja.innerHTML=filas.length?`<table><tr><th>Categoría</th><th>Palabra</th><th>Veces</th></tr>${filas.map(f=>`<tr><td>${esc(f.cat||"")}</td><td><b>${esc(f.palabra)}</b><small>${esc(f.jugador||"")} · ${esc(String(f.ultima||"").slice(0,10).split("-").reverse().join("/"))}</small></td><td>${Number(f.veces)||1}</td></tr>`).join("")}</table>`:"Todavía no hay palabras en amarillo.";
+    }catch(e){caja.textContent="No se pudo cargar (¿sin internet?).";}
+  }
   /* Final del mejor de 3: gana el que ganó más rondas; si empatan, el de más puntos. */
   function mostrarFinal(){
     detenerMusica();cerrarObjeciones();
@@ -731,6 +766,6 @@ const TuttiFrutti=(()=>{
     Extensiones.abrirJuego("tutti-frutti");
     setTimeout(()=>{if(raiz)unirse(sala,de);},300);
   }
-  return{abrir,salir,abrirInvitacion,_revisar:(c,v)=>revisar(c,v),_explicar:(c,v)=>explicar(c,v),_sugerir:(c,v)=>sugerir(c,v),enter:()=>{try{confirmarCampo();}catch(e){}},partidasJugadas:()=>{cargar();return partidas;}};
+  return{abrir,salir,abrirInvitacion,verDudas,_revisar:(c,v)=>revisar(c,v),_explicar:(c,v)=>explicar(c,v),_sugerir:(c,v)=>sugerir(c,v),enter:()=>{try{confirmarCampo();}catch(e){}},partidasJugadas:()=>{cargar();return partidas;}};
 })();
 window.TuttiFrutti=TuttiFrutti;
