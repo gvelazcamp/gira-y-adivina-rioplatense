@@ -529,3 +529,7 @@ Fecha: 08/10/2026 — Tutti Frutti: sumador de puntos en las ⚠️ dudosas (−
 ```text
 Fecha: 08/10/2026 — Tutti Frutti: historial de palabras en amarillo. El anfitrión anota cada ⚠️ de jugadores (no bots) en Supabase gya_ranking grupo "tutti_dudas" (apodo "Categoría|palabra", estado_juego {cat,palabra,veces,jugador,ultima}). Gonzalo lo ve en Más → Pruebas → "Tutti Frutti · palabras en amarillo" (TuttiFrutti.verDudas) con botón Copiar lista. Probado con Supabase simulado; falta confirmar con el real.
 ```
+
+```text
+Fecha: 08/10/2026 — Tutti Frutti: +310 animales en TUTTI_LISTAS.animal (ahora ~560). La página a-z-animals.com que pasó Gonzalo no se pudo abrir desde la nube y está en inglés: se armó la lista en español.
+```
