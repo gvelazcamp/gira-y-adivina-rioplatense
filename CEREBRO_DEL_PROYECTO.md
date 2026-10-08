@@ -505,3 +505,7 @@ Fecha: 08/10/2026 — Tutti Frutti: iPlace agregada a TUTTI_MARCAS.
 ```text
 Fecha: 08/10/2026 — Tutti Frutti: ~100 marcas más sacadas del listado de empresas uruguayas (MEF, SGA 2024) que pasó Gonzalo (Acodike, Mosca, Cementos Artigas, Fanapel, Geocom, Perceli, Sadia, Saceem…).
 ```
+
+```text
+Fecha: 08/10/2026 — Tutti Frutti: +169 jugadores de la selección uruguaya en TUTTI_FAMOSOS (lista que pasó Gonzalo, por partidos jugados).
+```
