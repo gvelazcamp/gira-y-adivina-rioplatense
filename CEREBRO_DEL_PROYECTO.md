@@ -521,3 +521,7 @@ Fecha: 08/10/2026 — Tutti Frutti, regla FINAL confirmada por Gonzalo: en Famos
 ```text
 Fecha: 08/10/2026 — Tutti Frutti con bots: Difícil era lento (con letra difícil cantaban BASTA a los ~64 s y una persona rápida les ganaba sola). Ahora Difícil 3-4,5 s por categoría, Normal 6-9 s, extra por categoría/letra difícil 25% (antes 40%): BASTA ~25-35 s. Los bots responden Famoso/Marca/Película también desde TUTTI_FAMOSOS/MARCAS/PELICULAS (más variedad).
 ```
+
+```text
+Fecha: 08/10/2026 — Tutti Frutti: sumador de puntos en las ⚠️ dudosas (− 0 +, de 5 en 5 hasta 20) en lugar del ✔. Lo usan los demás jugadores (contra bots, vos en todas, incluida la tuya). Mensaje {t:"extra"}; on.extra[a|i] pisa los puntos de esa casilla y la pinta en verde "vale". Pedido de Gonzalo "hasta que solucionemos todas las palabras".
+```
