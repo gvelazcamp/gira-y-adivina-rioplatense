@@ -283,12 +283,12 @@ const TuttiFrutti=(()=>{
   const BOT_NOMBRES=["Fede_UY","Male98","Tomi_ARG","CamiMdeo","PatoCanario","Vale_Punta","Juli.Salto","Nacho_10","Sofi.Cba","Lucho_MVD"];
   const BOT_MAYORES=[{n:"Abuelo_Tito",g:"m"},{n:"Marta1958",g:"f"},{n:"Don_Carlos",g:"m"},{n:"Nelly.Salto",g:"f"},{n:"Raúl_Pocitos",g:"m"},{n:"Chela_MVD",g:"f"},{n:"Oscar65",g:"m"},{n:"Beba.Minas",g:"f"}];
   /* Velocidad humana por categoría (pensar + escribir en el celular):
-     normal 8-12 s, difícil (rivales rápidos) 5-7 s, persona mayor 15-25 s.
-     Las categorías y letras difíciles llevan un 40% más. "hab" es la
+     normal 6-9 s, difícil (rivales rápidos) 3-4,5 s, persona mayor 15-25 s.
+     Las categorías y letras difíciles llevan un 25% más. "hab" es la
      probabilidad de saber una palabra para cada categoría. */
   const MODOS_BOT={
-    normal:{nombre:"🙂 Normal",desc:"Rivales a velocidad normal",seg:[8,12],hab:[.85,.95]},
-    dificil:{nombre:"⚡ Difícil",desc:"Rivales rápidos que cantan BASTA enseguida",seg:[5,7],hab:[.93,.99]},
+    normal:{nombre:"🙂 Normal",desc:"Rivales a velocidad normal",seg:[6,9],hab:[.88,.96]},
+    dificil:{nombre:"⚡ Difícil",desc:"Rivales rápidos que cantan BASTA enseguida",seg:[3,4.5],hab:[.96,1]},
     mayor:{nombre:"👴 Persona mayor",desc:"Rivales tranquilos, sin apuro",seg:[15,25],hab:[.7,.88]}};
   const CATS_DIFICILES=["Famoso","Marca","Película o serie","Cosa","Profesión"],LETRAS_DIFICILES="UIJV";
   const azar=(a,b)=>a+Math.random()*(b-a);
@@ -335,12 +335,13 @@ const TuttiFrutti=(()=>{
   function respuestaBot(cat,letra,hab){
     if(Math.random()>hab)return "";
     const k=CLAVE_CAT[cat],B=window.TUTTI_BOTS||{},L=window.TUTTI_LISTAS||{};
-    const src=k==="wiki"?(cat==="Famoso"?B.famoso:cat==="Marca"?B.marca:B.pelicula):k==="dic"?B.cosa:L[k];
+    /* Famoso/Marca/Película: también las listas grandes, así no ponen todos lo mismo (Puma, Pablo Picasso…). */
+    const W=window,src=k==="wiki"?(cat==="Famoso"?B.famoso+","+(W.TUTTI_FAMOSOS||""):cat==="Marca"?B.marca+","+(W.TUTTI_MARCAS||""):B.pelicula+","+(W.TUTTI_PELICULAS||"")):k==="dic"?B.cosa:L[k];
     const l=String(letra).toLowerCase();
-    const opc=String(src||"").split(",").map(x=>x.trim()).filter(x=>x.length>1&&NORM(x)[0]===l);
+    const opc=String(src||"").split(",").map(x=>x.trim()).filter(x=>x.length>2&&NORM(x)[0]===l);
     if(!opc.length)return "";
     let w=opc[Math.floor(Math.random()*opc.length)];
-    if(k&&k!=="wiki")w=w.split(" ").map(x=>x.charAt(0).toUpperCase()+x.slice(1)).join(" ");
+    if(w===w.toLowerCase())w=w.split(" ").map(x=>x.charAt(0).toUpperCase()+x.slice(1)).join(" ");
     /* De vez en cuando, error de tipeo (como una persona apurada). */
     if(Math.random()<.05&&w.length>6){const i=1+Math.floor(Math.random()*(w.length-2));w=w.slice(0,i)+w.slice(i+1);}
     return w;
@@ -353,7 +354,7 @@ const TuttiFrutti=(()=>{
     on.jug.filter(j=>j.bot).forEach(j=>{
       const r=on.cats.map(c=>respuestaBot(c,on.letra,j.bot.hab));on.botResp[j.pid]=r;
       let acc=t0;j.bot.listas=r.map((w,i)=>{let d=azar(j.bot.seg[0],j.bot.seg[1])*1000;
-        if(CATS_DIFICILES.includes(on.cats[i]))d*=1.4;if(letraDif)d*=1.4;if(!w)d*=.6;acc+=d;return acc;});
+        if(CATS_DIFICILES.includes(on.cats[i]))d*=1.25;if(letraDif)d*=1.25;if(!w)d*=.6;acc+=d;return acc;});
       j.bot.fin=acc;
       if(r.every(Boolean)&&j.bot.fin<t0+T)on.timers.push(setTimeout(()=>{if(on&&on.n===n&&on.fase==="jugando"&&!on.basta)manejar({t:"basta",n,pid:j.pid});},j.bot.fin-Date.now()));
     });
