@@ -491,3 +491,9 @@ pasa a ✓ lo que está en sus listas propias (reforzarMarcas/enListaPropia). +~
 Fecha: 08/10/2026 — Tutti Frutti: TUTTI_PELICULAS nuevo (~250 películas/series, incluye ET, rioplatenses) que vale
 directo en "Película o serie" y se usa para sugerir. OCA e Indian ya valen como Marca (desde #853).
 ```
+
+```text
+Fecha: 08/10/2026 — Tutti Frutti: Wikipedia se buscaba con la palabra sin ñ ni tildes ("carlos nunez") y el
+buscador no encontraba "Carlos Núñez". Ahora busca con lo escrito tal cual (q en enWikiTipo/enWikipedia/
+apellidoEnWiki). TUTTI_FAMOSOS nuevo (~300, muchos uruguayos; vale también el apellido solo) acepta directo.
+```
