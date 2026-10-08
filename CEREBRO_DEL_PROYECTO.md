@@ -533,3 +533,7 @@ Fecha: 08/10/2026 — Tutti Frutti: historial de palabras en amarillo. El anfitr
 ```text
 Fecha: 08/10/2026 — Tutti Frutti: +310 animales en TUTTI_LISTAS.animal (ahora ~560). La página a-z-animals.com que pasó Gonzalo no se pudo abrir desde la nube y está en inglés: se armó la lista en español.
 ```
+
+```text
+Fecha: 08/10/2026 — Tutti Frutti: los 194 países que pasó Gonzalo + nombres comunes (Holanda, Inglaterra, Sudáfrica, Qatar, Myanmar…) en lugar (+62 nuevos). +99 colores (Wikipedia "Anexo:Colores" no se pudo abrir desde la nube; se cargaron de memoria). Colores ~220.
+```
