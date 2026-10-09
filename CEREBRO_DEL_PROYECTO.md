@@ -589,3 +589,7 @@ Fecha: 09/10/2026 — Tutti Frutti: País o ciudad pasó de ~508 a ~2800 (+2300)
 ```text
 Fecha: 09/10/2026 — Tutti Frutti: Comida pasó de ~262 a ~1184 (+930): platos rioplatenses, de Latinoamérica y del mundo, postres, panadería, fiambres, quesos, salsas y golosinas. Regla de Gonzalo: las BEBIDAS NO valen en Comida (se sacaron jugo, té, café, mate, leche, licuado, etc. de la lista y "bebida" del control de tipo de Wikipedia).
 ```
+
+```text
+Fecha: 09/10/2026 — Tutti Frutti: Profesión pasó de ~311 a ~939 (+628): oficios, especialidades médicas, ingenierías, artes, deportes, oficios rioplatenses (canillita, calesitero, payador, murguista, cuidacoches, colectivero) y nuevos (influencer, streamer, community manager). El femenino se acepta solo (abogada → abogado).
+```
