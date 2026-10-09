@@ -601,3 +601,7 @@ Fecha: 09/10/2026 — Tutti Frutti: Marca acepta M&M's (m&m, mym, m y m, mms). F
 ```text
 Fecha: 09/10/2026 — Tutti Frutti: Marca acepta MAC (maquillaje; también "M.A.C" y "Mac Cosmetics").
 ```
+
+```text
+Fecha: 09/10/2026 — Social: cada jugador muestra "🎮 Último juego: <juego> · hace X". anotarUltimoJuego(nombre) guarda gya_ultimo_juego {n,t} en localStorage (viaja solo en el respaldo estado_juego a Supabase). Se anota al abrir cualquier extensión (Extensiones.abrirJuego, incluye invitaciones de Tutti y duelos), al arrancar una partida de la rueda ("Girá y Adiviná", "Girá y Adiviná con amigos", "Sala TV") y al unirse como invitado.
+```
