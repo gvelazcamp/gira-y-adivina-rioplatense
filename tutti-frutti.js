@@ -100,6 +100,8 @@ const TuttiFrutti=(()=>{
     comida:/\b(plato|comida|alimento|alimentos|fruta|fruto|planta|hortaliza|verdura|legumbre|bebida|postre|dulce|preparacion|receta|gastronomia|culinaria|culinario|pan|queso|salsa|sopa|guiso|embutido|carne|pescado|condimento|especia|cereal|tuberculo|golosina|torta|pastel|galleta|masa)\b/,
     fruta:/\b(fruta|fruto|frutos|planta|plantas|hortaliza|verdura|legumbre|tuberculo|especie|genero|arbol|arbusto|baya|citrico|vegetal|bulbo)\b/,
     color:/\b(color|colores|tono|tonalidad|pigmento|matiz)\b/,
+    nombre:/\b(nombre (propio|de pila|masculino|femenino)|antroponimo|hipocoristico)\b/,
+    lugar:/\b(ciudad|pais|localidad|municipio|capital|provincia|departamento|region|pueblo|villa|barrio|estado|isla|continente|comuna|distrito|condado|aldea|poblacion|balneario|parroquia|nacion|republica|reino|metropoli)\b/,
     profesion:/\b(profesion|oficio|ocupacion|trabajador|trabajadora|persona que|profesional|especialista|tecnico|empleo|cargo|se dedica)\b/};
   const TIPO_CAT={"Famoso":"famoso","Marca":"marca","Película o serie":"pelicula"};
   async function pedirWiki(url){
@@ -120,7 +122,7 @@ const TuttiFrutti=(()=>{
       const d=await pedirWiki(API+"action=query&redirects=1&prop=extracts|description&exintro=1&explaintext=1&exchars=500&titles="+encodeURIComponent(titulos.join("|")));
       const pags=Object.values((d&&d.query&&d.query.pages)||{}).filter(p=>!("missing" in p));
       const re=TIPOS[tipo];
-      return pags.some(p=>{const raw=(p.description||"")+" "+(p.extract||"");if(/puede referirse a|desambiguaci/i.test(raw)&&!re.test(NORM(p.description||"")))return tipo==="famoso"&&v.includes(" ")&&re.test(NORM(p.extract||""));
+      return pags.some(p=>{const raw=(p.description||"")+" "+(p.extract||"");if(/puede referirse a|desambiguaci/i.test(raw)&&!re.test(NORM(p.description||"")))return (tipo==="famoso"&&v.includes(" ")||tipo==="nombre"||tipo==="lugar")&&re.test(NORM(p.extract||""));
         /* (Nombre y apellido con varias personas, ej. "Carlos Núñez": alcanza con que sean famosos.) */
         if(tipo==="famoso"&&/\bes un nombre (propio|de pila)\b/.test(NORM(raw)))return false;
         return re.test(NORM(raw))||(tipo==="famoso"&&/\([^)]*\b\d{3,4}\b[^)]*\)\s*(es|fue)\b/.test(raw));});
@@ -161,7 +163,11 @@ const TuttiFrutti=(()=>{
        con la palabra, ej. "Oriana", "Esquivel (apellido)", "Orlando").
        Comidas, animales, colores, frutas y profesiones → Wikipedia con tipo
        (sin internet, el diccionario). */
-    if(k==="nombre"||k==="lugar"){const w=await enWikipedia(v,true,q);return w===null?true:w;}
+    /* Nombre y lugar: Wikipedia tiene que decir que es un nombre propio o un
+       lugar (antes valía cualquier página: "González" pasaba como nombre). Un
+       apellido de la lista no vale como nombre. */
+    if(k==="nombre"&&setDe("apellido").has(v))return false;
+    if(k==="nombre"||k==="lugar"){const w=await enWikiTipo(v,k,q);return w===null?true:w;}
     if(k==="apellido"){const w=await enWikipedia(v,true,q);if(w)return true;const a=await apellidoEnWiki(v,q);return a===null?w===null:a;}
     /* Animal, comida, fruta, color y profesión: Wikipedia tiene que decir
        que es eso (si no hay internet, se usa el diccionario como antes). */
