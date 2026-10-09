@@ -569,3 +569,7 @@ Fecha: 09/10/2026 — Tutti Frutti: +254 famosos (IMDb 751-1000, lista completa)
 ```text
 Fecha: 09/10/2026 — Tutti Frutti: el historial de palabras en amarillo oculta las que ya están en las listas propias (enListaPropia), así no quedan las viejas ya corregidas (ej. Bruce Willis).
 ```
+
+```text
+Fecha: 09/10/2026 — Tutti Frutti: en Nombre y País o ciudad, Wikipedia ya no acepta cualquier página con ese título ("González" pasaba como nombre, "Mesa" también). Ahora usa enWikiTipo con TIPOS.nombre (nombre propio/de pila) y TIPOS.lugar (ciudad, país, departamento…). Un apellido de la lista no vale como Nombre (salvo que esté también en la lista de nombres).
+```
