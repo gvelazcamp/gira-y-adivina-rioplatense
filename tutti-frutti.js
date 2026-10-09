@@ -745,7 +745,8 @@ const TuttiFrutti=(()=>{
     const caja=c.querySelector(".tf-dudas-lista");
     try{const supa=typeof obtenerSupa==="function"?obtenerSupa():null;if(!supa)throw 0;
       const r=await supa.from("gya_ranking").select("estado_juego,actualizado_en").eq("grupo",DUDAS).order("actualizado_en",{ascending:false}).limit(500);
-      filas=((r&&r.data)||[]).map(x=>x.estado_juego||{}).filter(x=>x.palabra);
+      /* Las que ya agregamos a las listas no se muestran (quedaban de partidas viejas). */
+      filas=((r&&r.data)||[]).map(x=>x.estado_juego||{}).filter(x=>x.palabra&&!enListaPropia(x.cat,x.palabra));
       caja.innerHTML=filas.length?`<table><tr><th>Categoría</th><th>Palabra</th><th>Veces</th></tr>${filas.map(f=>`<tr><td>${esc(f.cat||"")}</td><td><b>${esc(f.palabra)}</b><small>${esc(f.jugador||"")} · ${esc(String(f.ultima||"").slice(0,10).split("-").reverse().join("/"))}</small></td><td>${Number(f.veces)||1}</td></tr>`).join("")}</table>`:"Todavía no hay palabras en amarillo.";
     }catch(e){caja.textContent="No se pudo cargar (¿sin internet?).";}
   }
