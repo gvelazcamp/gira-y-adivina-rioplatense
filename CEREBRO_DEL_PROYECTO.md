@@ -585,3 +585,7 @@ Fecha: 09/10/2026 — Tutti Frutti: Fruta o verdura pasó de 150 a ~468 (+318). 
 ```text
 Fecha: 09/10/2026 — Tutti Frutti: País o ciudad pasó de ~508 a ~2800 (+2300). Uruguay: localidades del INE (censo 2011, data loc_agr_ine del paquete R geouy, RichDeto/geouy). Argentina: zokeber/argentina-json (MIT, ~2100 localidades + provincias, se descartaron las abreviadas con punto). Las que no estén siguen yendo a Wikipedia con control de tipo.
 ```
+
+```text
+Fecha: 09/10/2026 — Tutti Frutti: Comida pasó de ~262 a ~1184 (+930): platos rioplatenses, de Latinoamérica y del mundo, postres, panadería, fiambres, quesos, salsas y golosinas. Regla de Gonzalo: las BEBIDAS NO valen en Comida (se sacaron jugo, té, café, mate, leche, licuado, etc. de la lista y "bebida" del control de tipo de Wikipedia).
+```
