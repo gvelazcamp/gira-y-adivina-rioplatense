@@ -581,3 +581,7 @@ Fecha: 09/10/2026 — Tutti Frutti: lista de los ~357 apellidos más comunes de 
 ```text
 Fecha: 09/10/2026 — Tutti Frutti: Fruta o verdura pasó de 150 a ~468 (+318). Base: lista libre dariusk/corpora (foods/fruits y vegetables, en inglés) traducida, más nombres rioplatenses y de otros países (frutilla/fresa, palta/aguacate, choclo/maíz, chaucha/ejote, zapallito, butiá, arazá, mburucuyá, etc.).
 ```
+
+```text
+Fecha: 09/10/2026 — Tutti Frutti: País o ciudad pasó de ~508 a ~2800 (+2300). Uruguay: localidades del INE (censo 2011, data loc_agr_ine del paquete R geouy, RichDeto/geouy). Argentina: zokeber/argentina-json (MIT, ~2100 localidades + provincias, se descartaron las abreviadas con punto). Las que no estén siguen yendo a Wikipedia con control de tipo.
+```
