@@ -553,3 +553,7 @@ Fecha: 09/10/2026 — Tutti Frutti: NORM ignora apóstrofos ("Greys Anatomy" = "
 ```text
 Fecha: 09/10/2026 — Tutti Frutti: +252 famosos (actores 1-250 de la lista IMDb que pasó Gonzalo, quedan 251-1000) y +220 películas/series (las de esos actores, títulos en español).
 ```
+
+```text
+Fecha: 09/10/2026 — Tutti Frutti: +252 famosos (IMDb 251-500) y +222 películas/series. Quedan IMDb 501-1000.
+```
