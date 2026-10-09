@@ -577,3 +577,7 @@ Fecha: 09/10/2026 — Tutti Frutti: en Nombre y País o ciudad, Wikipedia ya no 
 ```text
 Fecha: 09/10/2026 — Tutti Frutti: lista de los ~357 apellidos más comunes de Uruguay (apellidos.de, pasada por Gonzalo). +51 apellidos nuevos en la lista (todos valen en Apellido) y +248 en COMUNES (en Famoso solos valen 0, van con nombre y apellido). Excepciones que valen solas en Famoso por ser de un famoso conocido: Suárez, Artigas, Tabárez, Sanguinetti, Quiroga, Bentancur, Páez, Iglesias, Abreu. Miranda, Amaro, Severo, Beltrán, Nieves y Aparicio se agregaron también a nombres para que sigan valiendo en Nombre.
 ```
+
+```text
+Fecha: 09/10/2026 — Tutti Frutti: Fruta o verdura pasó de 150 a ~468 (+318). Base: lista libre dariusk/corpora (foods/fruits y vegetables, en inglés) traducida, más nombres rioplatenses y de otros países (frutilla/fresa, palta/aguacate, choclo/maíz, chaucha/ejote, zapallito, butiá, arazá, mburucuyá, etc.).
+```
