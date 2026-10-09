@@ -20,7 +20,7 @@ const TuttiFrutti=(()=>{
   const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
   const nom=i=>PantallaFija.nombreJugador(est,i);
   function abrir(contenedor){salir();cargar();raiz=document.createElement("section");raiz.className="tf";contenedor.appendChild(raiz);PantallaFija.entrar();configurar();}
-  const ajustesHtml=()=>`<div class="qs-sub">🗂️ Categorías (tocá para elegir)</div>
+  const ajustesHtml=()=>`<div class="qs-sub">🗂️ Categorías: las verdes ✓ se juegan (tocá para elegir)</div>
       <div class="qs-cats imp-cats tf-catsel" id="tfCats">${CATEGORIAS.map(c=>`<button type="button" data-c="${esc(c)}">${esc(c)}</button>`).join("")}</div>
       <div class="qs-sub">⏱️ Tiempo máximo por letra</div>
       <div class="qns-rangos" id="tfT">${TIEMPOS.map(t=>`<button type="button" data-v="${t}">${t} s</button>`).join("")}</div>`;
