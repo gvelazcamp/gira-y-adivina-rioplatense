@@ -593,3 +593,7 @@ Fecha: 09/10/2026 — Tutti Frutti: Comida pasó de ~262 a ~1184 (+930): platos 
 ```text
 Fecha: 09/10/2026 — Tutti Frutti: Profesión pasó de ~311 a ~939 (+628): oficios, especialidades médicas, ingenierías, artes, deportes, oficios rioplatenses (canillita, calesitero, payador, murguista, cuidacoches, colectivero) y nuevos (influencer, streamer, community manager). El femenino se acepta solo (abogada → abogado).
 ```
+
+```text
+Fecha: 09/10/2026 — Tutti Frutti: Marca acepta M&M's (m&m, mym, m y m, mms). Famoso acepta "Mirtha"/"Mirta" solo (Mirtha Legrand).
+```
