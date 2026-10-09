@@ -561,3 +561,7 @@ Fecha: 09/10/2026 — Tutti Frutti: +252 famosos (IMDb 251-500) y +222 película
 ```text
 Fecha: 09/10/2026 — Tutti Frutti: +257 famosos (IMDb 501-750) y +186 películas/series. Quedan IMDb 751-1000.
 ```
+
+```text
+Fecha: 09/10/2026 — Tutti Frutti: +254 famosos (IMDb 751-1000, lista completa) y +144 películas/series. Totales: ~1440 famosos, ~1000 películas/series.
+```
