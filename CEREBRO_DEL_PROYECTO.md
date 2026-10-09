@@ -545,3 +545,7 @@ Fecha: 08/10/2026 — Tutti Frutti: una ⚠️ con puntos del sumador (extra>0) 
 ```text
 Fecha: 09/10/2026 — Tutti Frutti: categorías elegidas en verde con ✓ y las no elegidas apagadas (punteadas). Antes era al revés (amarillo = elegida, verde = no) y confundía.
 ```
+
+```text
+Fecha: 09/10/2026 — Tutti Frutti: NORM ignora apóstrofos ("Greys Anatomy" = "Grey's Anatomy"). Agregadas: Trapiche, H y M/HyM (marcas), Grey's Anatomy / Anatomía de Grey (series).
+```

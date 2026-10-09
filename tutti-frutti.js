@@ -63,8 +63,9 @@ const TuttiFrutti=(()=>{
      diccionario por letra (assets/diccionario/es-<l>.txt) para Cosa y como
      respaldo. Nunca rechaza: marca ✓ o ⚠️ y al final se vota. */
   /* Sin tildes ni diéresis y con la ñ como n: "Rodríguez" = "Rodriguez",
-     "Niño" = "Nino". Así los acentos nunca hacen perder una respuesta. */
-  const NORM=t=>String(t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9 ]+/g," ").replace(/\s+/g," ").trim();
+     "Niño" = "Nino". Así los acentos nunca hacen perder una respuesta.
+     El apóstrofo se ignora: "Greys Anatomy" = "Grey's Anatomy". */
+  const NORM=t=>String(t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/['’´`]/g,"").replace(/[^a-z0-9 ]+/g," ").replace(/\s+/g," ").trim();
   const CLAVE_CAT={"Nombre":"nombre","Apellido":"apellido","País o ciudad":"lugar","Animal":"animal","Color":"color","Fruta o verdura":"fruta","Comida":"comida","Profesión":"profesion","Famoso":"wiki","Película o serie":"wiki","Marca":"wiki","Cosa":"dic"};
   const sets={},dics={},cacheWiki=new Map();
   function setDe(k){if(!sets[k]){const t=(window.TUTTI_LISTAS||{})[k]||"";sets[k]=new Set(t.split(",").map(NORM).filter(Boolean));}return sets[k];}
