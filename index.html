@@ -532,6 +532,7 @@ body.gonzalo-admin .frame-card .tn-admin-x,body.gonzalo-admin .tn-item .tn-admin
 .rk-info b{font-size:.9rem}
 .rk-info span{font-size:.72rem;color:#B49FCE}
 .rk-info .rk-ciudad{color:#7DE6D7;font-weight:800;overflow-wrap:anywhere}
+.rk-info .rk-ultimo{color:#FFD45C;font-weight:700;overflow-wrap:anywhere}
 .rk-monedas{font-weight:800;color:var(--oro);font-size:.85rem;flex-shrink:0;white-space:nowrap}
 .rk-avatar{width:34px;height:34px;border-radius:50%;flex-shrink:0;object-fit:cover;border:1px solid #FFFFFF33;background:#00000055}
 .rk-avatar-wrap{position:relative;flex-shrink:0;line-height:0}
@@ -4723,12 +4724,15 @@ async function usrCargarLista(){
     const online=f.actualizado_en&&(AHORA-new Date(f.actualizado_en).getTime())<VENTANA_ONLINE_MS&&estado?.presenciaMapa?.visible!==false;
     const avance=avanceMapaDeFila(f);
     const soyYo=misClaves.includes(normApodo(f.apodo));
+    let ultimo=null;try{ultimo=JSON.parse(estado?.localStorage?.gya_ultimo_juego||"null");}catch(e){}
+    if(!ultimo||!ultimo.n)ultimo=null;
     const d=document.createElement("div");
     d.className="rk-fila";
     d.innerHTML=(f.avatar?'<span class="rk-avatar-wrap"><img class="rk-avatar" src="assets/avatars/'+rkEsc(f.avatar)+'.webp" alt="">'+(online?'<span class="rk-online-dot"></span>':'')+'</span>':'')+
       '<div class="rk-info"><b>'+rkEsc(f.apodo)+(soyYo?" (vos)":"")+'</b>'+
       '<span class="rk-ciudad">'+rkEsc(avance.texto)+'</span>'+
-      '<span>🗺️ '+avance.ganadas+'/'+avance.total+' · 🏆 racha '+f.mejor_racha+' · 🏅 '+f.logros+'</span></div>';
+      '<span>🗺️ '+avance.ganadas+'/'+avance.total+' · 🏆 racha '+f.mejor_racha+' · 🏅 '+f.logros+'</span>'+
+      (ultimo?'<span class="rk-ultimo">🎮 Último juego: '+rkEsc(ultimo.n)+(ultimo.t?' · '+haceCuanto(ultimo.t):'')+'</span>':'')+'</div>';
     if(!soyYo){
       const b=document.createElement("button");
       b.className="no";b.textContent="Invitar";
@@ -4739,6 +4743,12 @@ async function usrCargarLista(){
     cont.appendChild(d);
   });
   $("usrEstado").textContent=(data&&data.length)?"":"Todavía no hay usuarios.";
+}
+function haceCuanto(t){
+  const m=Math.max(0,Math.round((Date.now()-t)/60000));
+  if(m<1)return"recién";if(m<60)return"hace "+m+" min";
+  const h=Math.round(m/60);if(h<24)return"hace "+h+" h";
+  const d=Math.round(h/24);return d===1?"ayer":"hace "+d+" días";
 }
 function usrAbrir(){
   $("capaUsuarios").classList.add("ver");
@@ -7531,7 +7541,7 @@ $("bBienvenidaTVNo").onclick=()=>{location.href=location.origin+location.pathnam
 function unirseTV(cod){
   if(!cod||cod.length<4){$("estado").textContent="El código tiene 4 caracteres.";return;}
   const n=($("miNombre").value.trim()||"Jugador").slice(0,12);
-  modo="tvguest";sala=cod;tvMiIndex=-1;
+  modo="tvguest";sala=cod;tvMiIndex=-1;anotarUltimoJuego("Sala TV");
   $("setup").style.display="none";$("lobby").style.display="block";
   $("zonaCodigo").style.display="none";$("zonaEntrar").style.display="block";
   $("codigoInput").value=cod;$("estado").textContent="Conectando con la TV…";
@@ -7582,8 +7592,14 @@ function recibirTVGuest(d){
   if(d.tipo==="fin"){$("tvcEstado").textContent=(d.tit||"Partida terminada")+" · "+(d.txt||"");$("tvcAcciones").style.display="none";$("tvcTeclado").style.display="none";return;}
   if(d.tipo==="reaccion")volar(d.e);
 }
+/* Último juego jugado: se guarda en localStorage (gya_ultimo_juego), viaja
+   en el respaldo estado_juego a Supabase y Social lo muestra. */
+function anotarUltimoJuego(nombre){try{localStorage.setItem("gya_ultimo_juego",JSON.stringify({n:String(nombre||"").slice(0,40),t:Date.now()}));}catch(e){}}
+window.anotarUltimoJuego=anotarUltimoJuego;
+function nombreJuegoRueda(){return(modo==="tvhost"||modo==="tvguest")?"Sala TV":(modo==="host"||modo==="guest")?"Girá y Adiviná con amigos":"Girá y Adiviná";}
 function iniciarPartidaJugadores(jugadores,cats){
   detenerPartidaAnterior();
+  if(modo!=="tvhost")anotarUltimoJuego(nombreJuegoRueda());
   const js=jugadores.map((j,i)=>({id:j.id||null,n:(j.n||("Jugador "+(i+1))).slice(0,30),av:j.av||null,frame:j.frame||null,tab:j.tab||null,tot:0,ronda:0,rg:0,
     escudo:false,hielo:{},lodo:false,comodin:false,poderesRonda:[],poderUsadoTurno:false}));
   arranca=((arranca%js.length)+js.length)%js.length;
@@ -7996,7 +8012,7 @@ $("bUnirse").onclick=()=>{
 
 function unirse(cod){
   if(!cod||cod.length<4){$("estado").textContent="El código tiene 4 caracteres.";return;}
-  modo="guest";miJug=1;sala=cod;
+  modo="guest";miJug=1;sala=cod;anotarUltimoJuego("Girá y Adiviná con amigos");
   $("setup").style.display="none";$("lobby").style.display="block";
   $("zonaCodigo").style.display="none";$("zonaEntrar").style.display="block";
   $("codigoInput").value=cod;$("estado").textContent="Conectando…";
@@ -10969,7 +10985,7 @@ document.addEventListener("keydown",e=>{
 <script src="canta-la-cancion.js?v=11"></script>
 <script src="tutti-frutti-datos.js?v=29"></script>
 <script src="tutti-frutti.js?v=48"></script>
-<script src="extensiones.js?v=37"></script>
+<script src="extensiones.js?v=38"></script>
 <script src="sala-tv.js?v=1"></script>
 </body>
 </html>

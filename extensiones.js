@@ -154,6 +154,7 @@ const Extensiones=(()=>{
     const ext=EXTENSIONES.find(x=>x.id===id&&x.estado==="disponible"&&extensionVisible(x));if(!ext)return;
     mostrar();vista=id;contenido.replaceChildren();
     shell.querySelector("#extTitulo").textContent=ext.nombre;
+    if(typeof window.anotarUltimoJuego==="function")window.anotarUltimoJuego(ext.nombre);
     ext.abrir(contenido);shell.scrollTop=0;
   }
   function salirJuego(){for(const juego of [window.SopaFugaz,window.RuedaDeLetras,window.PalabraSecreta,window.FrasesEnGiro,window.MemoriaEnGiro,window.RoscoRioplatense,window.SilabarioRioplatense,window.CienRioplatenses,window.AhorcadoRioplatense,window.ContraRelojRioplatense,window.MoonTap,window.QueNumeroSoy,window.QuienSoy,window.Bomba,window.Impostor,window.Mimica,window.CantaLaCancion,window.TuttiFrutti])if(juego)juego.salir();}
