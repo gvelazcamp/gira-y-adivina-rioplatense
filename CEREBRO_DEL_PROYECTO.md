@@ -541,3 +541,7 @@ Fecha: 08/10/2026 — Tutti Frutti: los 194 países que pasó Gonzalo + nombres 
 ```text
 Fecha: 08/10/2026 — Tutti Frutti: una ⚠️ con puntos del sumador (extra>0) cuenta como respondida para los demás en puntosRonda (antes el rival seguía con 20 "único"). Palabras del historial aprobadas por Gonzalo: Jaguar, Sussex (servilletas), Nappo (electrodomésticos UY), isla de las tentaciones, inspector de tránsito. Propuesto y no confirmado: ignorar letra suelta al final ("Indian a").
 ```
+
+```text
+Fecha: 09/10/2026 — Tutti Frutti: categorías elegidas en verde con ✓ y las no elegidas apagadas (punteadas). Antes era al revés (amarillo = elegida, verde = no) y confundía.
+```
