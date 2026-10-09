@@ -595,5 +595,5 @@ Fecha: 09/10/2026 — Tutti Frutti: Profesión pasó de ~311 a ~939 (+628): ofic
 ```
 
 ```text
-Fecha: 09/10/2026 — Tutti Frutti: Marca acepta M&M's (m&m, mym, m y m, mms). Famoso acepta "Mirtha"/"Mirta" solo (Mirtha Legrand).
+Fecha: 09/10/2026 — Tutti Frutti: Marca acepta M&M's (m&m, mym, m y m, mms). Famoso: "Mirta" sola NO vale (Gonzalo), tiene que ser "Mirtha Legrand" (también "Mirta Legrand").
 ```
