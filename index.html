@@ -1790,6 +1790,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <button class="btn-grande sec" id="bPruebaPromoEventos"><span class="btn-ico">🎟️</span><span class="btn-txt">Vista previa Jugá los Eventos</span></button>
     <button class="btn-grande sec" id="bPruebaChat"><span class="btn-ico">💬</span><span class="btn-txt">Chat de sala con rival ficticio</span></button>
     <button class="btn-grande sec" id="bPruebaTuttiDudas"><span class="btn-ico">🍉</span><span class="btn-txt">Tutti Frutti · palabras en amarillo</span></button>
+    <button class="btn-grande sec" id="bPruebaFallasReg"><span class="btn-ico">👥</span><span class="btn-txt">Registros con problemas (Social)</span></button>
   </div>
   <button class="no" id="pruebasCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
 </div></div>
@@ -4520,6 +4521,31 @@ const USR_GRUPO="usuarios";
 /* Resultado del último registro en Social (para mostrar el motivo si
    alguien no aparece). */
 let usrSyncEstado={ok:null,msg:""};
+/* Si el registro falla (o el perfil quedó a medias), se deja una fila
+   chica en gya_ranking grupo "registro_fallas" para que Gonzalo la vea en
+   Más → Pruebas → "Registros con problemas". Una vez por sesión. */
+const FALLAS_GRUPO="registro_fallas";let fallaReportada=false;
+async function reportarFallaRegistro(msg){
+  const supa=obtenerSupa(),nombre=String(perfil&&perfil.nombre||"").trim();
+  if(fallaReportada||!supa||!nombre)return;fallaReportada=true;
+  try{await supa.from("gya_ranking").upsert({grupo:FALLAS_GRUPO,apodo:nombre.slice(0,40),
+    estado_juego:{msg:String(msg||"").slice(0,300),t:new Date().toISOString(),avatar:!!perfil.avatar,pais:perfil.pais||"",ua:String(navigator.userAgent||"").slice(0,160)},
+    actualizado_en:new Date().toISOString()},{onConflict:"grupo,apodo"});}catch(e){}
+}
+setTimeout(()=>{try{if(!perfilExiste()&&nombrePerfilPersonal(perfil.nombre))reportarFallaRegistro("perfil incompleto: falta "+[!perfil.avatar&&"avatar",!paisPerfilValido(perfil.pais)&&"país"].filter(Boolean).join(" y "));}catch(e){}},12000);
+async function verFallasRegistro(){
+  const viejo=document.querySelector(".fallas-reg");if(viejo)viejo.remove();
+  const c=document.createElement("div");c.className="pf-confirmar fallas-reg";
+  c.innerHTML='<div class="mg-panel pf-caja"><h3>👥 Registros con problemas</h3><p class="imp-ayuda">Jugadores que no pudieron aparecer en Social y por qué.</p><div class="tf-dudas-lista">Cargando…</div><button type="button" data-x="1">Cerrar</button></div>';
+  document.body.appendChild(c);
+  c.addEventListener("click",e=>{if(e.target===c||e.target.closest("button[data-x]"))c.remove();});
+  const caja=c.querySelector(".tf-dudas-lista");
+  try{const supa=obtenerSupa();if(!supa)throw 0;
+    const r=await supa.from("gya_ranking").select("apodo,estado_juego,actualizado_en").eq("grupo",FALLAS_GRUPO).order("actualizado_en",{ascending:false}).limit(200);
+    const f=(r&&r.data)||[];
+    caja.innerHTML=f.length?'<table><tr><th>Jugador</th><th>Motivo</th></tr>'+f.map(x=>{const e=x.estado_juego||{};return'<tr><td><b>'+rkEsc(x.apodo)+'</b><small>'+rkEsc(String(x.actualizado_en||"").slice(0,16).replace("T"," "))+'</small></td><td>'+rkEsc(e.msg||"")+'</td></tr>';}).join("")+'</table>':"No hay registros con problemas.";
+  }catch(e){caja.textContent="No se pudo cargar (¿sin internet?).";}
+}
 async function empujarUsuario(){
   const supa=obtenerSupa();
   if(!perfilExiste())return;
@@ -4538,8 +4564,9 @@ async function empujarUsuario(){
       version_estado:1,
       actualizado_en:new Date().toISOString()
     },{onConflict:"grupo,apodo"});
-    usrSyncEstado=r&&r.error?{ok:false,msg:String(r.error.message||r.error.code||"error")}:{ok:true,msg:""};
+    usrSyncEstado=r&&r.error?{ok:false,msg:String(r.error.message||r.error.code||"error")+(r.error.details?" · "+r.error.details:"")}:{ok:true,msg:""};
   }catch(e){usrSyncEstado={ok:false,msg:String(e&&e.message||e)};}
+  if(usrSyncEstado.ok===false)reportarFallaRegistro(usrSyncEstado.msg);
 }
 /* Sincronización automática del respaldo completo: chequea cada ~2.5s si
    cambió algo persistente (prefijos gya_ y larueda_) y, si cambió, programa el envío
@@ -5749,6 +5776,7 @@ const MENUS_CON_X={capaRuleta:"rwCerrar",capaTienda:"tnCerrar",capaLogros:"lgCer
   capaTorneos:"torneosCerrar",capaSinVidas:"svCerrar"};
 $("bMasOpciones").onclick=()=>{actualizarAccesoPruebas();$("capaMas").classList.add("ver");};
 $("bPruebas").onclick=()=>{$("capaPruebas").classList.add("ver");};
+$("bPruebaFallasReg").onclick=()=>{if(!esGonzalo())return;$("capaPruebas").classList.remove("ver");$("capaMas").classList.remove("ver");verFallasRegistro();};
 $("bPruebaTuttiDudas").onclick=()=>{if(!esGonzalo())return;$("capaPruebas").classList.remove("ver");$("capaMas").classList.remove("ver");if(window.TuttiFrutti)TuttiFrutti.verDudas();};
 $("bPruebaPunteros").onclick=iniciarPruebaPunteros;
 $("bPruebaAltaPerfil").onclick=()=>{$("capaPruebas").classList.remove("ver");$("capaMas").classList.remove("ver");previsualizarPerfilVacio();};
