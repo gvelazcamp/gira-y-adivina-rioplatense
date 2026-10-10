@@ -617,3 +617,7 @@ Fecha: 10/10/2026 — Social: 5 personas se registraron (solo jugaron extensione
 ```text
 Fecha: 10/10/2026 — Social: (1) los nombres iguales escritos con otra forma de tilde o espacios de más ("Gastón G" dos veces) cuentan como uno solo (dedupe con normalize NFC + espacios). (2) Gonzalo ve una ✕ al lado de "Invitar": pide confirmación y saca a esa persona SOLO de Social (fila en gya_ranking grupo "social_ocultos" con el apodo exacto; no se borra nada de su cuenta). Para volver a mostrar a alguien, borrar esa fila en Supabase (pedírmelo). El panel "Registros con problemas" quedó guardado en el historial de la rama (commit 7c32844, revertido), sin publicar.
 ```
+
+```text
+Fecha: 10/10/2026 — Social ✕: los sacados volvían a aparecer porque la fila de social_ocultos se mandaba sin monedas_totales/ciudades_ganadas/mejor_racha/logros (la tabla los exige) y el error se tragaba. Ahora manda esos campos en 0 (como tutti_dudas) y, si falla, muestra el motivo en vez de sacarlo solo de la pantalla.
+```

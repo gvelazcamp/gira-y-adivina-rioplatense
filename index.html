@@ -4785,8 +4785,15 @@ async function usrCargarLista(){
         x.style.cssText="flex-shrink:0;margin-left:6px;padding:8px 11px;font-size:.85rem;border-radius:10px;color:#FF6B6B";
         x.onclick=async()=>{
           if(!confirm("¿Sacar a "+f.apodo+" de Social?\nSolo deja de verse en la lista, no se borra nada."))return;
-          try{await obtenerSupa().from("gya_ranking").upsert({grupo:SOCIAL_OCULTOS,apodo:String(f.apodo),actualizado_en:new Date().toISOString()},{onConflict:"grupo,apodo"});d.remove();}
-          catch(e){mostrarToast("⚠️","No se pudo sacar. Probá de nuevo.");}
+          /* Mismos campos que las filas de tutti_dudas: la tabla no acepta
+             filas sin monedas/ciudades/racha/logros (antes fallaba en
+             silencio y la persona volvía a aparecer). */
+          let err=null;
+          try{const r=await obtenerSupa().from("gya_ranking").upsert({grupo:SOCIAL_OCULTOS,apodo:String(f.apodo),monedas_totales:0,ciudades_ganadas:0,mejor_racha:0,logros:0,
+            estado_juego:{oculto_por:"Gonzalo",t:new Date().toISOString()},actualizado_en:new Date().toISOString()},{onConflict:"grupo,apodo"});err=r&&r.error;}
+          catch(e){err=e;}
+          if(err){mostrarToast("⚠️","No se pudo sacar: "+String(err.message||err).slice(0,80));return;}
+          d.remove();
         };
         d.appendChild(x);
       }
