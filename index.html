@@ -4517,11 +4517,15 @@ async function empujarRanking(){
    el tiempo termina reflejando a todo el que jugó, no solo a quien entró
    al Ranking. */
 const USR_GRUPO="usuarios";
+/* Resultado del último registro en Social (para mostrar el motivo si
+   alguien no aparece). */
+let usrSyncEstado={ok:null,msg:""};
 async function empujarUsuario(){
   const supa=obtenerSupa();
-  if(!perfilExiste()||!supa)return;
+  if(!perfilExiste())return;
+  if(!supa){usrSyncEstado={ok:false,msg:"no cargó la conexión con el servidor"};return;}
   try{
-    await supa.from("gya_ranking").upsert({
+    const r=await supa.from("gya_ranking").upsert({
       grupo:USR_GRUPO,apodo:perfil.nombre,
       monedas_totales:meta.monedasGanadasTotal||0,
       ciudades_ganadas:ganados.size,
@@ -4534,7 +4538,8 @@ async function empujarUsuario(){
       version_estado:1,
       actualizado_en:new Date().toISOString()
     },{onConflict:"grupo,apodo"});
-  }catch(e){}
+    usrSyncEstado=r&&r.error?{ok:false,msg:String(r.error.message||r.error.code||"error")}:{ok:true,msg:""};
+  }catch(e){usrSyncEstado={ok:false,msg:String(e&&e.message||e)};}
 }
 /* Sincronización automática del respaldo completo: chequea cada ~2.5s si
    cambió algo persistente (prefijos gya_ y larueda_) y, si cambió, programa el envío
@@ -4769,6 +4774,14 @@ async function usrCargarLista(){
     cont.appendChild(d);
   });
   $("usrEstado").textContent=(data&&data.length)?data.length+" jugadores":"Todavía no hay usuarios.";
+  /* Si yo tengo perfil pero no aparezco, me registro de nuevo y recargo
+     una vez; si falla, se muestra el motivo para poder arreglarlo. */
+  const meVeo=(data||[]).some(f=>misClaves.includes(normApodo(f.apodo)));
+  if(perfilExiste()&&!meVeo){
+    if(!usrCargarLista.reintento){usrCargarLista.reintento=true;$("usrEstado").textContent="Registrándote en Social…";await empujarUsuario();return usrCargarLista();}
+    $("usrEstado").textContent="⚠️ Vos todavía no aparecés"+(usrSyncEstado.ok===false?": "+usrSyncEstado.msg:"")+". Mandale esta captura a Gonzalo.";
+  }
+  usrCargarLista.reintento=false;
 }
 function haceCuanto(t){
   const m=Math.max(0,Math.round((Date.now()-t)/60000));
@@ -4777,7 +4790,7 @@ function haceCuanto(t){
   const d=Math.round(h/24);return d===1?"ayer":"hace "+d+" días";
 }
 function usrAbrir(){
-  $("capaUsuarios").classList.add("ver");
+  $("capaUsuarios").classList.add("ver");usrCargarLista.reintento=false;
   usrCargarLista();
 }
 $("usrCerrar").onclick=()=>$("capaUsuarios").classList.remove("ver");

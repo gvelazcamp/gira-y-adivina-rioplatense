@@ -609,3 +609,7 @@ Fecha: 09/10/2026 — Social: cada jugador muestra "🎮 Último juego: <juego> 
 ```text
 Fecha: 10/10/2026 — Social: Gonzalo reportó que gente que se registró hoy no aparecía. Supabase devuelve máximo 1000 filas por pedido y Social pedía todo de una (ordenado por apodo), así que los que quedaban después en orden alfabético no salían (las filas viejas "Jugador N" ocupan lugar aunque se filtren). usrTraerFilas() ahora trae de a 1000 con .range() y pide solo las claves que usa Social (estado_juego->localStorage->>clave, mucho más liviano); si esa consulta falla, vuelve a select("*") paginado. Debajo de la lista se muestra "N jugadores". Recordatorio: solo aparecen quienes completaron perfil (nombre propio, avatar y país Uruguay/Argentina).
 ```
+
+```text
+Fecha: 10/10/2026 — Social: 5 personas se registraron (solo jugaron extensiones) y no aparecían. Registrarse ya alcanza (guardarPerfil → empujarUsuario), no hace falta jugar; no se pudo ver la base desde acá. Diagnóstico agregado: empujarUsuario guarda el resultado en usrSyncEstado (antes tragaba el error). Al abrir Social, si el jugador tiene perfil y no se ve en la lista, se vuelve a registrar y recarga una vez; si sigue sin aparecer muestra "⚠️ Vos todavía no aparecés: <motivo>. Mandale esta captura a Gonzalo." PENDIENTE: ver la captura de alguno de ellos.
+```
