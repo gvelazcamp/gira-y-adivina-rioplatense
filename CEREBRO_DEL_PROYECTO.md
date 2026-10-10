@@ -613,3 +613,7 @@ Fecha: 10/10/2026 — Social: Gonzalo reportó que gente que se registró hoy no
 ```text
 Fecha: 10/10/2026 — Social: 5 personas se registraron (solo jugaron extensiones) y no aparecían. Registrarse ya alcanza (guardarPerfil → empujarUsuario), no hace falta jugar; no se pudo ver la base desde acá. Diagnóstico agregado: empujarUsuario guarda el resultado en usrSyncEstado (antes tragaba el error). Al abrir Social, si el jugador tiene perfil y no se ve en la lista, se vuelve a registrar y recarga una vez; si sigue sin aparecer muestra "⚠️ Vos todavía no aparecés: <motivo>. Mandale esta captura a Gonzalo." PENDIENTE: ver la captura de alguno de ellos.
 ```
+
+```text
+Fecha: 10/10/2026 — Social: (1) los nombres iguales escritos con otra forma de tilde o espacios de más ("Gastón G" dos veces) cuentan como uno solo (dedupe con normalize NFC + espacios). (2) Gonzalo ve una ✕ al lado de "Invitar": pide confirmación y saca a esa persona SOLO de Social (fila en gya_ranking grupo "social_ocultos" con el apodo exacto; no se borra nada de su cuenta). Para volver a mostrar a alguien, borrar esa fila en Supabase (pedírmelo). El panel "Registros con problemas" quedó guardado en el historial de la rama (commit 7c32844, revertido), sin publicar.
+```

@@ -4704,6 +4704,7 @@ $("socialContinuar").onclick=()=>{$("capaSocial").classList.remove("ver");usrAbr
    (estado_juego entero, pesado) pide solo las claves que usa Social; si
    eso falla, vuelve a pedir todo como antes. */
 const USR_CLAVES_SOCIAL=["gya_mapa_pais_social","gya_pais","larueda_mundo","larueda_mundo_argentina","larueda_pasos","larueda_pasos_argentina","gya_ultima_ciudad_social","gya_ultimo_juego"];
+const SOCIAL_OCULTOS="social_ocultos";
 async function usrTraerFilas(supa){
   const liviano="grupo,apodo,avatar,mejor_racha,logros,ciudades_ganadas,actualizado_en,pm:estado_juego->presenciaMapa,"+USR_CLAVES_SOCIAL.map((k,i)=>"k"+i+":estado_juego->localStorage->>"+k).join(",");
   const traer=async cols=>{
@@ -4716,8 +4717,12 @@ async function usrTraerFilas(supa){
     }
     return{data:filas};
   };
+  /* Los que Gonzalo sacó de Social con la ✕ (grupo social_ocultos). */
+  let ocultos=new Set();
+  try{const o=await supa.from("gya_ranking").select("apodo").eq("grupo",SOCIAL_OCULTOS).limit(1000);ocultos=new Set(((o&&o.data)||[]).map(x=>String(x.apodo)));}catch(e){}
   let r=await traer(liviano);
-  if(r.error)return traer("*");
+  if(r.error){r=await traer("*");r.ocultos=ocultos;return r;}
+  r.ocultos=ocultos;
   r.data=r.data.map(f=>{
     const ls={};USR_CLAVES_SOCIAL.forEach((k,i)=>{if(f["k"+i]!=null)ls[k]=f["k"+i];delete f["k"+i];});
     f.estado_juego={presenciaMapa:f.pm||{},localStorage:ls};delete f.pm;return f;
@@ -4734,7 +4739,10 @@ async function usrCargarLista(){
     const r=await usrTraerFilas(supa);
     const vistos=new Map();
     (r.data||[]).forEach(f=>{
-      const clave=String(f.apodo||"").trim().toLowerCase();
+      if(r.ocultos&&r.ocultos.has(String(f.apodo)))return;
+      /* Misma persona escrita con otra forma de tilde o espacios de más
+         ("Gastón G" dos veces) cuenta como una sola. */
+      const clave=String(f.apodo||"").normalize("NFC").replace(/\s+/g," ").trim().toLowerCase();
       if(!clave||nombrePerfilAutomatico(clave)||RK_APODOS_OCULTOS.includes(clave))return;
       const anterior=vistos.get(clave);
       const calidad=x=>{const a=avanceMapaDeFila(x);return(a.jugando?4:0)+(a.conDatos?2:0)+(x.grupo===USR_GRUPO?1:0);};
@@ -4770,6 +4778,18 @@ async function usrCargarLista(){
       b.style.cssText="flex-shrink:0;padding:8px 12px;font-size:.78rem;border-radius:10px";
       b.onclick=()=>invEnviar(f.apodo);
       d.appendChild(b);
+      /* ✕ solo para Gonzalo: saca a esa persona de Social (no borra nada). */
+      if(esGonzalo()){
+        const x=document.createElement("button");
+        x.className="no";x.textContent="✕";x.title="Sacar de Social";
+        x.style.cssText="flex-shrink:0;margin-left:6px;padding:8px 11px;font-size:.85rem;border-radius:10px;color:#FF6B6B";
+        x.onclick=async()=>{
+          if(!confirm("¿Sacar a "+f.apodo+" de Social?\nSolo deja de verse en la lista, no se borra nada."))return;
+          try{await obtenerSupa().from("gya_ranking").upsert({grupo:SOCIAL_OCULTOS,apodo:String(f.apodo),actualizado_en:new Date().toISOString()},{onConflict:"grupo,apodo"});d.remove();}
+          catch(e){mostrarToast("⚠️","No se pudo sacar. Probá de nuevo.");}
+        };
+        d.appendChild(x);
+      }
     }
     cont.appendChild(d);
   });
