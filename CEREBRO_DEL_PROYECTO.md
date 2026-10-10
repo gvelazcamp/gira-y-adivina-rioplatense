@@ -605,3 +605,7 @@ Fecha: 09/10/2026 — Tutti Frutti: Marca acepta MAC (maquillaje; también "M.A.
 ```text
 Fecha: 09/10/2026 — Social: cada jugador muestra "🎮 Último juego: <juego> · hace X". anotarUltimoJuego(nombre) guarda gya_ultimo_juego {n,t} en localStorage (viaja solo en el respaldo estado_juego a Supabase). Se anota al abrir cualquier extensión (Extensiones.abrirJuego, incluye invitaciones de Tutti y duelos), al arrancar una partida de la rueda ("Girá y Adiviná", "Girá y Adiviná con amigos", "Sala TV") y al unirse como invitado.
 ```
+
+```text
+Fecha: 10/10/2026 — Social: Gonzalo reportó que gente que se registró hoy no aparecía. Supabase devuelve máximo 1000 filas por pedido y Social pedía todo de una (ordenado por apodo), así que los que quedaban después en orden alfabético no salían (las filas viejas "Jugador N" ocupan lugar aunque se filtren). usrTraerFilas() ahora trae de a 1000 con .range() y pide solo las claves que usa Social (estado_juego->localStorage->>clave, mucho más liviano); si esa consulta falla, vuelve a select("*") paginado. Debajo de la lista se muestra "N jugadores". Recordatorio: solo aparecen quienes completaron perfil (nombre propio, avatar y país Uruguay/Argentina).
+```

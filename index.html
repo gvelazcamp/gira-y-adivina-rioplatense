@@ -4693,6 +4693,32 @@ $("torneosCerrar").onclick=()=>$("capaTorneos").classList.remove("ver");
 $("torneosEntrar").onclick=torneoEntrar;
 $("socialCerrar").onclick=()=>$("capaSocial").classList.remove("ver");
 $("socialContinuar").onclick=()=>{$("capaSocial").classList.remove("ver");usrAbrir();};
+/* Social trae a todos los usuarios de a 1000 (Supabase devuelve como
+   máximo 1000 filas por pedido: antes, los que quedaban más allá en orden
+   alfabético no aparecían). Y en vez del respaldo completo de cada uno
+   (estado_juego entero, pesado) pide solo las claves que usa Social; si
+   eso falla, vuelve a pedir todo como antes. */
+const USR_CLAVES_SOCIAL=["gya_mapa_pais_social","gya_pais","larueda_mundo","larueda_mundo_argentina","larueda_pasos","larueda_pasos_argentina","gya_ultima_ciudad_social","gya_ultimo_juego"];
+async function usrTraerFilas(supa){
+  const liviano="grupo,apodo,avatar,mejor_racha,logros,ciudades_ganadas,actualizado_en,pm:estado_juego->presenciaMapa,"+USR_CLAVES_SOCIAL.map((k,i)=>"k"+i+":estado_juego->localStorage->>"+k).join(",");
+  const traer=async cols=>{
+    const filas=[];
+    for(let desde=0;desde<20000;desde+=1000){
+      const r=await supa.from("gya_ranking").select(cols).in("grupo",[USR_GRUPO,RK_GRUPO]).order("apodo",{ascending:true}).range(desde,desde+999);
+      if(r.error)return{error:r.error};
+      const d=r.data||[];filas.push(...d);
+      if(d.length<1000)break;
+    }
+    return{data:filas};
+  };
+  let r=await traer(liviano);
+  if(r.error)return traer("*");
+  r.data=r.data.map(f=>{
+    const ls={};USR_CLAVES_SOCIAL.forEach((k,i)=>{if(f["k"+i]!=null)ls[k]=f["k"+i];delete f["k"+i];});
+    f.estado_juego={presenciaMapa:f.pm||{},localStorage:ls};delete f.pm;return f;
+  });
+  return r;
+}
 async function usrCargarLista(){
   const supa=obtenerSupa();
   $("usrEstado").textContent="Cargando…";
@@ -4700,7 +4726,7 @@ async function usrCargarLista(){
   if(!supa){$("usrEstado").textContent="No se pudo cargar. Revisá tu conexión.";return;}
   let data,error;
   try{
-    const r=await supa.from("gya_ranking").select("*").in("grupo",[USR_GRUPO,RK_GRUPO]).order("apodo",{ascending:true});
+    const r=await usrTraerFilas(supa);
     const vistos=new Map();
     (r.data||[]).forEach(f=>{
       const clave=String(f.apodo||"").trim().toLowerCase();
@@ -4742,7 +4768,7 @@ async function usrCargarLista(){
     }
     cont.appendChild(d);
   });
-  $("usrEstado").textContent=(data&&data.length)?"":"Todavía no hay usuarios.";
+  $("usrEstado").textContent=(data&&data.length)?data.length+" jugadores":"Todavía no hay usuarios.";
 }
 function haceCuanto(t){
   const m=Math.max(0,Math.round((Date.now()-t)/60000));
