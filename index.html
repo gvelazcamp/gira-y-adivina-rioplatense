@@ -1789,6 +1789,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <button class="btn-grande sec" id="bPruebaEscudos"><span class="btn-ico">🛡️</span><span class="btn-txt">Escudos · siempre cae Quiebra/Pierde</span></button>
     <button class="btn-grande sec" id="bPruebaPromoEventos"><span class="btn-ico">🎟️</span><span class="btn-txt">Vista previa Jugá los Eventos</span></button>
     <button class="btn-grande sec" id="bPruebaChat"><span class="btn-ico">💬</span><span class="btn-txt">Chat de sala con rival ficticio</span></button>
+    <button class="btn-grande sec" id="bPruebaContraReloj"><span class="btn-ico">⏳</span><span class="btn-txt">Contra Reloj · prueba con 3 bots (hablás vos)</span></button>
     <button class="btn-grande sec" id="bPruebaTuttiDudas"><span class="btn-ico">🍉</span><span class="btn-txt">Tutti Frutti · palabras en amarillo</span></button>
     <button class="btn-grande sec" id="bPruebaFallasReg"><span class="btn-ico">👥</span><span class="btn-txt">Registros con problemas (Social)</span></button>
   </div>
@@ -5812,6 +5813,7 @@ const MENUS_CON_X={capaRuleta:"rwCerrar",capaTienda:"tnCerrar",capaLogros:"lgCer
 $("bMasOpciones").onclick=()=>{actualizarAccesoPruebas();$("capaMas").classList.add("ver");};
 $("bPruebas").onclick=()=>{$("capaPruebas").classList.add("ver");};
 $("bPruebaFallasReg").onclick=()=>{if(!esGonzalo())return;$("capaPruebas").classList.remove("ver");$("capaMas").classList.remove("ver");verFallasRegistro();};
+$("bPruebaContraReloj").onclick=()=>{if(!esGonzalo())return;$("capaPruebas").classList.remove("ver");$("capaMas").classList.remove("ver");if(window.Extensiones){Extensiones.abrirJuego("contra-reloj-rioplatense");setTimeout(()=>{if(window.ContraRelojRioplatense)ContraRelojRioplatense.prueba();},300);}};
 $("bPruebaTuttiDudas").onclick=()=>{if(!esGonzalo())return;$("capaPruebas").classList.remove("ver");$("capaMas").classList.remove("ver");if(window.TuttiFrutti)TuttiFrutti.verDudas();};
 $("bPruebaPunteros").onclick=iniciarPruebaPunteros;
 $("bPruebaAltaPerfil").onclick=()=>{$("capaPruebas").classList.remove("ver");$("capaMas").classList.remove("ver");previsualizarPerfilVacio();};
@@ -11071,8 +11073,8 @@ document.addEventListener("keydown",e=>{
 <script src="ahorcado-rioplatense.js?v=11"></script>
 <script src="contra-reloj-rioplatense-datos.js?v=2"></script>
 <script src="contra-reloj-rioplatense-voz.js?v=1"></script>
-<script src="contra-reloj-rioplatense-online.js?v=7"></script>
-<script src="contra-reloj-rioplatense.js?v=10"></script>
+<script src="contra-reloj-rioplatense-online.js?v=8"></script>
+<script src="contra-reloj-rioplatense.js?v=11"></script>
 <script src="moon-tap.js?v=5"></script>
 <script src="pantalla-fija.js?v=5"></script>
 <script src="que-numero-soy.js?v=6"></script>

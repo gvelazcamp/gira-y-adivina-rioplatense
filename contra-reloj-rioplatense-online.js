@@ -7,6 +7,7 @@ const ContraRelojOnline=(()=>{
   const LETRAS="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   const BROKERS=["wss://broker.emqx.io:8084/mqtt","wss://broker.hivemq.com:8884/mqtt","wss://mqtt.eclipseprojects.io:443/mqtt"];
   const PID_OK=/^p[a-z0-9]{4,12}$/,SALA_OK=/^[A-HJ-NP-Z2-9]{4}$/,ESTADOS_OK=["pending","correct","invalid"],MAX_JUG=18;
+  let offHost=0,ultPedido=0;
   let c=null,mq=null,sala="",pid="",miNombre="",soyHost=false,grupos=2,estadoSala=null,privado=null,tTurno=null,micOnline=false,listoConexion=false;
   let meta=15,jugados={},ganadorG=0,ultimoFestejo="",jug={},puntos={},empezada=false,grupoActivo=1,turno=null,rotacion={},tHost=null,mazo=[],idxMazo=-1,tDadoHost=null;
   const $=s=>c?c.$(s):null;
@@ -78,7 +79,7 @@ const ContraRelojOnline=(()=>{
     if(!turno)return null;
     return{id:turno.id,team:turno.team,describer:turno.describer,startAt:turno.startAt,endAt:turno.endAt,status:turno.status,statuses:turno.statuses,die:turno.die,points:turno.points};
   }
-  function estadoHost(){return{type:"state",room:sala,teamCount:grupos,players:Object.values(jug),scores:puntos,started:empezada,activeTeam:grupoActivo,turn:turnoPublico(),meta,winner:ganadorG};}
+  function estadoHost(){return{type:"state",room:sala,teamCount:grupos,players:Object.values(jug),scores:puntos,started:empezada,activeTeam:grupoActivo,turn:turnoPublico(),meta,winner:ganadorG,now:Date.now()};}
   function difundir(){estadoSala=estadoHost();hostOut(estadoSala);pintar();}
   function mandarTarjeta(p){
     if(!turno||turno.status!=="active")return;
@@ -111,6 +112,8 @@ const ContraRelojOnline=(()=>{
       const i=entero(m.index,0,4),p=jug[id];
       if(i!==null&&turno.statuses[i]==="pending"&&(id===turno.describer||(p.team&&p.team!==turno.team))){turno.statuses[i]="invalid";actualizarPalabra(i,"invalid");difundir();chequearResueltas();}
     }else if(m.type==="finish_round"&&turno?.status==="active"&&id===turno.describer)terminarRondaHost();
+    /* Un jugador no recibió su tarjeta (se perdió el mensaje): se la reenvía. */
+    else if(m.type==="need_card"&&turno?.status==="active")mandarTarjeta(jug[id]);
   }
   function crearSala(){
     miNombre=limpiarNombre($("#hostName").value,"Anfitrión");
@@ -220,7 +223,7 @@ const ContraRelojOnline=(()=>{
   function recibirCliente(m){
     if(m.type==="state"&&estadoValido(m)){
       m.players.forEach(p=>{p.name=limpiarNombre(p.name,"Jugador");});
-      estadoSala=m;grupos=m.teamCount;
+      estadoSala=m;grupos=m.teamCount;offHost=Number.isFinite(m.now)&&Math.abs(Date.now()-m.now)<600000?Date.now()-m.now:0;
       if(!m.players.some(p=>p.pid===pid)&&listoConexion)enviarIn({type:"hello",name:miNombre});
       pintar();
     }else if(m.type==="word_update"){const i=entero(m.index,0,4);if(i!==null&&ESTADOS_OK.includes(m.status))aplicarPalabra(i,m.status);}
@@ -292,6 +295,14 @@ const ContraRelojOnline=(()=>{
     const enRonda=estadoSala.turn?.status==="active";
     $("#onlineGame").classList.toggle("crr-en-ronda",enRonda);c.raiz().classList.toggle("crr-en-ronda",enRonda);
     pintarMarcador();pintarRol();pintarResultado();
+    /* Si la ronda está corriendo pero a este celular no le llegó su tarjeta
+       (mensaje perdido), el reloj igual arranca con la hora del anfitrión
+       y se pide la tarjeta de nuevo. Antes quedaba clavado en 30. */
+    const tt=estadoSala.turn;
+    if(enRonda&&tt&&Number.isFinite(tt.startAt)&&Number.isFinite(tt.endAt)&&(!privado||privado.turn?.id!==tt.id)){
+      if(Date.now()-ultPedido>1500){ultPedido=Date.now();enviarIn({type:"need_card"});}
+      if(!tTurno){const t2={...tt,startAt:tt.startAt+offHost,endAt:tt.endAt+offHost};const p2={kind:"blind",role:"teammate",turn:t2};tTurno=setInterval(()=>tick(t2,p2),100);}
+    }
   }
   function pintarGanador(g){
     c.raiz().classList.remove("crr-en-ronda");$("#onlineGame").classList.remove("crr-en-ronda");
@@ -319,7 +330,7 @@ const ContraRelojOnline=(()=>{
     const t=estadoSala.turn,rol=$("#roleBox"),pista=$("#voiceTurnHint");
     if(!t){rol.innerHTML="Esperando que el anfitrión prepare el próximo turno.";$("#oPhase").textContent="ESPERANDO TURNO";return;}
     const yo=estadoSala.players.find(p=>p.pid===pid),desc=estadoSala.players.find(p=>p.pid===t.describer);
-    if(pid===t.describer){rol.innerHTML="<strong>TE TOCA DESCRIBIR.</strong> Todos te escuchan. Tocá cada palabra cuando tu equipo la adivine.";pista.textContent="Tu voz se transmite a la sala y el árbitro analiza únicamente tu micrófono.";}
+    if(pid===t.describer){rol.innerHTML="<strong>TE TOCA DESCRIBIR.</strong> Todos te escuchan. <strong>Cuando tu equipo diga una palabra, TOCALA: se pone en VERDE.</strong>";pista.textContent="Tu voz se transmite a la sala y el árbitro analiza únicamente tu micrófono.";}
     else if(yo?.team===t.team){rol.innerHTML="<strong>ADIVINÁ.</strong> Escuchá a "+c.esc(desc?.name||"tu compañero")+". Vos no ves la tarjeta.";pista.textContent="Escuchá al descriptor y respondé por voz. Tu micrófono también está en la sala.";}
     else{rol.innerHTML="<strong>CONTROLÁS LA JUGADA.</strong> Escuchás al descriptor y ves las 5 respuestas del Grupo "+t.team+".";pista.textContent="Si el descriptor dice una respuesta y el árbitro no la toma, podés marcarla.";}
     $("#oTeam").textContent="G"+t.team;$("#oHits").textContent=c.contar(t.statuses)+"/5";$("#oPenalty").textContent=t.die==null?"—":"−"+t.die;
@@ -384,9 +395,9 @@ const ContraRelojOnline=(()=>{
     if(p.kind==="blind")$("#oStatus").textContent="Escuchá y adiviná.";
     else if(p.role==="describer"){
       if(!$("#oPreview").hidden){$("#oPreview").hidden=true;pintarPalabras();}
-      $("#oFinish").hidden=false;$("#oPhase").textContent="¡DESCRIBÍ LAS 5!";$("#oStatus").textContent="Dado: −"+(t.die??0)+". Tocá una palabra cuando la adivinen.";
+      $("#oFinish").hidden=false;$("#oPhase").textContent="¡DESCRIBÍ LAS 5!";$("#oStatus").textContent="👆 Cuando la adivinen, TOCALA para ponerla en verde · Dado: −"+(t.die??0);
       if(!micOnline)iniciarMicOnline(p);
-    }else $("#oStatus").textContent="Dado: −"+(t.die??0)+". Si dice una respuesta, marcá esa palabra.";
+    }else $("#oStatus").textContent="Si el que describe dice una respuesta, tocá ⚠ MARCAR (se pone en rojo) · Dado: −"+(t.die??0);
     if(q<=0){clearInterval(tTurno);tTurno=null;$("#oFinish").hidden=true;detenerMicOnline();}
   }
   async function iniciarMicOnline(p){
