@@ -629,3 +629,7 @@ Fecha: 11/10/2026 — Social: "Pato" se registró y no aparecía (otra vez gente
 ```text
 Fecha: 11/10/2026 — Tutti Frutti: palabras en amarillo aprobadas por Gonzalo: Apellido Ubillo; Marca Ues, Fixed, Ernex; Famoso Nicky Nicole; Película o serie Cazador/El cazador, Visión nocturna, Solo tú y yo, Un país lejano, Ultratumba; Cosa Sorete, Ukelele. Nueva lista window.TUTTI_COSAS (cosas aprobadas que el diccionario no trae; los bots no las usan). Las demás del historial de ese día quedaron rechazadas.
 ```
+
+```text
+Fecha: 11/10/2026 — Tutti Frutti: Comida + nata, natto/nato, nacatamal (lista de comidas con N que pasó Gonzalo; el resto ya estaba).
+```
