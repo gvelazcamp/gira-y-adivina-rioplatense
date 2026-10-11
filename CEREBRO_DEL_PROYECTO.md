@@ -698,3 +698,7 @@ Fecha: 11/10/2026 — Contra Reloj online: cambiar personas de grupo. El anfitri
 ```text
 Fecha: 11/10/2026 — Contra Reloj online: arriba de la jugada, todos ven un cartel con "Grupo N · 🎤 Describe: X · 🙋 Adivina(n): Y" (con "(vos)" en el propio nombre), antes y durante la ronda.
 ```
+
+```text
+Fecha: 11/10/2026 — Tutti Frutti: las categorías se muestran como "Animal / especie" y "Famoso / banda" (las bandas uruguayas como Marka Registrada o Cuarteto de Nos valen en Famoso). Solo cambia el texto que se ve (ETIQ / etiq()); por dentro siguen llamándose "Animal" y "Famoso" para no romper partidas con celulares viejos ni las listas/aprobaciones.
+```
