@@ -361,6 +361,11 @@ const ContraRelojOnline=(()=>{
     if(pid===t.describer){rol.innerHTML="<strong>TE TOCA DESCRIBIR.</strong> Todos te escuchan. <strong>Cuando tu equipo diga una palabra, TOCALA: se pone en VERDE.</strong>";pista.textContent="Tu voz se transmite a la sala y el árbitro analiza únicamente tu micrófono.";}
     else if(yo?.team===t.team){rol.innerHTML="<strong>ADIVINÁ.</strong> Escuchá a "+c.esc(desc?.name||"tu compañero")+". Vos no ves la tarjeta.";pista.textContent="Escuchá al descriptor y decí las respuestas: el juego te escucha y las marca en verde solas.";}
     else{rol.innerHTML="<strong>CONTROLÁS LA JUGADA.</strong> Escuchás al descriptor y ves las 5 respuestas del Grupo "+t.team+".";pista.textContent="Si el descriptor dice una respuesta y el árbitro no la toma, podés marcarla.";}
+    /* Para todos: quién describe y quién adivina en este turno. */
+    {const adiv=estadoSala.players.filter(p=>p.team===t.team&&p.pid!==t.describer).map(p=>p.name+(p.pid===pid?" (vos)":""));
+     const q=document.createElement("div");q.className="crr-quien";q.style.cssText="margin-bottom:8px;padding:8px 10px;border-radius:12px;background:#F5B3011f;border:1px solid #F5B30155;font-size:.95rem;line-height:1.35";
+     q.innerHTML="<b>Grupo "+t.team+"</b><br>🎤 Describe: <b>"+c.esc((desc?.name||"?")+(t.describer===pid?" (vos)":""))+"</b><br>🙋 Adivina"+(adiv.length>1?"n":"")+": <b>"+c.esc(adiv.join(", ")||"—")+"</b>";
+     rol.prepend(q);}
     $("#oTeam").textContent="G"+t.team;$("#oHits").textContent=c.contar(t.statuses)+"/5";$("#oPenalty").textContent=t.die==null?"—":"−"+t.die;
     if(t.status!=="active"&&!tTurno){c.reloj("o",c.SEG);$("#oFinish").hidden=true;$("#oPreview").hidden=true;}
     if(t.status==="awaiting_die"||t.status==="ready"){
