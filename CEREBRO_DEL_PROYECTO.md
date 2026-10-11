@@ -637,3 +637,7 @@ Fecha: 11/10/2026 — Tutti Frutti: Comida + nata, natto/nato, nacatamal (lista 
 ```text
 Fecha: 11/10/2026 — Tutti Frutti: corregir respuestas. Debajo de "Después / Siguiente" aparecen las respuestas ya hechas ("¿Te equivocaste? Tocá para corregir" · Categoría Palabra ✏️); al tocar una vuelve a abrir esa categoría para editarla (lo que se estaba escribiendo queda guardado como con "Después"). Al completar la última categoría sigue cantando BASTA solo. Pendientes que Gonzalo todavía no confirmó: castigo por salir de la app durante la ronda (0 puntos + aviso "salió del juego", margen ~3 s) e ignorar una letra suelta al final ("Gladiador ñ").
 ```
+
+```text
+Fecha: 11/10/2026 — Tutti Frutti: Gonzalo no quiso la lista de respuestas tocables debajo (se sacó). En su lugar, botón "⟵ Anterior" (junto a Después / Siguiente): vuelve a la última categoría confirmada para corregirla (on.hist guarda el orden); al confirmar con Siguiente sigue con la que estaba escribiendo (lo escrito queda guardado). Anterior queda apagado si todavía no confirmó ninguna.
+```
