@@ -618,7 +618,7 @@ const TuttiFrutti=(()=>{
         pts[j.pid][i]=validos.length===1?20:iguales?5:10;
       });
     });
-    /* ⚠️ dudosas: los puntos que le pusieron a mano con el sumador (de 5 en 5, hasta 20). */
+    /* ⚠️ dudosas: los puntos que le pusieron a mano con el sumador (5, 10 o 20). */
     on.jug.forEach(j=>on.cats.forEach((c,i)=>{const x=extraDe(j.pid,i);if(x!=null&&(on.resps[j.pid]||[])[i]&&!marca(j.pid,i))pts[j.pid][i]=x;}));
     return pts;
   }
@@ -629,6 +629,9 @@ const TuttiFrutti=(()=>{
   /* Letras que ya salieron (no vuelven hasta que salgan las 20): se
      muestran abajo de los puntos de cada ronda y del ganador. */
   const salieronHtml=()=>{const u=(on&&on.usadas||[]).filter(l=>LETRAS.includes(l));return u.length?`<p class="tf-salieron">🔤 Ya salieron: <b>${u.join(" · ")}</b><small>No se repiten hasta que salgan las ${LETRAS.length}.</small></p>`:"";};
+  /* Sumador: 0 → 5 → 10 → 20 (el 15 no se usa en el Tutti). */
+  const PASOS_SUMA=[0,5,10,20];
+  const pasoSuma=(actual,dir)=>{let k=PASOS_SUMA.findIndex(x=>x>=actual);if(k<0)k=PASOS_SUMA.length-1;if(dir>0&&PASOS_SUMA[k]===actual)k++;else if(dir<0)k--;return PASOS_SUMA[Math.max(0,Math.min(PASOS_SUMA.length-1,k))];};
   function mostrarResultado(){
     detenerMusica();
     if(!raiz||!on)return;on.fase="resultado";on.votos=on.votos||{};on.marcas=on.marcas||{};
@@ -636,7 +639,7 @@ const TuttiFrutti=(()=>{
     const filas=on.jug.map(j=>{const r=on.resps[j.pid]||[];return`<li class="tf-jug${j.pid===g?" tf-gano":""}"><div class="tf-jug-cab"><b>${esc(j.nombre)}${j.pid===on.pid?" (vos)":""}</b>${j.pid===g?`<span class="tf-basta">🏁 BASTA</span>`:""}<span class="tf-sub" data-sub="${j.pid}"></span></div>
       <div class="tf-tabla"><div class="tf-fila tf-titulos"><span>Categoría</span><span>Palabra</span><span>Pts</span><span></span></div>${on.cats.map((c,i)=>{const v=r[i]||"";const ok=marca(j.pid,i);return`<div class="tf-fila" data-a="${j.pid}" data-i="${i}"><span class="tf-cat">${esc(c)}</span><span class="tf-pal${v&&!ok?" tf-mal":""}" ${v&&!ok?`data-ver="1"`:""}>${esc(v||"—")}${v?(ok?" <i class=\"tf-marca ok\">✓</i>":" <i class=\"tf-marca mal\">⚠️</i><span class=\"tf-ver\">👆 ver error</span>"+(puedeSumar(j.pid)?"<span class=\"tf-sum\"><button type=\"button\" data-d=\"-5\" aria-label=\"Restar\">−</button><b>0</b><button type=\"button\" data-d=\"5\" aria-label=\"Sumar\">+</button></span>":"")):""}${v&&!ok&&j.pid===on.pid&&!on.bots?`<button type="button" class="tf-apelar">🙋 Apelar</button>`:""}</span><b class="tf-pts"></b>${v&&ok&&j.pid!==on.pid?`<button type="button" class="tf-votar" aria-label="Votar"></button>`:"<span></span>"}</div>`;}).join("")}</div></li>`;}).join("");
     pantalla(`<div class="mg-panel imp-panel imp-fin"><h3 id="tfTitulo"></h3>
-      <p class="imp-ayuda">Letra <b>${on.letra}</b> · <b>10</b> única · <b>5</b> repetida · <b>20</b> si sos el único · <b>0</b> si no vale.<br>⚠️ = dudosa (vale 0): tocá <b class="tf-ver-ej">👆 ver error</b> para ver por qué. Si en realidad está bien, sumale puntos con ➕ (de 5 en 5, hasta 20). Con ❌ anulás una respuesta.</p>
+      <p class="imp-ayuda">Letra <b>${on.letra}</b> · <b>10</b> única · <b>5</b> repetida · <b>20</b> si sos el único · <b>0</b> si no vale.<br>⚠️ = dudosa (vale 0): tocá <b class="tf-ver-ej">👆 ver error</b> para ver por qué. Si en realidad está bien, sumale puntos con ➕ (5, 10 o 20). Con ❌ anulás una respuesta.</p>
       <ul class="tf-resps">${filas}</ul>
       <div class="qs-sub">🏆 Puntos (con esta ronda)</div><ul class="imp-tabla" id="tfTabla"></ul>
       ${salieronHtml()}
@@ -645,7 +648,7 @@ const TuttiFrutti=(()=>{
       const f=e.target.closest(".tf-fila");if(!f||!f.dataset.a)return;const a=f.dataset.a,i=Number(f.dataset.i);
       if(e.target.closest(".tf-ceder")){mandar({t:"objecion",n:on.n,a:on.pid,i,ok:true});return;}
       const ap=e.target.closest(".tf-apelar");if(ap){if(ap.disabled)return;ap.disabled=true;ap.textContent="🙋 Apelada";mandar({t:"apela",n:on.n,a:on.pid,i});if(typeof mostrarToast==="function")mostrarToast("🙋","Les avisamos a todos: ellos deciden si te suman puntos.","Apelaste");return;}
-      const sb=e.target.closest(".tf-sum button");if(sb){if(puedeSumar(a)){const p=Math.max(0,Math.min(20,(extraDe(a,i)||0)+Number(sb.dataset.d)));mandar({t:"extra",n:on.n,a,i,p});
+      const sb=e.target.closest(".tf-sum button");if(sb){if(puedeSumar(a)){const p=pasoSuma(extraDe(a,i)||0,Number(sb.dataset.d));mandar({t:"extra",n:on.n,a,i,p});
         /* Si el que suma es Gonzalo, la palabra queda aprobada para siempre. */
         const w=(on.resps[a]||[])[i];if(p>0&&w&&typeof esGonzalo==="function"&&esGonzalo()){aprobarPalabra(on.cats[i],w);if(typeof mostrarToast==="function")mostrarToast("✅","«"+w+"» ya vale en "+on.cats[i]+" para las próximas partidas.");}}return;}
       if(e.target.closest(".tf-votar")){const st=on.votos[a+"|"+i];const ya=!!(st&&st.has(on.pid));mandar({t:"voto",n:on.n,a,i,v:!ya});return;}
