@@ -486,11 +486,16 @@ const TuttiFrutti=(()=>{
       <div class="imp-quien" id="tfCat"></div>
       <input id="tfInput" autocomplete="off" autocapitalize="words" enterkeyhint="next">
       <p class="imp-ayuda" id="tfMsg"></p>
-      <div class="mim-btns"><button type="button" class="bb-pasar imp-gris" id="tfSaltar">Después</button><button type="button" class="bb-pasar mim-ok" id="tfSig">Siguiente ➜</button></div></div>`);
+      <div class="mim-btns"><button type="button" class="bb-pasar imp-gris" id="tfSaltar">Después</button><button type="button" class="bb-pasar mim-ok" id="tfSig">Siguiente ➜</button></div>
+      <div class="tf-hechas" id="tfHechas"></div></div>`);
     const inp=q("tfInput");
     q("tfSig").onclick=confirmarCampo;
     q("tfSaltar").onclick=()=>{guardarCampo(false);if(on.pend.length>1){on.pend.push(on.pend.shift());}pintarCampo();};
     inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();confirmarCampo();}});
+    /* Corregir: tocar una respuesta ya hecha la vuelve a abrir (lo que se
+       estaba escribiendo queda guardado como con "Después"). */
+    q("tfHechas").onclick=e=>{const b=e.target.closest("button[data-i]");if(!b||!on||on.fase!=="jugando"||on.basta)return;
+      const j=+b.dataset.i;guardarCampo();on.pend=[j,...on.pend.filter(x=>x!==j)];pintarCampo();};
     pintarCampo();relojOnline();
   }
   function pintarCampo(){
@@ -499,6 +504,9 @@ const TuttiFrutti=(()=>{
     const inp=q("tfInput");inp.value=on.mias[i]||"";inp.placeholder="Empieza con "+on.letra+"…";try{inp.focus();}catch(e){}
     q("tfProg").innerHTML=on.cats.map((c,j)=>`<i class="${on.mias[j]?"ok":""}${j===i?" act":""}"></i>`).join("");
     q("tfMsg").textContent="";
+    const h=q("tfHechas");
+    if(h){const hechas=on.cats.map((c,j)=>j).filter(j=>!on.pend.includes(j)&&on.mias[j]);
+      h.innerHTML=hechas.length?`<small>¿Te equivocaste? Tocá para corregir</small>`+hechas.map(j=>`<button type="button" data-i="${j}"><span>${esc(on.cats[j])}</span><b>${esc(on.mias[j])}</b> ✏️</button>`).join(""):"";}
   }
   function guardarCampo(){const i=on.pend[0];on.mias[i]=(q("tfInput").value||"").trim().slice(0,30);}
   function confirmarCampo(){
