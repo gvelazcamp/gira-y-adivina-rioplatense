@@ -118,7 +118,7 @@ const TuttiFrutti=(()=>{
      famoso y "Nuca" no pasa como animal. Para famosos vale el apellido solo
      ("Messi" → "Lionel Messi") pero no el nombre de pila solo. */
   const TIPOS={
-    famoso:/\b(actor|actriz|cantante|cantautor|cantautora|futbolista|jugador|jugadora|politico|politica|escritor|escritora|poeta|poetisa|musico|compositor|compositora|presidente|presidenta|presentador|presentadora|conductor|conductora|periodista|modelo|deportista|tenista|boxeador|boxeadora|pintor|pintora|cientifico|cientifica|influencer|youtuber|streamer|comediante|humorista|director|directora|rapero|rapera|bailarin|bailarina|piloto|empresario|empresaria|banda|grupo musical|duo|personaje|atleta|nadador|nadadora|ciclista|basquetbolista|rey|reina|principe|princesa|militar|filosofo|filosofa|inventor|astronauta|dibujante|historietista|productor|productora|disc jockey|dj|murguista|payador)\b/,
+    famoso:/\b(actor|actriz|cantante|cantautor|cantautora|futbolista|jugador|jugadora|politico|politica|escritor|escritora|poeta|poetisa|musico|compositor|compositora|presidente|presidenta|presentador|presentadora|conductor|conductora|periodista|modelo|deportista|tenista|boxeador|boxeadora|pintor|pintora|cientifico|cientifica|influencer|youtuber|streamer|comediante|humorista|director|directora|rapero|rapera|bailarin|bailarina|piloto|empresario|empresaria|banda|grupo musical|duo|atleta|nadador|nadadora|ciclista|basquetbolista|rey|reina|principe|princesa|militar|filosofo|filosofa|inventor|astronauta|dibujante|historietista|productor|productora|disc jockey|dj|murguista|payador)\b/,
     marca:/\b(empresa|marca|compania|fabricante|multinacional|cadena de|corporacion|tienda|supermercado|supermercados|automoviles|automotriz|bebida|refresco|cerveza|gaseosa|aerolinea|banco|red social|videojuego|videojuegos|software|consola|sitio web|plataforma|golosina|chocolate|galletitas|fabrica|comercializa|productos)\b/,
     pelicula:/\b(pelicula|serie|telenovela|film|filme|largometraje|cortometraje|animacion|animada|programa de television|programa televisivo|miniserie|anime|documental|saga|sitcom|reality|dibujos animados)\b/,
     animal:/\b(especie|especies|genero|familia|animal|animales|ave|aves|mamifero|mamiferos|pez|peces|reptil|reptiles|insecto|insectos|anfibio|anfibios|aracnido|aracnidos|molusco|moluscos|crustaceo|crustaceos|felino|felinos|canido|roedor|roedores|primate|primates|cetaceo|serpiente|serpientes|artropodo|marsupial|vertebrado|invertebrado|raza)\b/,
@@ -150,6 +150,9 @@ const TuttiFrutti=(()=>{
       return pags.some(p=>{const raw=(p.description||"")+" "+(p.extract||"");if(/puede referirse a|desambiguaci/i.test(raw)&&!re.test(NORM(p.description||"")))return (tipo==="famoso"&&v.includes(" ")||tipo==="nombre"||tipo==="lugar")&&re.test(NORM(p.extract||""));
         /* (Nombre y apellido con varias personas, ej. "Carlos Núñez": alcanza con que sean famosos.) */
         if(tipo==="famoso"&&/\bes un nombre (propio|de pila)\b/.test(NORM(raw)))return false;
+        /* Personajes de ficción (dibujitos, películas, series, historietas)
+           no son famosos: "Correcaminos" va en Película o serie. */
+        if(tipo==="famoso"&&/\b(personaje (ficticio|de ficcion|animado|de (los )?dibujos( animados)?|de animacion|de (la |una )?(serie|pelicula|historieta|tira|comic|caricatura)|de (los )?videojuegos?|de looney tunes|de disney)|dibujos animados)\b/.test(NORM(raw)))return false;
         return re.test(NORM(raw))||(tipo==="famoso"&&/\([^)]*\b\d{3,4}\b[^)]*\)\s*(es|fue)\b/.test(raw));});
     }catch(e){return null;}})();
     cacheWiki.set(ck,pr);return pr;

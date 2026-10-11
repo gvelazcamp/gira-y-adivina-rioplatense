@@ -702,3 +702,7 @@ Fecha: 11/10/2026 — Contra Reloj online: arriba de la jugada, todos ven un car
 ```text
 Fecha: 11/10/2026 — Tutti Frutti: las categorías se muestran como "Animal / especie" y "Famoso / banda" (las bandas uruguayas como Marka Registrada o Cuarteto de Nos valen en Famoso). Solo cambia el texto que se ve (ETIQ / etiq()); por dentro siguen llamándose "Animal" y "Famoso" para no romper partidas con celulares viejos ni las listas/aprobaciones.
 ```
+
+```text
+Fecha: 11/10/2026 — Tutti Frutti: en Famoso / banda NO valen personajes de ficción (dibujitos, películas, series, historietas, videojuegos): "Correcaminos" pasaba porque Wikipedia lo describe como "personaje" y esa palabra estaba en TIPOS.famoso. Se sacó "personaje" del control y, si la página dice "personaje ficticio / de dibujos animados / de la serie…", no vale como famoso (va en Película o serie). La lista propia de famosos no tiene personajes de ficción (revisado).
+```
