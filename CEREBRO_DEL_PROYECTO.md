@@ -673,3 +673,12 @@ Fecha: 11/10/2026 — Tutti Frutti (regla de Gonzalo): una apelación aceptada p
 ```text
 Fecha: 11/10/2026 — Tutti Frutti (regla de Gonzalo): el +/− se sigue viendo en las palabras en amarillo de los demás, pero con amigos SOLO suma si el autor apeló esa palabra (on.apeladas, se marca al recibir "apela"); si no, se ve apagado y avisa "Solo se suma si el que la escribió la apela". Excepciones: Gonzalo puede sumar siempre; contra bots, el jugador suma todo.
 ```
+
+```text
+Fecha: 11/10/2026 — Contra Reloj (Gonzalo jugó online, cada uno con su celular, iPhone y Android mezclados; reloj de arena quieto, la correcta no se ponía verde, la dicha a propósito no se ponía roja):
+- Reloj de arena: la arena se mueve con el atributo transform de SVG (antes CSS transform, que en iPhone podía no aplicarse).
+- Online: el estado del anfitrión manda su hora (now) y, si a un celular no le llegó la tarjeta de la ronda (mensaje perdido), el reloj arranca igual y pide la tarjeta de nuevo (need_card). Antes quedaba clavado en 30.
+- Verde: NUNCA fue automático; lo pone el que describe tocando la palabra. Se agrandó la indicación ("Cuando tu equipo diga una palabra, TOCALA: se pone en VERDE"). Rivales: "tocá ⚠ MARCAR (se pone en rojo)".
+- Rojo: el árbitro por voz escucha solo el micrófono del que describe; con la voz online prendida, en Android el micrófono queda ocupado y el árbitro no escucha → ahora lo dice ("ÁRBITRO APAGADO… los rivales marcan a mano").
+- Prueba para Gonzalo (Más → Pruebas → "Contra Reloj · prueba con 3 bots"): un celular, vos + Bot Ana vs Bot Beto + Bot Caro; botón para hablar "como el que DESCRIBE" (decir la palabra → ROJO) o "como el que ADIVINA" (→ VERDE). Probado con reconocedor simulado: rojo, verde y reloj OK.
+```

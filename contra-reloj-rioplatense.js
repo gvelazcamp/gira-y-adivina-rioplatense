@@ -77,14 +77,16 @@ const ContraRelojRioplatense=(()=>{
     $("#"+pre+"HudTime").textContent=n;$("#"+pre+"TimeBig").textContent=n;$("#"+pre+"Bar").style.width=(p*100)+"%";
     const h=$("#"+pre+"Hourglass"),arriba=h.querySelector(".sandTop"),abajo=h.querySelector(".sandBottom"),chorro=h.querySelector(".sandStream");
     if(!arriba)return;
-    arriba.style.transform="scaleY("+Math.max(.08,p)+")";arriba.style.transformOrigin="50% 31px";
-    abajo.style.transform="scaleY("+Math.max(.4,1.4-p)+")";abajo.style.transformOrigin="50% 149px";
+    /* Con el atributo transform de SVG (no CSS): en iPhone el CSS sobre
+       elementos SVG no siempre se aplicaba y la arena no bajaba. */
+    arriba.setAttribute("transform","translate(70 31) scale(1 "+Math.max(.08,p)+") translate(-70 -31)");
+    abajo.setAttribute("transform","translate(70 149) scale(1 "+Math.max(.4,1.4-p)+") translate(-70 -149)");
     chorro.style.opacity=quedan>0?1:.1;h.classList.toggle("crr-urgent",quedan<=8&&quedan>0);
   }
 
   /* MICRÓFONO + ÁRBITRO (solo el micrófono LOCAL). La grabación queda en
      memoria para revisar una disputa: no se sube ni se guarda. */
-  let mic=null,grabador=null,trozos=[],audioUrl="",voz=null,oido="",arbTarjeta=null,arbEstados=null,arbAlAcertar=null;
+  let mic=null,grabador=null,trozos=[],audioUrl="",voz=null,oido="",arbTarjeta=null,arbEstados=null,arbAlAcertar=null,arbComoAdivina=null;
   async function micPreparar(){
     const vozOnline=window.ContraRelojVoz&&ContraRelojVoz.stream();
     if(vozOnline){mic=vozOnline;return mic;}
@@ -124,14 +126,21 @@ const ContraRelojRioplatense=(()=>{
       if(!arbTarjeta)return;
       const ultimo=norm(parcial||final).split(" ").slice(-4).join(" ");
       if(ultimo)estado("● ÁRBITRO OYÓ: «"+ultimo+"»");
-      arbTarjeta.forEach((w,i)=>{if(arbEstados[i]==="pending"&&contiene(escuchado,w)){arbEstados[i]="invalid";errorEnVivo(w);if(arbAlAcertar)arbAlAcertar(i,w);}});
+      /* En la prueba de Gonzalo puede hablar "como adivinador": ahí decir
+         la palabra la pone en verde en vez de anularla. */
+      const comoAdivina=typeof arbComoAdivina==="function"&&arbComoAdivina();
+      arbTarjeta.forEach((w,i)=>{if(arbEstados[i]==="pending"&&contiene(escuchado,w)){
+        if(comoAdivina){arbEstados[i]="correct";aciertoEnVivo();}else{arbEstados[i]="invalid";errorEnVivo(w);}
+        if(arbAlAcertar)arbAlAcertar(i,w);}});
+      /* Lo ya escuchado no vuelve a contar para la próxima palabra. */
+      if(comoAdivina&&final)oido="";
     };
     voz.onerror=e=>{
       const err=e&&e.error||"";
       if(err==="no-speech"||err==="aborted")return;
       fallos++;
       if(err==="not-allowed"||err==="service-not-allowed"){estado("ÁRBITRO SIN PERMISO DE MICRÓFONO");arbTarjeta=null;}
-      else if(err==="audio-capture")estado("ÁRBITRO: EL MICRÓFONO ESTÁ OCUPADO");
+      else if(err==="audio-capture")estado("ÁRBITRO APAGADO: el micrófono lo usa la voz. Los rivales marcan a mano con ⚠ MARCAR");
       else if(err==="network")estado("ÁRBITRO: SIN INTERNET PARA ESCUCHAR");
       else if(err==="language-not-supported"&&voz){voz.lang="es-AR";}
       else estado("ÁRBITRO CON PROBLEMAS ("+err+")");
@@ -152,6 +161,9 @@ const ContraRelojRioplatense=(()=>{
   function revision(id){
     const a=$(id);if(!a)return;
     if(audioUrl){a.src=audioUrl;a.hidden=false;}else{a.removeAttribute("src");a.hidden=true;}
+  }
+  function aciertoEnVivo(){
+    try{if(typeof bip==="function"){bip(784,.12);setTimeout(()=>bip(1047,.16),110);}}catch(e){}
   }
   function errorEnVivo(palabra){
     const capa=$("#liveError");if(!capa)return;
@@ -198,6 +210,21 @@ const ContraRelojRioplatense=(()=>{
   function fanfarria(){
     try{const A=window.AudioContext||window.webkitAudioContext,c=new A(),n=c.currentTime;[523,659,784,1047].forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();o.type="triangle";o.frequency.value=f;g.gain.setValueAtTime(.001,n+i*.14);g.gain.exponentialRampToValueAtTime(.2,n+i*.14+.02);g.gain.exponentialRampToValueAtTime(.001,n+i*.14+(i===3?.6:.2));o.connect(g);g.connect(c.destination);o.start(n+i*.14);o.stop(n+i*.14+.7);});setTimeout(()=>c.close().catch(()=>{}),1600);}catch(e){}
   }
+  /* PRUEBA (solo Gonzalo, Más → Pruebas): partida en un solo celular contra
+     3 bots donde Gonzalo habla por todos. Con el botón elige si habla como
+     el que describe (decir la palabra → ROJO) o como el que adivina (decir
+     la palabra → VERDE), para probar el árbitro y el reloj. */
+  let rolPrueba="describe";
+  function pintarRolPrueba(){
+    let b=$("#rolPrueba");
+    if(modo!=="prueba"){if(b)b.remove();return;}
+    if(!b){b=document.createElement("button");b.type="button";b.id="crr-rolPrueba";b.className="crr-secondary";
+      b.style.cssText="width:100%;margin:8px 0;font-size:.95rem";
+      b.onclick=()=>{rolPrueba=rolPrueba==="describe"?"adivina":"describe";pintarRolPrueba();};
+      const ref=$("#lRec");ref.parentNode.insertBefore(b,ref);}
+    b.textContent=rolPrueba==="describe"?"🎙 Hablo como el que DESCRIBE (si digo la palabra → ROJO) · tocar para cambiar":"🎙 Hablo como el que ADIVINA (si digo la palabra → VERDE) · tocar para cambiar";
+  }
+  function prueba(){if(!raiz)return;const g=$("#grupo");if(g)g.hidden=true;rolPrueba="describe";empezarLocal("prueba");}
   function configLocal(m){
     modo=m;pantalla("#localSetup");
   }
@@ -206,7 +233,7 @@ const ContraRelojRioplatense=(()=>{
     const sel=a=>Number(raiz.querySelector(".crr-choice.crr-sel["+a+"]")?.getAttribute(a))||0;
     lGrupos=sel("data-lgrupos")===3?3:2;lMeta=[10,15,20].includes(sel("data-lmeta"))?sel("data-lmeta"):15;
     lPuntos={};for(let g=1;g<=lGrupos;g++)lPuntos[g]=0;
-    if(m==="arbitro"){
+    if(m==="arbitro"||m==="prueba"){
       if(!SR_DISPONIBLE())aviso("Este navegador no tiene árbitro automático (probá con Chrome). Se graba la ronda y marcás a mano.");
       if(necesitaMicPropio()){try{await micPreparar();}catch(e){aviso("El modo Árbitro necesita permiso de micrófono. "+(e.message||""));return;}}
     }
@@ -218,7 +245,7 @@ const ContraRelojRioplatense=(()=>{
   function previaLocal(){
     limpiarTimers();activa=false;dado=null;pantalla("#localPreRound");
     dadoPregunta($("#lPreDie"));
-    $("#lPreTurno").textContent="Turno del GRUPO "+grupoTurno()+" · pasale el celular a quien describe";
+    $("#lPreTurno").textContent=modo==="prueba"?"🤖 PRUEBA · Grupo 1: vos + Bot Ana · Grupo 2: Bot Beto + Bot Caro · turno del GRUPO "+grupoTurno():"Turno del GRUPO "+grupoTurno()+" · pasale el celular a quien describe";
     marcador($("#lPreScores"),lPuntos,lGrupos,grupoTurno(),lMeta);
     $("#lPreCalc").innerHTML="Primero tirá el dado.<br><strong>El equipo sabrá el descuento antes de ver la tarjeta.</strong>";
     $("#lPreRoll").hidden=false;$("#lPreRoll").disabled=false;$("#lPreStart").hidden=true;
@@ -239,7 +266,8 @@ const ContraRelojRioplatense=(()=>{
     tarjeta=mazo[ronda%mazo.length];Vistas.marcar("contrareloj",tarjeta[0]);estados=Array(5).fill("pending");
     $("#lRound").textContent="G"+grupoTurno();$("#lHits").textContent="0/5";$("#lPenalty").textContent="−"+(dado??0);
     $("#lPhase").textContent="MIRÁ LA TARJETA";$("#lStatus").textContent="Tenés 3 segundos para verla.";
-    $("#lRec").hidden=modo!=="arbitro";$("#lRec").classList.remove("crr-on");
+    $("#lRec").hidden=modo!=="arbitro"&&modo!=="prueba";$("#lRec").classList.remove("crr-on");
+    pintarRolPrueba();
     pintarLocal();$("#lPreview").hidden=false;reloj("l",SEG);
     let n=PREVIA;$("#lPreviewTxt").textContent="Empieza en "+n+"…";
     tPrevia=setInterval(()=>{n--;if(n>0)$("#lPreviewTxt").textContent="Empieza en "+n+"…";else{clearInterval(tPrevia);tPrevia=null;arrancarLocal();}},1000);
@@ -247,9 +275,10 @@ const ContraRelojRioplatense=(()=>{
   function arrancarLocal(){
     $("#lPreview").hidden=true;activa=true;
     $("#lPhase").textContent="¡DESCRIBÍ LAS 5!";
-    $("#lStatus").textContent=(modo==="arbitro"?"Árbitro escuchando en vivo. ":"")+"Esta ronda descuenta "+(dado??0)+" al final.";
+    $("#lStatus").textContent=(modo==="arbitro"||modo==="prueba"?"Árbitro escuchando en vivo. ":"")+"Esta ronda descuenta "+(dado??0)+" al final.";
     pintarLocal();
-    if(modo==="arbitro"){
+    arbComoAdivina=modo==="prueba"?()=>rolPrueba==="adivina":null;
+    if(modo==="arbitro"||modo==="prueba"){
       $("#lRec").classList.add("crr-on");$("#lRec span").textContent="● PREPARANDO ÁRBITRO…";
       if(!arbitroIniciar(tarjeta,estados,()=>{pintarLocal();chequearFinLocal();},t=>{const sp=$("#lRec span");if(sp&&activa)sp.textContent=t;}))$("#lRec span").textContent="● GRABANDO · SIN ÁRBITRO AUTOMÁTICO EN ESTE NAVEGADOR";
     }
@@ -263,7 +292,7 @@ const ContraRelojRioplatense=(()=>{
   function chequearFinLocal(){if(estados.every(s=>s!=="pending"))terminarLocal();}
   async function terminarLocal(){
     if(!activa)return;activa=false;limpiarTimers();
-    if(modo==="arbitro"){await arbitroDetener();if(!raiz)return;$("#lRec").classList.remove("crr-on");}
+    if(modo==="arbitro"||modo==="prueba"){await arbitroDetener();if(!raiz)return;$("#lRec").classList.remove("crr-on");}
     pitidoFin();resultadoLocal();
   }
   function resultadoLocal(){
@@ -365,6 +394,6 @@ const ContraRelojRioplatense=(()=>{
     raiz=null;
   }
   addEventListener("pagehide",()=>{if(raiz)salir();});
-  return{abrir,salir,mejorPuntaje:()=>num(K_RECORD),partidas:()=>num(K_PARTIDAS),aciertos:()=>num(K_ACIERTOS)};
+  return{abrir,salir,prueba,mejorPuntaje:()=>num(K_RECORD),partidas:()=>num(K_PARTIDAS),aciertos:()=>num(K_ACIERTOS)};
 })();
 window.ContraRelojRioplatense=ContraRelojRioplatense;
