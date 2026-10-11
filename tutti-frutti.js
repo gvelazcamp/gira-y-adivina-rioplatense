@@ -736,7 +736,7 @@ const TuttiFrutti=(()=>{
   function cerrarObjeciones(){colaObj.length=0;document.querySelectorAll(".tf-objecion,.tf-apelacion").forEach(x=>x.remove());}
   /* Apelación: el autor de una palabra en amarillo pide que se la cuenten;
      a cada uno le aparece el aviso y decide si le suma (+10, como el
-     sumador) o no. Si el que suma es Gonzalo, además queda aprobada. */
+     sumador) o no. Si alguien la acepta, además queda aprobada para siempre. */
   function apelacion(a,i){
     if(!on||document.querySelector(`.tf-apelacion[data-k="${a}|${i}"]`))return;
     const quien=(on.jug.find(j=>j.pid===a)||{}).nombre||"Alguien",pal=(on.resps[a]||[])[i]||"",cat=on.cats[i]||"";
@@ -748,7 +748,8 @@ const TuttiFrutti=(()=>{
     c.addEventListener("click",ev=>{const r=ev.target.closest("button[data-r]");if(!r)return;c.remove();
       if(r.dataset.r!=="si"||!on||on.fase!=="resultado")return;
       const p=Math.max(10,extraDe(a,i)||0);mandar({t:"extra",n:on.n,a,i,p});
-      if(pal&&typeof esGonzalo==="function"&&esGonzalo()){aprobarPalabra(cat,pal);if(typeof mostrarToast==="function")mostrarToast("✅","«"+pal+"» ya vale en "+cat+" para las próximas partidas.");}});
+      /* Apelación aceptada por otra persona: la palabra queda válida para siempre. */
+      if(pal){aprobarPalabra(cat,pal);if(typeof mostrarToast==="function")mostrarToast("✅","«"+pal+"» ya vale en "+cat+" para las próximas partidas.");}});
     document.body.appendChild(c);
   }
   function mostrarObjecion(){

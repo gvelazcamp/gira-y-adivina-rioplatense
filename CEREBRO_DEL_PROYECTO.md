@@ -665,3 +665,7 @@ Fecha: 11/10/2026 — Tutti Frutti: el sumador va 0 → 5 → 10 → 20 (y al re
 ```text
 Fecha: 11/10/2026 — Tutti Frutti apelación: con que UNO solo diga "Sí, vale" ya se suman los puntos (como el sumador); a los demás se les cierra el aviso y ven "X ya le sumó los puntos".
 ```
+
+```text
+Fecha: 11/10/2026 — Tutti Frutti (regla de Gonzalo): una apelación aceptada por OTRA persona ("✅ Sí, vale") deja la palabra aprobada para siempre (tutti_aprobadas), sea quien sea el que acepta. El sumador suelto de otros jugadores sigue sin aprobar para siempre (solo Gonzalo).
+```
