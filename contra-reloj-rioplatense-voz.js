@@ -43,6 +43,24 @@ const ContraRelojVoz=(()=>{
   function aplicarMic(){if(stream)stream.getAudioTracks().forEach(t=>t.enabled=!silenciado&&permitido);}
   function permitir(v){v=!!v;if(v===permitido)return;permitido=v;aplicarMic();
     if(activa&&!silenciado)estado(permitido?"Micrófono activo":"🔇 Ahora juega otro grupo: tu micrófono se prende en el turno de tu grupo");}
+  /* Para que el juego pueda escuchar al que adivina (verde automático), su
+     micrófono se suelta de la llamada durante la ronda (en Android no se
+     pueden las dos cosas a la vez) y después se vuelve a conectar. */
+  let pausadoEscucha=false;
+  function soltarMic(){
+    if(!stream||pausadoEscucha)return;pausadoEscucha=true;
+    stream.getTracks().forEach(t=>{try{t.stop();}catch(e){}});
+  }
+  async function retomarMic(){
+    if(!pausadoEscucha)return;pausadoEscucha=false;
+    if(!activa)return;
+    try{
+      const nuevo=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false});
+      const pista=nuevo.getAudioTracks()[0];stream=nuevo;aplicarMic();
+      for(const pc of peers.values()){const sn=pc.getSenders().find(x=>x.track===null||x.track?.kind==="audio");if(sn&&pista){try{await sn.replaceTrack(pista);}catch(e){}}else if(pista){try{pc.addTrack(pista,stream);}catch(e){}}}
+      estado(permitido?"Micrófono activo":"🔇 Ahora juega otro grupo: tu micrófono se prende en el turno de tu grupo");
+    }catch(e){estado("Tocá RECONECTAR VOZ para volver a hablar.",true);}
+  }
   function audioDe(remoto){
     if(audios.has(remoto))return audios.get(remoto);
     const a=document.createElement("audio");a.autoplay=true;a.playsInline=true;
@@ -163,6 +181,6 @@ const ContraRelojVoz=(()=>{
   }
   function iniciar(c){ctx=c;botones();render();}
   function desvincular(){salir();ctx=null;}
-  return{iniciar,desvincular,unirse,salir,alternarSilencio,permitir,senal,sincronizar,saludar,render,activa:()=>activa,stream:()=>stream?.active?stream:null};
+  return{iniciar,desvincular,unirse,salir,alternarSilencio,permitir,soltarMic,retomarMic,senal,sincronizar,saludar,render,activa:()=>activa,stream:()=>stream?.active?stream:null};
 })();
 window.ContraRelojVoz=ContraRelojVoz;
