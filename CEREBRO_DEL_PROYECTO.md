@@ -669,3 +669,7 @@ Fecha: 11/10/2026 — Tutti Frutti apelación: con que UNO solo diga "Sí, vale"
 ```text
 Fecha: 11/10/2026 — Tutti Frutti (regla de Gonzalo): una apelación aceptada por OTRA persona ("✅ Sí, vale") deja la palabra aprobada para siempre (tutti_aprobadas), sea quien sea el que acepta. El sumador suelto de otros jugadores sigue sin aprobar para siempre (solo Gonzalo).
 ```
+
+```text
+Fecha: 11/10/2026 — Tutti Frutti (regla de Gonzalo): el +/− se sigue viendo en las palabras en amarillo de los demás, pero con amigos SOLO suma si el autor apeló esa palabra (on.apeladas, se marca al recibir "apela"); si no, se ve apagado y avisa "Solo se suma si el que la escribió la apela". Excepciones: Gonzalo puede sumar siempre; contra bots, el jugador suma todo.
+```
