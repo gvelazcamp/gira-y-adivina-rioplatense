@@ -9,6 +9,10 @@
    Pantalla fija (PantallaFija). Datos en gya_tutti. */
 const TuttiFrutti=(()=>{
   const CLAVE="gya_tutti",TIEMPOS=[60,90,120];
+  /* Nombre que se MUESTRA de cada categoría (por dentro sigue siendo
+     "Animal" y "Famoso", así no se rompen partidas con celulares viejos). */
+  const ETIQ={"Animal":"Animal / especie","Famoso":"Famoso / banda"};
+  const etiq=c=>ETIQ[c]||c;
   const CATEGORIAS=["Nombre","Apellido","País o ciudad","Comida","Animal","Color","Marca","Fruta o verdura","Cosa","Profesión","Famoso","Película o serie"];
   const LETRAS="ABCDEFGHIJLMNOPRSTUV".split("");
   let raiz=null,est={cant:3,nombres:[]},tiempo=90,cats=["Nombre","Apellido","País o ciudad","Comida","Animal","Cosa"],partidas=0;
@@ -21,7 +25,7 @@ const TuttiFrutti=(()=>{
   const nom=i=>PantallaFija.nombreJugador(est,i);
   function abrir(contenedor){salir();cargar();cargarAprobadas();raiz=document.createElement("section");raiz.className="tf";contenedor.appendChild(raiz);PantallaFija.entrar();configurar();}
   const ajustesHtml=()=>`<div class="qs-sub">🗂️ Categorías: las verdes ✓ se juegan (tocá para elegir)</div>
-      <div class="qs-cats imp-cats tf-catsel" id="tfCats">${CATEGORIAS.map(c=>`<button type="button" data-c="${esc(c)}">${esc(c)}</button>`).join("")}</div>
+      <div class="qs-cats imp-cats tf-catsel" id="tfCats">${CATEGORIAS.map(c=>`<button type="button" data-c="${esc(c)}">${esc(etiq(c))}</button>`).join("")}</div>
       <div class="qs-sub">⏱️ Tiempo máximo por letra</div>
       <div class="qns-rangos" id="tfT">${TIEMPOS.map(t=>`<button type="button" data-v="${t}">${t} s</button>`).join("")}</div>`;
   function ajustesEventos(){
@@ -214,7 +218,7 @@ const TuttiFrutti=(()=>{
     if(!on||!on.marcas)return;
     Object.keys(on.resps||{}).forEach(a=>{const r=on.resps[a]||[],mk=on.marcas[a]=on.marcas[a]||[];on.cats.forEach((c,i)=>{if(r[i]&&!mk[i]&&enListaPropia(c,r[i]))mk[i]=true;});});
   }
-  const NOM_CAT={"Nombre":"nombre","Apellido":"apellido","País o ciudad":"país o ciudad","Animal":"animal","Color":"color","Fruta o verdura":"fruta o verdura","Comida":"comida","Profesión":"profesión","Famoso":"famoso","Película o serie":"película o serie","Marca":"marca","Cosa":"cosa"};
+  const NOM_CAT={"Nombre":"nombre","Apellido":"apellido","País o ciudad":"país o ciudad","Animal":"animal o especie","Color":"color","Fruta o verdura":"fruta o verdura","Comida":"comida","Profesión":"profesión","Famoso":"famoso o banda","Película o serie":"película o serie","Marca":"marca","Cosa":"cosa"};
 
   /* ======================= SALA (cada uno con su celular) ======================= */
   const CHARS="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",MAXJ=10,RONDAS=3;
@@ -536,7 +540,7 @@ const TuttiFrutti=(()=>{
   }
   function pintarCampo(){
     if(!raiz||!on||!on.pend)return;const i=on.pend[0];
-    q("tfCat").textContent=on.cats[i];
+    q("tfCat").textContent=etiq(on.cats[i]);
     const inp=q("tfInput");inp.value=on.mias[i]||"";inp.placeholder="Empieza con "+on.letra+"…";try{inp.focus();}catch(e){}
     q("tfProg").innerHTML=on.cats.map((c,j)=>`<i class="${on.mias[j]?"ok":""}${j===i?" act":""}"></i>`).join("");
     q("tfMsg").textContent="";
@@ -644,7 +648,7 @@ const TuttiFrutti=(()=>{
     if(!raiz||!on)return;on.fase="resultado";on.votos=on.votos||{};on.marcas=on.marcas||{};
     const g=on.ganador;
     const filas=on.jug.map(j=>{const r=on.resps[j.pid]||[];return`<li class="tf-jug${j.pid===g?" tf-gano":""}"><div class="tf-jug-cab"><b>${esc(j.nombre)}${j.pid===on.pid?" (vos)":""}</b>${j.pid===g?`<span class="tf-basta">🏁 BASTA</span>`:""}<span class="tf-sub" data-sub="${j.pid}"></span></div>
-      <div class="tf-tabla"><div class="tf-fila tf-titulos"><span>Categoría</span><span>Palabra</span><span>Pts</span><span></span></div>${on.cats.map((c,i)=>{const v=r[i]||"";const ok=marca(j.pid,i);return`<div class="tf-fila" data-a="${j.pid}" data-i="${i}"><span class="tf-cat">${esc(c)}</span><span class="tf-pal${v&&!ok?" tf-mal":""}" ${v&&!ok?`data-ver="1"`:""}>${esc(v||"—")}${v?(ok?" <i class=\"tf-marca ok\">✓</i>":" <i class=\"tf-marca mal\">⚠️</i><span class=\"tf-ver\">👆 ver error</span>"+((on.bots||j.pid!==on.pid)?"<span class=\"tf-sum\"><button type=\"button\" data-d=\"-5\" aria-label=\"Restar\">−</button><b>0</b><button type=\"button\" data-d=\"5\" aria-label=\"Sumar\">+</button></span>":"")):""}${v&&!ok&&j.pid===on.pid&&!on.bots?`<button type="button" class="tf-apelar">🙋 Apelar</button>`:""}</span><b class="tf-pts"></b>${v&&ok&&j.pid!==on.pid?`<button type="button" class="tf-votar" aria-label="Votar"></button>`:"<span></span>"}</div>`;}).join("")}</div></li>`;}).join("");
+      <div class="tf-tabla"><div class="tf-fila tf-titulos"><span>Categoría</span><span>Palabra</span><span>Pts</span><span></span></div>${on.cats.map((c,i)=>{const v=r[i]||"";const ok=marca(j.pid,i);return`<div class="tf-fila" data-a="${j.pid}" data-i="${i}"><span class="tf-cat">${esc(etiq(c))}</span><span class="tf-pal${v&&!ok?" tf-mal":""}" ${v&&!ok?`data-ver="1"`:""}>${esc(v||"—")}${v?(ok?" <i class=\"tf-marca ok\">✓</i>":" <i class=\"tf-marca mal\">⚠️</i><span class=\"tf-ver\">👆 ver error</span>"+((on.bots||j.pid!==on.pid)?"<span class=\"tf-sum\"><button type=\"button\" data-d=\"-5\" aria-label=\"Restar\">−</button><b>0</b><button type=\"button\" data-d=\"5\" aria-label=\"Sumar\">+</button></span>":"")):""}${v&&!ok&&j.pid===on.pid&&!on.bots?`<button type="button" class="tf-apelar">🙋 Apelar</button>`:""}</span><b class="tf-pts"></b>${v&&ok&&j.pid!==on.pid?`<button type="button" class="tf-votar" aria-label="Votar"></button>`:"<span></span>"}</div>`;}).join("")}</div></li>`;}).join("");
     pantalla(`<div class="mg-panel imp-panel imp-fin"><h3 id="tfTitulo"></h3>
       <p class="imp-ayuda">Letra <b>${on.letra}</b> · <b>10</b> única · <b>5</b> repetida · <b>20</b> si sos el único · <b>0</b> si no vale.<br>⚠️ = dudosa (vale 0): tocá <b class="tf-ver-ej">👆 ver error</b> para ver por qué. Si en realidad está bien, sumale puntos con ➕ (5, 10 o 20). Con ❌ anulás una respuesta.</p>
       <ul class="tf-resps">${filas}</ul>
@@ -720,7 +724,7 @@ const TuttiFrutti=(()=>{
     if(!valor)return;
     const viejo=document.querySelector(".tf-pop");if(viejo)viejo.remove();
     const p=document.createElement("div");p.className="tf-pop";
-    p.innerHTML=`<div class="tf-pop-caja"><div class="tf-pop-cab">⚠️ ${esc(cat)}</div><div class="tf-pop-mal">«${esc(valor)}»</div><div class="tf-pop-txt" id="tfPopTxt">Buscando la forma correcta…</div><button type="button" class="tf-pop-ok">Entendido</button></div>`;
+    p.innerHTML=`<div class="tf-pop-caja"><div class="tf-pop-cab">⚠️ ${esc(etiq(cat))}</div><div class="tf-pop-mal">«${esc(valor)}»</div><div class="tf-pop-txt" id="tfPopTxt">Buscando la forma correcta…</div><button type="button" class="tf-pop-ok">Entendido</button></div>`;
     p.onclick=e=>{if(e.target===p||e.target.closest(".tf-pop-ok"))p.remove();};
     document.body.appendChild(p);
     /* Si la "corrección" es la misma palabra (solo cambia un tilde), no está
@@ -748,7 +752,7 @@ const TuttiFrutti=(()=>{
     if(typeof vibrar==="function")vibrar([40,60,40]);
     const c=document.createElement("div");c.className="pf-confirmar tf-apelacion";c.dataset.k=a+"|"+i;
     c.innerHTML=`<div class="mg-panel pf-caja"><div class="bb-icono">🙋</div><h3>${esc(quien)} apela su respuesta</h3>
-      <p class="tf-obj-pal"><small>${esc(cat)}</small><b>${esc(pal)}</b></p><p class="imp-ayuda">El juego no la reconoció. ¿Le sumás los puntos?</p>
+      <p class="tf-obj-pal"><small>${esc(etiq(cat))}</small><b>${esc(pal)}</b></p><p class="imp-ayuda">El juego no la reconoció. ¿Le sumás los puntos?</p>
       <button type="button" class="mg-principal" data-r="si">✅ Sí, vale (+10)</button><button type="button" data-r="no">❌ No vale</button></div>`;
     c.addEventListener("click",ev=>{const r=ev.target.closest("button[data-r]");if(!r)return;c.remove();
       if(r.dataset.r!=="si"||!on||on.fase!=="resultado")return;
@@ -764,7 +768,7 @@ const TuttiFrutti=(()=>{
     if(typeof vibrar==="function")vibrar([40,60,40]);
     const c=document.createElement("div");c.className="pf-confirmar tf-objecion";
     c.innerHTML=`<div class="mg-panel pf-caja"><div class="bb-icono">🙋</div><h3>${esc(nom)} objetó tu respuesta</h3>
-      <p class="tf-obj-pal"><small>${esc(cat)}</small><b>${esc(pal)}</b></p><p class="imp-ayuda">¿Estás de acuerdo en que no vale?</p>
+      <p class="tf-obj-pal"><small>${esc(etiq(cat))}</small><b>${esc(pal)}</b></p><p class="imp-ayuda">¿Estás de acuerdo en que no vale?</p>
       <button type="button" class="mg-principal" data-r="si">👍 Sí, no vale</button><button type="button" data-r="no">🗣️ No, la defiendo</button></div>`;
     c.addEventListener("click",ev=>{const r=ev.target.closest("button[data-r]");if(!r)return;c.remove();colaObj.shift();
       if(on&&on.fase==="resultado")mandar({t:"objecion",n:on.n,a:on.pid,i:o.i,ok:r.dataset.r==="si"});
