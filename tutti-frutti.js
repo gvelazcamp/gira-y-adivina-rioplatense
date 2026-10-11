@@ -19,7 +19,7 @@ const TuttiFrutti=(()=>{
   const q=id=>raiz.querySelector("#"+id);
   const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
   const nom=i=>PantallaFija.nombreJugador(est,i);
-  function abrir(contenedor){salir();cargar();raiz=document.createElement("section");raiz.className="tf";contenedor.appendChild(raiz);PantallaFija.entrar();configurar();}
+  function abrir(contenedor){salir();cargar();cargarAprobadas();raiz=document.createElement("section");raiz.className="tf";contenedor.appendChild(raiz);PantallaFija.entrar();configurar();}
   const ajustesHtml=()=>`<div class="qs-sub">🗂️ Categorías: las verdes ✓ se juegan (tocá para elegir)</div>
       <div class="qs-cats imp-cats tf-catsel" id="tfCats">${CATEGORIAS.map(c=>`<button type="button" data-c="${esc(c)}">${esc(c)}</button>`).join("")}</div>
       <div class="qs-sub">⏱️ Tiempo máximo por letra</div>
@@ -66,6 +66,27 @@ const TuttiFrutti=(()=>{
      "Niño" = "Nino". Así los acentos nunca hacen perder una respuesta.
      El apóstrofo se ignora: "Greys Anatomy" = "Grey's Anatomy". */
   const NORM=t=>String(t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/['’´`]/g,"").replace(/[^a-z0-9 ]+/g," ").replace(/\s+/g," ").trim();
+  /* Palabras aprobadas por Gonzalo desde el juego: cuando él les sube
+     puntos con el sumador, quedan válidas para todos en las próximas
+     partidas (gya_ranking grupo "tutti_aprobadas", apodo "Categoría|palabra").
+     Se guardan también en el celular por si no hay internet. */
+  const APROB="tutti_aprobadas";
+  let aprobadas=new Set();try{aprobadas=new Set(JSON.parse(localStorage.getItem("gya_tf_aprobadas")||"[]"));}catch(e){}
+  const claveAprob=(cat,v)=>cat+"|"+NORM(v);
+  const aprobada=(cat,v)=>aprobadas.has(claveAprob(cat,v));
+  async function cargarAprobadas(){
+    try{const supa=typeof obtenerSupa==="function"?obtenerSupa():null;if(!supa)return;
+      const r=await supa.from("gya_ranking").select("apodo").eq("grupo",APROB).limit(5000);
+      if(r&&r.data){r.data.forEach(x=>aprobadas.add(String(x.apodo)));try{localStorage.setItem("gya_tf_aprobadas",JSON.stringify([...aprobadas]));}catch(e){}}
+    }catch(e){}
+  }
+  async function aprobarPalabra(cat,palabra){
+    const k=claveAprob(cat,palabra);if(!NORM(palabra)||aprobadas.has(k))return;
+    aprobadas.add(k);try{localStorage.setItem("gya_tf_aprobadas",JSON.stringify([...aprobadas]));}catch(e){}
+    try{const supa=typeof obtenerSupa==="function"?obtenerSupa():null;if(!supa)return;
+      await supa.from("gya_ranking").upsert({grupo:APROB,apodo:k.slice(0,90),monedas_totales:0,ciudades_ganadas:0,mejor_racha:0,logros:0,
+        estado_juego:{cat,palabra:String(palabra).trim().slice(0,40),t:new Date().toISOString()},actualizado_en:new Date().toISOString()},{onConflict:"grupo,apodo"});}catch(e){}
+  }
   const CLAVE_CAT={"Nombre":"nombre","Apellido":"apellido","País o ciudad":"lugar","Animal":"animal","Color":"color","Fruta o verdura":"fruta","Comida":"comida","Profesión":"profesion","Famoso":"wiki","Película o serie":"wiki","Marca":"wiki","Cosa":"dic"};
   const sets={},dics={},cacheWiki=new Map();
   function setDe(k){if(!sets[k]){const t=(window.TUTTI_LISTAS||{})[k]||"";sets[k]=new Set(t.split(",").map(NORM).filter(Boolean));}return sets[k];}
@@ -147,6 +168,7 @@ const TuttiFrutti=(()=>{
        encuentra "Carlos Núñez" (la ñ no es una n para el buscador). */
     const q=String(valor).toLowerCase().replace(/[^\p{L}\p{N} ]+/gu," ").replace(/\s+/g," ").trim()||v;
     if(cat==="Famoso"&&COMUNES.has(v))return false;
+    if(aprobada(cat,v))return true;
     if(cat==="Marca"&&marcasSet().has(v))return true;
     if(cat==="Famoso"&&famSet().has(v))return true;
     if(cat==="Película o serie"&&(pelisSet().has(v)||pelisSet().has(v.replace(/^(el|la|los|las) /,""))))return true;
@@ -180,6 +202,7 @@ const TuttiFrutti=(()=>{
      manda el anfitrión y si su celular no se había actualizado, salían ⚠️). */
   function enListaPropia(cat,valor){
     const v=NORM(valor),k=CLAVE_CAT[cat];if(!v)return false;
+    if(aprobada(cat,v))return true;
     if(cat==="Marca"&&marcasSet().has(v))return true;
     if(cat==="Famoso"&&famSet().has(v))return true;
     if(cat==="Película o serie"&&(pelisSet().has(v)||pelisSet().has(v.replace(/^(el|la|los|las) /,""))))return true;
@@ -617,7 +640,9 @@ const TuttiFrutti=(()=>{
     raiz.querySelector(".tf-resps").onclick=e=>{
       const f=e.target.closest(".tf-fila");if(!f||!f.dataset.a)return;const a=f.dataset.a,i=Number(f.dataset.i);
       if(e.target.closest(".tf-ceder")){mandar({t:"objecion",n:on.n,a:on.pid,i,ok:true});return;}
-      const sb=e.target.closest(".tf-sum button");if(sb){if(puedeSumar(a))mandar({t:"extra",n:on.n,a,i,p:Math.max(0,Math.min(20,(extraDe(a,i)||0)+Number(sb.dataset.d)))});return;}
+      const sb=e.target.closest(".tf-sum button");if(sb){if(puedeSumar(a)){const p=Math.max(0,Math.min(20,(extraDe(a,i)||0)+Number(sb.dataset.d)));mandar({t:"extra",n:on.n,a,i,p});
+        /* Si el que suma es Gonzalo, la palabra queda aprobada para siempre. */
+        const w=(on.resps[a]||[])[i];if(p>0&&w&&typeof esGonzalo==="function"&&esGonzalo()){aprobarPalabra(on.cats[i],w);if(typeof mostrarToast==="function")mostrarToast("✅","«"+w+"» ya vale en "+on.cats[i]+" para las próximas partidas.");}}return;}
       if(e.target.closest(".tf-votar")){const st=on.votos[a+"|"+i];const ya=!!(st&&st.has(on.pid));mandar({t:"voto",n:on.n,a,i,v:!ya});return;}
       if(e.target.closest("[data-ver]"))explicar(on.cats[i],(on.resps[a]||[])[i]);
     };
