@@ -471,6 +471,11 @@ const TuttiFrutti=(()=>{
       if(eraHost){cerrarSala();if(raiz){configurar();estado("El anfitrión cerró la sala.");}return;}
       if(on.host)difundirSala();pintarJugadores();
     }else if(m.t==="ronda"){
+      /* El mismo aviso de ronda puede llegar dos veces (llega por varios
+         servidores a la vez y alguno se atrasa): si ya estamos en esa ronda
+         o en una posterior, se ignora. Antes volvía a sortear la letra en
+         pantalla y borraba lo que el jugador había escrito. */
+      if(Number(m.n)<=Number(on.n||0)&&on.fase!=="lobby")return;
       on.n=m.n;if(Array.isArray(m.usadas))on.usadas=m.usadas.slice();on.rj=m.rj||on.rj;on.tot=m.tot||on.tot||RONDAS;on.letra=m.letra;on.cats=m.cats;on.tiempo=m.tiempo;on.fase="jugando";on.resps={};on.votos={};on.extra={};on.apeladas={};on.acepta={};on.defiende={};on.ganador=null;on.basta=null;on.mias=Array(on.cats.length).fill("");on.envie=false;
       jugarOnline();
       if(on.bots)planBots();
@@ -679,7 +684,7 @@ const TuttiFrutti=(()=>{
         if(max>0)on.jug.forEach(j=>{if(sumar(pr[j.pid])===max)on.rg[j.pid]=(on.rg[j.pid]||0)+1;});
         difundirSala();
       };
-      q("tfOtra").onclick=()=>{cerrar();if((on.rj||1)>=(on.tot||RONDAS)){mandar({t:"final",n:on.n,ganadas:on.ganadas,rg:on.rg,jug:on.jug,tot:on.tot||RONDAS});return;}nuevaRonda();};
+      q("tfOtra").onclick=e=>{if(e&&e.currentTarget){if(e.currentTarget.disabled)return;e.currentTarget.disabled=true;}cerrar();if((on.rj||1)>=(on.tot||RONDAS)){mandar({t:"final",n:on.n,ganadas:on.ganadas,rg:on.rg,jug:on.jug,tot:on.tot||RONDAS});return;}nuevaRonda();};
     }
   }
   /* Mini popup: por qué está mal y cuál es la forma correcta (solo informa). */
@@ -853,7 +858,7 @@ const TuttiFrutti=(()=>{
       <ol class="kar-podio">${orden.map(([j,rg,p],k)=>`<li style="--c:#E5197C"><span>${k+1}</span><i>${esc((j.nombre||"?")[0].toUpperCase())}</i><b>${esc(j.nombre)}${j.pid===on.pid?" (vos)":""}</b><em>${rg} ${rg===1?"ronda":"rondas"} · ${p} pts</em></li>`).join("")}</ol>
       ${salieronHtml()}
       ${on.host?`<button type="button" class="mg-principal" id="tfRevancha">🔄 Revancha</button>`:`<p class="imp-ayuda">Esperando que el anfitrión arranque la revancha…</p>`}</div>`);
-    if(on.host)q("tfRevancha").onclick=()=>{on.ganadas={};on.rg={};on.rj=0;on.tot=RONDAS;difundirSala();nuevaRonda();};
+    if(on.host)q("tfRevancha").onclick=e=>{if(e&&e.currentTarget){if(e.currentTarget.disabled)return;e.currentTarget.disabled=true;}on.ganadas={};on.rg={};on.rj=0;on.tot=RONDAS;difundirSala();nuevaRonda();};
   }
   /* Link ?tutti=<SALA>&de=<nombre>: abre el juego y se une solo. */
   function abrirInvitacion(sala,de){

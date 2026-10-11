@@ -706,3 +706,7 @@ Fecha: 11/10/2026 — Tutti Frutti: las categorías se muestran como "Animal / e
 ```text
 Fecha: 11/10/2026 — Tutti Frutti: en Famoso / banda NO valen personajes de ficción (dibujitos, películas, series, historietas, videojuegos): "Correcaminos" pasaba porque Wikipedia lo describe como "personaje" y esa palabra estaba en TIPOS.famoso. Se sacó "personaje" del control y, si la página dice "personaje ficticio / de dibujos animados / de la serie…", no vale como famoso (va en Película o serie). La lista propia de famosos no tiene personajes de ficción (revisado).
 ```
+
+```text
+Fecha: 11/10/2026 — Tutti Frutti: en una partida "apareció la letra y volvió a aparecer". Causa probable: el aviso de ronda llega por varios servidores (MultiBroker: 4 brokers + Supabase) y si uno se atrasa más de 1,5 s no se descarta como duplicado → se volvía a sortear la letra en pantalla y se borraba lo escrito. Ahora un aviso "ronda" con número igual o menor al actual se ignora. Además "Siguiente ronda" y "Revancha" se desactivan al primer toque (evita doble toque).
+```
