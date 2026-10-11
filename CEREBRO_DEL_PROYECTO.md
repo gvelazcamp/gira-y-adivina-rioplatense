@@ -653,3 +653,7 @@ Fecha: 11/10/2026 — Tutti Frutti: debajo de los puntos de cada ronda y del gan
 ```text
 Fecha: 11/10/2026 — Tutti Frutti: autoaprobación por Gonzalo. Cuando Gonzalo (esGonzalo) sube puntos con el sumador a una palabra en amarillo, queda aprobada para siempre y para todos: fila en gya_ranking grupo "tutti_aprobadas" (apodo "Categoría|palabra normalizada"), cache en localStorage gya_tf_aprobadas. Se cargan al abrir el Tutti (cargarAprobadas) y revisar/enListaPropia las aceptan (después del control de apellidos comunes en Famoso). Lo que sumen otros jugadores NO aprueba (solo cuenta en esa partida y queda en el historial).
 ```
+
+```text
+Fecha: 11/10/2026 — Tutti Frutti: botón "🙋 Apelar" en tus propias palabras en amarillo (solo con amigos, no contra bots). Manda {t:"apela"}; a los demás les aparece "X apela su respuesta · ¿Le sumás los puntos?" con "✅ Sí, vale (+10)" (manda extra como el sumador) o "❌ No vale"; queda en el chat. Si el que dice que sí es Gonzalo, además la palabra queda aprobada para siempre (tutti_aprobadas). No se pudo probar con dos celulares reales desde el entorno (MQTT bloqueado): probado el dibujo y el código.
+```
