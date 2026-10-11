@@ -179,7 +179,7 @@ const ContraRelojRioplatense=(()=>{
       const st=estados[i]==="correct"?"ACERTADA":estados[i]==="invalid"?"ANULADA":"PENDIENTE";
       fila.innerHTML='<span class="crr-n">'+(i+1)+'</span><span class="crr-txt">'+esc(w)+'</span><span class="crr-state">'+st+'</span>';
       if(editable&&estados[i]==="pending")fila.onclick=()=>alAcertar&&alAcertar(i);
-      if(rival&&estados[i]==="pending"){
+      if(rival&&(estados[i]==="pending"||estados[i]==="correct")){
         const wrap=document.createElement("span");wrap.className="crr-online-word-actions";
         const b=document.createElement("button");b.type="button";b.className="crr-rival-flag";b.textContent="⚠ MARCAR";
         b.onclick=e=>{e.stopPropagation();alMarcar&&alMarcar(i,w);};
@@ -372,7 +372,7 @@ const ContraRelojRioplatense=(()=>{
     dadoPregunta($("#lPreDie"));dadoPregunta($("#oDie"));mostrarDado($("#lDie"),0);
     if(window.ContraRelojOnline)ContraRelojOnline.iniciar({
       $,raiz:()=>raiz,pantalla,esc,filas,reloj,mostrarDado,dadoPregunta,animarDado,tirarValor,puntaje,contar,tarjetas,
-      marcador,ganador,fanfarria,micPreparar,necesitaMicPropio,arbitroIniciar,arbitroDetener,revision,pitidoFin,aviso,SEG,PREVIA,
+      marcador,ganador,fanfarria,contiene,micPreparar,necesitaMicPropio,arbitroIniciar,arbitroDetener,revision,pitidoFin,aviso,SEG,PREVIA,
       sumarAciertos:h=>guardarNum(K_ACIERTOS,num(K_ACIERTOS)+h),
       sumarPartida:()=>guardarNum(K_PARTIDAS,num(K_PARTIDAS)+1)
     });

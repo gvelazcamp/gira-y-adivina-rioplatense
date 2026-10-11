@@ -59,7 +59,7 @@ const ContraRelojOnline=(()=>{
     clearInterval(tTurno);clearTimeout(tHost);clearInterval(tDadoHost);tTurno=tDadoHost=null;
     if(soyHost&&mq?.connected)hostOut({type:"closed"});
     else if(mq?.connected&&sala)publicar(tIn(),{type:"bye",pid});
-    detenerMicOnline();
+    detenerMicOnline();detenerEscucha();
     if(window.ContraRelojVoz)ContraRelojVoz.desvincular();
     const viejo=mq;mq=null;
     if(viejo){setTimeout(()=>{try{viejo.end(true);}catch(e){}},150);}
@@ -110,8 +110,17 @@ const ContraRelojOnline=(()=>{
       if(i!==null&&turno.statuses[i]==="pending"&&Date.now()>=turno.startAt){turno.statuses[i]="correct";actualizarPalabra(i,"correct");difundir();chequearResueltas();}
     }else if(m.type==="word_invalid"&&turno?.status==="active"){
       const i=entero(m.index,0,4),p=jug[id];
-      if(i!==null&&turno.statuses[i]==="pending"&&(id===turno.describer||(p.team&&p.team!==turno.team))){turno.statuses[i]="invalid";actualizarPalabra(i,"invalid");difundir();chequearResueltas();}
+      /* Los rivales también pueden anular una que se puso verde sola (por si el celular escuchó al que describe). */
+      if(i!==null&&(turno.statuses[i]==="pending"||(turno.statuses[i]==="correct"&&p.team&&p.team!==turno.team))&&(id===turno.describer||(p.team&&p.team!==turno.team))){turno.statuses[i]="invalid";actualizarPalabra(i,"invalid");difundir();chequearResueltas();}
     }else if(m.type==="finish_round"&&turno?.status==="active"&&id===turno.describer)terminarRondaHost();
+    /* Verde automático: el celular del que adivina manda lo que escuchó;
+       si dice una palabra de la tarjeta, se marca acertada. */
+    else if(m.type==="guess"&&turno?.status==="active"&&id!==turno.describer&&jug[id].team===turno.team&&Date.now()>=turno.startAt){
+      const txt=String(m.text||"").slice(0,200);let ok=false;
+      turno.card.forEach((w,i)=>{if(turno.statuses[i]==="pending"&&c.contiene(txt,w)){turno.statuses[i]="correct";actualizarPalabra(i,"correct");ok=true;}});
+      if(ok||m.final){const d={type:"said",name:jug[id].name,text:txt.split(" ").slice(-6).join(" "),ok};hostOut(d);mostrarDicho(d);}
+      if(ok){difundir();chequearResueltas();}
+    }
     /* Un jugador no recibió su tarjeta (se perdió el mensaje): se la reenvía. */
     else if(m.type==="need_card"&&turno?.status==="active")mandarTarjeta(jug[id]);
   }
@@ -227,6 +236,7 @@ const ContraRelojOnline=(()=>{
       if(!m.players.some(p=>p.pid===pid)&&listoConexion)enviarIn({type:"hello",name:miNombre});
       pintar();
     }else if(m.type==="word_update"){const i=entero(m.index,0,4);if(i!==null&&ESTADOS_OK.includes(m.status))aplicarPalabra(i,m.status);}
+    else if(m.type==="said")mostrarDicho(m);
     else if(m.type==="closed"){c.aviso("El anfitrión cerró la sala.");salirSala();}
   }
   function aplicarPalabra(i,st){if(privado?.statuses){privado.statuses[i]=st;pintarPalabras();}}
@@ -251,7 +261,7 @@ const ContraRelojOnline=(()=>{
     }else if(m.type==="blind"&&estOk&&turnoOk){
       if(privado?.turn?.id===t.id)return;
       privado={kind:"blind",statuses:[...m.statuses],role:"teammate",turn:t};aplicarTurno();
-    }else if(m.type==="turn_stop"){detenerMicOnline();clearInterval(tTurno);tTurno=null;}
+    }else if(m.type==="turn_stop"){detenerMicOnline();detenerEscucha();clearInterval(tTurno);tTurno=null;}
   }
   function mostrarSelectorGrupo(){
     const caja=$("#teamPickerBtns");if(!caja)return;
@@ -334,7 +344,7 @@ const ContraRelojOnline=(()=>{
     if(!t){rol.innerHTML="Esperando que el anfitrión prepare el próximo turno.";$("#oPhase").textContent="ESPERANDO TURNO";return;}
     const yo=estadoSala.players.find(p=>p.pid===pid),desc=estadoSala.players.find(p=>p.pid===t.describer);
     if(pid===t.describer){rol.innerHTML="<strong>TE TOCA DESCRIBIR.</strong> Todos te escuchan. <strong>Cuando tu equipo diga una palabra, TOCALA: se pone en VERDE.</strong>";pista.textContent="Tu voz se transmite a la sala y el árbitro analiza únicamente tu micrófono.";}
-    else if(yo?.team===t.team){rol.innerHTML="<strong>ADIVINÁ.</strong> Escuchá a "+c.esc(desc?.name||"tu compañero")+". Vos no ves la tarjeta.";pista.textContent="Escuchá al descriptor y respondé por voz. Tu micrófono también está en la sala.";}
+    else if(yo?.team===t.team){rol.innerHTML="<strong>ADIVINÁ.</strong> Escuchá a "+c.esc(desc?.name||"tu compañero")+". Vos no ves la tarjeta.";pista.textContent="Escuchá al descriptor y decí las respuestas: el juego te escucha y las marca en verde solas.";}
     else{rol.innerHTML="<strong>CONTROLÁS LA JUGADA.</strong> Escuchás al descriptor y ves las 5 respuestas del Grupo "+t.team+".";pista.textContent="Si el descriptor dice una respuesta y el árbitro no la toma, podés marcarla.";}
     $("#oTeam").textContent="G"+t.team;$("#oHits").textContent=c.contar(t.statuses)+"/5";$("#oPenalty").textContent=t.die==null?"—":"−"+t.die;
     if(t.status!=="active"&&!tTurno){c.reloj("o",c.SEG);$("#oFinish").hidden=true;$("#oPreview").hidden=true;}
@@ -377,7 +387,7 @@ const ContraRelojOnline=(()=>{
     $("#oHits").textContent=c.contar(privado.statuses)+"/5";
   }
   function aplicarTurno(){
-    clearInterval(tTurno);
+    clearInterval(tTurno);detenerEscucha();{const b=$("#oDichos");if(b)b.innerHTML="";}
     $("#oRoundResult").hidden=true;$("#oFinish").hidden=true;$("#oPreview").hidden=true;$("#oRec").hidden=true;
     const p=privado,t=p.turn;
     if(p.kind==="blind"){
@@ -395,13 +405,13 @@ const ContraRelojOnline=(()=>{
     const ahora=Date.now();
     if(ahora<t.startAt){const n=Math.max(1,Math.ceil((t.startAt-ahora)/1000));if(p.role==="describer")$("#oPreviewTxt").textContent="Empieza en "+n+"…";c.reloj("o",c.SEG);return;}
     const q=(t.endAt-ahora)/1000;c.reloj("o",q);
-    if(p.kind==="blind")$("#oStatus").textContent="Escuchá y adiviná.";
+    if(p.kind==="blind"){if(!escuchaOn&&p.role==="teammate"&&privado===p)iniciarEscucha();if(!escuchaOn)$("#oStatus").textContent="Escuchá y adiviná.";}
     else if(p.role==="describer"){
       if(!$("#oPreview").hidden){$("#oPreview").hidden=true;pintarPalabras();}
       $("#oFinish").hidden=false;$("#oPhase").textContent="¡DESCRIBÍ LAS 5!";$("#oStatus").textContent="👆 Cuando la adivinen, TOCALA para ponerla en verde · Dado: −"+(t.die??0);
       if(!micOnline)iniciarMicOnline(p);
     }else $("#oStatus").textContent="Si el que describe dice una respuesta, tocá ⚠ MARCAR (se pone en rojo) · Dado: −"+(t.die??0);
-    if(q<=0){clearInterval(tTurno);tTurno=null;$("#oFinish").hidden=true;detenerMicOnline();}
+    if(q<=0){clearInterval(tTurno);tTurno=null;$("#oFinish").hidden=true;detenerMicOnline();detenerEscucha();}
   }
   async function iniciarMicOnline(p){
     micOnline=true;
@@ -418,6 +428,44 @@ const ContraRelojOnline=(()=>{
     if(!c?.raiz())return;
     $("#oRec").classList.remove("crr-on");$("#oRec span").textContent="GRABACIÓN FINALIZADA";
     if(p?.role==="describer"){c.sumarAciertos(c.contar(p.statuses));c.revision("#oReview");}
+  }
+  /* ESCUCHA DEL QUE ADIVINA (verde automático). Su micrófono se suelta de
+     la llamada durante la ronda: el que describe ve escrito lo que dijo. */
+  let escuchaOn=false,sr=null,ultEnvio=0,ultTexto="";
+  function iniciarEscucha(){
+    const SRc=window.SpeechRecognition||window.webkitSpeechRecognition;
+    escuchaOn=true;
+    if(!SRc){$("#oStatus").textContent="Este celular no puede escuchar: decí las respuestas en voz alta y tu compañero las marca.";return;}
+    if(window.ContraRelojVoz)ContraRelojVoz.soltarMic();
+    setTimeout(()=>{
+      if(!escuchaOn)return;
+      try{
+        sr=new SRc();sr.lang="es-UY";sr.continuous=true;sr.interimResults=true;
+        sr.onresult=e=>{
+          let fin="",par="";
+          for(let i=e.resultIndex;i<e.results.length;i++){const t=e.results[i][0].transcript||"";if(e.results[i].isFinal)fin+=" "+t;else par+=" "+t;}
+          if(fin.trim()){enviarIn({type:"guess",text:fin.trim(),final:true});ultTexto="";}
+          else if(par.trim()&&par.trim()!==ultTexto&&Date.now()-ultEnvio>600){ultEnvio=Date.now();ultTexto=par.trim();enviarIn({type:"guess",text:ultTexto});}
+        };
+        sr.onerror=e=>{const er=e&&e.error||"";if(er==="not-allowed"||er==="service-not-allowed"){$("#oStatus").textContent="Sin permiso de micrófono: decí las respuestas y tu compañero las marca.";escuchaOn=false;}};
+        sr.onend=()=>{if(escuchaOn&&sr){setTimeout(()=>{if(escuchaOn&&sr){try{sr.start();}catch(e){}}},120);}};
+        sr.start();
+        $("#oStatus").textContent="🎙 El juego te escucha: decí las respuestas. Tu compañero las ve escritas.";
+      }catch(e){$("#oStatus").textContent="No se pudo escuchar: decí las respuestas y tu compañero las marca.";}
+    },350);
+  }
+  function detenerEscucha(){
+    if(!escuchaOn)return;escuchaOn=false;
+    if(sr){try{sr.onend=null;sr.stop();}catch(e){}sr=null;}
+    if(window.ContraRelojVoz)ContraRelojVoz.retomarMic();
+  }
+  function mostrarDicho(d){
+    if(!c?.raiz()||!d)return;
+    let b=$("#oDichos");
+    if(!b){const w=$("#oWords");if(!w)return;b=document.createElement("div");b.id="crr-oDichos";b.style.cssText="display:flex;flex-direction:column;gap:4px;margin:6px 0;font-size:.95rem";w.parentNode.insertBefore(b,w);}
+    const l=document.createElement("div");l.style.cssText="padding:6px 10px;border-radius:10px;background:"+(d.ok?"#37D6C033":"#FFFFFF14");
+    l.textContent="🗣️ "+String(d.name||"Tu compañero").slice(0,14)+" dijo: «"+String(d.text||"").slice(0,80)+"»"+(d.ok?" ✓":"");
+    b.prepend(l);while(b.children.length>4)b.lastChild.remove();
   }
   function salirSala(){desconectar();if(c?.raiz())c.pantalla("#home");}
 
