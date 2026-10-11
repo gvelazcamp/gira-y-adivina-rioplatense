@@ -625,3 +625,7 @@ Fecha: 10/10/2026 — Social ✕: los sacados volvían a aparecer porque la fila
 ```text
 Fecha: 11/10/2026 — Social: "Pato" se registró y no aparecía (otra vez gente nueva que no figura). (1) empujarUsuario reintenta cada 5 s (hasta 2 min) si la librería de Supabase todavía no cargó al registrarse (antes se perdía el registro). (2) Publicado el panel Más → Pruebas → "👥 Registros con problemas (Social)" (solo Gonzalo): muestra quién no pudo entrar a Social y el motivo (filas grupo "registro_fallas", con los campos obligatorios en 0) y los últimos 15 conectados con el nombre exacto guardado.
 ```
+
+```text
+Fecha: 11/10/2026 — Tutti Frutti: palabras en amarillo aprobadas por Gonzalo: Apellido Ubillo; Marca Ues, Fixed, Ernex; Famoso Nicky Nicole; Película o serie Cazador/El cazador, Visión nocturna, Solo tú y yo, Un país lejano, Ultratumba; Cosa Sorete, Ukelele. Nueva lista window.TUTTI_COSAS (cosas aprobadas que el diccionario no trae; los bots no las usan). Las demás del historial de ese día quedaron rechazadas.
+```
