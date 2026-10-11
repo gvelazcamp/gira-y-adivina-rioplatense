@@ -633,3 +633,7 @@ Fecha: 11/10/2026 — Tutti Frutti: palabras en amarillo aprobadas por Gonzalo: 
 ```text
 Fecha: 11/10/2026 — Tutti Frutti: Comida + nata, natto/nato, nacatamal (lista de comidas con N que pasó Gonzalo; el resto ya estaba).
 ```
+
+```text
+Fecha: 11/10/2026 — Tutti Frutti: corregir respuestas. Debajo de "Después / Siguiente" aparecen las respuestas ya hechas ("¿Te equivocaste? Tocá para corregir" · Categoría Palabra ✏️); al tocar una vuelve a abrir esa categoría para editarla (lo que se estaba escribiendo queda guardado como con "Después"). Al completar la última categoría sigue cantando BASTA solo. Pendientes que Gonzalo todavía no confirmó: castigo por salir de la app durante la ronda (0 puntos + aviso "salió del juego", margen ~3 s) e ignorar una letra suelta al final ("Gladiador ñ").
+```
