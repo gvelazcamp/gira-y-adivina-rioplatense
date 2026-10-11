@@ -641,3 +641,7 @@ Fecha: 11/10/2026 — Tutti Frutti: corregir respuestas. Debajo de "Después / S
 ```text
 Fecha: 11/10/2026 — Tutti Frutti: Gonzalo no quiso la lista de respuestas tocables debajo (se sacó). En su lugar, botón "⟵ Anterior" (junto a Después / Siguiente): vuelve a la última categoría confirmada para corregirla (on.hist guarda el orden); al confirmar con Siguiente sigue con la que estaba escribiendo (lo escrito queda guardado). Anterior queda apagado si todavía no confirmó ninguna.
 ```
+
+```text
+Fecha: 11/10/2026 — Tutti Frutti: Gonzalo vio letras repetidas en la revancha. En el código la revancha de la misma sala ya no repetía (on.usadas), pero se perdía si la sala se volvía a crear o la app se recargaba. Ahora el anfitrión guarda las letras salidas en localStorage (gya_tf_letras_usadas) y no se repiten entre partidas/salas hasta que salieron las 20; ahí se reinicia.
+```
