@@ -657,3 +657,7 @@ Fecha: 11/10/2026 — Tutti Frutti: autoaprobación por Gonzalo. Cuando Gonzalo 
 ```text
 Fecha: 11/10/2026 — Tutti Frutti: botón "🙋 Apelar" en tus propias palabras en amarillo (solo con amigos, no contra bots). Manda {t:"apela"}; a los demás les aparece "X apela su respuesta · ¿Le sumás los puntos?" con "✅ Sí, vale (+10)" (manda extra como el sumador) o "❌ No vale"; queda en el chat. Si el que dice que sí es Gonzalo, además la palabra queda aprobada para siempre (tutti_aprobadas). No se pudo probar con dos celulares reales desde el entorno (MQTT bloqueado): probado el dibujo y el código.
 ```
+
+```text
+Fecha: 11/10/2026 — Tutti Frutti: el sumador va 0 → 5 → 10 → 20 (y al revés); el 15 no se usa (pasoSuma / PASOS_SUMA). Texto de ayuda: "(5, 10 o 20)".
+```
