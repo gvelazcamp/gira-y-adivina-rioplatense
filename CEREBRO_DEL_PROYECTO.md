@@ -645,3 +645,7 @@ Fecha: 11/10/2026 — Tutti Frutti: Gonzalo no quiso la lista de respuestas toca
 ```text
 Fecha: 11/10/2026 — Tutti Frutti: Gonzalo vio letras repetidas en la revancha. En el código la revancha de la misma sala ya no repetía (on.usadas), pero se perdía si la sala se volvía a crear o la app se recargaba. Ahora el anfitrión guarda las letras salidas en localStorage (gya_tf_letras_usadas) y no se repiten entre partidas/salas hasta que salieron las 20; ahí se reinicia.
 ```
+
+```text
+Fecha: 11/10/2026 — Tutti Frutti: debajo de los puntos de cada ronda y del ganador se muestra "🔤 Ya salieron: A · M · G" (las letras del ciclo, no se repiten hasta que salgan las 20). El anfitrión manda on.usadas en el mensaje "ronda" para que todos vean lo mismo.
+```
