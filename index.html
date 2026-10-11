@@ -4528,7 +4528,7 @@ const FALLAS_GRUPO="registro_fallas";let fallaReportada=false;
 async function reportarFallaRegistro(msg){
   const supa=obtenerSupa(),nombre=String(perfil&&perfil.nombre||"").trim();
   if(fallaReportada||!supa||!nombre)return;fallaReportada=true;
-  try{await supa.from("gya_ranking").upsert({grupo:FALLAS_GRUPO,apodo:nombre.slice(0,40),
+  try{await supa.from("gya_ranking").upsert({grupo:FALLAS_GRUPO,apodo:nombre.slice(0,40),monedas_totales:0,ciudades_ganadas:0,mejor_racha:0,logros:0,
     estado_juego:{msg:String(msg||"").slice(0,300),t:new Date().toISOString(),avatar:!!perfil.avatar,pais:perfil.pais||"",ua:String(navigator.userAgent||"").slice(0,160)},
     actualizado_en:new Date().toISOString()},{onConflict:"grupo,apodo"});}catch(e){}
 }
@@ -4543,13 +4543,21 @@ async function verFallasRegistro(){
   try{const supa=obtenerSupa();if(!supa)throw 0;
     const r=await supa.from("gya_ranking").select("apodo,estado_juego,actualizado_en").eq("grupo",FALLAS_GRUPO).order("actualizado_en",{ascending:false}).limit(200);
     const f=(r&&r.data)||[];
-    caja.innerHTML=f.length?'<table><tr><th>Jugador</th><th>Motivo</th></tr>'+f.map(x=>{const e=x.estado_juego||{};return'<tr><td><b>'+rkEsc(x.apodo)+'</b><small>'+rkEsc(String(x.actualizado_en||"").slice(0,16).replace("T"," "))+'</small></td><td>'+rkEsc(e.msg||"")+'</td></tr>';}).join("")+'</table>':"No hay registros con problemas.";
+    /* Además, los últimos 15 que se conectaron (nombre exacto como quedó
+       guardado), para ver si alguien entró con otro nombre. */
+    const u=await supa.from("gya_ranking").select("apodo,actualizado_en").eq("grupo",USR_GRUPO).order("actualizado_en",{ascending:false}).limit(15);
+    const fecha=t=>rkEsc(String(t||"").slice(0,16).replace("T"," "));
+    caja.innerHTML=(f.length?'<table><tr><th>Jugador</th><th>Motivo</th></tr>'+f.map(x=>{const e=x.estado_juego||{};return'<tr><td><b>'+rkEsc(x.apodo)+'</b><small>'+fecha(x.actualizado_en)+'</small></td><td>'+rkEsc(e.msg||"")+'</td></tr>';}).join("")+'</table>':"<p>No hay registros con problemas.</p>")+
+      '<h4 style="margin:14px 0 6px">Últimos conectados (UTC)</h4><table>'+(((u&&u.data)||[]).map(x=>'<tr><td><b>'+rkEsc(x.apodo)+'</b></td><td>'+fecha(x.actualizado_en)+'</td></tr>').join("")||'<tr><td>—</td></tr>')+'</table>';
   }catch(e){caja.textContent="No se pudo cargar (¿sin internet?).";}
 }
 async function empujarUsuario(){
   const supa=obtenerSupa();
   if(!perfilExiste())return;
-  if(!supa){usrSyncEstado={ok:false,msg:"no cargó la conexión con el servidor"};return;}
+  /* Si la librería de Supabase todavía no cargó (internet lento al
+     registrarse), se reintenta cada 5 s en vez de perder el registro. */
+  if(!supa){usrSyncEstado={ok:false,msg:"no cargó la conexión con el servidor"};
+    if((empujarUsuario.reintentos=(empujarUsuario.reintentos||0)+1)<=24)setTimeout(empujarUsuario,5000);return;}
   try{
     const r=await supa.from("gya_ranking").upsert({
       grupo:USR_GRUPO,apodo:perfil.nombre,
