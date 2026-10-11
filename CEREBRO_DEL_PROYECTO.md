@@ -661,3 +661,7 @@ Fecha: 11/10/2026 — Tutti Frutti: botón "🙋 Apelar" en tus propias palabras
 ```text
 Fecha: 11/10/2026 — Tutti Frutti: el sumador va 0 → 5 → 10 → 20 (y al revés); el 15 no se usa (pasoSuma / PASOS_SUMA). Texto de ayuda: "(5, 10 o 20)".
 ```
+
+```text
+Fecha: 11/10/2026 — Tutti Frutti apelación: con que UNO solo diga "Sí, vale" ya se suman los puntos (como el sumador); a los demás se les cierra el aviso y ven "X ya le sumó los puntos".
+```
