@@ -475,6 +475,8 @@ const TuttiFrutti=(()=>{
       if(on.host&&on.jug.every(j=>on.resps[j.pid]))publicarResultado();
     }else if(m.t==="extra"&&m.n===on.n){
       on.extra=on.extra||{};on.extra[m.a+"|"+m.i]=Math.max(0,Math.min(20,Number(m.p)||0));pintarVotos();
+      /* Con que uno solo le sume ya cuenta: a los demás se les cierra el aviso de apelación. */
+      if(Number(m.p)>0){const ap=document.querySelector(`.tf-apelacion[data-k="${m.a}|${m.i}"]`);if(ap){ap.remove();if(m.pid!==on.pid&&typeof mostrarToast==="function"){const q2=(on.jug.find(j=>j.pid===m.pid)||{}).nombre||"Alguien";mostrarToast("✅",q2+" ya le sumó los puntos.");}}}
     }else if(m.t==="voto"&&m.n===on.n){
       const k=m.a+"|"+m.i;on.votos=on.votos||{};const st=on.votos[k]=on.votos[k]||new Set();
       if(m.v)st.add(m.pid);else st.delete(m.pid);
