@@ -274,12 +274,23 @@ const ContraRelojOnline=(()=>{
   }
 
   /* RENDER */
+  /* Cambiar personas de grupo: el anfitrión toca ⇄ al lado del nombre y lo
+     pasa al grupo siguiente (en la sala de espera o entre turnos, no en
+     medio de una ronda). */
+  const puedeMover=()=>soyHost&&estadoSala?.turn?.status!=="active";
+  function moverJugador(id){
+    if(!puedeMover()||!jug[id])return;
+    const t=jug[id].team||0;jug[id].team=t%grupos+1;
+    if(turno&&["awaiting_die","ready"].includes(turno.status)&&turno.describer===id){turno=null;privado=null;}
+    difundir();
+  }
   function pintarEquipos(cont){
     if(!estadoSala||!cont)return;cont.innerHTML="";
+    cont.onclick=e=>{const b=e.target.closest("[data-mover]");if(b)moverJugador(b.dataset.mover);};
     for(let t=1;t<=estadoSala.teamCount;t++){
       const ps=estadoSala.players.filter(p=>p.team===t),d=document.createElement("div");d.className="crr-team";
       d.innerHTML="<h3><span>GRUPO "+t+"</span><span>"+(ps.length>=2?"✓ LISTO":ps.length+"/2 MÍN.")+"</span></h3>"
-        +(ps.length?ps.map(p=>'<div class="crr-player'+(p.host?" crr-host":"")+(estadoSala.turn?.describer===p.pid?" crr-turn":"")+'">'+c.esc(p.name)+(p.voiceReady?" · 🎙 listo":" · 🎙 pendiente")+"</div>").join(""):'<div class="crr-player">Faltan 2 jugadores</div>');
+        +(ps.length?ps.map(p=>'<div class="crr-player'+(p.host?" crr-host":"")+(estadoSala.turn?.describer===p.pid?" crr-turn":"")+'">'+c.esc(p.name)+(p.voiceReady?" · 🎙 listo":" · 🎙 pendiente")+(puedeMover()?' <button type="button" class="crr-mover" data-mover="'+p.pid+'" style="margin-left:6px;padding:2px 8px;border-radius:8px;border:1px solid #F5B30188;background:#F5B3011f;color:#FFE39A;font:inherit;font-size:.8rem">⇄ Grupo '+(t%estadoSala.teamCount+1)+'</button>':"")+"</div>").join(""):'<div class="crr-player">Faltan 2 jugadores</div>');
       cont.appendChild(d);
     }
     const sin=estadoSala.players.filter(p=>!p.team);
@@ -335,6 +346,10 @@ const ContraRelojOnline=(()=>{
     const st=estadoSala.turn?.status||"";
     if(soyHost)$("#nextTurnBtn").textContent=ganadorAhora()?"🏆 VER GANADOR":"PREPARAR SIGUIENTE TURNO";
     $("#hostControls").hidden=!soyHost;
+    /* Entre turnos el anfitrión ve los grupos para pasar a alguien de grupo. */
+    if(soyHost){let g=$("#gameTeams");const hc=$("#hostControls");
+      if(!g&&hc){g=document.createElement("div");g.id="crr-gameTeams";g.className="crr-teams";hc.appendChild(g);}
+      if(g){g.hidden=!puedeMover();if(puedeMover())pintarEquipos(g);}}
     $("#nextTurnBtn").hidden=!soyHost||["awaiting_die","ready","active"].includes(st);
     $("#rollOnlineDie").hidden=!soyHost||st!=="awaiting_die";
     $("#startOnlineRoundBtn").hidden=!soyHost||st!=="ready";

@@ -690,3 +690,7 @@ Fecha: 11/10/2026 — Contra Reloj online (regla de Gonzalo): todos activan el m
 ```text
 Fecha: 11/10/2026 — Contra Reloj online, verde automático (acordado con Gonzalo): durante la ronda, el celular de cada compañero que adivina ESCUCHA a su dueño (SpeechRecognition) y manda lo que oye al anfitrión ({type:"guess"}); si dice una palabra de la tarjeta, se pone verde sola. Para eso su micrófono se suelta de la llamada durante la ronda (ContraRelojVoz.soltarMic / retomarMic al terminar): el que describe no lo oye, lo ve escrito ("🗣️ Bea dijo: «…» ✓", últimas 4 frases). El que describe sigue pudiendo tocar a mano. Si el celular escuchó por error al que describe, los rivales pueden anular con ⚠ MARCAR también una palabra que ya se puso verde. Rojo sigue siendo por los rivales (⚠ MARCAR). Probado con 4 jugadores simulados (mqtt falso por BroadcastChannel y voz simulada).
 ```
+
+```text
+Fecha: 11/10/2026 — Contra Reloj online: cambiar personas de grupo. El anfitrión ve "⇄ Grupo N" al lado de cada nombre (en la sala de espera y entre turnos, también en la pantalla de juego; nunca en medio de una ronda) y lo pasa al grupo siguiente (moverJugador). Si movía al que iba a describir antes de empezar la ronda, el turno se vuelve a preparar.
+```
