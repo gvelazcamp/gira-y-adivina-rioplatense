@@ -694,3 +694,7 @@ Fecha: 11/10/2026 — Contra Reloj online, verde automático (acordado con Gonza
 ```text
 Fecha: 11/10/2026 — Contra Reloj online: cambiar personas de grupo. El anfitrión ve "⇄ Grupo N" al lado de cada nombre (en la sala de espera y entre turnos, también en la pantalla de juego; nunca en medio de una ronda) y lo pasa al grupo siguiente (moverJugador). Si movía al que iba a describir antes de empezar la ronda, el turno se vuelve a preparar.
 ```
+
+```text
+Fecha: 11/10/2026 — Contra Reloj online: arriba de la jugada, todos ven un cartel con "Grupo N · 🎤 Describe: X · 🙋 Adivina(n): Y" (con "(vos)" en el propio nombre), antes y durante la ronda.
+```
