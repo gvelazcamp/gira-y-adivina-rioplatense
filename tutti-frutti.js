@@ -388,7 +388,7 @@ const TuttiFrutti=(()=>{
     const l=libres[Math.floor(Math.random()*libres.length)];on.usadas.push(l);
     try{localStorage.setItem("gya_tf_letras_usadas",JSON.stringify(on.usadas));}catch(e){}
     on.rj=(on.rj||0)+1;on.tot=on.tot||RONDAS;
-    mandar({t:"ronda",n:on.n+1,rj:on.rj,tot:on.tot,letra:l,cats:on.cats,tiempo:on.tiempo});
+    mandar({t:"ronda",n:on.n+1,rj:on.rj,tot:on.tot,letra:l,cats:on.cats,tiempo:on.tiempo,usadas:on.usadas.slice()});
   }
   /* Chat de la sala (fuera de la ronda): para hablar las objeciones. Viaja por
      la misma sala ({t:"chat"}); las objeciones y defensas se anotan solas. */
@@ -441,7 +441,7 @@ const TuttiFrutti=(()=>{
       if(eraHost){cerrarSala();if(raiz){configurar();estado("El anfitrión cerró la sala.");}return;}
       if(on.host)difundirSala();pintarJugadores();
     }else if(m.t==="ronda"){
-      on.n=m.n;on.rj=m.rj||on.rj;on.tot=m.tot||on.tot||RONDAS;on.letra=m.letra;on.cats=m.cats;on.tiempo=m.tiempo;on.fase="jugando";on.resps={};on.votos={};on.extra={};on.acepta={};on.defiende={};on.ganador=null;on.basta=null;on.mias=Array(on.cats.length).fill("");on.envie=false;
+      on.n=m.n;if(Array.isArray(m.usadas))on.usadas=m.usadas.slice();on.rj=m.rj||on.rj;on.tot=m.tot||on.tot||RONDAS;on.letra=m.letra;on.cats=m.cats;on.tiempo=m.tiempo;on.fase="jugando";on.resps={};on.votos={};on.extra={};on.acepta={};on.defiende={};on.ganador=null;on.basta=null;on.mias=Array(on.cats.length).fill("");on.envie=false;
       jugarOnline();
       if(on.bots)planBots();
     }else if(m.t==="basta"&&m.n===on.n){
@@ -599,6 +599,9 @@ const TuttiFrutti=(()=>{
   const extraDe=(a,i)=>{const x=on.extra&&on.extra[a+"|"+i];return typeof x==="number"?x:null;};
   /* El sumador lo usan los demás (no el autor); contra bots, vos con todas. */
   const puedeSumar=a=>on.bots||a!==on.pid;
+  /* Letras que ya salieron (no vuelven hasta que salgan las 20): se
+     muestran abajo de los puntos de cada ronda y del ganador. */
+  const salieronHtml=()=>{const u=(on&&on.usadas||[]).filter(l=>LETRAS.includes(l));return u.length?`<p class="tf-salieron">🔤 Ya salieron: <b>${u.join(" · ")}</b><small>No se repiten hasta que salgan las ${LETRAS.length}.</small></p>`:"";};
   function mostrarResultado(){
     detenerMusica();
     if(!raiz||!on)return;on.fase="resultado";on.votos=on.votos||{};on.marcas=on.marcas||{};
@@ -609,6 +612,7 @@ const TuttiFrutti=(()=>{
       <p class="imp-ayuda">Letra <b>${on.letra}</b> · <b>10</b> única · <b>5</b> repetida · <b>20</b> si sos el único · <b>0</b> si no vale.<br>⚠️ = dudosa (vale 0): tocá <b class="tf-ver-ej">👆 ver error</b> para ver por qué. Si en realidad está bien, sumale puntos con ➕ (de 5 en 5, hasta 20). Con ❌ anulás una respuesta.</p>
       <ul class="tf-resps">${filas}</ul>
       <div class="qs-sub">🏆 Puntos (con esta ronda)</div><ul class="imp-tabla" id="tfTabla"></ul>
+      ${salieronHtml()}
       ${on.host?((on.rj||1)>=(on.tot||RONDAS)?`<button type="button" class="mg-principal" id="tfOtra">🏆 Ver ganador de la partida</button>`:`<button type="button" class="mg-principal" id="tfOtra">🎲 Siguiente ronda (${(on.rj||1)+1} de ${on.tot||RONDAS})</button>`):`<p class="imp-ayuda">Esperando al anfitrión…</p>`}</div>`);
     raiz.querySelector(".tf-resps").onclick=e=>{
       const f=e.target.closest(".tf-fila");if(!f||!f.dataset.a)return;const a=f.dataset.a,i=Number(f.dataset.i);
@@ -781,6 +785,7 @@ const TuttiFrutti=(()=>{
     pantalla(`<div class="mg-panel imp-panel imp-fin"><div class="bb-icono">🏆</div><h3>${ganan.length>1?"¡Empate entre "+esc(ganan.join(" y "))+"!":"¡Ganó "+esc(ganan[0])+"!"}</h3>
       <p class="imp-ayuda">${on.tot||RONDAS} rondas: gana el que ganó más rondas (si empatan, el de más puntos).</p>
       <ol class="kar-podio">${orden.map(([j,rg,p],k)=>`<li style="--c:#E5197C"><span>${k+1}</span><i>${esc((j.nombre||"?")[0].toUpperCase())}</i><b>${esc(j.nombre)}${j.pid===on.pid?" (vos)":""}</b><em>${rg} ${rg===1?"ronda":"rondas"} · ${p} pts</em></li>`).join("")}</ol>
+      ${salieronHtml()}
       ${on.host?`<button type="button" class="mg-principal" id="tfRevancha">🔄 Revancha</button>`:`<p class="imp-ayuda">Esperando que el anfitrión arranque la revancha…</p>`}</div>`);
     if(on.host)q("tfRevancha").onclick=()=>{on.ganadas={};on.rg={};on.rj=0;on.tot=RONDAS;difundirSala();nuevaRonda();};
   }
