@@ -378,8 +378,15 @@ const TuttiFrutti=(()=>{
     });
   }
   function nuevaRonda(){
+    /* Las letras que ya salieron se recuerdan en el celular del anfitrión
+       (no solo en la sala): así no se repiten en la revancha aunque la sala
+       se haya vuelto a crear o la app se haya recargado. Recién cuando
+       salieron las 20 se empieza de nuevo. */
+    let guardadas=[];try{guardadas=JSON.parse(localStorage.getItem("gya_tf_letras_usadas")||"[]");}catch(e){}
+    on.usadas=[...new Set([...(on.usadas||[]),...(Array.isArray(guardadas)?guardadas:[])])].filter(l=>LETRAS.includes(l));
     let libres=LETRAS.filter(l=>!on.usadas.includes(l));if(!libres.length){on.usadas=[];libres=LETRAS.slice();}
     const l=libres[Math.floor(Math.random()*libres.length)];on.usadas.push(l);
+    try{localStorage.setItem("gya_tf_letras_usadas",JSON.stringify(on.usadas));}catch(e){}
     on.rj=(on.rj||0)+1;on.tot=on.tot||RONDAS;
     mandar({t:"ronda",n:on.n+1,rj:on.rj,tot:on.tot,letra:l,cats:on.cats,tiempo:on.tiempo});
   }
