@@ -682,3 +682,7 @@ Fecha: 11/10/2026 — Contra Reloj (Gonzalo jugó online, cada uno con su celula
 - Rojo: el árbitro por voz escucha solo el micrófono del que describe; con la voz online prendida, en Android el micrófono queda ocupado y el árbitro no escucha → ahora lo dice ("ÁRBITRO APAGADO… los rivales marcan a mano").
 - Prueba para Gonzalo (Más → Pruebas → "Contra Reloj · prueba con 3 bots"): un celular, vos + Bot Ana vs Bot Beto + Bot Caro; botón para hablar "como el que DESCRIBE" (decir la palabra → ROJO) o "como el que ADIVINA" (→ VERDE). Probado con reconocedor simulado: rojo, verde y reloj OK.
 ```
+
+```text
+Fecha: 11/10/2026 — Contra Reloj online (regla de Gonzalo): todos activan el micrófono, pero durante la ronda solo se transmite el de los jugadores del grupo que juega; los demás quedan cortados ("🔇 Ahora juega otro grupo…") hasta el turno de su grupo. En el lobby y entre turnos, todos hablan. ContraRelojVoz.permitir(v) (track.enabled = !silenciado && permitido).
+```

@@ -6,7 +6,7 @@
 const ContraRelojVoz=(()=>{
   const ICE_BASE=[{urls:"stun:stun.l.google.com:19302"},{urls:"stun:stun1.l.google.com:19302"}];
   const PID_OK=/^p[a-z0-9]{4,12}$/;
-  let ctx=null,stream=null,silenciado=false,activa=false;
+  let ctx=null,stream=null,silenciado=false,activa=false,permitido=true;
   const peers=new Map(),audios=new Map(),iceEnEspera=new Map(),estados=new Map(),ofertando=new Set();
   function iceServers(){const extra=Array.isArray(window.GYA_TURN_SERVERS)?window.GYA_TURN_SERVERS:[];return[...ICE_BASE,...extra];}
   function $(s){return ctx?ctx.$(s):null;}
@@ -31,13 +31,18 @@ const ContraRelojVoz=(()=>{
     if(stream?.active)return stream;
     if(!navigator.mediaDevices?.getUserMedia)throw new Error("Este navegador no permite usar el micrófono.");
     stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false});
-    silenciado=false;activa=true;stream.getAudioTracks().forEach(t=>t.enabled=true);
+    silenciado=false;activa=true;aplicarMic();
     botones();estado("Micrófono activo");render();return stream;
   }
   function alternarSilencio(){
-    if(!stream)return;silenciado=!silenciado;stream.getAudioTracks().forEach(t=>t.enabled=!silenciado);
-    botones();estado(silenciado?"Tu micrófono está silenciado":"Micrófono activo");
+    if(!stream)return;silenciado=!silenciado;aplicarMic();
+    botones();estado(silenciado?"Tu micrófono está silenciado":permitido?"Micrófono activo":"🔇 Ahora juega otro grupo: tu micrófono se prende en el turno de tu grupo");
   }
+  /* Durante la ronda solo se escucha al grupo que juega: los demás quedan
+     con el micrófono cortado hasta el turno de su grupo. */
+  function aplicarMic(){if(stream)stream.getAudioTracks().forEach(t=>t.enabled=!silenciado&&permitido);}
+  function permitir(v){v=!!v;if(v===permitido)return;permitido=v;aplicarMic();
+    if(activa&&!silenciado)estado(permitido?"Micrófono activo":"🔇 Ahora juega otro grupo: tu micrófono se prende en el turno de tu grupo");}
   function audioDe(remoto){
     if(audios.has(remoto))return audios.get(remoto);
     const a=document.createElement("audio");a.autoplay=true;a.playsInline=true;
@@ -154,10 +159,10 @@ const ContraRelojVoz=(()=>{
     if(mq?.connected&&ctx.sala()){try{mq.publish(ctx.base()+"/rtc/all",JSON.stringify({from:ctx.pid(),to:"all",type:"voice_bye"}));}catch(e){}}
     cerrarTodos();
     if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
-    activa=false;silenciado=false;botones();
+    activa=false;silenciado=false;permitido=true;botones();
   }
   function iniciar(c){ctx=c;botones();render();}
   function desvincular(){salir();ctx=null;}
-  return{iniciar,desvincular,unirse,salir,alternarSilencio,senal,sincronizar,saludar,render,activa:()=>activa,stream:()=>stream?.active?stream:null};
+  return{iniciar,desvincular,unirse,salir,alternarSilencio,permitir,senal,sincronizar,saludar,render,activa:()=>activa,stream:()=>stream?.active?stream:null};
 })();
 window.ContraRelojVoz=ContraRelojVoz;

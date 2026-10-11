@@ -280,6 +280,7 @@ const ContraRelojOnline=(()=>{
     conexion("");
     if(window.ContraRelojVoz)ContraRelojVoz.sincronizar();
     const yo=estadoSala.players.find(p=>p.pid===pid);
+    if(!estadoSala.started&&window.ContraRelojVoz&&ContraRelojVoz.permitir)ContraRelojVoz.permitir(true);
     if(!estadoSala.started){
       c.raiz().classList.remove("crr-en-ronda");$("#onlineGame").classList.remove("crr-en-ronda");
       if(!$("#onlineLobby").hidden||!$("#onlineGame").hidden||!$("#onlineWinner").hidden){c.pantalla("#onlineLobby");pintarEquipos($("#lobbyTeams"));}
@@ -293,6 +294,8 @@ const ContraRelojOnline=(()=>{
     if($("#onlineGame").hidden)c.pantalla("#onlineGame");
     // Durante la ronda se esconde lo accesorio para que entre en una pantalla.
     const enRonda=estadoSala.turn?.status==="active";
+    /* Micrófonos: durante la ronda solo hablan los del grupo que juega. */
+    if(window.ContraRelojVoz&&ContraRelojVoz.permitir)ContraRelojVoz.permitir(!enRonda||yo?.team===estadoSala.turn?.team);
     $("#onlineGame").classList.toggle("crr-en-ronda",enRonda);c.raiz().classList.toggle("crr-en-ronda",enRonda);
     pintarMarcador();pintarRol();pintarResultado();
     /* Si la ronda está corriendo pero a este celular no le llegó su tarjeta
