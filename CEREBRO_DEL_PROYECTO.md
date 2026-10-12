@@ -722,3 +722,7 @@ Fecha: 12/10/2026 — Tutti Frutti: Marca + Globant, Gartner, Glovo, Guess, Give
 ```text
 Fecha: 12/10/2026 — Pantalla de carga con internet lento (una tester de Fiverr mandó captura con el cuadrado del logo vacío y "GIRÁ Y ADIVINÁ"): (1) el logo de la pantalla de carga va dentro del HTML (data URI webp 112 px), ya no espera a bajar icono-192.png; (2) en <head> quedan solo los estilos mínimos de la pantalla de carga y el resto del <style> grande se movió al principio de <body>, después de la pantalla de carga (antes había que bajar ~150 KB de estilos antes de dibujar algo); (3) extensiones.css y sala-tv.css cargan sin bloquear (preload + onload); (4) la barra avanza sola con CSS desde el primer momento; (5) a los 8 s aparece "Cargando… con internet lento puede tardar un poco / Loading… slow connection, please wait". Probado con red simulada a 15 KB/s y en carga normal (inicio y extensiones se ven bien).
 ```
+
+```text
+Fecha: 12/10/2026 — Social / testers: Gonzalo tenía ~11 jugadores nuevos (testers de Fiverr) que no aparecían. Solo aparece quien completó el perfil. Ahora, si alguien abre la app y a los 15 s no tiene perfil, se anota en gya_ranking grupo "sin_perfil" (apodo = id del celular en localStorage "dispositivo_gya"; estado_juego: idioma, Android/iPhone, nombre si lo escribió, fecha). Cuando crea el perfil y se registra bien, ese renglón se borra. En Más → Pruebas → "Registros con problemas / sin perfil" se ve "📱 Abrieron la app sin crear el perfil: N" con la lista.
+```

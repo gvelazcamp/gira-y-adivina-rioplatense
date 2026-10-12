@@ -1810,7 +1810,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
     <button class="btn-grande sec" id="bPruebaChat"><span class="btn-ico">💬</span><span class="btn-txt">Chat de sala con rival ficticio</span></button>
     <button class="btn-grande sec" id="bPruebaContraReloj"><span class="btn-ico">⏳</span><span class="btn-txt">Contra Reloj · prueba con 3 bots (hablás vos)</span></button>
     <button class="btn-grande sec" id="bPruebaTuttiDudas"><span class="btn-ico">🍉</span><span class="btn-txt">Tutti Frutti · palabras en amarillo</span></button>
-    <button class="btn-grande sec" id="bPruebaFallasReg"><span class="btn-ico">👥</span><span class="btn-txt">Registros con problemas (Social)</span></button>
+    <button class="btn-grande sec" id="bPruebaFallasReg"><span class="btn-ico">👥</span><span class="btn-txt">Registros con problemas / sin perfil (Social)</span></button>
   </div>
   <button class="no" id="pruebasCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
 </div></div>
@@ -4553,6 +4553,23 @@ async function reportarFallaRegistro(msg){
     actualizado_en:new Date().toISOString()},{onConflict:"grupo,apodo"});}catch(e){}
 }
 setTimeout(()=>{try{if(!perfilExiste()&&nombrePerfilPersonal(perfil.nombre))reportarFallaRegistro("perfil incompleto: falta "+[!perfil.avatar&&"avatar",!paisPerfilValido(perfil.pais)&&"país"].filter(Boolean).join(" y "));}catch(e){}},12000);
+/* Quien abre la app y todavía no creó el perfil no aparece en Social: se
+   anota igual en gya_ranking grupo "sin_perfil" (un renglón por celular,
+   con idioma y fecha) para que Gonzalo vea en Pruebas cuántos testers
+   abrieron la app sin terminar el registro. Al crear el perfil se borra. */
+const SIN_PERFIL_GRUPO="sin_perfil";
+function idDispositivo(){try{let d=localStorage.getItem("dispositivo_gya");if(!d){d="d"+Math.random().toString(36).slice(2,10);localStorage.setItem("dispositivo_gya",d);}return d;}catch(e){return"";}}
+async function anotarSinPerfil(){
+  const supa=obtenerSupa(),id=idDispositivo();if(!supa||!id||perfilExiste())return;
+  try{await supa.from("gya_ranking").upsert({grupo:SIN_PERFIL_GRUPO,apodo:id,monedas_totales:0,ciudades_ganadas:0,mejor_racha:0,logros:0,
+    estado_juego:{idioma:String(navigator.language||"").slice(0,12),nombre:String(perfil&&perfil.nombre||"").slice(0,20),ua:/iPhone|iPad/i.test(navigator.userAgent)?"iPhone":/Android/i.test(navigator.userAgent)?"Android":"Otro",t:new Date().toISOString()},
+    actualizado_en:new Date().toISOString()},{onConflict:"grupo,apodo"});}catch(e){}
+}
+async function borrarSinPerfil(){
+  const supa=obtenerSupa(),id=idDispositivo();if(!supa||!id)return;
+  try{await supa.from("gya_ranking").delete().eq("grupo",SIN_PERFIL_GRUPO).eq("apodo",id);}catch(e){}
+}
+setTimeout(()=>{try{if(!perfilExiste())anotarSinPerfil();}catch(e){}},15000);
 async function verFallasRegistro(){
   const viejo=document.querySelector(".fallas-reg");if(viejo)viejo.remove();
   const c=document.createElement("div");c.className="pf-confirmar fallas-reg";
@@ -4567,8 +4584,11 @@ async function verFallasRegistro(){
        guardado), para ver si alguien entró con otro nombre. */
     const u=await supa.from("gya_ranking").select("apodo,actualizado_en").eq("grupo",USR_GRUPO).order("actualizado_en",{ascending:false}).limit(15);
     const fecha=t=>rkEsc(String(t||"").slice(0,16).replace("T"," "));
+    const sp=await supa.from("gya_ranking").select("apodo,estado_juego,actualizado_en").eq("grupo",SIN_PERFIL_GRUPO).order("actualizado_en",{ascending:false}).limit(100);
+    const spd=(sp&&sp.data)||[];
+    const sinPerfilHtml='<h4 style="margin:14px 0 6px">📱 Abrieron la app sin crear el perfil: '+spd.length+'</h4>'+(spd.length?'<table>'+spd.map(x=>{const e=x.estado_juego||{};return'<tr><td><b>'+rkEsc(e.nombre||"(sin nombre)")+'</b><small>'+rkEsc((e.ua||"")+" · "+(e.idioma||""))+'</small></td><td>'+fecha(x.actualizado_en)+'</td></tr>';}).join("")+'</table>':'<p>Nadie.</p>');
     caja.innerHTML=(f.length?'<table><tr><th>Jugador</th><th>Motivo</th></tr>'+f.map(x=>{const e=x.estado_juego||{};return'<tr><td><b>'+rkEsc(x.apodo)+'</b><small>'+fecha(x.actualizado_en)+'</small></td><td>'+rkEsc(e.msg||"")+'</td></tr>';}).join("")+'</table>':"<p>No hay registros con problemas.</p>")+
-      '<h4 style="margin:14px 0 6px">Últimos conectados (UTC)</h4><table>'+(((u&&u.data)||[]).map(x=>'<tr><td><b>'+rkEsc(x.apodo)+'</b></td><td>'+fecha(x.actualizado_en)+'</td></tr>').join("")||'<tr><td>—</td></tr>')+'</table>';
+      sinPerfilHtml+'<h4 style="margin:14px 0 6px">Últimos conectados (UTC)</h4><table>'+(((u&&u.data)||[]).map(x=>'<tr><td><b>'+rkEsc(x.apodo)+'</b></td><td>'+fecha(x.actualizado_en)+'</td></tr>').join("")||'<tr><td>—</td></tr>')+'</table>';
   }catch(e){caja.textContent="No se pudo cargar (¿sin internet?).";}
 }
 async function empujarUsuario(){
@@ -4592,6 +4612,7 @@ async function empujarUsuario(){
       version_estado:1,
       actualizado_en:new Date().toISOString()
     },{onConflict:"grupo,apodo"});
+    if(!(r&&r.error)&&!borrarSinPerfil.hecho){borrarSinPerfil.hecho=true;borrarSinPerfil();}
     usrSyncEstado=r&&r.error?{ok:false,msg:String(r.error.message||r.error.code||"error")+(r.error.details?" · "+r.error.details:"")}:{ok:true,msg:""};
   }catch(e){usrSyncEstado={ok:false,msg:String(e&&e.message||e)};}
   if(usrSyncEstado.ok===false)reportarFallaRegistro(usrSyncEstado.msg);
