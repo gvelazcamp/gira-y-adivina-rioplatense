@@ -4687,9 +4687,11 @@ async function regRespaldoProcesar(llegados){
   const nombres=[...new Set(lista.map(x=>x.d.a))];
   let existen;
   try{const r=await supa.from("gya_ranking").select("apodo").eq("grupo",USR_GRUPO).in("apodo",nombres);if(r.error)return;existen=new Set((r.data||[]).map(x=>x.apodo));}catch(e){return;}
+  const hechos=regRespaldoProcesar.hechos=regRespaldoProcesar.hechos||new Set();
   for(const {d,tema,c} of lista){
-    let ok=existen.has(d.a);
-    if(!ok){try{
+    /* El mismo registro llega por los 3 servidores: se anota una sola vez. */
+    let ok=existen.has(d.a)||hechos.has(d.a);
+    if(!ok){hechos.add(d.a);try{
       const cuando=new Date(d.t).toISOString();
       const r=await supa.from("gya_ranking").insert({grupo:USR_GRUPO,apodo:d.a,monedas_totales:0,ciudades_ganadas:0,mejor_racha:0,logros:0,avatar:d.v,
         estado_juego:{version:1,guardado_en:cuando,llego_por_respaldo:true,localStorage:{gya_pais:d.p},presenciaMapa:{pais:d.p}},version_estado:1,actualizado_en:cuando});

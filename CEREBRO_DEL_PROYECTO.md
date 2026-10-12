@@ -132,7 +132,7 @@ No se corrigieron estos documentos en este trabajo: se registran las diferencias
 | Inicio de Mahjong | Comentario de `extensiones.js`: mantenerlo oculto hasta corregir el inicio. |
 | Segunda app y popup promocional | `IDEAS.md`: propuestas que no deben activarse sin pedido y definición de Gonzalo. |
 | Marcos de ciudad y Pack Pescera/Acuario | `IDEAS.md` los menciona como pendientes/futuros. Antes de actuar, volver a contrastar catálogo y assets actuales. |
-| Registro de testers de Pakistán (12/10/2026) | Hira y Abdullah tienen perfil completo pero no llegan a Supabase/Social (probable bloqueo de su internet a supabase.co). Gonzalo dijo "después vemos". Opciones: (1) respaldo por los brokers MQTT públicos (nombre/avatar/país quedan públicos; necesita su OK explícito) o (2) proxy propio gratis en Cloudflare hacia Supabase (recomendado; necesita que cree la cuenta). Antes, confirmar con el link REST de Supabase si llegaron o con la captura de Social de Hira. |
+| Registro de testers de Pakistán (12/10/2026) | Se publicó el respaldo cifrado por MQTT (ver Registro de cambios). Si igual no llegan, queda la opción del proxy propio en Cloudflare hacia Supabase. |
 
 ## 4. Almacenamiento distribuido: conservar conocimiento donde corresponde
 
@@ -734,4 +734,8 @@ Fecha: 12/10/2026 — Registro en Supabase / Social más firme: (1) supabase-js 
 
 ```text
 Fecha: 12/10/2026 — Social: botón "➕ Agregar jugador a Social" (solo Gonzalo, abajo de la lista). Para testers con perfil completo cuyo celular no llega a Supabase (Hira y Abdullah, Pakistán): Gonzalo escribe el nombre igual que en su celular, elige país y avatar, y se crea su fila en gya_ranking grupo "usuarios" (insert, nunca pisa a alguien que ya existe; estado_juego.agregado_por:"Gonzalo"). Si el celular del jugador algún día conecta, la reemplaza con sus datos reales. El arreglo de fondo (proxy Cloudflare o respaldo por MQTT) sigue pendiente. sw.js v259.
+```
+
+```text
+Fecha: 12/10/2026 — Registro que no llega a Supabase (Hira y Abdullah, Pakistán, perfil completo): respaldo CIFRADO por los brokers MQTT de las salas, con OK de Gonzalo. El celular de Gonzalo crea la primera vez un par de llaves RSA-OAEP (privada en localStorage "regllave_priv", fuera de gya_/larueda_ para que nunca viaje al respaldo de Supabase) y publica la pública como mensaje guardado en gya-rioplatense/registro/v2/llave. Cada jugador que a los 40 s no confirmó que quedó guardado en Supabase cifra (AES-GCM + RSA) nombre, avatar, país, motivo, Android/iPhone e idioma y lo deja guardado en .../v2/d/<id del celular> (sin nombre en el tema). Al abrir la app o Social, el celular de Gonzalo lo descifra, inserta en grupo "usuarios" a quien falte (nunca pisa; estado_juego.llego_por_respaldo), anota el motivo en "Registros con problemas" y borra el mensaje del broker. Además, botón "➕ Agregar jugador a Social" (solo Gonzalo) para anotar a alguien a mano. Probado con dos celulares simulados (Hira sin Supabase → aparece en Social de Gonzalo, una sola vez). sw.js v260.
 ```
