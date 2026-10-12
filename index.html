@@ -1318,6 +1318,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <p class="sub" style="margin:6px 0 14px">Todos los que jugaron, se hayan anotado al ranking o no.</p>
   <div class="rk-lista" id="usrLista"></div>
   <p class="estado" id="usrEstado" style="margin-top:8px"></p>
+  <button class="no" id="usrAgregar" style="display:none;width:100%;border-radius:14px;padding:12px;font-weight:700;margin-top:10px">➕ Agregar jugador a Social</button>
   <button class="no" id="usrCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
 </div></div>
 
@@ -4625,6 +4626,99 @@ async function empujarUsuario(){
     if((empujarUsuario.fallos=(empujarUsuario.fallos||0)+1)<=10)setTimeout(empujarUsuario,20000);}
   else empujarUsuario.fallos=0;
 }
+/* Respaldo cifrado del registro por los servidores de las salas (MQTT).
+   Testers de Pakistán con perfil completo nunca llegaron a Supabase (su
+   internet no deja). Si un celular no confirmó que quedó guardado, manda
+   nombre, avatar y país CIFRADOS con la llave pública de Gonzalo por los
+   brokers; solo el celular de Gonzalo tiene la llave privada (guardada en
+   localStorage "regllave_priv", fuera de los prefijos gya_/larueda_ para que
+   nunca viaje al respaldo de Supabase), los descifra, anota en Supabase a
+   los que faltan y borra el mensaje del broker. */
+const REG_TOPIC="gya-rioplatense/registro/v2/";
+const REG_BROKERS=["wss://broker.emqx.io:8084/mqtt","wss://broker.hivemq.com:8884/mqtt","wss://test.mosquitto.org:8081/mqtt"];
+const REG_RSA={name:"RSA-OAEP",hash:"SHA-256"};
+const regB64=b=>btoa(String.fromCharCode(...new Uint8Array(b)));
+const regDeB64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+function regConectar(u){return mqtt.connect(u,{clientId:"gyareg"+Math.random().toString(16).slice(2,10),connectTimeout:8000,reconnectPeriod:0,clean:true});}
+async function regCifrar(llavePubJwk,obj){
+  const pub=await crypto.subtle.importKey("jwk",llavePubJwk,REG_RSA,false,["encrypt"]);
+  const aes=await crypto.subtle.generateKey({name:"AES-GCM",length:256},true,["encrypt"]);
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const datos=await crypto.subtle.encrypt({name:"AES-GCM",iv},aes,new TextEncoder().encode(JSON.stringify(obj)));
+  const k=await crypto.subtle.encrypt(REG_RSA,pub,await crypto.subtle.exportKey("raw",aes));
+  return JSON.stringify({k:regB64(k),iv:regB64(iv),d:regB64(datos)});
+}
+async function regDescifrar(priv,txt){
+  const x=JSON.parse(txt);
+  const raw=await crypto.subtle.decrypt(REG_RSA,priv,regDeB64(x.k));
+  const aes=await crypto.subtle.importKey("raw",raw,{name:"AES-GCM"},false,["decrypt"]);
+  return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM",iv:regDeB64(x.iv)},aes,regDeB64(x.d))));
+}
+/* Celular del jugador: solo si no confirmó que quedó guardado en Supabase. */
+function regRespaldoPublicar(){
+  if(regRespaldoPublicar.hecho||usrSyncEstado.ok===true||!perfilExiste()||esGonzalo()||typeof mqtt==="undefined"||!window.crypto||!crypto.subtle)return;
+  regRespaldoPublicar.hecho=true;
+  const dato={a:String(perfil.nombre).slice(0,14),v:perfil.avatar,p:perfil.pais,
+    m:String(usrSyncEstado.msg||(obtenerSupa()?"sin respuesta del servidor":"no cargó la conexión con el servidor")).slice(0,160),
+    u:/iPhone|iPad/i.test(navigator.userAgent)?"iPhone":/Android/i.test(navigator.userAgent)?"Android":"Otro",i:String(navigator.language||"").slice(0,12),t:Date.now()};
+  const tema=REG_TOPIC+"d/"+idDispositivo();
+  REG_BROKERS.forEach(u=>{try{const c=regConectar(u);let listo=false;const fin=()=>{try{c.end(true);}catch(e){}};
+    c.on("connect",()=>c.subscribe(REG_TOPIC+"llave"));
+    c.on("message",async(t,pl)=>{if(listo||t!==REG_TOPIC+"llave")return;listo=true;
+      try{const cifrado=await regCifrar(JSON.parse(pl.toString()),dato);c.publish(tema,cifrado,{qos:1,retain:true},fin);}catch(e){fin();}});
+    c.on("error",fin);setTimeout(fin,25000);}catch(e){}});
+}
+setTimeout(regRespaldoPublicar,40000);
+/* Celular de Gonzalo: crea su par de llaves la primera vez, publica la
+   pública y recibe los registros cifrados. */
+async function regLlavesGonzalo(){
+  let priv=null,pub=null;
+  try{priv=JSON.parse(localStorage.getItem("regllave_priv")||"null");pub=JSON.parse(localStorage.getItem("regllave_pub")||"null");}catch(e){}
+  if(!priv||!pub){
+    const par=await crypto.subtle.generateKey({...REG_RSA,modulusLength:2048,publicExponent:new Uint8Array([1,0,1])},true,["encrypt","decrypt"]);
+    priv=await crypto.subtle.exportKey("jwk",par.privateKey);pub=await crypto.subtle.exportKey("jwk",par.publicKey);
+    try{localStorage.setItem("regllave_priv",JSON.stringify(priv));localStorage.setItem("regllave_pub",JSON.stringify(pub));}catch(e){}
+  }
+  return{priv:await crypto.subtle.importKey("jwk",priv,REG_RSA,false,["decrypt"]),pub:{kty:pub.kty,n:pub.n,e:pub.e,alg:pub.alg,ext:true,key_ops:["encrypt"]}};
+}
+async function regRespaldoProcesar(llegados){
+  const supa=obtenerSupa();if(!supa||!llegados.size)return;
+  const lista=[...llegados.values()].slice(0,40);llegados.clear();
+  const nombres=[...new Set(lista.map(x=>x.d.a))];
+  let existen;
+  try{const r=await supa.from("gya_ranking").select("apodo").eq("grupo",USR_GRUPO).in("apodo",nombres);if(r.error)return;existen=new Set((r.data||[]).map(x=>x.apodo));}catch(e){return;}
+  const hechos=regRespaldoProcesar.hechos=regRespaldoProcesar.hechos||new Set();
+  for(const {d,tema,c} of lista){
+    /* El mismo registro llega por los 3 servidores: se anota una sola vez. */
+    let ok=existen.has(d.a)||hechos.has(d.a);
+    if(!ok){hechos.add(d.a);try{
+      const cuando=new Date(d.t).toISOString();
+      const r=await supa.from("gya_ranking").insert({grupo:USR_GRUPO,apodo:d.a,monedas_totales:0,ciudades_ganadas:0,mejor_racha:0,logros:0,avatar:d.v,
+        estado_juego:{version:1,guardado_en:cuando,llego_por_respaldo:true,localStorage:{gya_pais:d.p},presenciaMapa:{pais:d.p}},version_estado:1,actualizado_en:cuando});
+      ok=!(r&&r.error);
+      if(ok){existen.add(d.a);mostrarToast("👥",d.a+" ya aparece en Social");
+        try{await supa.from("gya_ranking").upsert({grupo:FALLAS_GRUPO,apodo:d.a,monedas_totales:0,ciudades_ganadas:0,mejor_racha:0,logros:0,
+          estado_juego:{msg:"Llegó por respaldo (su celular no pudo guardar: "+d.m+") · "+d.u+" · "+d.i,t:new Date().toISOString()},actualizado_en:new Date().toISOString()},{onConflict:"grupo,apodo"});}catch(e){}}
+    }catch(e){}}
+    /* Ya está en Supabase: se borra el mensaje guardado del broker. */
+    if(ok)try{c.publish(tema,"",{qos:1,retain:true});}catch(e){}
+  }
+}
+async function regRespaldoEscuchar(){
+  if(!esGonzalo()||typeof mqtt==="undefined"||!window.crypto||!crypto.subtle||Date.now()-(regRespaldoEscuchar.t||0)<60000)return;regRespaldoEscuchar.t=Date.now();
+  let llaves;try{llaves=await regLlavesGonzalo();}catch(e){return;}
+  const llegados=new Map();let timer=null;
+  REG_BROKERS.forEach(u=>{try{const c=regConectar(u);
+    c.on("connect",()=>{c.publish(REG_TOPIC+"llave",JSON.stringify(llaves.pub),{qos:1,retain:true});c.subscribe(REG_TOPIC+"d/+",{qos:1});});
+    c.on("message",async(tema,pl)=>{if(!pl||!pl.length)return;let d;try{d=await regDescifrar(llaves.priv,pl.toString());}catch(e){return;}
+      if(!d||typeof d.a!=="string")return;d.a=d.a.trim();
+      if(!nombrePerfilPersonal(d.a)||d.a.length>14||!/^avatar-[\w-]{1,30}$/.test(String(d.v))||!paisPerfilValido(d.p))return;
+      d.t=Math.min(Date.now(),Number(d.t)||Date.now());d.m=String(d.m||"").slice(0,160);d.u=String(d.u||"").slice(0,10);d.i=String(d.i||"").slice(0,12);
+      llegados.set(tema,{d,tema,c});clearTimeout(timer);timer=setTimeout(()=>regRespaldoProcesar(llegados),4000);});
+    c.on("error",()=>{try{c.end(true);}catch(e){}});
+    setTimeout(()=>{try{c.end(true);}catch(e){}},45000);}catch(e){}});
+}
+setTimeout(regRespaldoEscuchar,8000);
 /* Sincronización automática del respaldo completo: chequea cada ~2.5s si
    cambió algo persistente (prefijos gya_ y larueda_) y, si cambió, programa el envío
    con ~1.8s de debounce (evita golpear Supabase en cada setItem). También
@@ -4902,8 +4996,52 @@ function haceCuanto(t){
 }
 function usrAbrir(){
   $("capaUsuarios").classList.add("ver");usrCargarLista.reintento=false;
+  $("usrAgregar").style.display=esGonzalo()?"":"none";
+  regRespaldoEscuchar();
   usrCargarLista();
 }
+/* Solo Gonzalo: anotar a mano en Social a un jugador que se registró pero
+   cuyo celular no llega a Supabase (testers de Pakistán). Crea su fila en
+   grupo "usuarios" con nombre, avatar y país; si algún día su celular
+   logra conectarse, la reemplaza con sus datos reales. Nunca pisa a
+   alguien que ya está. */
+function usrAgregarManual(){
+  if(!esGonzalo())return;
+  const viejo=document.querySelector(".usr-agregar");if(viejo)viejo.remove();
+  let av=null,pais="uruguay";
+  const c=document.createElement("div");c.className="pf-confirmar usr-agregar";
+  c.innerHTML='<div class="mg-panel pf-caja"><h3>➕ Agregar jugador a Social</h3><p class="imp-ayuda">Escribí el nombre igual que en su celular y elegí su avatar.</p>'+
+    '<input type="text" maxlength="12" placeholder="Nombre" style="width:100%;padding:10px;border-radius:10px;margin:6px 0;font-size:1rem">'+
+    '<div style="display:flex;gap:6px;margin:6px 0"><button type="button" class="no" data-p="uruguay" style="flex:1">🇺🇾 Uruguay</button><button type="button" class="no" data-p="argentina" style="flex:1">🇦🇷 Argentina</button></div>'+
+    '<div class="avatar-grid" style="max-height:230px;overflow:auto"></div>'+
+    '<p class="estado"></p><button type="button" data-ok="1">Agregar</button> <button type="button" class="no" data-x="1">Cancelar</button></div>';
+  document.body.appendChild(c);
+  const grid=c.querySelector(".avatar-grid"),estado=c.querySelector(".estado"),inp=c.querySelector("input");
+  const pintar=()=>{c.querySelectorAll("[data-p]").forEach(b=>b.style.outline=b.dataset.p===pais?"2px solid #FFC93C":"");
+    grid.innerHTML="";AVATARES.forEach(id=>{const b=document.createElement("button");b.type="button";b.className="avatar-opcion"+(av===id?" elegido":"");
+      b.innerHTML='<img src="assets/avatars/'+id+'.webp" alt="">';b.onclick=()=>{av=id;pintar();};grid.appendChild(b);});};
+  pintar();
+  c.addEventListener("click",async e=>{
+    if(e.target===c||e.target.closest("button[data-x]")){c.remove();return;}
+    const bp=e.target.closest("button[data-p]");if(bp){pais=bp.dataset.p;pintar();return;}
+    if(!e.target.closest("button[data-ok]"))return;
+    const nombre=inp.value.trim().slice(0,12);
+    if(!nombrePerfilPersonal(nombre)){estado.textContent="Escribí el nombre.";return;}
+    if(!av){estado.textContent="Elegí el avatar.";return;}
+    const supa=obtenerSupa();if(!supa){estado.textContent="Sin conexión con el servidor.";return;}
+    estado.textContent="Guardando…";
+    try{
+      const ya=await supa.from("gya_ranking").select("apodo").in("grupo",[USR_GRUPO,RK_GRUPO]).ilike("apodo",nombre).limit(1);
+      if(ya.data&&ya.data.length){estado.textContent="Ya existe «"+ya.data[0].apodo+"» en Social.";return;}
+      const ahora=new Date().toISOString();
+      const r=await supa.from("gya_ranking").insert({grupo:USR_GRUPO,apodo:nombre,monedas_totales:0,ciudades_ganadas:0,mejor_racha:0,logros:0,avatar:av,
+        estado_juego:{version:1,guardado_en:ahora,agregado_por:"Gonzalo",localStorage:{gya_pais:pais},presenciaMapa:{pais}},version_estado:1,actualizado_en:ahora});
+      if(r&&r.error){estado.textContent="No se pudo: "+String(r.error.message||r.error.code).slice(0,90);return;}
+      c.remove();mostrarToast("👥",nombre+" agregado a Social");usrCargarLista();
+    }catch(err){estado.textContent="No se pudo: "+String(err&&err.message||err).slice(0,90);}
+  });
+}
+$("usrAgregar").onclick=usrAgregarManual;
 $("usrCerrar").onclick=()=>$("capaUsuarios").classList.remove("ver");
 $("rkCerrar").onclick=()=>$("capaRanking").classList.remove("ver");
 $("rkCrear").onclick=async()=>{
