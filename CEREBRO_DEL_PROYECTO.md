@@ -714,3 +714,7 @@ Fecha: 11/10/2026 — Tutti Frutti: en una partida "apareció la letra y volvió
 ```text
 Fecha: 12/10/2026 — Tutti Frutti: Marca + Balenciaga, Burberry, Bershka, Bottega Veneta, Billabong, Benetton, Bentley, Bugatti, Brooks, Birkenstock, BlackBerry (lista con B que pasó Gonzalo; BMW, Bimbo, Burger King, Barbie y BIC ya estaban).
 ```
+
+```text
+Fecha: 12/10/2026 — Tutti Frutti: Marca + Globant, Gartner, Glovo, Guess, Givenchy, Giorgio Armani/Armani, Geox, G-Star, Genesis, GMC, Great Wall, GasGas, Gilera, Grido, Grohe (lista con G de Gonzalo). "Gbarin" no se agregó: no se encontró como marca (preguntar).
+```
