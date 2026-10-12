@@ -132,6 +132,7 @@ No se corrigieron estos documentos en este trabajo: se registran las diferencias
 | Inicio de Mahjong | Comentario de `extensiones.js`: mantenerlo oculto hasta corregir el inicio. |
 | Segunda app y popup promocional | `IDEAS.md`: propuestas que no deben activarse sin pedido y definición de Gonzalo. |
 | Marcos de ciudad y Pack Pescera/Acuario | `IDEAS.md` los menciona como pendientes/futuros. Antes de actuar, volver a contrastar catálogo y assets actuales. |
+| Registro de testers de Pakistán (12/10/2026) | Hira y Abdullah tienen perfil completo pero no llegan a Supabase/Social (probable bloqueo de su internet a supabase.co). Gonzalo dijo "después vemos". Opciones: (1) respaldo por los brokers MQTT públicos (nombre/avatar/país quedan públicos; necesita su OK explícito) o (2) proxy propio gratis en Cloudflare hacia Supabase (recomendado; necesita que cree la cuenta). Antes, confirmar con el link REST de Supabase si llegaron o con la captura de Social de Hira. |
 
 ## 4. Almacenamiento distribuido: conservar conocimiento donde corresponde
 
