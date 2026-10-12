@@ -710,3 +710,7 @@ Fecha: 11/10/2026 — Tutti Frutti: en Famoso / banda NO valen personajes de fic
 ```text
 Fecha: 11/10/2026 — Tutti Frutti: en una partida "apareció la letra y volvió a aparecer". Causa probable: el aviso de ronda llega por varios servidores (MultiBroker: 4 brokers + Supabase) y si uno se atrasa más de 1,5 s no se descarta como duplicado → se volvía a sortear la letra en pantalla y se borraba lo escrito. Ahora un aviso "ronda" con número igual o menor al actual se ignora. Además "Siguiente ronda" y "Revancha" se desactivan al primer toque (evita doble toque).
 ```
+
+```text
+Fecha: 12/10/2026 — Tutti Frutti: Marca + Balenciaga, Burberry, Bershka, Bottega Veneta, Billabong, Benetton, Bentley, Bugatti, Brooks, Birkenstock, BlackBerry (lista con B que pasó Gonzalo; BMW, Bimbo, Burger King, Barbie y BIC ya estaban).
+```
