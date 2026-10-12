@@ -1318,6 +1318,7 @@ body.tvhost #juego .ficha{width:clamp(30px,4.5vw,52px);height:clamp(42px,6vw,66p
   <p class="sub" style="margin:6px 0 14px">Todos los que jugaron, se hayan anotado al ranking o no.</p>
   <div class="rk-lista" id="usrLista"></div>
   <p class="estado" id="usrEstado" style="margin-top:8px"></p>
+  <button class="no" id="usrAgregar" style="display:none;width:100%;border-radius:14px;padding:12px;font-weight:700;margin-top:10px">➕ Agregar jugador a Social</button>
   <button class="no" id="usrCerrar" style="width:100%;border-radius:14px;padding:13px;font-weight:700;margin-top:10px">Cerrar</button>
 </div></div>
 
@@ -4902,8 +4903,51 @@ function haceCuanto(t){
 }
 function usrAbrir(){
   $("capaUsuarios").classList.add("ver");usrCargarLista.reintento=false;
+  $("usrAgregar").style.display=esGonzalo()?"":"none";
   usrCargarLista();
 }
+/* Solo Gonzalo: anotar a mano en Social a un jugador que se registró pero
+   cuyo celular no llega a Supabase (testers de Pakistán). Crea su fila en
+   grupo "usuarios" con nombre, avatar y país; si algún día su celular
+   logra conectarse, la reemplaza con sus datos reales. Nunca pisa a
+   alguien que ya está. */
+function usrAgregarManual(){
+  if(!esGonzalo())return;
+  const viejo=document.querySelector(".usr-agregar");if(viejo)viejo.remove();
+  let av=null,pais="uruguay";
+  const c=document.createElement("div");c.className="pf-confirmar usr-agregar";
+  c.innerHTML='<div class="mg-panel pf-caja"><h3>➕ Agregar jugador a Social</h3><p class="imp-ayuda">Escribí el nombre igual que en su celular y elegí su avatar.</p>'+
+    '<input type="text" maxlength="12" placeholder="Nombre" style="width:100%;padding:10px;border-radius:10px;margin:6px 0;font-size:1rem">'+
+    '<div style="display:flex;gap:6px;margin:6px 0"><button type="button" class="no" data-p="uruguay" style="flex:1">🇺🇾 Uruguay</button><button type="button" class="no" data-p="argentina" style="flex:1">🇦🇷 Argentina</button></div>'+
+    '<div class="avatar-grid" style="max-height:230px;overflow:auto"></div>'+
+    '<p class="estado"></p><button type="button" data-ok="1">Agregar</button> <button type="button" class="no" data-x="1">Cancelar</button></div>';
+  document.body.appendChild(c);
+  const grid=c.querySelector(".avatar-grid"),estado=c.querySelector(".estado"),inp=c.querySelector("input");
+  const pintar=()=>{c.querySelectorAll("[data-p]").forEach(b=>b.style.outline=b.dataset.p===pais?"2px solid #FFC93C":"");
+    grid.innerHTML="";AVATARES.forEach(id=>{const b=document.createElement("button");b.type="button";b.className="avatar-opcion"+(av===id?" elegido":"");
+      b.innerHTML='<img src="assets/avatars/'+id+'.webp" alt="">';b.onclick=()=>{av=id;pintar();};grid.appendChild(b);});};
+  pintar();
+  c.addEventListener("click",async e=>{
+    if(e.target===c||e.target.closest("button[data-x]")){c.remove();return;}
+    const bp=e.target.closest("button[data-p]");if(bp){pais=bp.dataset.p;pintar();return;}
+    if(!e.target.closest("button[data-ok]"))return;
+    const nombre=inp.value.trim().slice(0,12);
+    if(!nombrePerfilPersonal(nombre)){estado.textContent="Escribí el nombre.";return;}
+    if(!av){estado.textContent="Elegí el avatar.";return;}
+    const supa=obtenerSupa();if(!supa){estado.textContent="Sin conexión con el servidor.";return;}
+    estado.textContent="Guardando…";
+    try{
+      const ya=await supa.from("gya_ranking").select("apodo").in("grupo",[USR_GRUPO,RK_GRUPO]).ilike("apodo",nombre).limit(1);
+      if(ya.data&&ya.data.length){estado.textContent="Ya existe «"+ya.data[0].apodo+"» en Social.";return;}
+      const ahora=new Date().toISOString();
+      const r=await supa.from("gya_ranking").insert({grupo:USR_GRUPO,apodo:nombre,monedas_totales:0,ciudades_ganadas:0,mejor_racha:0,logros:0,avatar:av,
+        estado_juego:{version:1,guardado_en:ahora,agregado_por:"Gonzalo",localStorage:{gya_pais:pais},presenciaMapa:{pais}},version_estado:1,actualizado_en:ahora});
+      if(r&&r.error){estado.textContent="No se pudo: "+String(r.error.message||r.error.code).slice(0,90);return;}
+      c.remove();mostrarToast("👥",nombre+" agregado a Social");usrCargarLista();
+    }catch(err){estado.textContent="No se pudo: "+String(err&&err.message||err).slice(0,90);}
+  });
+}
+$("usrAgregar").onclick=usrAgregarManual;
 $("usrCerrar").onclick=()=>$("capaUsuarios").classList.remove("ver");
 $("rkCerrar").onclick=()=>$("capaRanking").classList.remove("ver");
 $("rkCrear").onclick=async()=>{

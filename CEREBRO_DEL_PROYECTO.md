@@ -731,3 +731,7 @@ Fecha: 12/10/2026 — Social / testers: Gonzalo tenía ~11 jugadores nuevos (tes
 ```text
 Fecha: 12/10/2026 — Registro en Supabase / Social más firme: (1) supabase-js ahora está guardado en el juego (lib/supabase.min.js, v2.45.4, MIT) y no depende de jsdelivr (si el archivo local falla, prueba jsdelivr); con CDN lento o bloqueado en otro país el registro no llegaba; (2) usuario nuevo que toca "Tutorial" en la bienvenida: primero crea nombre + avatar + país y después arranca el tutorial (antes el perfil se pedía al terminar el tutorial y, si cerraba la app antes, no quedaba registrado); el logro del tutorial se sigue pagando; (3) si el envío a Supabase falla, empujarUsuario reintenta solo cada 20 s (hasta 10 veces). sw.js v258 con lib/supabase.min.js en la caché.
 ```
+
+```text
+Fecha: 12/10/2026 — Social: botón "➕ Agregar jugador a Social" (solo Gonzalo, abajo de la lista). Para testers con perfil completo cuyo celular no llega a Supabase (Hira y Abdullah, Pakistán): Gonzalo escribe el nombre igual que en su celular, elige país y avatar, y se crea su fila en gya_ranking grupo "usuarios" (insert, nunca pisa a alguien que ya existe; estado_juego.agregado_por:"Gonzalo"). Si el celular del jugador algún día conecta, la reemplaza con sus datos reales. El arreglo de fondo (proxy Cloudflare o respaldo por MQTT) sigue pendiente. sw.js v259.
+```
