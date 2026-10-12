@@ -718,3 +718,7 @@ Fecha: 12/10/2026 — Tutti Frutti: Marca + Balenciaga, Burberry, Bershka, Botte
 ```text
 Fecha: 12/10/2026 — Tutti Frutti: Marca + Globant, Gartner, Glovo, Guess, Givenchy, Giorgio Armani/Armani, Geox, G-Star, Genesis, GMC, Great Wall, GasGas, Gilera, Grido, Grohe (lista con G de Gonzalo). "Gbarin" no se agregó: no se encontró como marca (preguntar).
 ```
+
+```text
+Fecha: 12/10/2026 — Pantalla de carga con internet lento (una tester de Fiverr mandó captura con el cuadrado del logo vacío y "GIRÁ Y ADIVINÁ"): (1) el logo de la pantalla de carga va dentro del HTML (data URI webp 112 px), ya no espera a bajar icono-192.png; (2) en <head> quedan solo los estilos mínimos de la pantalla de carga y el resto del <style> grande se movió al principio de <body>, después de la pantalla de carga (antes había que bajar ~150 KB de estilos antes de dibujar algo); (3) extensiones.css y sala-tv.css cargan sin bloquear (preload + onload); (4) la barra avanza sola con CSS desde el primer momento; (5) a los 8 s aparece "Cargando… con internet lento puede tardar un poco / Loading… slow connection, please wait". Probado con red simulada a 15 KB/s y en carga normal (inicio y extensiones se ven bien).
+```
