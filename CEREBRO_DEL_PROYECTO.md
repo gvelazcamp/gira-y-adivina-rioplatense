@@ -726,3 +726,7 @@ Fecha: 12/10/2026 — Pantalla de carga con internet lento (una tester de Fiverr
 ```text
 Fecha: 12/10/2026 — Social / testers: Gonzalo tenía ~11 jugadores nuevos (testers de Fiverr) que no aparecían. Solo aparece quien completó el perfil. Ahora, si alguien abre la app y a los 15 s no tiene perfil, se anota en gya_ranking grupo "sin_perfil" (apodo = id del celular en localStorage "dispositivo_gya"; estado_juego: idioma, Android/iPhone, nombre si lo escribió, fecha). Cuando crea el perfil y se registra bien, ese renglón se borra. En Más → Pruebas → "Registros con problemas / sin perfil" se ve "📱 Abrieron la app sin crear el perfil: N" con la lista.
 ```
+
+```text
+Fecha: 12/10/2026 — Registro en Supabase / Social más firme: (1) supabase-js ahora está guardado en el juego (lib/supabase.min.js, v2.45.4, MIT) y no depende de jsdelivr (si el archivo local falla, prueba jsdelivr); con CDN lento o bloqueado en otro país el registro no llegaba; (2) usuario nuevo que toca "Tutorial" en la bienvenida: primero crea nombre + avatar + país y después arranca el tutorial (antes el perfil se pedía al terminar el tutorial y, si cerraba la app antes, no quedaba registrado); el logro del tutorial se sigue pagando; (3) si el envío a Supabase falla, empujarUsuario reintenta solo cada 20 s (hasta 10 veces). sw.js v258 con lib/supabase.min.js en la caché.
+```
