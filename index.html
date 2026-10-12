@@ -40,7 +40,8 @@
 <noscript><link rel="stylesheet" href="extensiones.css?v=80"></noscript>
 <!-- mqtt.js guardado en el propio juego (lib/): si unpkg anda mal, las salas igual conectan. Si el archivo local fallara, se prueba unpkg. -->
 <script src="lib/mqtt.min.js?v=5.10.1" defer onerror="(function(){var s=document.createElement('script');s.src='https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js';document.head.appendChild(s);})()"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" defer></script>
+<!-- supabase-js también guardado en el juego (lib/): si jsdelivr anda lento o bloqueado en algún país, el registro en Social igual llega. Si el archivo local fallara, se prueba jsdelivr. -->
+<script src="lib/supabase.min.js?v=2.45.4" defer onerror="(function(){var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';document.head.appendChild(s);})()"></script>
 <!-- Estilos mínimos de la pantalla de carga en <head>: el resto de los estilos
      va al principio de <body>, después de la pantalla de carga, para que con
      internet lento se vea enseguida el logo y la barra (antes había que esperar
@@ -2991,7 +2992,11 @@ $("ptIrTienda").onclick=()=>{$("capaPromoTienda").classList.remove("ver","pt-vis
 $("ptMasTarde").onclick=()=>{$("capaPromoTienda").classList.remove("ver","pt-vista-prueba");if(!ptVistaPrueba){ptGuardarEstado("vista");}ptVistaPrueba=false;};
 $("peIrEventos").onclick=()=>{$("capaPromoEventos").classList.remove("ver");peGuardar({visto:true});abrirEventos();};
 $("peMasTarde").onclick=()=>{$("capaPromoEventos").classList.remove("ver");peGuardar({visto:true});};
-$("bienvenidaTutorial").onclick=()=>{$("capaBienvenida").classList.remove("ver");iniciarTutorial();};
+/* Usuario nuevo: primero nombre + avatar + país (así queda registrado en
+   Social aunque cierre la app a mitad del tutorial) y después el tutorial. */
+$("bienvenidaTutorial").onclick=()=>{$("capaBienvenida").classList.remove("ver");
+  if(!perfilExiste()){abrirPerfil(()=>iniciarTutorial(true),true);return;}
+  iniciarTutorial();};
 function bienvenidaContinuarSinTutorial(){
   $("capaBienvenida").classList.remove("ver");
   if(!perfilExiste()){
@@ -3105,9 +3110,9 @@ function tutorialTick(){
   }
 }
 let tutRecienTerminado=false,tutorialUsuarioNuevo=false;
-function iniciarTutorial(){
+function iniciarTutorial(nuevo){
   detenerPartidaAnterior();
-  tutorialUsuarioNuevo=!perfilExiste();
+  tutorialUsuarioNuevo=nuevo===true||!perfilExiste();
   $("capaBienvenida").classList.remove("ver");
   $("capaTutorial").classList.remove("ver");
   ptGuardarEstado("vista");
@@ -4615,7 +4620,10 @@ async function empujarUsuario(){
     if(!(r&&r.error)&&!borrarSinPerfil.hecho){borrarSinPerfil.hecho=true;borrarSinPerfil();}
     usrSyncEstado=r&&r.error?{ok:false,msg:String(r.error.message||r.error.code||"error")+(r.error.details?" · "+r.error.details:"")}:{ok:true,msg:""};
   }catch(e){usrSyncEstado={ok:false,msg:String(e&&e.message||e)};}
-  if(usrSyncEstado.ok===false)reportarFallaRegistro(usrSyncEstado.msg);
+  if(usrSyncEstado.ok===false){reportarFallaRegistro(usrSyncEstado.msg);
+    /* Si falló (internet que se cortó, servidor lento), se reintenta solo. */
+    if((empujarUsuario.fallos=(empujarUsuario.fallos||0)+1)<=10)setTimeout(empujarUsuario,20000);}
+  else empujarUsuario.fallos=0;
 }
 /* Sincronización automática del respaldo completo: chequea cada ~2.5s si
    cambió algo persistente (prefijos gya_ y larueda_) y, si cambió, programa el envío
