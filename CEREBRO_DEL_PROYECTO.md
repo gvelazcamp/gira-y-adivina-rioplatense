@@ -743,3 +743,7 @@ Fecha: 12/10/2026 — Registro que no llega a Supabase (Hira y Abdullah, Pakist�
 ```text
 Fecha: 13/10/2026 — Testers de Nigeria (Victor: Adigun, Daniel, Seun, Gbemi, Lazarus, Kami, Victor) dicen que se registraron y no aparecen; el panel mostraba 10 "(sin nombre)". Arreglos: (1) el respaldo cifrado ahora también sale 40 s después de crear el perfil (antes solo a los 40 s de abrir la app: si tardaba más en registrarse, nunca salía); (2) el renglón "sin perfil" guarda el nombre que esté escribiendo y, al crear el perfil, pasa a decir "✅ ya está en Social" o "❌ <error de Supabase>" antes de intentar borrarse (si el borrado no lo permite el servidor, igual se ve qué pasó). sw.js v261.
 ```
+
+```text
+Fecha: 13/10/2026 — Social (solo Gonzalo): cada jugador muestra desde dónde juega: "📲 App de Play Store" (la TWA abre con referrer android-app://io.github.gvelazcamp.twa; queda anotado en localStorage gya_origen_app y no se pisa después), "🌐 Instalada desde el navegador" (display-mode standalone sin TWA), "🌐 Juega en el navegador" o "❔ Sin dato" (no abrió la versión nueva). Sirve para ver quién cuenta para la prueba cerrada de Google. También viaja en el respaldo cifrado. sw.js v262.
+```
