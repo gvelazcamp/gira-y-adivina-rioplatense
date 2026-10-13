@@ -747,3 +747,7 @@ Fecha: 13/10/2026 — Testers de Nigeria (Victor: Adigun, Daniel, Seun, Gbemi, L
 ```text
 Fecha: 13/10/2026 — Social (solo Gonzalo): cada jugador muestra desde dónde juega: "📲 App de Play Store" (la TWA abre con referrer android-app://io.github.gvelazcamp.twa; queda anotado en localStorage gya_origen_app y no se pisa después), "🌐 Instalada desde el navegador" (display-mode standalone sin TWA), "🌐 Juega en el navegador" o "❔ Sin dato" (no abrió la versión nueva). Sirve para ver quién cuenta para la prueba cerrada de Google. También viaja en el respaldo cifrado. sw.js v262.
 ```
+
+```text
+Fecha: 13/10/2026 — Rueda de Letras al estilo Words of Wonders (Gonzalo: "no encuentro ninguna palabra, todas van al cajón, no es muy jugable"): (1) las ocultas se arman como crucigrama (armarCruz: la base horizontal y las demás cruzándose; máx. 10×10; se valida que no se formen palabras falsas), cada palabra encontrada destapa sus letras en las cruzadas; (2) botón 💡 Pista: destapa una letra al azar (3 pistas al empezar, guardadas en gya_rueda_de_letras.pistas); si una palabra queda toda destapada cuenta como encontrada sin puntos; (3) cada 3 palabras extra (diccionario o de la lista que no entraron en el crucigrama) = +1 pista; (4) sin reloj en solitario (el duelo 1 vs 1 sigue con reloj y bono de tiempo). Probado: 480 crucigramas generados sin errores. extensiones.css v81, rueda-de-letras.js v12, extensiones.js v39, sw v263.
+```
