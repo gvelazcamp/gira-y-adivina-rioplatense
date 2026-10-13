@@ -759,3 +759,7 @@ Fecha: 13/10/2026 — Idioma de los menús Español / English (parte 1, para tes
 ```text
 Fecha: 13/10/2026 — Tutti Frutti online, corregir respuestas (Gonzalo: "jugué online y no pude poner Anterior para corregir"): antes, al confirmar la última categoría se mandaba ¡BASTA! al instante y no había forma de volver. Ahora, con todo completo aparece una pantalla de revisión con todas las respuestas (tocar una la abre para corregir; al confirmar vuelve a la revisión) y un botón grande "✋ ¡BASTA!" que recién ahí corta la ronda (el reloj sigue corriendo). Además los puntitos de progreso se pueden tocar para saltar a cualquier categoría, y "⟵ Anterior" también funciona desde la revisión. Probado online contra bots. tutti-frutti.js v63, extensiones.css v82, sw v265.
 ```
+
+```text
+Fecha: 13/10/2026 — Tutti Frutti, Marca: + BYM / B&M / B y M / mbyM / BYM Generation (pedido de Gonzalo; varias marcas reales con ese nombre, entre ellas BYM Moda de Maldonado). tutti-frutti-datos.js v34, sw v266.
+```
