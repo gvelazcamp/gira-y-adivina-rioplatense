@@ -132,6 +132,7 @@ No se corrigieron estos documentos en este trabajo: se registran las diferencias
 | Inicio de Mahjong | Comentario de `extensiones.js`: mantenerlo oculto hasta corregir el inicio. |
 | Segunda app y popup promocional | `IDEAS.md`: propuestas que no deben activarse sin pedido y definición de Gonzalo. |
 | Marcos de ciudad y Pack Pescera/Acuario | `IDEAS.md` los menciona como pendientes/futuros. Antes de actuar, volver a contrastar catálogo y assets actuales. |
+| Fichas del Mahjong con Ideogram (13/10/2026) | Script de Gonzalo `generar_fichas_ideogram.py` (50 objetos rioplatenses). Se generaron 22 y se acabó el saldo de Ideogram (402 insufficient_funds). Con magic_prompt=OFF salieron casi sin color (solo contorno); la de prueba (mate, magic prompt por defecto) salió bien a color → rehacer las 50 con el magic prompt por defecto, v3 generate-transparent, DEFAULT (~6–9 centavos c/u, ~5 USD). Gonzalo: "dejamos para más adelante". El Mahjong sigue oculto. |
 | Registro de testers de Pakistán (12/10/2026) | Se publicó el respaldo cifrado por MQTT (ver Registro de cambios). Si igual no llegan, queda la opción del proxy propio en Cloudflare hacia Supabase. |
 
 ## 4. Almacenamiento distribuido: conservar conocimiento donde corresponde
