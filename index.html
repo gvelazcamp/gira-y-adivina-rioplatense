@@ -4671,7 +4671,7 @@ function regRespaldoPublicar(){
   regRespaldoPublicar.hecho=true;
   const dato={a:String(perfil.nombre).slice(0,14),v:perfil.avatar,p:perfil.pais,
     m:String(usrSyncEstado.msg||(obtenerSupa()?"sin respuesta del servidor":"no cargó la conexión con el servidor")).slice(0,160),
-    u:/iPhone|iPad/i.test(navigator.userAgent)?"iPhone":/Android/i.test(navigator.userAgent)?"Android":"Otro",i:String(navigator.language||"").slice(0,12),t:Date.now()};
+    u:/iPhone|iPad/i.test(navigator.userAgent)?"iPhone":/Android/i.test(navigator.userAgent)?"Android":"Otro",i:String(navigator.language||"").slice(0,12),o:(()=>{try{return localStorage.getItem("gya_origen_app")||"";}catch(e){return"";}})(),t:Date.now()};
   const tema=REG_TOPIC+"d/"+idDispositivo();
   REG_BROKERS.forEach(u=>{try{const c=regConectar(u);let listo=false;const fin=()=>{try{c.end(true);}catch(e){}};
     c.on("connect",()=>c.subscribe(REG_TOPIC+"llave"));
@@ -4705,7 +4705,7 @@ async function regRespaldoProcesar(llegados){
     if(!ok){hechos.add(d.a);try{
       const cuando=new Date(d.t).toISOString();
       const r=await supa.from("gya_ranking").insert({grupo:USR_GRUPO,apodo:d.a,monedas_totales:0,ciudades_ganadas:0,mejor_racha:0,logros:0,avatar:d.v,
-        estado_juego:{version:1,guardado_en:cuando,llego_por_respaldo:true,localStorage:{gya_pais:d.p},presenciaMapa:{pais:d.p}},version_estado:1,actualizado_en:cuando});
+        estado_juego:{version:1,guardado_en:cuando,llego_por_respaldo:true,localStorage:Object.assign({gya_pais:d.p},["playstore","instalada_web","navegador"].includes(d.o)?{gya_origen_app:d.o}:{}),presenciaMapa:{pais:d.p}},version_estado:1,actualizado_en:cuando});
       ok=!(r&&r.error);
       if(ok){existen.add(d.a);mostrarToast("👥",d.a+" ya aparece en Social");
         try{await supa.from("gya_ranking").upsert({grupo:FALLAS_GRUPO,apodo:d.a,monedas_totales:0,ciudades_ganadas:0,mejor_racha:0,logros:0,
@@ -4892,7 +4892,18 @@ $("socialContinuar").onclick=()=>{$("capaSocial").classList.remove("ver");usrAbr
    alfabético no aparecían). Y en vez del respaldo completo de cada uno
    (estado_juego entero, pesado) pide solo las claves que usa Social; si
    eso falla, vuelve a pedir todo como antes. */
-const USR_CLAVES_SOCIAL=["gya_mapa_pais_social","gya_pais","larueda_mundo","larueda_mundo_argentina","larueda_pasos","larueda_pasos_argentina","gya_ultima_ciudad_social","gya_ultimo_juego"];
+/* Desde dónde juega cada uno (para que Gonzalo vea en Social quién usa la
+   app de Play Store, que es lo que cuenta Google en la prueba cerrada):
+   la app de Play Store (TWA) abre el juego con referrer android-app://…;
+   una vez visto, queda anotado aunque después se abra sin referrer. */
+(function(){try{
+  const ref=String(document.referrer||""),actual=localStorage.getItem("gya_origen_app");
+  let o=null;
+  if(ref.startsWith("android-app://io.github.gvelazcamp.twa"))o="playstore";
+  else if(actual!=="playstore"){const solo=window.matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;o=solo?"instalada_web":"navegador";}
+  if(o&&o!==actual)localStorage.setItem("gya_origen_app",o);
+}catch(e){}})();
+const USR_CLAVES_SOCIAL=["gya_origen_app","gya_mapa_pais_social","gya_pais","larueda_mundo","larueda_mundo_argentina","larueda_pasos","larueda_pasos_argentina","gya_ultima_ciudad_social","gya_ultimo_juego"];
 const SOCIAL_OCULTOS="social_ocultos";
 async function usrTraerFilas(supa){
   const liviano="grupo,apodo,avatar,mejor_racha,logros,ciudades_ganadas,actualizado_en,pm:estado_juego->presenciaMapa,"+USR_CLAVES_SOCIAL.map((k,i)=>"k"+i+":estado_juego->localStorage->>"+k).join(",");
@@ -4960,7 +4971,8 @@ async function usrCargarLista(){
       '<div class="rk-info"><b>'+rkEsc(f.apodo)+(soyYo?" (vos)":"")+'</b>'+
       '<span class="rk-ciudad">'+rkEsc(avance.texto)+'</span>'+
       '<span>🗺️ '+avance.ganadas+'/'+avance.total+' · 🏆 racha '+f.mejor_racha+' · 🏅 '+f.logros+'</span>'+
-      (ultimo?'<span class="rk-ultimo">🎮 Último juego: '+rkEsc(ultimo.n)+(ultimo.t?' · '+haceCuanto(ultimo.t):'')+'</span>':'')+'</div>';
+      (ultimo?'<span class="rk-ultimo">🎮 Último juego: '+rkEsc(ultimo.n)+(ultimo.t?' · '+haceCuanto(ultimo.t):'')+'</span>':'')+
+      (esGonzalo()?'<span class="rk-ultimo">'+({playstore:"📲 App de Play Store",instalada_web:"🌐 Instalada desde el navegador",navegador:"🌐 Juega en el navegador"}[estado?.localStorage?.gya_origen_app]||"❔ Sin dato (todavía no abrió la versión nueva)")+'</span>':'')+'</div>';
     if(!soyYo){
       const b=document.createElement("button");
       b.className="no";b.textContent="Invitar";
