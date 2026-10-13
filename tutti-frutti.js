@@ -532,10 +532,11 @@ const TuttiFrutti=(()=>{
     pantalla(`<div class="qs-tope"><span>🍓 Letra ${on.letra}</span><b id="tfReloj">${on.tiempo}</b><span></span></div>
       <div class="imp-centro tf-campo"><div class="tf-letra tf-final tf-chica">${on.letra}</div>
       <div class="tf-prog" id="tfProg"></div>
-      <div class="imp-quien" id="tfCat"></div>
+      <div id="tfEdit"><div class="imp-quien" id="tfCat"></div>
       <input id="tfInput" autocomplete="off" autocapitalize="words" enterkeyhint="next">
       <p class="imp-ayuda" id="tfMsg"></p>
-      <div class="mim-btns"><button type="button" class="bb-pasar imp-gris" id="tfAnt">⟵ Anterior</button><button type="button" class="bb-pasar imp-gris" id="tfSaltar">Después</button><button type="button" class="bb-pasar mim-ok" id="tfSig">Siguiente ➜</button></div></div>`);
+      <div class="mim-btns"><button type="button" class="bb-pasar imp-gris" id="tfAnt">⟵ Anterior</button><button type="button" class="bb-pasar imp-gris" id="tfSaltar">Después</button><button type="button" class="bb-pasar mim-ok" id="tfSig">Siguiente ➜</button></div></div>
+      <div id="tfRev" class="tf-rev" hidden></div></div>`);
     const inp=q("tfInput");
     q("tfSig").onclick=confirmarCampo;
     q("tfSaltar").onclick=()=>{guardarCampo(false);if(on.pend.length>1){on.pend.push(on.pend.shift());}pintarCampo();};
@@ -543,14 +544,30 @@ const TuttiFrutti=(()=>{
     /* Anterior: vuelve a la última categoría confirmada para corregirla;
        después "Siguiente" sigue donde estaba (lo escrito queda guardado). */
     q("tfAnt").onclick=()=>{if(!on||on.fase!=="jugando"||on.basta||!on.hist||!on.hist.length)return;
-      guardarCampo();const k=on.hist.pop();on.pend=[k,...on.pend.filter(x=>x!==k)];pintarCampo();};
+      if(on.pend.length)guardarCampo();const k=on.hist.pop();irACampo(k);};
+    /* Los puntitos de arriba también llevan directo a cualquier categoría. */
+    q("tfProg").onclick=e=>{const d=e.target.closest("i[data-i]");if(!d||!on||on.fase!=="jugando"||on.basta)return;if(on.pend.length)guardarCampo();irACampo(Number(d.dataset.i));};
     pintarCampo();relojOnline();
   }
+  function irACampo(k){on.pend=[k,...on.pend.filter(x=>x!==k)];pintarCampo();}
+  /* Con todo completo no se manda BASTA solo: se muestran las respuestas
+     para corregir la que sea (tocándola) y recién después ¡BASTA!. */
+  function revision(){
+    if(!raiz||!on)return;const ed=q("tfEdit"),rv=q("tfRev");if(!ed||!rv)return;
+    ed.hidden=true;rv.hidden=false;
+    q("tfProg").innerHTML=on.cats.map((c,j)=>`<i class="${on.mias[j]?"ok":""}" data-i="${j}"></i>`).join("");
+    rv.innerHTML='<p class="imp-ayuda">¿Todo bien? Tocá una respuesta para corregirla.</p>'+
+      on.cats.map((c,j)=>`<button type="button" class="tf-rev-fila" data-i="${j}"><small>${esc(etiq(c))}</small><b>${esc(on.mias[j]||"—")}</b><span>✏️</span></button>`).join("")+
+      '<button type="button" class="bb-pasar mim-ok tf-rev-basta" id="tfBasta">✋ ¡BASTA!</button>';
+    rv.onclick=e=>{const f=e.target.closest(".tf-rev-fila");if(f&&on&&on.fase==="jugando"&&!on.basta){irACampo(Number(f.dataset.i));return;}
+      if(e.target.closest("#tfBasta")&&on&&on.fase==="jugando"&&!on.basta)mandar({t:"basta",n:on.n});};
+  }
   function pintarCampo(){
-    if(!raiz||!on||!on.pend)return;const i=on.pend[0];
+    if(!raiz||!on||!on.pend)return;if(!on.pend.length){revision();return;}const i=on.pend[0];
+    {const ed=q("tfEdit"),rv=q("tfRev");if(ed)ed.hidden=false;if(rv)rv.hidden=true;}
     q("tfCat").textContent=etiq(on.cats[i]);
     const inp=q("tfInput");inp.value=on.mias[i]||"";inp.placeholder="Empieza con "+on.letra+"…";try{inp.focus();}catch(e){}
-    q("tfProg").innerHTML=on.cats.map((c,j)=>`<i class="${on.mias[j]?"ok":""}${j===i?" act":""}"></i>`).join("");
+    q("tfProg").innerHTML=on.cats.map((c,j)=>`<i class="${on.mias[j]?"ok":""}${j===i?" act":""}" data-i="${j}"></i>`).join("");
     q("tfMsg").textContent="";
     const a=q("tfAnt");if(a)a.disabled=!(on.hist&&on.hist.length);
   }
@@ -566,7 +583,7 @@ const TuttiFrutti=(()=>{
     const cat=on.cats[on.pend[0]];
     guardarCampo();on.hist=(on.hist||[]).filter(x=>x!==on.pend[0]);on.hist.push(on.pend[0]);on.pend.shift();
     if(typeof bip==="function")bip(880,.06,"sine",.04);
-    if(!on.pend.length){mandar({t:"basta",n:on.n});return;}
+    if(!on.pend.length){revision();return;}
     pintarCampo();
     revisar(cat,v).then(ok=>{if(ok===false&&on&&on.fase==="jugando"){const m=raiz&&raiz.querySelector("#tfMsg");if(m&&!m.textContent)m.textContent="⚠️ «"+v+"» no la encontré como "+NOM_CAT[cat]+". Al final la pueden votar.";}});
   }
@@ -581,7 +598,7 @@ const TuttiFrutti=(()=>{
   function cortarRonda(quien){
     if(!on||on.fase!=="jugando")return;
     detenerMusica();
-    if(on.pend&&q("tfInput")){const v=(q("tfInput").value||"").trim();if(v.length>=2&&N(v)[0]===on.letra)guardarCampo();}
+    if(on.pend&&on.pend.length&&q("tfInput")){const v=(q("tfInput").value||"").trim();if(v.length>=2&&N(v)[0]===on.letra)guardarCampo();}
     on.fase="cortada";
     const nombre=(on.jug.find(j=>j.pid===quien)||{}).nombre;
     if(typeof sonidoErrorExt==="function"&&quien&&quien!==on.pid)sonidoErrorExt();
