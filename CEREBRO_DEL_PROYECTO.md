@@ -768,3 +768,7 @@ Fecha: 13/10/2026 — Tutti Frutti, Marca: + BYM / B&M / B y M / mbyM / BYM Gene
 ```text
 Fecha: 13/10/2026 — Rueda de Letras, palabras del crucigrama (Gonzalo: "¿me vas a poner TOTEM en serio, y MOTA?"): se rehicieron las listas de las 24 ruedas solo con palabras comunes (las que cualquiera piensa jugando) y se sumaron muchas comunes que faltaban (ej. TOMATE: MATE, TEMA, META, TOMA, MATO, TEMO, METO; CAMINOS: CAMINO, CAMION, CASINO, CAMISON, MOCASIN…). Afuera las raras: TOTEM, MOTA, TOME, ARDUO, CAMPA, CAREO, ANTA, CIAN, JARA, LOAR, ACOSE, ROCE, RETA, TARA, etc. elegir() ya no tira error si una rueda no alcanza para el nivel: usa solo las que tienen suficientes palabras comunes. Las palabras de la lista que no entran al crucigrama siguen contando como extra. 480 crucigramas generados sin errores. rueda-de-letras-datos.js v2, rueda-de-letras.js v13, sw v267.
 ```
+
+```text
+Fecha: 13/10/2026 — Rueda de Letras: de 24 a 97 ruedas (Gonzalo: "sumame muchas más, que ahora se entiende"). 73 bases nuevas (CARPETA, CANTERA, ARBOLES, ESCOLAR, MAESTRA, PELOTAS, CORTINA, TRACTOR, REVISTA, MOTORES, etc.). Palabras elegidas así: todas las que se arman con las letras (diccionario an-array-of-spanish-words), filtradas por frecuencia de uso real (wordfreq, zipf ≥ 3,9) y revisadas a mano: afuera nombres propios (RITA, MARTA, LOLA…), inglés (TOP, SET, TEST…), groserías y formas raras. Ruedas posibles por nivel: 1 → 33, 2 → 30, 3 → 58, 4 → 52, 9+ → 36. Probado: 1200 crucigramas sin errores; auditoría de palabras OK. rueda-de-letras-datos.js v3, sw v268.
+```
