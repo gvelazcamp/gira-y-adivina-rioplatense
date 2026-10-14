@@ -780,3 +780,7 @@ Fecha: 14/10/2026 — Palabra Secreta, compartir por WhatsApp (Gonzalo: "mirá q
 ```text
 Fecha: 14/10/2026 — Palabra Secreta, compartir (2ª vuelta, Gonzalo: "tira dos cosas, una con letras y otra sin; sacá la sin letras"): el texto ya no lleva los cuadraditos de colores, solo "🟩 Palabra Secreta 14/10: la saqué en 5/6 ✅" (o "no la saqué ❌") + "¿Me ganás? 👉 link". La tarjeta de WhatsApp ahora dice PALABRA / SECRETA en fichas y "¿Me ganás?" (assets/compartir/palabra-secreta-og2.png; la anterior mostraba MATES/SALSA/ASADO y un amigo creyó que la respuesta era ASADO). palabra-secreta.js v14, sw v270.
 ```
+
+```text
+Fecha: 14/10/2026 — Palabra Secreta: WhatsApp seguía mostrando la tarjeta vieja (ASADO) porque guarda la vista previa por link. El link compartido pasa a ps.html?v=2 (link nuevo = tarjeta nueva). Si algún día se cambia otra vez la imagen, subir ese ?v=. palabra-secreta.js v15, sw v271.
+```
