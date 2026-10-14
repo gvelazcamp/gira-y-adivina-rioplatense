@@ -776,3 +776,7 @@ Fecha: 13/10/2026 — Rueda de Letras: de 24 a 97 ruedas (Gonzalo: "sumame mucha
 ```text
 Fecha: 14/10/2026 — Palabra Secreta, compartir por WhatsApp (Gonzalo: "mirá qué raro se ve"): el mensaje traía el link largo .../index.html y WhatsApp armaba una tarjeta gigante con el logo de la ruleta arriba del resultado. Ahora el link es ps.html (página corta con og:image chica de 200 px = assets/compartir/palabra-secreta-og.png, título "Palabra Secreta · Girá y Adiviná") que redirige a index.html?ext=palabra-secreta, o sea abre el juego directo. Texto: "Palabra Secreta 14/10 6/6 + cuadraditos + ¿Me ganás? 👉 link". El "copiar resultado" también lleva el link. palabra-secreta.js v13, sw v269.
 ```
+
+```text
+Fecha: 14/10/2026 — Palabra Secreta, compartir (2ª vuelta, Gonzalo: "tira dos cosas, una con letras y otra sin; sacá la sin letras"): el texto ya no lleva los cuadraditos de colores, solo "🟩 Palabra Secreta 14/10: la saqué en 5/6 ✅" (o "no la saqué ❌") + "¿Me ganás? 👉 link". La tarjeta de WhatsApp ahora dice PALABRA / SECRETA en fichas y "¿Me ganás?" (assets/compartir/palabra-secreta-og2.png; la anterior mostraba MATES/SALSA/ASADO y un amigo creyó que la respuesta era ASADO). palabra-secreta.js v14, sw v270.
+```
