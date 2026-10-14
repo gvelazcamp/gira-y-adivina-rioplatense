@@ -772,3 +772,7 @@ Fecha: 13/10/2026 — Rueda de Letras, palabras del crucigrama (Gonzalo: "¿me v
 ```text
 Fecha: 13/10/2026 — Rueda de Letras: de 24 a 97 ruedas (Gonzalo: "sumame muchas más, que ahora se entiende"). 73 bases nuevas (CARPETA, CANTERA, ARBOLES, ESCOLAR, MAESTRA, PELOTAS, CORTINA, TRACTOR, REVISTA, MOTORES, etc.). Palabras elegidas así: todas las que se arman con las letras (diccionario an-array-of-spanish-words), filtradas por frecuencia de uso real (wordfreq, zipf ≥ 3,9) y revisadas a mano: afuera nombres propios (RITA, MARTA, LOLA…), inglés (TOP, SET, TEST…), groserías y formas raras. Ruedas posibles por nivel: 1 → 33, 2 → 30, 3 → 58, 4 → 52, 9+ → 36. Probado: 1200 crucigramas sin errores; auditoría de palabras OK. rueda-de-letras-datos.js v3, sw v268.
 ```
+
+```text
+Fecha: 14/10/2026 — Palabra Secreta, compartir por WhatsApp (Gonzalo: "mirá qué raro se ve"): el mensaje traía el link largo .../index.html y WhatsApp armaba una tarjeta gigante con el logo de la ruleta arriba del resultado. Ahora el link es ps.html (página corta con og:image chica de 200 px = assets/compartir/palabra-secreta-og.png, título "Palabra Secreta · Girá y Adiviná") que redirige a index.html?ext=palabra-secreta, o sea abre el juego directo. Texto: "Palabra Secreta 14/10 6/6 + cuadraditos + ¿Me ganás? 👉 link". El "copiar resultado" también lleva el link. palabra-secreta.js v13, sw v269.
+```
