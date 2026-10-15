@@ -804,3 +804,7 @@ Fecha: 15/10/2026 — Nuevo juego PUZZLE en Extensiones ("Más juegos", no previ
 ```text
 Fecha: 15/10/2026 — Puzzle con GUARDADO (Gonzalo: "guardar y seguir después con lo que hicieron"). Se guarda solo (al soltar/unir piezas, al salir con ‹, al cerrar o minimizar) y con el botón "💾 Guardar". Al volver a entrar aparece "Tenés un puzzle a medio armar · N piezas · X% · tiempo" con "Seguir armándolo" / "Empezar otro". Se guarda forma de cada pieza, posición, giro, grupos unidos, tiempo y movimientos en localStorage "pz_partida" (sin prefijo gya_, para no subir la imagen al respaldo de Supabase); si la imagen es de una ciudad va solo el nombre, si no una copia jpg chica. Al terminar el puzzle se borra. Mezclar o cambiar piezas/imagen con uno empezado pide confirmación. puzzle.html v2, puzzle.js v2, sw v276.
 ```
+
+```text
+Fecha: 15/10/2026 — Puzzle: DIBUJOS como primeras imágenes (Gonzalo pasó 5 dibujos). Nueva opción de imagen "Dibujos" (por defecto, con 24 piezas): assets/puzzle/golosinas, playa, espacio, dinosaurios, parque (.webp, 1254×1254). Salen en ese orden, uno distinto en cada puzzle (índice en gya_puzzle.dibujo); "Ciudades" sigue como opción. Como son cuadradas, "24" arma 5×5 = 25 piezas. El guardado guarda solo la ruta del dibujo (campo archivo). puzzle.html v3, puzzle.js v3, extensiones.js v41, sw v277.
+```
