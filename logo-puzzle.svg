@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Puzzle">
+  <defs>
+    <linearGradient id="fondo" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#1F5C4E"/><stop offset="1" stop-color="#0B1815"/></linearGradient>
+    <linearGradient id="a" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFD873"/><stop offset="1" stop-color="#F5A301"/></linearGradient>
+    <linearGradient id="b" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5FE3CF"/><stop offset="1" stop-color="#1E9C8A"/></linearGradient>
+    <linearGradient id="c" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FF7BB5"/><stop offset="1" stop-color="#C21C78"/></linearGradient>
+    <linearGradient id="d" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9DB8FF"/><stop offset="1" stop-color="#4060D8"/></linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#fondo)"/>
+  <g stroke="#0B1815" stroke-width="10" stroke-linejoin="round">
+    <path d="M110 110h138v44a26 26 0 1 0 0 52v42h-44a26 26 0 1 1-52 0h-42z" fill="url(#a)"/>
+    <path d="M264 110h138v138h-42a26 26 0 1 0-52 0h-44v-42a26 26 0 1 1 0-52z" fill="url(#b)"/>
+    <path d="M110 264h42a26 26 0 1 0 52 0h44v44a26 26 0 1 1 0 52v42h-138z" fill="url(#c)"/>
+    <g transform="rotate(12 333 333)"><path d="M264 264h44a26 26 0 1 1 52 0h42v138h-138v-42a26 26 0 1 0 0-52z" fill="url(#d)" transform="translate(18 18)"/></g>
+  </g>
+  <circle cx="400" cy="96" r="10" fill="#FFD873"/><circle cx="430" cy="130" r="6" fill="#5FE3CF"/><circle cx="96" cy="430" r="7" fill="#FF7BB5"/>
+</svg>
