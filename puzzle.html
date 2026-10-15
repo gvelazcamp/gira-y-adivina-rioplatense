@@ -55,6 +55,16 @@ select{padding:7px 8px}
 #tuto h2{font-size:21px}
 #tuto .card button{display:block;width:100%}
 #ayuda{font-weight:700;padding:7px 11px}
+#elegir{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);z-index:19;transition:opacity .3s;padding:12px}
+#elegir.hide{opacity:0;pointer-events:none}
+#elegir .card{max-width:420px;width:100%;padding:18px 16px;max-height:calc(100% - 10px);overflow-y:auto}
+#elegir select{width:100%;font-size:15px;padding:9px 12px;margin:4px 0 10px}
+.el-foto{position:relative;display:flex;align-items:center;gap:6px}
+.el-foto img{flex:1;min-width:0;width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:14px;border:3px solid var(--acc);background:#160B24}
+.el-foto button{flex:0 0 40px;height:56px;font-size:24px;padding:0}
+.el-nombre{font-weight:700;margin:8px 0 2px;font-size:16px}
+.el-otro{min-height:20px;font-size:13px;color:var(--teal);font-weight:700;margin:4px 0 6px}
+#elegir .card #elOk,#elegir .card #elSalir{display:block;width:100%;margin-top:8px}
 #pareja,#invitar{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);z-index:18;transition:opacity .3s;padding:16px}
 #pareja.hide,#invitar.hide{opacity:0;pointer-events:none}
 #pareja .card,#invitar .card{max-width:400px;width:100%;padding:22px 18px;max-height:calc(100% - 20px);overflow-y:auto}
@@ -122,12 +132,17 @@ button:disabled,select:disabled{opacity:.4;cursor:default}
 <div id="pareja" class="hide"><div class="card"><h2>👥 Puzzle en pareja</h2>
 <p class="pj-sub">Arman <b>el mismo puzzle</b>, cada uno en su celular. La sala <b>queda guardada hasta que lo terminen</b>: pueden entrar y salir cuando quieran, aunque pasen días.</p>
 <div id="pjLista"></div>
-<p class="pj-tit">Nueva sala</p><button id="pjCrear">➕ Crear sala con este puzzle</button>
+<p class="pj-tit">Nueva sala</p><button id="pjCrear">➕ Crear sala nueva</button>
 <p class="pj-tit">¿Te invitaron?</p><div class="pj-unir"><input id="pjCodigo" maxlength="5" placeholder="CÓDIGO" autocomplete="off" autocapitalize="characters" aria-label="Código de la sala"><button id="pjUnir">Unirme</button></div>
 <p id="pjEstado" class="pj-estado" role="status"></p>
 <button id="pjCerrar" class="pj-sec">Cancelar</button></div></div>
 <div id="invitar" class="hide"><div class="card"><h2>📲 Invitá a tu pareja</h2><p>Código de la sala</p><div id="invCodigo" class="pj-codigo"></div>
-<button id="invWpp" class="pj-wpp">📲 Invitar por WhatsApp</button><button id="invCopiar" class="pj-sec">Copiar invitación</button><button id="invListo">¡A armar!</button></div></div>
+<button id="invWpp" class="pj-wpp">📲 Invitar por WhatsApp</button><button id="invCopiar" class="pj-sec">Copiar invitación</button><button id="invListo">🧩 Elegir el puzzle</button></div></div>
+<div id="elegir" class="hide"><div class="card"><h2>🧩 Elijan el puzzle</h2>
+<select id="elCat" aria-label="Categoría"><option value="dibujo">🎨 Dibujos · 25 piezas</option><option value="aventura">🗺️ Aventuras · 49 piezas</option><option value="ciudad">🏙️ Ciudades · 25 piezas</option></select>
+<div class="el-foto"><button id="elAnt" aria-label="Anterior">‹</button><img id="elImg" alt=""><button id="elSig" aria-label="Siguiente">›</button></div>
+<p class="el-nombre" id="elNombre"></p><p class="el-otro" id="elOtro"></p>
+<button id="elOk">✅ Aceptar</button><button id="elSalir" class="pj-sec">Salir de la sala</button></div></div>
 <div id="seguir" class="hide"><div class="card"><div class="big">🧩</div><h2>Tenés un puzzle a medio armar</h2><p id="seguirTxt"></p><button id="bSeguir">Seguir armándolo</button><br><button id="bOtro" style="margin-top:10px;background:var(--btn);color:var(--text);border:1px solid var(--line)">Empezar otro</button></div></div>
 <div id="win" class="hide"><div class="card"><div class="big">🎉</div><h2>¡Puzzle completo!</h2><p id="winTxt"></p><button id="again">Jugar otro</button></div></div>
 <canvas id="fx"></canvas>
@@ -252,6 +267,7 @@ function renderPiece(p){
 /* ---------- game ---------- */
 async function getSource(){
   const v=$('#img').value;fuente={};
+  if(forzar){const a=forzar;forzar=null;fuente=/assets\/worlds\//.test(a)?{ciudad:a.replace(/^.*\/|\.webp$/g,'')}:{archivo:a};try{const img=await loadImg(a);return{aspect:clamp(img.width/img.height,.5,2.2),paint:(g,w,h)=>cover(g,img,w,h)}}catch(e){fuente={}}}
   if(v==='geo')return{aspect:4/3,paint:paintGeo};
   if(v==='dibujo'||v==='aventura'){const L=v==='dibujo'?DIBUJOS:AVENTURAS;let d={};try{d=JSON.parse(localStorage.getItem('gya_puzzle')||'{}')}catch(_){}const i=(d[v]||0)%L.length;d[v]=i+1;try{localStorage.setItem('gya_puzzle',JSON.stringify(d))}catch(_){}
     const a='assets/puzzle/'+L[i]+'.webp';fuente={archivo:a};try{const img=await loadImg(a);return{aspect:clamp(img.width/img.height,.5,2.2),paint:(g,w,h)=>cover(g,img,w,h)}}catch(e){fuente={};toast('No se pudo cargar el dibujo, uso un paisaje')}}
@@ -446,7 +462,7 @@ addEventListener('resize',resize);try{document.fonts.ready.then(resize)}catch(_)
    "mv" = arrastre en vivo, "hola"/"todo" = al entrar se pasan el estado y
    gana el más nuevo (act). Al terminar se marca fin y sale de "Tus salas"
    (lista local gya_puzzle_salas). En pareja no se toca el guardado propio. */
-let coop=null,pendientes=[],tMv=0,gen=0,tNube=0,red=null,tPing=0,tVisto=0;
+let forzar=null,coop=null,pendientes=[],tMv=0,gen=0,tNube=0,red=null,tPing=0,tVisto=0;
 const miId=Math.random().toString(36).slice(2,10),GRUPO='puzzle_sala',SALAS='gya_puzzle_salas',CHS='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 window.coopActivo=()=>!!coop;
 const supa=()=>{try{return parent!==window&&parent.obtenerSupa?parent.obtenerSupa():null}catch(_){return null}};
@@ -460,9 +476,9 @@ function misSalas(){try{const a=JSON.parse(localStorage.getItem(SALAS)||'[]');re
 function anotarSala(info){const a=misSalas().filter(x=>x.s!==info.s);if(!info.fin)a.unshift(info);try{localStorage.setItem(SALAS,JSON.stringify(a.slice(0,12)))}catch(_){}}
 async function leerSala(c){const sb=supa();if(!sb)throw new Error('sin');const r=await sb.from('gya_ranking').select('estado_juego').eq('grupo',GRUPO).eq('apodo',c).limit(1);if(r.error)throw r.error;return r.data&&r.data[0]?r.data[0].estado_juego:null}
 async function guardarSala(fin){
-  if(!coop||!pieces.length)return false;clearTimeout(tNube);
-  fin=!!(fin||coop.fin);const ej={v:1,d:estadoCompleto(),nombres:coop.nombres,act:coop.act,fin};
-  anotarSala({s:coop.sala,con:otros(),pct:pctDe(ej.d),act:coop.act,fin});
+  if(!coop||(coop.elegido&&!pieces.length))return false;clearTimeout(tNube);
+  fin=!!(fin||coop.fin);const ej={v:1,d:coop.elegido?estadoCompleto():null,nombres:coop.nombres,act:coop.act,fin};
+  anotarSala({s:coop.sala,con:otros(),pct:ej.d?pctDe(ej.d):0,act:coop.act,fin});
   const sb=supa();if(!sb)return false;
   try{const r=await sb.from('gya_ranking').upsert({grupo:GRUPO,apodo:coop.sala,monedas_totales:0,ciudades_ganadas:0,mejor_racha:0,logros:0,estado_juego:ej,actualizado_en:new Date().toISOString()},{onConflict:'grupo,apodo'});return!r.error}catch(_){return false}}
 function guardarSalaLuego(){clearTimeout(tNube);tNube=setTimeout(()=>guardarSala(),1200)}
@@ -471,7 +487,7 @@ function conectarRed(){
   let MB=null;try{MB=parent.MultiBroker}catch(_){}if(!MB||!coop)return;const sala=coop.sala,tema='gyapuzzle/'+sala;
   let mio=null;MB.conectar(()=>{if(!coop||coop.sala!==sala||red!==mio){try{mio.end()}catch(_){}return}
     red.subscribe(tema);red.on('message',(t,pl)=>{if(t===tema)recibir(pl)});
-    mandar({k:'hola',act:coop.act,d:estadoCompleto()});
+    mandar({k:'hola',act:coop.act,d:coop.elegido?estadoCompleto():null});
     clearInterval(tPing);tPing=setInterval(()=>{mandar({k:'ping'});if(coop&&coop.online&&Date.now()-tVisto>50000){coop.online=false;updateStats()}},20000)},
     ()=>{if(coop&&red===mio)toast('Sin conexión en vivo: igual se guarda lo que armes',3500)},w=>{mio=w;red=w});
 }
@@ -481,13 +497,17 @@ function recibir(pl){
   tVisto=Date.now();const antes=coop.online;coop.online=m.k!=='chau';
   if(m.nom){coop.compa=m.nom;if(!coop.nombres.includes(m.nom)){coop.nombres.push(m.nom);guardarSalaLuego()}}
   if(!antes&&coop.online)toast('🟢 '+(m.nom||'Tu pareja')+' está armando con vos',3000);
-  if(m.k==='hola'){if(m.d&&m.act>coop.act){coop.act=m.act;aplicarTodo(m.d)}else mandar({k:'todo',act:coop.act,d:estadoCompleto()})}
-  else if(m.k==='todo'){if(m.d&&m.act>coop.act){coop.act=m.act;aplicarTodo(m.d)}}
+  if(m.de)coop.otroId=m.de;
+  if(m.k==='hola'||m.k==='todo'){if(m.d){if(!coop.elegido)cargarElegido(m);else if(m.act>coop.act){coop.act=m.act;aplicarTodo(m.d)}else if(m.k==='hola')mandar({k:'todo',act:coop.act,d:estadoCompleto()})}else if(m.k==='hola'){if(coop.elegido)mandar({k:'todo',act:coop.act,d:estadoCompleto()});else mandar({k:'elige',cat:sel.cat,i:sel.i})}}
+  else if(m.k==='nuevo'&&m.d)cargarElegido(m);
+  else if(m.k==='elige'){if(!coop.elegido){sel={cat:m.cat,i:m.i};otroOk=false;miOk=false;pintarElegir()}}
+  else if(m.k==='ok'){if(!coop.elegido&&m.cat===sel.cat&&m.i===sel.i){otroOk=true;pintarElegir();chequearOk()}}
   else if(m.k==='gr'){coop.act=Math.max(coop.act,m.act||0);aplicarGrupo(m);guardarSalaLuego()}
   else if(m.k==='mv'&&Array.isArray(m.p))moverRemoto(m.p);
   else if(m.k==='chau')toast('👋 '+(m.nom||'Tu pareja')+' salió. Podés seguir: queda guardado',3500);
+  if(!coop.elegido&&!$('#elegir').classList.contains('hide'))pintarElegir();
   updateStats()}
-function cambio(g){guardarLuego();if(!coop||!g)return;coop.act=Date.now();mandar({k:'gr',act:coop.act,l:g.locked?1:0,p:g.pieces.map(p=>[p.i,r1(p.x),r1(p.y),p.r])});guardarSalaLuego()}
+function cambio(g){guardarLuego();if(!coop||!g||!coop.elegido)return;coop.act=Date.now();mandar({k:'gr',act:coop.act,l:g.locked?1:0,p:g.pieces.map(p=>[p.i,r1(p.x),r1(p.y),p.r])});guardarSalaLuego()}
 function enviarMov(g){if(!coop||!coop.online)return;const t=performance.now();if(t-tMv<110)return;tMv=t;mandar({k:'mv',p:g.pieces.map(p=>[p.i,Math.round(p.x),Math.round(p.y),p.r])})}
 /* Llega un grupo que la pareja soltó o unió: esas piezas pasan a formar
    exactamente ese grupo (saliendo de los grupos donde estaban acá). */
@@ -515,14 +535,13 @@ function abrirPj(){
   estadoPj('');$('#pareja').classList.remove('hide')}
 const cerrarPj=()=>$('#pareja').classList.add('hide');
 async function entrarSala(c,ej,nuevo){
-  coop={sala:c,nombres:Array.isArray(ej.nombres)?ej.nombres.slice(0,6):[],act:ej.act||Date.now(),online:false,compa:''};
+  coop={sala:c,nombres:Array.isArray(ej.nombres)?ej.nombres.slice(0,6):[],act:ej.act||Date.now(),online:false,compa:'',elegido:!!ej.d};
   if(!coop.nombres.includes(miNombre()))coop.nombres.push(miNombre());
   pendientes=[];bloquearControles(true);menuModo();$('#win').classList.add('hide');$('#seguir').classList.add('hide');
-  if(!nuevo)await seguir(ej.d,true);
-  updateStats();conectarRed();return guardarSala()}
+  if(ej.d)await seguir(ej.d,true);
+  updateStats();conectarRed();if(!coop.elegido&&!nuevo)abrirElegir();return guardarSala()}
 async function crearSala(){
   if(!supa()){estadoPj('Para jugar en pareja necesitás internet');return}
-  if(won||(!fuente.archivo&&!fuente.ciudad)){if(!fuente.archivo&&!fuente.ciudad){$('#img').value='dibujo';lastImgSel='dibujo'}await newGame()}
   estadoPj('Creando la sala…');
   const c=Array.from({length:5},()=>CHS[Math.floor(Math.random()*CHS.length)]).join('');
   const ok=await entrarSala(c,{nombres:[],act:Date.now()},true);
@@ -533,7 +552,7 @@ async function unirse(c){
   if(coop&&coop.sala===c){cerrarPj();return}
   estadoPj('Buscando la sala '+c+'…');let ej;
   try{ej=await leerSala(c)}catch(_){estadoPj('No se pudo conectar. Probá con internet.');if(!pieces.length)newGame();return}
-  if(!ej||!ej.d){estadoPj('No existe la sala '+c);if(!pieces.length)newGame();return}
+  if(!ej){estadoPj('No existe la sala '+c);if(!pieces.length)newGame();return}
   if(ej.fin){anotarSala({s:c,fin:true});estadoPj('Ese puzzle ya lo terminaron 🎉');if(!pieces.length)newGame();return}
   if(coop)salirSalaSilencio();
   cerrarPj();await entrarSala(c,ej,false)}
@@ -542,10 +561,39 @@ function textoInvitacion(){return '¡'+miNombre()+' te invita a armar un puzzle 
 function verInvitar(){if(!coop)return;$('#invCodigo').textContent=coop.sala;$('#invitar').classList.remove('hide')}
 $('#invWpp').onclick=()=>{const u='https://wa.me/?text='+encodeURIComponent(textoInvitacion());try{(parent.open||window.open)(u,'_blank')}catch(_){window.open(u,'_blank')}};
 $('#invCopiar').onclick=async()=>{try{await navigator.clipboard.writeText(textoInvitacion())}catch(_){}const b=$('#invCopiar');b.textContent='¡Copiada!';setTimeout(()=>b.textContent='Copiar invitación',1500)};
-$('#invListo').onclick=()=>$('#invitar').classList.add('hide');
+$('#invListo').onclick=()=>{$('#invitar').classList.add('hide');if(coop&&!coop.elegido)abrirElegir()};
 function salirSalaSilencio(){if(!coop)return;guardarSala();cortarRed();coop=null;pendientes=[];bloquearControles(false);menuModo()}
 function salirSala(aviso,nuevo,sinCargar){salirSalaSilencio();updateStats();if(aviso)toast(aviso,3500);if(sinCargar)return;const d=nuevo?null:leerGuardado();if(d)seguir(d);else newGame()}
 window.salirSalaSilencio=salirSalaSilencio;
+/* Elegir el puzzle de la sala (al crearla / al unirse si todavía no hay):
+   categoría + imagen de referencia, lo mismo en los dos celulares ("elige");
+   "Aceptar" ("ok"): si la pareja está en vivo arranca cuando aceptan los dos
+   (lo genera el de id menor y lo manda con "nuevo"); si no, arranca al toque. */
+const NOMBRES={dragon:'Dragón',granja:'Granja',nieve:'Muñeco de nieve',golosinas:'Golosinas',oceano:'Océano',selva:'Selva',dinosaurios:'Dinosaurios',espacio:'Espacio',playa:'Playa',parque:'Parque',piratas:'Piratas',egipto:'Egipto','torneo-medieval':'Torneo medieval','tren-del-oeste':'Tren del Oeste',vikingos:'Vikingos','ciudad-voladora':'Ciudad voladora',samurai:'Samurái','base-espacial':'Base espacial',futbol:'Fútbol',barcos:'Barcos de guerra'};
+let sel={cat:'dibujo',i:0},miOk=false,otroOk=false;
+const listaCat=c=>c==='aventura'?AVENTURAS:c==='ciudad'?CIUDADES:DIBUJOS;
+const rutaSel=()=>{const id=listaCat(sel.cat)[sel.i];return sel.cat==='ciudad'?'assets/worlds/'+id+'.webp':'assets/puzzle/'+id+'.webp'};
+const nombreSel=()=>{const id=listaCat(sel.cat)[sel.i];return NOMBRES[id]||id.replace(/-/g,' ').replace(/\b\w/g,l=>l.toUpperCase())};
+function pintarElegir(){const L=listaCat(sel.cat);sel.i=((sel.i%L.length)+L.length)%L.length;$('#elCat').value=sel.cat;$('#elImg').src=rutaSel();
+  $('#elNombre').textContent=`${nombreSel()} · ${sel.i+1}/${L.length}`;
+  const quien=coop&&(coop.compa||otros());
+  $('#elOtro').textContent=!coop||!coop.online?(quien?`${quien} no está ahora: si aceptás, arrancás vos y después se suma`:'Si aceptás, arrancás y tu pareja se suma cuando entre'):otroOk?`✅ ${quien} aceptó este`:miOk?`⏳ Esperando que ${quien} acepte…`:`👀 ${quien} ve lo mismo que vos`;
+  $('#elOk').disabled=miOk;$('#elOk').textContent=miOk?'✅ Aceptado':'✅ Aceptar'}
+function abrirElegir(){miOk=otroOk=false;pintarElegir();$('#elegir').classList.remove('hide')}
+const cerrarElegir=()=>$('#elegir').classList.add('hide');
+function moverSel(c,i){sel={cat:c,i};miOk=otroOk=false;pintarElegir();mandar({k:'elige',cat:c,i:sel.i})}
+$('#elCat').onchange=e=>moverSel(e.target.value,0);
+$('#elAnt').onclick=()=>moverSel(sel.cat,sel.i-1);$('#elSig').onclick=()=>moverSel(sel.cat,sel.i+1);
+$('#elSalir').onclick=()=>{cerrarElegir();salirSala('Saliste de la sala: queda guardada para elegir el puzzle después')};
+$('#elOk').onclick=()=>{if(!coop)return;miOk=true;mandar({k:'ok',cat:sel.cat,i:sel.i});pintarElegir();chequearOk()};
+function chequearOk(){if(!coop||coop.elegido||!miOk)return;if(coop.online&&!otroOk)return;
+  if(coop.online&&coop.otroId&&coop.otroId<miId)return; /* lo arma la pareja y lo manda */
+  generarElegido()}
+async function generarElegido(){
+  cerrarElegir();forzar=rutaSel();$('#img').value=sel.cat;lastImgSel=sel.cat;$('#count').value=sel.cat==='aventura'?'49':'25';
+  busy=false;await newGame();if(!coop)return;
+  coop.elegido=true;coop.act=Date.now();updateStats();mandar({k:'nuevo',act:coop.act,d:estadoCompleto()});guardarSala();toast('👥 ¡A armar juntos!')}
+function cargarElegido(m){if(!coop)return;coop.elegido=true;coop.act=m.act||Date.now();cerrarElegir();seguir(m.d,true).then(()=>{updateStats();guardarSala()})}
 $('#pjCrear').onclick=crearSala;$('#pjUnir').onclick=()=>unirse($('#pjCodigo').value);$('#pjCodigo').onkeydown=e=>{if(e.key==='Enter')unirse($('#pjCodigo').value)};
 $('#pjCerrar').onclick=cerrarPj;
 $('#modo').onchange=e=>{const v=e.target.value;if(v==='pareja'){e.target.value='solo';abrirPj()}else if(v==='invitar'){e.target.value='sala';verInvitar()}else if(v==='solo'&&coop)salirSala('Saliste de la sala: queda guardada para seguirla cuando quieras')};
