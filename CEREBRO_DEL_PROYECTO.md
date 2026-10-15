@@ -860,3 +860,7 @@ Fecha: 15/10/2026 — Puzzle en pareja: ELEGIR EL PUZZLE JUNTOS. Al crear la sal
 ```text
 Fecha: 15/10/2026 — Puzzle: textos "en pareja" → "COOPERATIVO" (Gonzalo: "pareja fue un ejemplo"). Desplegable "👤 Solo / 👥 Cooperativo", ventana "👥 Puzzle cooperativo", "📲 Invitá a jugar", "tu compañero". (Internamente el código sigue usando ids "pareja".) puzzle.html v16, puzzle.js v16, sw v290.
 ```
+
+```text
+Fecha: 15/10/2026 — Puzzle cooperativo: AVATARES de los jugadores de la sala, chiquitos arriba a la izquierda (debajo del reloj), con puntito VERDE si está conectado ahora y gris/apagado si no. No bloquean el tablero (pointer-events none). El avatar viaja en cada mensaje (av) y se guarda en la sala (estado_juego.av = {nombre: avatar}) para mostrar también al que no está. El "🟢 nombre" del texto de arriba se sacó (ahora lo dicen las caritas). puzzle.html v17, puzzle.js v17, sw v291.
+```

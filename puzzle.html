@@ -55,6 +55,13 @@ select{padding:7px 8px}
 #tuto h2{font-size:21px}
 #tuto .card button{display:block;width:100%}
 #ayuda{font-weight:700;padding:7px 11px}
+#gente{position:fixed;left:10px;z-index:4;display:flex;gap:6px;pointer-events:none}
+#gente.hide{display:none}
+.av{position:relative;width:36px;height:36px;border-radius:50%;background:#3A2552;border:2px solid #FFFFFF44;box-shadow:0 2px 6px #0007;display:grid;place-items:center;font-weight:800;font-size:15px;color:var(--text)}
+.av img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
+.av i{position:absolute;right:-2px;bottom:-2px;width:12px;height:12px;border-radius:50%;background:#7A6A8C;border:2px solid #160B24}
+.av.on{border-color:#3BE07A}.av.on i{background:#3BE07A;box-shadow:0 0 6px #3BE07A}
+.av.off{opacity:.55;filter:grayscale(.6)}
 #elegir{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);z-index:19;transition:opacity .3s;padding:12px}
 #elegir.hide{opacity:0;pointer-events:none}
 #elegir .card{max-width:420px;width:100%;padding:18px 16px;max-height:calc(100% - 10px);overflow-y:auto}
@@ -113,6 +120,7 @@ button:disabled,select:disabled{opacity:.4;cursor:default}
   <input type="file" id="file" accept="image/*" hidden>
 </header>
 <div class="stats"><span id="stats">00:00 · 0%</span></div>
+<div id="gente" class="hide"></div>
 <div id="bar"></div>
 <canvas id="c"></canvas>
 <div class="zoom"><button id="zin" title="Acercar">+</button><button id="zout" title="Alejar">−</button><button id="zfit" title="Ver todo">⤢</button></div>
@@ -364,7 +372,7 @@ function joinPass(g){for(const p of g.pieces)for(const[dc,dr]of NB){const o=grid
 function snap(g){let j=false,n;while((n=joinPass(g))){g=n;j=true}
   if(!g.locked&&g.pieces[0].r===0){const p=g.pieces[0],dx=p.col*S+S/2-p.x,dy=p.row*S+S/2-p.y;if(dx*dx+dy*dy<SNAP*SNAP){moveGroup(g,dx,dy);g.locked=true;j=true;while((n=joinPass(g)))g=n}}
   if(j){sound('snap');g.flash=performance.now();try{navigator.vibrate&&navigator.vibrate(30)}catch(_){}}updateStats();dirty=true;cambio(g);if(groups.length===1)win()}
-function updateStats(){const N=pieces.length,pct=N>1?Math.round((N-groups.length)/(N-1)*100):0;$('#stats').textContent=(coop?'👥 '+coop.sala+(coop.online?' · 🟢 '+(coop.compa||'en vivo'):(otros()?' · con '+otros():''))+' · ':'')+`${fmt(elapsed)} · ${pct}% · ${N} piezas`;$('#bar').style.width=pct+'%'}
+function updateStats(){const N=pieces.length,pct=N>1?Math.round((N-groups.length)/(N-1)*100):0;$('#stats').textContent=(coop?'👥 '+coop.sala+' · ':'')+`${fmt(elapsed)} · ${pct}% · ${N} piezas`;$('#bar').style.width=pct+'%';pintarGente()}
 function startTimer(){if(!timerOn&&!won){timerOn=true;started=performance.now()-elapsed}hideHint()}
 function hideHint(){if(!hideHint.d){hideHint.d=1;setTimeout(()=>$('#hint').classList.add('off'),2500)}}
 function win(){if(won)return;won=true;timerOn=false;
@@ -447,7 +455,7 @@ $('#zin').onclick=()=>zoomAt(1.3,VW/2,VH/2);$('#zout').onclick=()=>zoomAt(1/1.3,
 $('#img').onchange=e=>{if(e.target.value==='propia')$('#file').click();else{if(e.target.value==='aventura'&&+$('#count').value<49)$('#count').value='49';lastImgSel=e.target.value;nuevoConfirmado()}};
 $('#file').onchange=async e=>{const f=e.target.files[0];if(!f){$('#img').value=lastImgSel;return}
   try{userImg=await loadImg(URL.createObjectURL(f));lastImgSel='propia';nuevoConfirmado()}catch(_){toast('No se pudo leer la imagen');$('#img').value=lastImgSel}e.target.value=''};
-function resize(){dpr=Math.min(window.devicePixelRatio||1,2);TOP=$('header').offsetHeight;$('#bar').style.top=(TOP-2)+'px';$('.stats').style.top=(TOP+8)+'px';VW=innerWidth;VH=innerHeight-TOP;
+function resize(){dpr=Math.min(window.devicePixelRatio||1,2);TOP=$('header').offsetHeight;$('#bar').style.top=(TOP-2)+'px';$('.stats').style.top=(TOP+8)+'px';$('#gente').style.top=(TOP+38)+'px';VW=innerWidth;VH=innerHeight-TOP;
   cv.style.top=TOP+'px';cv.style.width=VW+'px';cv.style.height=VH+'px';cv.width=Math.round(VW*dpr);cv.height=Math.round(VH*dpr);
   fx.width=Math.round(innerWidth*dpr);fx.height=Math.round(innerHeight*dpr);
   bgGrad=ctx.createRadialGradient(VW/2,VH/2,0,VW/2,VH/2,Math.max(VW,VH)*.75);bgGrad.addColorStop(0,'#46206B');bgGrad.addColorStop(1,'#160B24');
@@ -466,6 +474,7 @@ let forzar=null,coop=null,pendientes=[],tMv=0,gen=0,tNube=0,red=null,tPing=0,tVi
 const miId=Math.random().toString(36).slice(2,10),GRUPO='puzzle_sala',SALAS='gya_puzzle_salas',CHS='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 window.coopActivo=()=>!!coop;
 const supa=()=>{try{return parent!==window&&parent.obtenerSupa?parent.obtenerSupa():null}catch(_){return null}};
+const miAvatar=()=>{try{return(parent.perfil&&parent.perfil.avatar)||''}catch(_){return''}};
 const miNombre=()=>{try{return(parent.perfil&&parent.perfil.nombre)||'Jugador'}catch(_){return'Jugador'}};
 const r1=v=>Math.round(v*10)/10;
 function estadoPiezas(){const gi=new Map(groups.map((g,i)=>[g,i]));return{p:pieces.map(p=>[r1(p.x),r1(p.y),p.r,gi.get(p.g)]),g:groups.map(g=>g.locked?1:0)}}
@@ -477,12 +486,12 @@ function anotarSala(info){const a=misSalas().filter(x=>x.s!==info.s);if(!info.fi
 async function leerSala(c){const sb=supa();if(!sb)throw new Error('sin');const r=await sb.from('gya_ranking').select('estado_juego').eq('grupo',GRUPO).eq('apodo',c).limit(1);if(r.error)throw r.error;return r.data&&r.data[0]?r.data[0].estado_juego:null}
 async function guardarSala(fin){
   if(!coop||(coop.elegido&&!pieces.length))return false;clearTimeout(tNube);
-  fin=!!(fin||coop.fin);const ej={v:1,d:coop.elegido?estadoCompleto():null,nombres:coop.nombres,act:coop.act,fin};
+  fin=!!(fin||coop.fin);const ej={v:1,d:coop.elegido?estadoCompleto():null,nombres:coop.nombres,av:coop.av,act:coop.act,fin};
   anotarSala({s:coop.sala,con:otros(),pct:ej.d?pctDe(ej.d):0,act:coop.act,fin});
   const sb=supa();if(!sb)return false;
   try{const r=await sb.from('gya_ranking').upsert({grupo:GRUPO,apodo:coop.sala,monedas_totales:0,ciudades_ganadas:0,mejor_racha:0,logros:0,estado_juego:ej,actualizado_en:new Date().toISOString()},{onConflict:'grupo,apodo'});return!r.error}catch(_){return false}}
 function guardarSalaLuego(){clearTimeout(tNube);tNube=setTimeout(()=>guardarSala(),1200)}
-function mandar(m){if(red&&red.connected&&coop)try{red.publish('gyapuzzle/'+coop.sala,JSON.stringify(Object.assign({de:miId,nom:miNombre()},m)))}catch(_){}}
+function mandar(m){if(red&&red.connected&&coop)try{red.publish('gyapuzzle/'+coop.sala,JSON.stringify(Object.assign({de:miId,nom:miNombre(),av:miAvatar()},m)))}catch(_){}}
 function conectarRed(){
   let MB=null;try{MB=parent.MultiBroker}catch(_){}if(!MB||!coop)return;const sala=coop.sala,tema='gyapuzzle/'+sala;
   let mio=null;MB.conectar(()=>{if(!coop||coop.sala!==sala||red!==mio){try{mio.end()}catch(_){}return}
@@ -495,6 +504,7 @@ function cortarRed(){clearInterval(tPing);if(red){try{mandar({k:'chau'})}catch(_
 function recibir(pl){
   let m;try{m=JSON.parse(String(pl))}catch(_){return}if(!coop||!m||m.de===miId)return;
   tVisto=Date.now();const antes=coop.online;coop.online=m.k!=='chau';
+  if(m.nom&&m.av&&coop.av[m.nom]!==m.av){coop.av[m.nom]=m.av;guardarSalaLuego()}
   if(m.nom){coop.compa=m.nom;if(!coop.nombres.includes(m.nom)){coop.nombres.push(m.nom);guardarSalaLuego()}}
   if(!antes&&coop.online)toast('🟢 '+(m.nom||'Tu compañero')+' está armando con vos',3000);
   if(m.de)coop.otroId=m.de;
@@ -525,6 +535,13 @@ function aplicarTodo(d){
   pieces.forEach((p,i)=>{const s=d.p[i];p.x=s[0];p.y=s[1];p.r=s[2];const g=gs[s[3]];if(g){p.g=g;g.pieces.push(p)}});
   groups=gs.filter(g=>g.pieces.length);if(d.t>elapsed){elapsed=d.t;if(timerOn)started=performance.now()-elapsed}dirty=true;updateStats();if(groups.length===1&&pieces.length>1)win()}
 function moverRemoto(lista){for(const[i,x,y,r]of lista){const p=pieces[i];if(!p||(drag&&drag.g===p.g))continue;p.x=x;p.y=y;p.r=r}dirty=true}
+/* Caritas de los jugadores de la sala (arriba a la izquierda, sin tocar el
+   tablero: pointer-events none). Verde = conectado ahora; gris = no está. */
+function pintarGente(){const el=$('#gente');if(!el)return;if(!coop){el.classList.add('hide');el.innerHTML='';return}
+  const yo=miNombre(),lista=[yo,...coop.nombres.filter(n=>n!==yo)];
+  el.innerHTML=lista.map(n=>{const on=n===yo||(coop.online&&n===coop.compa),av=coop.av&&coop.av[n],ini=(n||'?').trim().charAt(0).toUpperCase().replace(/[<>&"]/g,'');
+    return `<div class="av ${on?'on':'off'}" title="${n.replace(/[<>&"]/g,'')}">${av&&/^[\w-]+$/.test(av)?`<img src="assets/avatars/${av}.webp" alt="" onerror="this.remove()">`:''}${av?'':ini}<i></i></div>`}).join('');
+  el.classList.remove('hide')}
 function bloquearControles(v){for(const id of['#count','#img','#new','#rot'])$(id).disabled=v}
 function menuModo(){const m=$('#modo');m.innerHTML=coop?`<option value="sala">👥 ${coop.sala}</option><option value="invitar">📲 Invitar</option><option value="solo">👤 Salir a solo</option>`:'<option value="solo">👤 Solo</option><option value="pareja">👥 Cooperativo</option>';m.value=coop?'sala':'solo'}
 const estadoPj=t=>{$('#pjEstado').textContent=t};
@@ -536,6 +553,7 @@ function abrirPj(){
 const cerrarPj=()=>$('#pareja').classList.add('hide');
 async function entrarSala(c,ej,nuevo){
   coop={sala:c,nombres:Array.isArray(ej.nombres)?ej.nombres.slice(0,6):[],act:ej.act||Date.now(),online:false,compa:'',elegido:!!ej.d};
+  coop.av=Object.assign({},ej.av||{});if(miAvatar())coop.av[miNombre()]=miAvatar();
   if(!coop.nombres.includes(miNombre()))coop.nombres.push(miNombre());
   pendientes=[];bloquearControles(true);menuModo();$('#win').classList.add('hide');$('#seguir').classList.add('hide');
   if(ej.d)await seguir(ej.d,true);
