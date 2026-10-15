@@ -100,7 +100,7 @@ button:disabled,select:disabled{opacity:.4;cursor:default}
 <header>
   <button id="volver" type="button" aria-label="Volver">‹</button>
   <div class="brand">🧩 <b>Puzzle</b></div>
-  <select id="modo" aria-label="Modo"><option value="solo" selected>👤 Solo</option><option value="pareja">👥 En pareja</option></select>
+  <select id="modo" aria-label="Modo"><option value="solo" selected>👤 Solo</option><option value="pareja">👥 Cooperativo</option></select>
   <select id="count" aria-label="Piezas"><option value="12">12 piezas</option><option value="25" selected>25 piezas</option><option value="49">49 piezas</option><option value="70">70 piezas</option><option value="100">100 piezas</option><option value="150">150 piezas</option></select>
   <select id="img" aria-label="Imagen"><option value="dibujo" selected>Dibujos</option><option value="aventura">Aventuras</option><option value="ciudad">Ciudades</option><option value="paisaje">Paisaje</option><option value="geo">Geométrico</option><option value="foto">Foto (internet)</option><option value="propia">Tu imagen…</option></select>
   <div class="salto"></div>
@@ -126,17 +126,17 @@ button:disabled,select:disabled{opacity:.4;cursor:default}
 <li><span>🧲</span><div>Cuando una pieza está cerca de su lugar o de su compañera, <b>se pega sola</b>.</div></li>
 <li><span>🖼️</span><div>Abajo a la izquierda tenés <b>la imagen chiquita</b>: tocala para verla grande. <b>Guía</b> lo marca clarito en el recuadro.</div></li>
 <li><span>🔍</span><div><b>Pellizcá con dos dedos</b> (o usá + y −) para acercar o alejar. Arrastrá el fondo para moverte.</div></li>
-<li><span>👥</span><div>Arriba elegí <b>En pareja</b>: creás una sala, invitás a alguien y arman <b>el mismo puzzle juntos</b>, cada uno en su celular. La sala queda guardada hasta terminarlo.</div></li>
+<li><span>👥</span><div>Arriba elegí <b>Cooperativo</b>: creás una sala, invitás a alguien y arman <b>el mismo puzzle juntos</b>, cada uno en su celular. La sala queda guardada hasta terminarlo.</div></li>
 <li><span>💾</span><div><b>Se guarda solo</b>: podés salir y seguirlo después.</div></li>
 </ul><button id="bTuto">¡A armar!</button></div></div>
-<div id="pareja" class="hide"><div class="card"><h2>👥 Puzzle en pareja</h2>
+<div id="pareja" class="hide"><div class="card"><h2>👥 Puzzle cooperativo</h2>
 <p class="pj-sub">Arman <b>el mismo puzzle</b>, cada uno en su celular. La sala <b>queda guardada hasta que lo terminen</b>: pueden entrar y salir cuando quieran, aunque pasen días.</p>
 <div id="pjLista"></div>
 <p class="pj-tit">Nueva sala</p><button id="pjCrear">➕ Crear sala nueva</button>
 <p class="pj-tit">¿Te invitaron?</p><div class="pj-unir"><input id="pjCodigo" maxlength="5" placeholder="CÓDIGO" autocomplete="off" autocapitalize="characters" aria-label="Código de la sala"><button id="pjUnir">Unirme</button></div>
 <p id="pjEstado" class="pj-estado" role="status"></p>
 <button id="pjCerrar" class="pj-sec">Cancelar</button></div></div>
-<div id="invitar" class="hide"><div class="card"><h2>📲 Invitá a tu pareja</h2><p>Código de la sala</p><div id="invCodigo" class="pj-codigo"></div>
+<div id="invitar" class="hide"><div class="card"><h2>📲 Invitá a jugar</h2><p>Código de la sala</p><div id="invCodigo" class="pj-codigo"></div>
 <button id="invWpp" class="pj-wpp">📲 Invitar por WhatsApp</button><button id="invCopiar" class="pj-sec">Copiar invitación</button><button id="invListo">🧩 Elegir el puzzle</button></div></div>
 <div id="elegir" class="hide"><div class="card"><h2>🧩 Elijan el puzzle</h2>
 <select id="elCat" aria-label="Categoría"><option value="dibujo">🎨 Dibujos · 25 piezas</option><option value="aventura">🗺️ Aventuras · 49 piezas</option><option value="ciudad">🏙️ Ciudades · 25 piezas</option></select>
@@ -496,7 +496,7 @@ function recibir(pl){
   let m;try{m=JSON.parse(String(pl))}catch(_){return}if(!coop||!m||m.de===miId)return;
   tVisto=Date.now();const antes=coop.online;coop.online=m.k!=='chau';
   if(m.nom){coop.compa=m.nom;if(!coop.nombres.includes(m.nom)){coop.nombres.push(m.nom);guardarSalaLuego()}}
-  if(!antes&&coop.online)toast('🟢 '+(m.nom||'Tu pareja')+' está armando con vos',3000);
+  if(!antes&&coop.online)toast('🟢 '+(m.nom||'Tu compañero')+' está armando con vos',3000);
   if(m.de)coop.otroId=m.de;
   if(m.k==='hola'||m.k==='todo'){if(m.d){if(!coop.elegido)cargarElegido(m);else if(m.act>coop.act){coop.act=m.act;aplicarTodo(m.d)}else if(m.k==='hola')mandar({k:'todo',act:coop.act,d:estadoCompleto()})}else if(m.k==='hola'){if(coop.elegido)mandar({k:'todo',act:coop.act,d:estadoCompleto()});else mandar({k:'elige',cat:sel.cat,i:sel.i})}}
   else if(m.k==='nuevo'&&m.d)cargarElegido(m);
@@ -504,7 +504,7 @@ function recibir(pl){
   else if(m.k==='ok'){if(!coop.elegido&&m.cat===sel.cat&&m.i===sel.i){otroOk=true;pintarElegir();chequearOk()}}
   else if(m.k==='gr'){coop.act=Math.max(coop.act,m.act||0);aplicarGrupo(m);guardarSalaLuego()}
   else if(m.k==='mv'&&Array.isArray(m.p))moverRemoto(m.p);
-  else if(m.k==='chau')toast('👋 '+(m.nom||'Tu pareja')+' salió. Podés seguir: queda guardado',3500);
+  else if(m.k==='chau')toast('👋 '+(m.nom||'Tu compañero')+' salió. Podés seguir: queda guardado',3500);
   if(!coop.elegido&&!$('#elegir').classList.contains('hide'))pintarElegir();
   updateStats()}
 function cambio(g){guardarLuego();if(!coop||!g||!coop.elegido)return;coop.act=Date.now();mandar({k:'gr',act:coop.act,l:g.locked?1:0,p:g.pieces.map(p=>[p.i,r1(p.x),r1(p.y),p.r])});guardarSalaLuego()}
@@ -526,7 +526,7 @@ function aplicarTodo(d){
   groups=gs.filter(g=>g.pieces.length);if(d.t>elapsed){elapsed=d.t;if(timerOn)started=performance.now()-elapsed}dirty=true;updateStats();if(groups.length===1&&pieces.length>1)win()}
 function moverRemoto(lista){for(const[i,x,y,r]of lista){const p=pieces[i];if(!p||(drag&&drag.g===p.g))continue;p.x=x;p.y=y;p.r=r}dirty=true}
 function bloquearControles(v){for(const id of['#count','#img','#new','#rot'])$(id).disabled=v}
-function menuModo(){const m=$('#modo');m.innerHTML=coop?`<option value="sala">👥 ${coop.sala}</option><option value="invitar">📲 Invitar</option><option value="solo">👤 Salir a solo</option>`:'<option value="solo">👤 Solo</option><option value="pareja">👥 En pareja</option>';m.value=coop?'sala':'solo'}
+function menuModo(){const m=$('#modo');m.innerHTML=coop?`<option value="sala">👥 ${coop.sala}</option><option value="invitar">📲 Invitar</option><option value="solo">👤 Salir a solo</option>`:'<option value="solo">👤 Solo</option><option value="pareja">👥 Cooperativo</option>';m.value=coop?'sala':'solo'}
 const estadoPj=t=>{$('#pjEstado').textContent=t};
 const hace=ms=>{const m=Math.round((Date.now()-ms)/60000);return m<1?'recién':m<60?`hace ${m} min`:m<1440?`hace ${Math.round(m/60)} h`:`hace ${Math.round(m/1440)} días`};
 function abrirPj(){
@@ -541,7 +541,7 @@ async function entrarSala(c,ej,nuevo){
   if(ej.d)await seguir(ej.d,true);
   updateStats();conectarRed();if(!coop.elegido&&!nuevo)abrirElegir();return guardarSala()}
 async function crearSala(){
-  if(!supa()){estadoPj('Para jugar en pareja necesitás internet');return}
+  if(!supa()){estadoPj('Para jugar cooperativo necesitás internet');return}
   estadoPj('Creando la sala…');
   const c=Array.from({length:5},()=>CHS[Math.floor(Math.random()*CHS.length)]).join('');
   const ok=await entrarSala(c,{nombres:[],act:Date.now()},true);
@@ -577,7 +577,7 @@ const nombreSel=()=>{const id=listaCat(sel.cat)[sel.i];return NOMBRES[id]||id.re
 function pintarElegir(){const L=listaCat(sel.cat);sel.i=((sel.i%L.length)+L.length)%L.length;$('#elCat').value=sel.cat;$('#elImg').src=rutaSel();
   $('#elNombre').textContent=`${nombreSel()} · ${sel.i+1}/${L.length}`;
   const quien=coop&&(coop.compa||otros());
-  $('#elOtro').textContent=!coop||!coop.online?(quien?`${quien} no está ahora: si aceptás, arrancás vos y después se suma`:'Si aceptás, arrancás y tu pareja se suma cuando entre'):otroOk?`✅ ${quien} aceptó este`:miOk?`⏳ Esperando que ${quien} acepte…`:`👀 ${quien} ve lo mismo que vos`;
+  $('#elOtro').textContent=!coop||!coop.online?(quien?`${quien} no está ahora: si aceptás, arrancás vos y después se suma`:'Si aceptás, arrancás y tu compañero se suma cuando entre'):otroOk?`✅ ${quien} aceptó este`:miOk?`⏳ Esperando que ${quien} acepte…`:`👀 ${quien} ve lo mismo que vos`;
   $('#elOk').disabled=miOk;$('#elOk').textContent=miOk?'✅ Aceptado':'✅ Aceptar'}
 function abrirElegir(){miOk=otroOk=false;pintarElegir();$('#elegir').classList.remove('hide')}
 const cerrarElegir=()=>$('#elegir').classList.add('hide');

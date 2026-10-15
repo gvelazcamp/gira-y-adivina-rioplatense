@@ -856,3 +856,7 @@ Fecha: 15/10/2026 — Puzzle EN PAREJA con SALAS QUE DURAN HASTA TERMINAR (Gonza
 ```text
 Fecha: 15/10/2026 — Puzzle en pareja: ELEGIR EL PUZZLE JUNTOS. Al crear la sala (después de invitar) y al unirse a una sala que todavía no tiene puzzle, aparece "🧩 Elijan el puzzle": solo categoría (Dibujos 25 / Aventuras 49 / Ciudades 25) + la imagen de referencia grande con ‹ › para recorrerlas. Los dos celulares ven lo mismo en vivo ("elige"); "✅ Aceptar" ("ok"): si la pareja está conectada arranca cuando aceptan los dos (lo arma el de id menor y lo manda con "nuevo"); si está sola, arranca al toque y la pareja se suma después. La sala se crea sin puzzle (estado_juego.d = null) hasta que se elige. Botón "Salir de la sala" en esa ventana. puzzle.html v15, puzzle.js v15, sw v289.
 ```
+
+```text
+Fecha: 15/10/2026 — Puzzle: textos "en pareja" → "COOPERATIVO" (Gonzalo: "pareja fue un ejemplo"). Desplegable "👤 Solo / 👥 Cooperativo", ventana "👥 Puzzle cooperativo", "📲 Invitá a jugar", "tu compañero". (Internamente el código sigue usando ids "pareja".) puzzle.html v16, puzzle.js v16, sw v290.
+```
