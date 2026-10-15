@@ -20,10 +20,10 @@ select,button{font:inherit;font-size:12.5px;font-weight:700;color:var(--text);ba
 button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--sombra)}
 button:hover,select:hover{border-color:#FFFFFF55}
 #volver{font-size:20px;line-height:1;padding:3px 11px}
-#count{width:96px}#img{width:112px}
+#modo{width:106px}#count{width:94px}#img{width:106px}
 select{padding:7px 8px}
-@media(max-width:430px){.brand b{display:none}}
-@media(max-width:350px){.brand{display:none}#count{width:88px}#img{width:100px}select,button{font-size:12px}button{padding:6px 9px}.tg span{display:none}}
+@media(max-width:430px){.brand{display:none}}
+@media(max-width:350px){#modo{width:82px}#count{width:78px}#img{width:82px}select{padding:6px 5px}select,button{font-size:12px}button{padding:6px 9px}.tg span{display:none}}
 #new{background:var(--acc);color:#2A1300;border-color:var(--acc)}
 #guide.on,#pvBtn.on{background:var(--teal);color:#0B2B27;border-color:var(--teal)}
 .tg{display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer}
@@ -32,7 +32,7 @@ select{padding:7px 8px}
 .tg i:after{content:"";position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:.2s}
 .tg input:checked+i{background:var(--teal)}
 .tg input:checked+i:after{left:17px}
-.stats{position:fixed;left:10px;z-index:4;font-variant-numeric:tabular-nums;font-size:12px;font-weight:700;color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:99px;padding:3px 10px;pointer-events:none}
+.stats{white-space:nowrap;max-width:calc(100% - 20px);overflow:hidden;text-overflow:ellipsis;position:fixed;left:10px;z-index:4;font-variant-numeric:tabular-nums;font-size:12px;font-weight:700;color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:99px;padding:3px 10px;pointer-events:none}
 #bar{position:fixed;top:0;left:0;height:2px;width:0;background:var(--acc);z-index:6;transition:width .4s}
 #c{position:fixed;left:0;top:56px;display:block;cursor:default}
 .zoom{position:fixed;right:14px;bottom:14px;display:flex;flex-direction:column;gap:6px;z-index:4}
@@ -75,14 +75,15 @@ select{padding:7px 8px}
 <header>
   <button id="volver" type="button" aria-label="Volver">‹</button>
   <div class="brand">🧩 <b>Puzzle</b></div>
+  <select id="modo" aria-label="Modo"><option value="solo" selected>👤 Solo</option><option value="pareja">👥 En pareja</option></select>
   <select id="count" aria-label="Piezas"><option value="12">12 piezas</option><option value="25" selected>25 piezas</option><option value="49">49 piezas</option><option value="70">70 piezas</option><option value="100">100 piezas</option><option value="150">150 piezas</option></select>
   <select id="img" aria-label="Imagen"><option value="dibujo" selected>Dibujos</option><option value="aventura">Aventuras</option><option value="ciudad">Ciudades</option><option value="paisaje">Paisaje</option><option value="geo">Geométrico</option><option value="foto">Foto (internet)</option><option value="propia">Tu imagen…</option></select>
-  <button id="ayuda" aria-label="Cómo jugar">❓</button>
   <div class="salto"></div>
   <label class="tg"><input type="checkbox" id="rot" checked><i></i><span>Girar</span></label>
   <button id="new">🔀 Mezclar</button>
-  <button id="save">💾 Guardar</button>
+  <button id="save" aria-label="Guardar">💾</button>
   <button id="guide">Guía</button>
+  <button id="ayuda" aria-label="Cómo jugar">❓</button>
   <button id="pvBtn" hidden>Ver imagen</button>
   <input type="file" id="file" accept="image/*" hidden>
 </header>
@@ -100,6 +101,7 @@ select{padding:7px 8px}
 <li><span>🧲</span><div>Cuando una pieza está cerca de su lugar o de su compañera, <b>se pega sola</b>.</div></li>
 <li><span>🖼️</span><div>Abajo a la izquierda tenés <b>la imagen chiquita</b>: tocala para verla grande. <b>Guía</b> lo marca clarito en el recuadro.</div></li>
 <li><span>🔍</span><div><b>Pellizcá con dos dedos</b> (o usá + y −) para acercar o alejar. Arrastrá el fondo para moverte.</div></li>
+<li><span>👥</span><div>Arriba elegí <b>En pareja</b> e invitá a alguien: arman <b>el mismo puzzle juntos</b>, cada uno en su celular.</div></li>
 <li><span>💾</span><div><b>Se guarda solo</b>: podés salir y seguirlo después.</div></li>
 </ul><button id="bTuto">¡A armar!</button></div></div>
 <div id="seguir" class="hide"><div class="card"><div class="big">🧩</div><h2>Tenés un puzzle a medio armar</h2><p id="seguirTxt"></p><button id="bSeguir">Seguir armándolo</button><br><button id="bOtro" style="margin-top:10px;background:var(--btn);color:var(--text);border:1px solid var(--line)">Empezar otro</button></div></div>
@@ -242,14 +244,14 @@ function armarPiezas(rs){
   pieces=[];groups=[];grid=[];
   for(let r=0;r<rows;r++){grid.push([]);for(let c=0;c<cols;c++){const hE=edges.h,vE=edges.v;
     const sd=[r?inv(hE[r-1][c]):null,c<cols-1?vE[r][c]:null,r<rows-1?hE[r][c]:null,c?inv(vE[r][c-1]):null];
-    const p={row:r,col:c,path:piecePath(sd),x:0,y:0,r:rs(pieces.length)};renderPiece(p);pieces.push(p);grid[r].push(p)}}
+    const p={i:pieces.length,row:r,col:c,path:piecePath(sd),x:0,y:0,r:rs(pieces.length)};renderPiece(p);pieces.push(p);grid[r].push(p)}}
 }
 function pintarPrevia(){for(const[id,m]of[['#pv',640],['#mv',180]]){const pv=$(id);pv.width=Math.min(m,src.width);pv.height=Math.round(pv.width*src.height/src.width);pv.getContext('2d').drawImage(src,0,0,pv.width,pv.height)}}
 function copiaImagen(){const k=Math.min(1,1200/src.width),c=document.createElement('canvas');c.width=Math.round(src.width*k);c.height=Math.round(src.height*k);c.getContext('2d').drawImage(src,0,0,c.width,c.height);try{return c.toDataURL('image/jpeg',.82)}catch(_){return null}}
 async function newGame(){
-  if(busy)return;busy=true;$('#seguir').classList.add('hide');
+  if(busy)return;busy=true;$('#seguir').classList.add('hide');const yo=++gen;
   won=false;$('#win').classList.add('hide');elapsed=0;timerOn=false;moves=0;lastSec=-1;drag=pan=pinch=null;
-  const n=+$('#count').value,so=await getSource();
+  const n=+$('#count').value,so=await getSource();if(yo!==gen)return;
   cols=Math.max(2,Math.round(Math.sqrt(n*so.aspect)));rows=Math.max(2,Math.round(n/cols));W=cols*S;H=rows*S;
   q=clamp(2000/(Math.max(cols,rows)*S),1,2.5);
   src=document.createElement('canvas');src.width=Math.round(W*q);src.height=Math.round(H*q);so.paint(src.getContext('2d'),src.width,src.height);
@@ -258,9 +260,10 @@ async function newGame(){
   edges={h:hE,v:vE};const rotOn=$('#rot').checked;
   armarPiezas(()=>rotOn?Math.floor(Math.random()*4):0);
   for(const p of pieces){const g={pieces:[p],locked:false,anim:0,px:0,py:0};p.g=g;groups.push(g)}
-  layout();fit();updateStats();dirty=true;busy=false;guardar();
+  layout();fit();updateStats();dirty=true;busy=false;guardar();if(coop&&coop.host)compartirTodo();
 }
 function guardar(manual){
+  if(coop){if(manual)toast('En pareja no se guarda: se arma en el momento');return}
   if(!pieces.length||busy)return;
   if(won){try{localStorage.removeItem(KEY)}catch(_){}return}
   const gi=new Map(groups.map((g,i)=>[g,i])),r1=v=>Math.round(v*10)/10;
@@ -277,10 +280,10 @@ function ofrecerSeguir(d){
   $('#bSeguir').onclick=()=>{$('#seguir').classList.add('hide');seguir(d)};
   $('#bOtro').onclick=()=>{$('#seguir').classList.add('hide');try{localStorage.removeItem(KEY)}catch(_){}newGame()};
 }
-async function seguir(d){
-  if(busy)return;busy=true;
+async function seguir(d,compartido){
+  if(busy&&!compartido)return;busy=true;const yo=++gen;
   try{
-    const img=await loadImg(d.archivo||(d.ciudad?'assets/worlds/'+d.ciudad+'.webp':d.img));
+    const img=await loadImg(d.archivo||(d.ciudad?'assets/worlds/'+d.ciudad+'.webp':d.img));if(yo!==gen)return;
     cfg=d.cfg;if(cfg.n==='24')cfg.n='25';if(cfg.n==='48')cfg.n='49';revertirCfg();fuente=d.archivo?{archivo:d.archivo}:d.ciudad?{ciudad:d.ciudad}:{};imgSave=d.img;if(d.ciudad)ultimaCiudad=d.ciudad;lastImgSel=cfg.img==='propia'?'propia':cfg.img;
     won=false;$('#win').classList.add('hide');timerOn=false;lastSec=-1;drag=pan=pinch=null;
     cols=d.cols;rows=d.rows;W=cols*S;H=rows*S;q=clamp(2000/(Math.max(cols,rows)*S),1,2.5);
@@ -290,8 +293,8 @@ async function seguir(d){
     groups=d.g.map(l=>({pieces:[],locked:!!l,anim:0,px:0,py:0}));
     pieces.forEach((p,i)=>{const s=d.p[i];p.x=s[0];p.y=s[1];const gr=groups[s[3]];p.g=gr;gr.pieces.push(p)});
     groups=groups.filter(g=>g.pieces.length);
-    table=d.tb;elapsed=d.t||0;moves=d.m||0;fit();updateStats();dirty=true;busy=false;toast('🧩 Seguís con tu puzzle');
-  }catch(e){busy=false;toast('No se pudo abrir el guardado, empiezo otro');try{localStorage.removeItem(KEY)}catch(_){}newGame()}
+    table=d.tb;elapsed=d.t||0;moves=d.m||0;fit();updateStats();dirty=true;busy=false;toast(compartido?'👥 ¡A armar juntos!':'🧩 Seguís con tu puzzle');
+  }catch(e){busy=false;if(compartido){toast('No se pudo cargar el puzzle de tu compañero');return}toast('No se pudo abrir el guardado, empiezo otro');try{localStorage.removeItem(KEY)}catch(_){}newGame()}
 }
 function layout(){
   const N=pieces.length,va=VW/VH;let area=Math.max(W*H*3.2,W*H+N*SIDE*SIDE*1.7);
@@ -320,12 +323,12 @@ function joinPass(g){for(const p of g.pieces)for(const[dc,dr]of NB){const o=grid
   if(dx*dx+dy*dy<SNAP*SNAP){if(!g.locked)moveGroup(g,dx,dy);else if(!o.g.locked)moveGroup(o.g,-dx,-dy);return merge(g,o.g)}}return null}
 function snap(g){let j=false,n;while((n=joinPass(g))){g=n;j=true}
   if(!g.locked&&g.pieces[0].r===0){const p=g.pieces[0],dx=p.col*S+S/2-p.x,dy=p.row*S+S/2-p.y;if(dx*dx+dy*dy<SNAP*SNAP){moveGroup(g,dx,dy);g.locked=true;j=true;while((n=joinPass(g)))g=n}}
-  if(j){sound('snap');g.flash=performance.now();try{navigator.vibrate&&navigator.vibrate(30)}catch(_){}}updateStats();dirty=true;if(groups.length===1)win();else guardarLuego()}
-function updateStats(){const N=pieces.length,pct=N>1?Math.round((N-groups.length)/(N-1)*100):0;$('#stats').textContent=`${fmt(elapsed)} · ${pct}% · ${N} piezas`;$('#bar').style.width=pct+'%'}
+  if(j){sound('snap');g.flash=performance.now();try{navigator.vibrate&&navigator.vibrate(30)}catch(_){}}updateStats();dirty=true;cambio(g);if(groups.length===1)win()}
+function updateStats(){const N=pieces.length,pct=N>1?Math.round((N-groups.length)/(N-1)*100):0;$('#stats').textContent=(coop?`👥 ${coop.nombre} · `:'')+`${fmt(elapsed)} · ${pct}% · ${N} piezas`;$('#bar').style.width=pct+'%'}
 function startTimer(){if(!timerOn&&!won){timerOn=true;started=performance.now()-elapsed}hideHint()}
 function hideHint(){if(!hideHint.d){hideHint.d=1;setTimeout(()=>$('#hint').classList.add('off'),2500)}}
 function win(){if(won)return;won=true;timerOn=false;
-  try{localStorage.removeItem(KEY)}catch(_){}
+  if(!coop)try{localStorage.removeItem(KEY)}catch(_){}
   try{const d=JSON.parse(localStorage.getItem('gya_puzzle')||'{}');d.armados=(d.armados||0)+1;localStorage.setItem('gya_puzzle',JSON.stringify(d))}catch(_){}updateStats();sound('win');confetti();
   setTimeout(()=>{$('#winTxt').textContent=`Tiempo ${fmt(elapsed)} · ${pieces.length} piezas · ${moves} movimientos`;$('#win').classList.remove('hide')},900)}
 
@@ -372,13 +375,13 @@ cv.addEventListener('pointermove',e=>{const sp=sxy(e);
   if(!ptrs.has(e.pointerId)){if(e.pointerType==='mouse'){const w=toWorld(sp.x,sp.y),p=hit(w.x,w.y);cv.style.cursor=p&&!p.g.locked?'grab':'default'}return}
   ptrs.set(e.pointerId,sp);
   if(pinch&&ptrs.size>=2){const[a,b]=[...ptrs.values()],m={x:(a.x+b.x)/2,y:(a.y+b.y)/2},z=clampZ(pinch.z*Math.hypot(a.x-b.x,a.y-b.y)/pinch.d);cam.z=z;cam.x=m.x-pinch.w.x*z;cam.y=m.y-pinch.w.y*z;dirty=true;return}
-  if(drag&&e.pointerId===drag.id){const w=toWorld(sp.x,sp.y);moveGroup(drag.g,w.x-drag.lw.x,w.y-drag.lw.y);drag.lw=w;if(Math.hypot(sp.x-drag.start.x,sp.y-drag.start.y)>6)drag.moved=true;dirty=true}
+  if(drag&&e.pointerId===drag.id){const w=toWorld(sp.x,sp.y);moveGroup(drag.g,w.x-drag.lw.x,w.y-drag.lw.y);drag.lw=w;enviarMov(drag.g);if(Math.hypot(sp.x-drag.start.x,sp.y-drag.start.y)>6)drag.moved=true;dirty=true}
   else if(pan&&e.pointerId===pan.id){cam.x+=sp.x-pan.last.x;cam.y+=sp.y-pan.last.y;pan.last=sp;dirty=true}});
 function up(e){ptrs.delete(e.pointerId);
   if(pinch){if(ptrs.size<2)pinch=null;pan=null;return}
   if(drag&&e.pointerId===drag.id){const g=drag.g;
     if(!drag.moved&&performance.now()-drag.t<350){if($('#rot').checked)rotateGroup(g,1,drag.p.x,drag.p.y);snap(g)}else{moves++;snap(g)}
-    drag=null;cv.style.cursor='grab';dirty=true;guardarLuego()}
+    drag=null;cv.style.cursor='grab';dirty=true;pendientes.splice(0).forEach(aplicarGrupo)}
   if(pan&&e.pointerId===pan.id)pan=null}
 cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
 cv.addEventListener('wheel',e=>{e.preventDefault();const sp=sxy(e);zoomAt(Math.exp(-e.deltaY*.0015),sp.x,sp.y)},{passive:false});
@@ -389,8 +392,8 @@ addEventListener('keydown',e=>{const k=e.key.toLowerCase();
 function toggleGuide(){ghost=!ghost;$('#guide').classList.toggle('on',ghost);dirty=true}
 
 /* ---------- ui ---------- */
-$('#volver').onclick=()=>{guardar();try{if(parent!==window&&parent.Extensiones){parent.Extensiones.abrirLobby();return}}catch(_){}location.href='index.html'};
-$('#new').onclick=nuevoConfirmado;$('#again').onclick=newGame;$('#save').onclick=()=>guardar(true);
+$('#volver').onclick=()=>{guardar();if(coop)salirPareja();try{if(parent!==window&&parent.Extensiones){parent.Extensiones.abrirLobby();return}}catch(_){}location.href='index.html'};
+$('#new').onclick=nuevoConfirmado;$('#again').onclick=()=>{if(coop&&!coop.host){$('#win').classList.add('hide');toast('Esperá: '+coop.nombre+' elige el próximo puzzle');return}newGame()};$('#save').onclick=()=>guardar(true);
 function verTuto(){$('#tuto').classList.remove('hide')}
 $('#ayuda').onclick=verTuto;
 function verPrevia(v){$('#prev').classList.toggle('hide',!v);$('#pvBtn').classList.toggle('on',v)}
@@ -409,8 +412,51 @@ function resize(){dpr=Math.min(window.devicePixelRatio||1,2);TOP=$('header').off
   bgGrad=ctx.createRadialGradient(VW/2,VH/2,0,VW/2,VH/2,Math.max(VW,VH)*.75);bgGrad.addColorStop(0,'#46206B');bgGrad.addColorStop(1,'#160B24');
   if(pieces.length)fit();dirty=true}
 addEventListener('resize',resize);try{document.fonts.ready.then(resize)}catch(_){}
+/* ---------- En pareja (cooperativo) ----------
+   Usa las salas de los duelos (parent.Duelo: MultiBroker = 4 servidores MQTT
+   + Supabase). El que crea la sala manda el puzzle entero (ronda); después
+   cada uno manda el estado de las piezas al soltar/unir ("st") y, mientras
+   arrastra, la posición del grupo ("mv"). Si llega un estado mientras uno
+   arrastra, se aplica al soltar respetando el grupo que tenía en la mano.
+   En pareja no se guarda en el celular (no pisa el puzzle propio). */
+let coop=null,pendientes=[],tMv=0,gen=0;
+window.coopActivo=()=>!!coop;
+const Duelo=()=>{try{return parent!==window&&parent.Duelo?parent.Duelo:null}catch(_){return null}};
+function estadoPiezas(){const gi=new Map(groups.map((g,i)=>[g,i])),r1=v=>Math.round(v*10)/10;return{p:pieces.map(p=>[r1(p.x),r1(p.y),p.r,gi.get(p.g)]),g:groups.map(g=>g.locked?1:0)}}
+function compartirTodo(){const D=Duelo();if(!D||!coop)return;
+  if(!fuente.archivo&&!fuente.ciudad){$('#img').value='dibujo';lastImgSel='dibujo';newGame();return}
+  const e=estadoPiezas();D.enviarRonda({cfg,cols,rows,ciudad:fuente.ciudad||null,archivo:fuente.archivo||null,e:edges,p:e.p,g:e.g,t:Math.round(elapsed),m:moves,tb:table})}
+function cambio(g){guardarLuego();if(!coop||!g)return;const D=Duelo(),r1=v=>Math.round(v*10)/10;if(D)D.enviarProgreso({k:'gr',l:g.locked?1:0,p:g.pieces.map(p=>[p.i,r1(p.x),r1(p.y),p.r])})}
+function enviarMov(g){if(!coop)return;const t=performance.now();if(t-tMv<110)return;tMv=t;const D=Duelo();if(D)D.enviarProgreso({k:'mv',p:g.pieces.map(p=>[p.i,Math.round(p.x),Math.round(p.y),p.r])})}
+/* Llega un grupo que el compañero soltó o unió: esas piezas pasan a formar
+   exactamente ese grupo (saliendo de los grupos donde estaban acá). */
+function aplicarGrupo(m){
+  if(!m||!Array.isArray(m.p))return;
+  if(drag){pendientes.push(m);return}
+  const nuevo={pieces:[],locked:!!m.l,anim:0,px:0,py:0};
+  for(const[i,x,y,r]of m.p){const p=pieces[i];if(!p)continue;const v=p.g;if(v){const k=v.pieces.indexOf(p);if(k>=0)v.pieces.splice(k,1)}p.x=x;p.y=y;p.r=r;p.g=nuevo;nuevo.pieces.push(p)}
+  if(!nuevo.pieces.length)return;
+  groups=groups.filter(g=>g.pieces.length);groups.push(nuevo);dirty=true;updateStats();if(groups.length===1&&pieces.length>1)win()}
+function moverRemoto(lista){for(const[i,x,y,r]of lista){const p=pieces[i];if(!p||(drag&&drag.g===p.g))continue;p.x=x;p.y=y;p.r=r}dirty=true}
+function bloquearControles(v){for(const id of['#count','#img','#new','#rot'])$(id).disabled=v}
+function salirPareja(aviso){const D=Duelo();if(D)try{D.salir()}catch(_){}coop=null;pendientes=[];$('#modo').value='solo';bloquearControles(false);updateStats();if(aviso)toast(aviso,3500)}
+function entrarPareja(){
+  const D=Duelo();if(!D){toast('En pareja se juega desde Girá y Adiviná');$('#modo').value='solo';return}
+  D.mostrarLobby('Puzzle','puzzle',{sub:'Puzzle en pareja · armen el mismo juntos',frase:'te invita a armar un',
+    detalle:'Cada uno en su celular arma <b>el mismo puzzle a la vez</b>: lo que mueve uno lo ve el otro. ¡Termínenlo juntos!',
+    onCancelar:()=>{$('#modo').value='solo'},
+    onListo:(soyHost,r)=>{
+      coop={host:soyHost,nombre:(r&&r.nombre)||'tu compañero'};$('#win').classList.add('hide');$('#seguir').classList.add('hide');
+      bloquearControles(!soyHost);updateStats();
+      D.onProgresoRival(m=>{if(!coop||!m)return;if(m.k==='gr')aplicarGrupo(m);else if(m.k==='mv'&&Array.isArray(m.p))moverRemoto(m.p)});
+      if(D.onRivalSeFue)D.onRivalSeFue(()=>{if(coop)salirPareja('👋 '+coop.nombre+' salió. Seguís solo')});
+      if(soyHost){toast('👥 '+coop.nombre+' se unió. ¡A armar juntos!',3000);compartirTodo()}
+      else{toast('Cargando el puzzle de '+coop.nombre+'…',4000);D.onRondaRecibida(d=>{if(coop)seguir(d,true)})}
+    }});
+}
+$('#modo').onchange=e=>{if(e.target.value==='pareja')entrarPareja();else salirPareja('Volviste a jugar solo')};
 addEventListener('pagehide',()=>guardar());document.addEventListener('visibilitychange',()=>{if(document.hidden)guardar()});
-resize();{const d=leerGuardado();if(d)ofrecerSeguir(d);else newGame()}
+resize();{const d=leerGuardado(),D=Duelo();let inv=false;try{inv=!!(D&&D.invitacionPara&&D.invitacionPara('puzzle'))}catch(_){}if(d&&!inv)ofrecerSeguir(d);else newGame();if(inv){$('#modo').value='pareja';setTimeout(entrarPareja,300)}}
 try{if(!JSON.parse(localStorage.getItem('gya_puzzle')||'{}').tuto)verTuto()}catch(_){verTuto()}requestAnimationFrame(loop);
 </script>
 </body>

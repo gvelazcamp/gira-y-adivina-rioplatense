@@ -126,7 +126,7 @@ const Duelo=(()=>{
   let cliente=null,juego=null,sala=null,soyHost=false,rival=null,activo=false;
   /* Invitación por link: ?duelo=<juego>&sala=XXXX&de=<nombre> abre ese juego
      con el lobby en "Unirme" y el código ya cargado. */
-  const DUELO_EXT={ahorcado:"ahorcado-rioplatense",cien:"cien-rioplatenses",frases:"frases-en-giro",memoria:"memoria-en-giro",rosco:"rosco-rioplatense",rueda:"rueda-de-letras",silabario:"silabario-rioplatense",sopa:"sopa-fugaz",palabra:"palabra-secreta",moon:"moon-tap"};
+  const DUELO_EXT={ahorcado:"ahorcado-rioplatense",cien:"cien-rioplatenses",frases:"frases-en-giro",memoria:"memoria-en-giro",rosco:"rosco-rioplatense",rueda:"rueda-de-letras",silabario:"silabario-rioplatense",sopa:"sopa-fugaz",palabra:"palabra-secreta",moon:"moon-tap",puzzle:"puzzle"};
   let invitacion=null;
   try{
     const q=new URLSearchParams(location.search),j=q.get("duelo"),s=(q.get("sala")||"").toUpperCase();
@@ -155,7 +155,7 @@ const Duelo=(()=>{
     cerrarCapa();activo=true;
     onListoJuego(soyHost,rival);
   }
-  let cbRivalListo=null,cbRonda=null,cbProgreso=null,cbFinal=null,finalRival=null,holaTimer=null,capa=null;
+  let cbChau=null,cbRivalListo=null,cbRonda=null,cbProgreso=null,cbFinal=null,finalRival=null,holaTimer=null,capa=null;
   function codigoNuevo(){return Array.from({length:4},()=>CHARS[Math.floor(Math.random()*CHARS.length)]).join("");}
   function temaOut(){return "gyaduelo/"+juego+"/"+sala+"/"+(soyHost?"host":"guest");}
   function temaIn(){return "gyaduelo/"+juego+"/"+sala+"/"+(soyHost?"guest":"host");}
@@ -174,7 +174,7 @@ const Duelo=(()=>{
       if(cbRivalListo){const f=cbRivalListo;cbRivalListo=null;f(rival);}
     }else if(m.tipo==="ronda"){if(cbRonda)cbRonda(m.datos);else rondaPendiente=m.datos;}
     else if(m.tipo==="revancha"){revancha.rival=true;rivalSeFue=false;if(repintar)repintar();chequearRevancha();}
-    else if(m.tipo==="chau"){rivalSeFue=true;revancha.rival=false;if(repintar)repintar();}
+    else if(m.tipo==="chau"){rivalSeFue=true;revancha.rival=false;if(repintar)repintar();if(cbChau)cbChau();}
     else if(m.tipo==="progreso"&&cbProgreso){cbProgreso(m.datos);}
     else if(m.tipo==="final"){finalRival=m.datos;if(cbFinal)cbFinal(m.datos);}
   }
@@ -190,11 +190,11 @@ const Duelo=(()=>{
   function cerrarCapa(){if(capa){capa.remove();capa=null;}}
   /* --- Lobby: elegir crear o unirse, mostrar código, esperar rival --- */
   let nombreActual="";
-  function mostrarLobby(nombreJuego,idJuego,{onListo,onCancelar,detalle}){
+  function mostrarLobby(nombreJuego,idJuego,{onListo,onCancelar,detalle,sub,frase}){
     nombreActual=nombreJuego;onListoJuego=onListo||null;revancha={yo:false,rival:false};rivalSeFue=false;rondaPendiente=null;
     juego=idJuego;activo=false;rival=null;finalRival=null;
     const c=activaCapa();
-    c.innerHTML='<div class="dl-tarjeta"><h3>Jugar con un amigo</h3><p class="dl-sub">'+nombreJuego+' · 1 vs 1</p>'+(detalle?'<p class="dl-detalle">'+detalle+'</p>':'')+
+    c.innerHTML='<div class="dl-tarjeta"><h3>Jugar con un amigo</h3><p class="dl-sub">'+(sub||nombreJuego+' · 1 vs 1')+'</p>'+(detalle?'<p class="dl-detalle">'+detalle+'</p>':'')+
       '<div id="dlElegir" class="dl-fila"><button type="button" id="dlCrear" class="dl-principal">Crear sala</button><button type="button" id="dlUnirse">Unirme con código</button></div>'+
       '<div id="dlCodigoZona" hidden><button type="button" id="dlWpp" class="dl-wpp">📲 Invitar por WhatsApp</button><p>o pasale este código:</p><div class="dl-codigo" id="dlCodigo"></div>'+
       '<div class="dl-fila"><button type="button" id="dlCopiar">Copiar invitación</button></div></div>'+
@@ -212,7 +212,7 @@ const Duelo=(()=>{
         cbRivalListo=r=>{estado("");cerrarCapa();if(onListo)onListo(true,r);};
       },()=>estado("No se pudo conectar ("+(window.gyaFalloConexion||"sin respuesta")+"). Probá con otra red (datos del celular)."),cl=>{cliente=cl;});
       const quien=(perfil&&perfil.nombre)||"Un amigo";
-      const texto="¡"+quien+" te desafía a "+nombreJuego+" en Girá y Adiviná! 👥 Tocá el link y apretá UNIRME: "+linkInvitacion()+" (código "+sala+")";
+      const texto="¡"+quien+" "+(frase||"te desafía a")+" "+nombreJuego+" en Girá y Adiviná! 👥 Tocá el link y apretá UNIRME: "+linkInvitacion()+" (código "+sala+")";
       c.querySelector("#dlWpp").onclick=()=>window.open("https://wa.me/?text="+encodeURIComponent(texto),"_blank");
       c.querySelector("#dlCopiar").onclick=async()=>{
         try{await navigator.clipboard.writeText(texto);}catch(e){}
@@ -293,7 +293,7 @@ const Duelo=(()=>{
   }
   function estaActivo(){return activo;}
   function rivalActual(){return rival;}
-  function salir(){if(cliente&&cliente.connected)mandar({tipo:"chau"});repintar=null;onListoJuego=null;rondaPendiente=null;cerrarCliente();cerrarCapa();quitarBadge();activo=false;rival=null;finalRival=null;cbRivalListo=null;cbRonda=null;cbProgreso=null;cbFinal=null;}
-  return{abrirInvitacion,hayInvitacion:()=>!!invitacion,mostrarLobby,enviarRonda,onRondaRecibida,enviarProgreso,onProgresoRival,mostrarBadge,actualizarBadge,enviarFinal,mostrarResultado,estaActivo,rivalActual,salir};
+  function salir(){cbChau=null;if(cliente&&cliente.connected)mandar({tipo:"chau"});repintar=null;onListoJuego=null;rondaPendiente=null;cerrarCliente();cerrarCapa();quitarBadge();activo=false;rival=null;finalRival=null;cbRivalListo=null;cbRonda=null;cbProgreso=null;cbFinal=null;}
+  return{abrirInvitacion,hayInvitacion:()=>!!invitacion,invitacionPara:j=>!!(invitacion&&invitacion.juego===j),onRivalSeFue:cb=>{cbChau=cb;},mostrarLobby,enviarRonda,onRondaRecibida,enviarProgreso,onProgresoRival,mostrarBadge,actualizarBadge,enviarFinal,mostrarResultado,estaActivo,rivalActual,salir};
 })();
 window.Duelo=Duelo;
