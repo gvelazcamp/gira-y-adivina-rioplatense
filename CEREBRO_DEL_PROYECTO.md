@@ -828,3 +828,7 @@ Fecha: 15/10/2026 — Puzzle: ventanita "🧩 Cómo jugar" al entrar por primera
 ```text
 Fecha: 15/10/2026 — Puzzle, comentarios de un tester: (1) la vista previa "Tocá para agrandar" no funcionaba (no tenía código) y tapaba piezas arriba a la derecha → ahora está oculta; "🖼️ Ver imagen" la abre grande y centrada sobre el tablero y se cierra tocándola ("Tocá para volver a armar"). (2) "No mantiene la estética del juego" → colores y letras del resto: violeta (#160B24/#2A1A3C/#46206B), dorado #F5B301, turquesa #37D6C0, letras Outfit y Archivo Black, botones redondos con sombra, mesa violeta. puzzle.html v8, puzzle.js v8, sw v282.
 ```
+
+```text
+Fecha: 15/10/2026 — Puzzle: categoría nueva "Aventuras" (pinturas con mucho detalle, más difíciles): egipto, tren-del-oeste, ciudad-voladora, base-espacial, barcos (assets/puzzle/). Al elegirla sube sola a 49 piezas (7×7). Rotan igual que los Dibujos (índice gya_puzzle.aventura). La opción "48" pasa a "49" (las imágenes cuadradas arman 7×7). Categorías de imagen: Dibujos (fáciles, 25) · Aventuras (49) · Ciudades · Paisaje · Geométrico · Foto · Tu imagen. puzzle.html v9, puzzle.js v9, sw v283.
+```
