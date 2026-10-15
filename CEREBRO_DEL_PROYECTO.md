@@ -812,3 +812,7 @@ Fecha: 15/10/2026 — Puzzle: DIBUJOS como primeras imágenes (Gonzalo pasó 5 d
 ```text
 Fecha: 15/10/2026 — Puzzle: 4 dibujos más (dragon, granja, oceano, selva; la playa que vino repetida no se duplicó). Orden de DIBUJOS: dragón (el primero que arma alguien nuevo: zonas bien distintas —dragón, castillo, arcoíris, flores— ideal para 24), granja, golosinas, océano, selva, dinosaurios, espacio, playa, parque. puzzle.html v4, puzzle.js v4, sw v278.
 ```
+
+```text
+Fecha: 15/10/2026 — Puzzle: la opción "24" pasa a "25" (Gonzalo: "que no haya más 24, que todos sean 25"); los dibujos cuadrados ya armaban 5×5. Guardados viejos con 24 se muestran como 25. puzzle.html v5, puzzle.js v5, sw v279.
+```

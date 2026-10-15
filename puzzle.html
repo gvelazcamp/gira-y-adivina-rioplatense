@@ -54,7 +54,7 @@ button:hover,select:hover{border-color:#41566d}
 <header>
   <button id="volver" type="button" aria-label="Volver">‹</button>
   <div class="brand">🧩 <b>Puzzle</b></div>
-  <label class="fld"><span>Piezas</span><select id="count"><option>12</option><option selected>24</option><option>48</option><option>70</option><option>100</option><option>150</option></select></label>
+  <label class="fld"><span>Piezas</span><select id="count"><option>12</option><option selected>25</option><option>48</option><option>70</option><option>100</option><option>150</option></select></label>
   <label class="fld"><span>Imagen</span><select id="img"><option value="dibujo" selected>Dibujos</option><option value="ciudad">Ciudades</option><option value="paisaje">Paisaje</option><option value="geo">Geométrico</option><option value="foto">Foto (internet)</option><option value="propia">Tu imagen…</option></select></label>
   <label class="tg"><input type="checkbox" id="rot" checked><i></i><span>Girar piezas</span></label>
   <button id="new">Mezclar</button>
@@ -93,7 +93,7 @@ let ultimaCiudad='';
    (sin prefijo gya_ para no inflar el respaldo en Supabase con la imagen).
    Si la imagen es de una ciudad se guarda solo el nombre; si no, una copia jpg. */
 const KEY='pz_partida';
-let edges=null,fuente={},imgSave=null,cfg={n:'24',img:'dibujo',rot:true},tGuardar=0;
+let edges=null,fuente={},imgSave=null,cfg={n:'25',img:'dibujo',rot:true},tGuardar=0;
 
 /* ---------- audio ---------- */
 let AC=null;
@@ -247,7 +247,7 @@ async function seguir(d){
   if(busy)return;busy=true;
   try{
     const img=await loadImg(d.archivo||(d.ciudad?'assets/worlds/'+d.ciudad+'.webp':d.img));
-    cfg=d.cfg;revertirCfg();fuente=d.archivo?{archivo:d.archivo}:d.ciudad?{ciudad:d.ciudad}:{};imgSave=d.img;if(d.ciudad)ultimaCiudad=d.ciudad;lastImgSel=cfg.img==='propia'?'propia':cfg.img;
+    cfg=d.cfg;if(cfg.n==='24')cfg.n='25';revertirCfg();fuente=d.archivo?{archivo:d.archivo}:d.ciudad?{ciudad:d.ciudad}:{};imgSave=d.img;if(d.ciudad)ultimaCiudad=d.ciudad;lastImgSel=cfg.img==='propia'?'propia':cfg.img;
     won=false;$('#win').classList.add('hide');timerOn=false;lastSec=-1;drag=pan=pinch=null;
     cols=d.cols;rows=d.rows;W=cols*S;H=rows*S;q=clamp(2000/(Math.max(cols,rows)*S),1,2.5);
     src=document.createElement('canvas');src.width=Math.round(W*q);src.height=Math.round(H*q);const g=src.getContext('2d');
