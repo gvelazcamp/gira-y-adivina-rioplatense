@@ -6,8 +6,8 @@ const Puzzle=(()=>{
   let marco=null;
   function abrir(contenedor){
     salir();
-    marco=document.createElement("iframe");marco.src="puzzle.html?v=10";marco.title="Puzzle";
-    marco.style.cssText="position:fixed;inset:0;width:100%;height:100%;border:0;z-index:60;background:#160B24";
+    marco=document.createElement("iframe");marco.src="puzzle.html?v=11";marco.title="Puzzle";
+    marco.style.cssText="position:fixed;left:0;right:0;bottom:0;top:env(safe-area-inset-top,0px);width:100%;height:calc(100% - env(safe-area-inset-top,0px));border:0;z-index:60;background:#160B24";
     contenedor.appendChild(marco);
   }
   function salir(){if(marco){marco.remove();marco=null;}}

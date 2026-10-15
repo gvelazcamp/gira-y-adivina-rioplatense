@@ -836,3 +836,7 @@ Fecha: 15/10/2026 — Puzzle: categoría nueva "Aventuras" (pinturas con mucho d
 ```text
 Fecha: 15/10/2026 — Puzzle, Aventuras +5: piratas, torneo-medieval, vikingos, samurai, futbol. Orden: piratas, egipto, torneo medieval, tren del oeste, vikingos, ciudad voladora, samurái, base espacial, fútbol, barcos (10). puzzle.html v10, puzzle.js v10, sw v284.
 ```
+
+```text
+Fecha: 15/10/2026 — Puzzle: la tester extrañó "el cosito de referencia" (la imagen chiquita), que en v8 había quedado solo detrás de "Ver imagen". Vuelve como miniatura chica abajo a la izquierda (86px, borde dorado, 🔍); tocándola se ve grande y se cierra tocando. Además el iframe del Puzzle arranca debajo de la barra del celular (env(safe-area-inset-top)) para que la barra de arriba del juego no quede tapada. puzzle.html v11, puzzle.js v11, sw v285.
+```
