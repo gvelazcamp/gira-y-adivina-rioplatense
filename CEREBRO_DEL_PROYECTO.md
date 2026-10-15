@@ -816,3 +816,7 @@ Fecha: 15/10/2026 — Puzzle: 4 dibujos más (dragon, granja, oceano, selva; la 
 ```text
 Fecha: 15/10/2026 — Puzzle: la opción "24" pasa a "25" (Gonzalo: "que no haya más 24, que todos sean 25"); los dibujos cuadrados ya armaban 5×5. Guardados viejos con 24 se muestran como 25. puzzle.html v5, puzzle.js v5, sw v279.
 ```
+
+```text
+Fecha: 15/10/2026 — Puzzle: dibujo nuevo "nieve" (muñeco de nieve, assets/puzzle/nieve.webp), 3º en el orden (dragón, granja, nieve, golosinas, océano, selva, dinosaurios, espacio, playa, parque). 10 dibujos. puzzle.html v6, puzzle.js v6, sw v280.
+```
