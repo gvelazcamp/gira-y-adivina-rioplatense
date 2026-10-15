@@ -6,7 +6,7 @@ const RUEDA_CONFIG={
 const RuedaDeLetras=(()=>{
   const CLAVE="gya_rueda_de_letras",azar=n=>Math.floor(Math.random()*n);
   let datos=cargar(),raiz=null,nivel=1,puntos=0,ronda=null,letras=[],hechas=new Set(),extrasEncontradas=new Set(),encontradasRonda=[],camino=[],arrastrando=false,jugando=false,girando=false,centros=[],usadasSesion=new Set(),duelo=false;
-  let reveladas=new Set();
+  let reveladas=new Set(),puntosRonda=0;
   let tiempoMs=0,duracionMs=0,ultimo=0,intervalo=null,giroTimer=null,errores=0,inicio=0,ocultoDesde=0,token=0;
   let audioMusica=null;
   function iniciarMusicaJuego(){
@@ -35,8 +35,14 @@ const RuedaDeLetras=(()=>{
     usadasSesion.add(fuente.base);
     /* Como Words of Wonders: las ocultas van en un crucigrama, así cada
        palabra encontrada destapa letras de las otras. */
-    const cruz=armarCruz(fuente.base,candidatas,c.palabras);
-    return{base:fuente.base,ciudad:fuente.ciudad,palabras:cruz.puestas.map(p=>p.w),todas:fuente.palabras,cruz};
+    /* Niveles pares (2, 4, 6…): como en Colmena, una letra va en el medio
+       de la rueda y todas las palabras la tienen que llevar. Se elige la
+       letra que más palabras comunes tiene. */
+    let centro=null,lista=candidatas;
+    if(n%2===0){const cuenta={};for(const l of new Set(fuente.base))cuenta[l]=candidatas.filter(w=>w.includes(l)).length;
+      centro=Object.keys(cuenta).sort((a,b)=>cuenta[b]-cuenta[a])[0];lista=candidatas.filter(w=>w.includes(centro));}
+    const cruz=armarCruz(fuente.base,lista,c.palabras);
+    return{base:fuente.base,ciudad:fuente.ciudad,tema:fuente.tema||"",centro,palabras:cruz.puestas.map(p=>p.w),todas:centro?fuente.palabras.filter(w=>w.includes(centro)):fuente.palabras,cruz};
   }
   function armarCruz(base,candidatas,max){
     const k=(r,c)=>r+","+c;let mejor=null;
@@ -95,9 +101,15 @@ const RuedaDeLetras=(()=>{
   function tiempoRonda(palabras,n){const c=configNivel(n),largo=palabras.reduce((s,w)=>s+w.length,0)/palabras.length;return Math.round(palabras.length*(RUEDA_CONFIG.segundosBase+RUEDA_CONFIG.segundosPorLetra*largo)*c.margen*1000);}
   function sonido(){try{if(typeof sonarRuletaGiro==="function")sonarRuletaGiro();}catch(e){}}
   function feedback(){try{if(typeof vibrar==="function")vibrar(20);}catch(e){}}
-  function pantalla(){raiz.innerHTML=`<div class="rl-game"><button type="button" class="ext-volver" id="rlVolver">⟵ Extensiones</button><h2>Rueda de Letras</h2><p class="rl-sub">Completá el crucigrama. Cada palabra destapa letras de las otras.</p><div class="rl-hud"><div><small>Nivel</small><b id="rlNivel"></b></div><div><small>Puntos</small><b id="rlPuntos"></b></div><div><small>Mejor</small><b id="rlMejor"></b></div><div class="rl-reloj"><small>Tiempo</small><b id="rlTiempo"></b></div></div><div class="sf-bar rl-reloj"><i id="rlBarra"></i></div><div class="rl-grilla" id="rlGrilla"></div><div class="rl-faltan" id="rlFaltan"></div><details class="rl-cajon" id="rlCajon"><summary><span class="rl-cajon-icono" aria-hidden="true">📥</span><span class="rl-cajon-titulo"><b>Mi cajón · <span id="rlColeccionCount">0</span> <span id="rlColeccionUnidad">palabras</span></b><small id="rlUltimaGuardada">Las palabras que encuentres caen acá</small></span><span class="rl-cajon-ver">Ver</span></summary><div class="rl-cajon-cuerpo"><p>De esta rueda: <span id="rlRondaCount">0</span> · <span id="rlExtrasCount">0</span> extra</p><div class="rl-cajon-lista" id="rlRondaLista">Todavía no encontraste ninguna.</div><p>Guardadas para próximas partidas</p><div class="rl-cajon-lista" id="rlColeccionLista">Tu cajón está vacío.</div></div></details><div class="rl-actual" id="rlActual" aria-live="polite">Deslizá por la rueda</div><div class="rl-rueda" id="rlRueda"><svg class="rl-lineas" id="rlLineas" aria-hidden="true"></svg></div><div class="rl-acciones"><button id="rlGirar" type="button">🔄 Girar</button><button id="rlPista" type="button">💡 Pista</button></div><div class="sf-panel-capa" id="rlPanel"></div></div>`;raiz.querySelector("#rlGirar").onclick=girar;raiz.querySelector("#rlPista").onclick=usarPista;raiz.querySelector("#rlVolver").onclick=()=>Extensiones.abrirLobby();}
+  function pantalla(){raiz.innerHTML=`<div class="rl-game"><button type="button" class="ext-volver" id="rlVolver">⟵ Extensiones</button><h2>Rueda de Letras</h2><p class="rl-sub" id="rlTema">Completá el crucigrama. Cada palabra destapa letras de las otras.</p><div class="rl-hud"><div><small>Nivel</small><b id="rlNivel"></b></div><div><small>Puntos</small><b id="rlPuntos"></b></div><div><small>Mejor</small><b id="rlMejor"></b></div><div class="rl-reloj"><small>Tiempo</small><b id="rlTiempo"></b></div></div><div class="sf-bar rl-reloj"><i id="rlBarra"></i></div><div class="rl-rango" id="rlRango"></div><div class="rl-grilla" id="rlGrilla"></div><div class="rl-faltan" id="rlFaltan"></div><details class="rl-cajon" id="rlCajon"><summary><span class="rl-cajon-icono" aria-hidden="true">📥</span><span class="rl-cajon-titulo"><b>Mi cajón · <span id="rlColeccionCount">0</span> <span id="rlColeccionUnidad">palabras</span></b><small id="rlUltimaGuardada">Las palabras que encuentres caen acá</small></span><span class="rl-cajon-ver">Ver</span></summary><div class="rl-cajon-cuerpo"><p>De esta rueda: <span id="rlRondaCount">0</span> · <span id="rlExtrasCount">0</span> extra</p><div class="rl-cajon-lista" id="rlRondaLista">Todavía no encontraste ninguna.</div><p>Guardadas para próximas partidas</p><div class="rl-cajon-lista" id="rlColeccionLista">Tu cajón está vacío.</div></div></details><div class="rl-actual" id="rlActual" aria-live="polite">Deslizá por la rueda</div><div class="rl-rueda" id="rlRueda"><svg class="rl-lineas" id="rlLineas" aria-hidden="true"></svg></div><div class="rl-acciones"><button id="rlGirar" type="button">🔄 Girar</button><button id="rlPista" type="button">💡 Pista</button></div><div class="sf-panel-capa" id="rlPanel"></div></div>`;raiz.querySelector("#rlGirar").onclick=girar;raiz.querySelector("#rlPista").onclick=usarPista;raiz.querySelector("#rlVolver").onclick=()=>Extensiones.abrirLobby();}
   function panel(titulo,mensaje,accion,funcion,extra){const p=raiz.querySelector("#rlPanel");p.innerHTML='<div class="sf-panel"><h3></h3><p></p><div class="sf-acciones"><button class="sf-principal" type="button"></button></div></div>';p.querySelector("h3").textContent=titulo;p.querySelector("p").textContent=mensaje;p.querySelector("button").textContent=accion;p.querySelector("button").onclick=funcion;if(extra){const b=document.createElement("button");b.type="button";b.textContent=extra[0];b.onclick=extra[1];p.querySelector(".sf-acciones").appendChild(b);}p.hidden=false;}
-  function hud(){if(!raiz)return;raiz.querySelector("#rlNivel").textContent=nivel;raiz.querySelector("#rlPuntos").textContent=puntos;raiz.querySelector("#rlMejor").textContent=Math.max(datos.mejor,puntos);raiz.querySelector("#rlTiempo").textContent=Math.ceil(Math.max(0,tiempoMs)/1000);raiz.querySelector("#rlBarra").style.width=Math.max(0,tiempoMs/duracionMs*100)+"%";}
+  function hud(){if(!raiz)return;raiz.querySelector("#rlNivel").textContent=nivel;raiz.querySelector("#rlPuntos").textContent=puntos;raiz.querySelector("#rlMejor").textContent=Math.max(datos.mejor,puntos);raiz.querySelector("#rlTiempo").textContent=Math.ceil(Math.max(0,tiempoMs)/1000);raiz.querySelector("#rlBarra").style.width=Math.max(0,tiempoMs/duracionMs*100)+"%";pintarRango();}
+  /* Rangos por puntos dentro de cada rueda (como los niveles de Colmena). */
+  const RANGOS=["🐣 Arrancando","🙂 Va bien","🔥 Picante","⭐ Crack","👑 Maestro"];
+  function pintarRango(){const el=raiz&&raiz.querySelector("#rlRango");if(!el||!ronda)return;
+    const max=ronda.palabras.reduce((s,w)=>s+w.length*RUEDA_CONFIG.puntosPorLetra,0)+(ronda.palabras.includes(ronda.base)?RUEDA_CONFIG.bonoBase:0);
+    const f=max?puntosRonda/max:0,completa=hechas.size===ronda.palabras.length,k=completa?4:Math.min(3,Math.floor(f*4));
+    el.innerHTML='<b>'+RANGOS[k]+'</b><span>'+RANGOS.map((r,i)=>'<i class="'+(i<=k?"ok":"")+'"></i>').join("")+'</span><small>'+puntosRonda+' pts</small>';}
   function pistas(){grilla();return;const p=raiz.querySelector("#rlPistas");p.replaceChildren();ronda.palabras.forEach(w=>{const d=document.createElement("div");d.className="rl-pista"+(hechas.has(w)?" hecho":"");d.textContent=hechas.has(w)?w:"• ".repeat(w.length).trim();d.setAttribute("aria-label",hechas.has(w)?w:`Palabra de ${w.length} letras`);p.appendChild(d);});}
   function mostrarCajon(ultima=""){
     raiz.querySelector("#rlColeccionCount").textContent=datos.coleccion.length;
@@ -116,16 +128,17 @@ const RuedaDeLetras=(()=>{
   function actualizarCentros(){const r=raiz.querySelector("#rlRueda"),box=r.getBoundingClientRect();centros=[...r.querySelectorAll(".rl-letra")].map(el=>{const b=el.getBoundingClientRect();return{x:b.left+b.width/2-box.left,y:b.top+b.height/2-box.top,r:b.width/2};});}
   function letraMasCercana(e){const r=raiz.querySelector("#rlRueda"),box=r.getBoundingClientRect(),px=e.clientX-box.left,py=e.clientY-box.top;let mejor=-1,mejorDist=Infinity;for(let i=0;i<centros.length;i++){const dx=px-centros[i].x,dy=py-centros[i].y,d=dx*dx+dy*dy;if(d<mejorDist){mejorDist=d;mejor=i;}}/* Solo cuenta si el dedo está ENCIMA de la letra (no "la más cercana"):
      así se puede cruzar el centro de la rueda, de R a O, sin agarrar las del medio. */const radioMax=mejor>=0?(centros[mejor].r||box.width*.1)*.95:0;return mejor>=0&&Math.sqrt(mejorDist)<=radioMax?mejor:-1;}
-  function rueda(){const r=raiz.querySelector("#rlRueda");r.querySelectorAll(".rl-letra").forEach(x=>x.remove());letras.forEach((l,i)=>{const b=document.createElement("button");b.type="button";b.className="rl-letra";b.dataset.i=i;b.textContent=l;const ang=(i/letras.length)*Math.PI*2-Math.PI/2;b.style.left=(50+38*Math.cos(ang))+"%";b.style.top=(50+38*Math.sin(ang))+"%";b.onpointerdown=e=>{if(!jugando||girando)return;e.preventDefault();actualizarCentros();arrastrando=true;camino=[i];b.setPointerCapture(e.pointerId);pintar();};r.appendChild(b);});actualizarCentros();r.onpointermove=e=>{if(!arrastrando)return;const i=letraMasCercana(e);if(i<0)return;if(i===camino.at(-2))camino.pop();else if(!camino.includes(i))camino.push(i);pintar();};r.onpointerup=e=>{if(!arrastrando)return;arrastrando=false;entregar();};r.onpointercancel=()=>{arrastrando=false;camino=[];pintar();};}
+  function rueda(){const r=raiz.querySelector("#rlRueda");r.querySelectorAll(".rl-letra").forEach(x=>x.remove());const conCentro=!!(ronda&&ronda.centro),nAfuera=conCentro?letras.length-1:letras.length;letras.forEach((l,i)=>{const b=document.createElement("button");b.type="button";b.className="rl-letra"+(conCentro&&i===letras.length-1?" rl-centro":"");b.dataset.i=i;b.textContent=l;if(conCentro&&i===letras.length-1){b.style.left="50%";b.style.top="50%";}else{const ang=(i/nAfuera)*Math.PI*2-Math.PI/2;b.style.left=(50+38*Math.cos(ang))+"%";b.style.top=(50+38*Math.sin(ang))+"%";}b.onpointerdown=e=>{if(!jugando||girando)return;e.preventDefault();actualizarCentros();arrastrando=true;camino=[i];b.setPointerCapture(e.pointerId);pintar();};r.appendChild(b);});actualizarCentros();r.onpointermove=e=>{if(!arrastrando)return;const i=letraMasCercana(e);if(i<0)return;if(i===camino.at(-2))camino.pop();else if(!camino.includes(i))camino.push(i);pintar();};r.onpointerup=e=>{if(!arrastrando)return;arrastrando=false;entregar();};r.onpointercancel=()=>{arrastrando=false;camino=[];pintar();};}
   function pintar(){if(!raiz)return;raiz.querySelector("#rlActual").textContent=camino.length?camino.map(i=>letras[i]).join(""):"Deslizá por la rueda";raiz.querySelectorAll(".rl-letra").forEach((b,i)=>b.classList.toggle("sel",camino.includes(i)));const r=raiz.querySelector("#rlRueda"),svg=raiz.querySelector("#rlLineas"),box=r.getBoundingClientRect();svg.setAttribute("viewBox",`0 0 ${box.width} ${box.height}`);const points=camino.map(i=>centros[i]?`${centros[i].x},${centros[i].y}`:"").join(" ");svg.innerHTML=points?`<polyline points="${points}" fill="none" stroke="#37D6C0" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>`:"";}
   function entregar(){
     const w=camino.map(i=>letras[i]).join("");camino=[];pintar();
     if(!jugando||w.length<3)return;
+    if(ronda.centro&&!w.includes(ronda.centro)){mensaje("Tiene que llevar la "+ronda.centro+" del medio");const r=raiz.querySelector("#rlRueda");r.classList.remove("error");void r.offsetWidth;r.classList.add("error");return;}
     if(hechas.has(w)||extrasEncontradas.has(w)){mensaje(w+" ya encontrada");return;}
     if(ronda.palabras.includes(w)){
       hechas.add(w);
       const ganados=w.length*RUEDA_CONFIG.puntosPorLetra+(w===ronda.base?RUEDA_CONFIG.bonoBase:0);
-      puntos+=ganados;guardarEnCajon(w);revisarCompletas();grilla(new Set(celdasDe(ronda.cruz.puestas.find(p=>p.w===w)).map(x=>x.k)));hud();feedback();mensaje(w+" · +"+ganados+" puntos");
+      puntos+=ganados;puntosRonda+=ganados;guardarEnCajon(w);revisarCompletas();grilla(new Set(celdasDe(ronda.cruz.puestas.find(p=>p.w===w)).map(x=>x.k)));hud();feedback();mensaje(w+" · +"+ganados+" puntos");
       if(typeof objSumar==="function")objSumar("ruedaPalabras",1);
       if(typeof logroDesbloquear==="function"){logroDesbloquear("ruedaPrimera");if(w===ronda.base&&performance.now()-inicio<10000)logroDesbloquear("ruedaBaseRapida");}
       if(duelo)Duelo.enviarProgreso({hechas:hechas.size,total:ronda.palabras.length});
@@ -133,7 +146,7 @@ const RuedaDeLetras=(()=>{
     }else if(RUEDA_DICCIONARIO.has(w)||(ronda.todas||[]).includes(w)){
       extrasEncontradas.add(w);
       const ganados=w.length*RUEDA_CONFIG.puntosExtraPorLetra;
-      puntos+=ganados;guardarEnCajon(w);
+      puntos+=ganados;puntosRonda+=ganados;guardarEnCajon(w);
       /* Como en Words of Wonders: las palabras extra llenan el cajón y cada 3 dan una pista. */
       datos.extrasPista++;let premio="";if(datos.extrasPista>=RUEDA_CONFIG.extrasPorPista){datos.extrasPista=0;datos.pistas++;premio=" · ¡+1 💡!";}guardar();
       grilla();hud();feedback();mensaje(w+" extra · +"+ganados+" puntos"+premio);
@@ -142,13 +155,15 @@ const RuedaDeLetras=(()=>{
       const r=raiz.querySelector("#rlRueda");r.classList.remove("error");void r.offsetWidth;r.classList.add("error");
     }
   }
-  function girar(){if(!jugando||arrastrando||girando)return;girando=true;const r=raiz.querySelector("#rlRueda");r.classList.add("spin");sonido();const t=++token;giroTimer=setTimeout(()=>{if(t!==token)return;letras=mezclar(letras);rueda();r.classList.remove("spin");girando=false;giroTimer=null;},RUEDA_CONFIG.giroMs);}
+  function girar(){if(!jugando||arrastrando||girando)return;girando=true;const r=raiz.querySelector("#rlRueda");r.classList.add("spin");sonido();const t=++token;giroTimer=setTimeout(()=>{if(t!==token)return;letras=ronda&&ronda.centro?[...mezclar(letras.slice(0,-1)),letras.at(-1)]:mezclar(letras);rueda();r.classList.remove("spin");girando=false;giroTimer=null;},RUEDA_CONFIG.giroMs);}
   function tic(){if(!jugando||document.hidden)return;const ahora=performance.now();tiempoMs=Math.max(0,tiempoMs-(ahora-ultimo));ultimo=ahora;hud();if(!tiempoMs)terminar(false);}
   function visibilidad(){if(document.hidden){detenerMusicaJuego();ocultoDesde=performance.now();}else{iniciarMusicaJuego();if(jugando){ultimo=performance.now();ocultoDesde=0;}}}
   function comenzar(){duelo=false;token++;ronda=elegir(nivel);arrancarRonda();}
   function arrancarRonda(){
     clearInterval(intervalo);clearTimeout(giroTimer);
-    letras=mezclar([...ronda.base]);hechas=new Set();reveladas=new Set();extrasEncontradas=new Set();encontradasRonda=[];camino=[];arrastrando=false;girando=false;errores=0;duracionMs=tiempoRonda(ronda.palabras,nivel);tiempoMs=duracionMs;jugando=true;inicio=ultimo=performance.now();raiz.querySelector("#rlPanel").hidden=true;raiz.querySelector("#rlRueda").classList.remove("spin","error");raiz.querySelector("#rlCajon").open=false;mensaje("Deslizá por la rueda");pistas();mostrarCajon();rueda();hud();raiz.querySelectorAll(".rl-reloj").forEach(x=>x.hidden=!duelo);raiz.querySelector(".rl-hud").classList.toggle("sin-reloj",!duelo);if(duelo)intervalo=setInterval(tic,RUEDA_CONFIG.ticMs);if(typeof objSumar==="function")objSumar("ruedaRonda",1);
+    if(ronda.centro){const resto=[...ronda.base];resto.splice(resto.indexOf(ronda.centro),1);letras=[...mezclar(resto),ronda.centro];}else letras=mezclar([...ronda.base]);
+    puntosRonda=0;{const t=raiz.querySelector("#rlTema");if(t)t.textContent=(ronda.tema?"Tema: "+ronda.tema:"Completá el crucigrama")+(ronda.centro?" · Todas llevan la "+ronda.centro+" del medio":"");}
+    hechas=new Set();reveladas=new Set();extrasEncontradas=new Set();encontradasRonda=[];camino=[];arrastrando=false;girando=false;errores=0;duracionMs=tiempoRonda(ronda.palabras,nivel);tiempoMs=duracionMs;jugando=true;inicio=ultimo=performance.now();raiz.querySelector("#rlPanel").hidden=true;raiz.querySelector("#rlRueda").classList.remove("spin","error");raiz.querySelector("#rlCajon").open=false;mensaje("Deslizá por la rueda");pistas();mostrarCajon();rueda();hud();raiz.querySelectorAll(".rl-reloj").forEach(x=>x.hidden=!duelo);raiz.querySelector(".rl-hud").classList.toggle("sin-reloj",!duelo);if(duelo)intervalo=setInterval(tic,RUEDA_CONFIG.ticMs);if(typeof objSumar==="function")objSumar("ruedaRonda",1);
     if(duelo){
       Duelo.mostrarBadge();Duelo.actualizarBadge("0/"+ronda.palabras.length);
       Duelo.onProgresoRival(p=>Duelo.actualizarBadge(p.hechas+"/"+p.total));
