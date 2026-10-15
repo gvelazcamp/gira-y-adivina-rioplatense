@@ -67,8 +67,8 @@ button:hover,select:hover{border-color:#FFFFFF55}
 <header>
   <button id="volver" type="button" aria-label="Volver">‹</button>
   <div class="brand">🧩 <b>Puzzle</b></div>
-  <label class="fld"><span>Piezas</span><select id="count"><option>12</option><option selected>25</option><option>48</option><option>70</option><option>100</option><option>150</option></select></label>
-  <label class="fld"><span>Imagen</span><select id="img"><option value="dibujo" selected>Dibujos</option><option value="ciudad">Ciudades</option><option value="paisaje">Paisaje</option><option value="geo">Geométrico</option><option value="foto">Foto (internet)</option><option value="propia">Tu imagen…</option></select></label>
+  <label class="fld"><span>Piezas</span><select id="count"><option>12</option><option selected>25</option><option>49</option><option>70</option><option>100</option><option>150</option></select></label>
+  <label class="fld"><span>Imagen</span><select id="img"><option value="dibujo" selected>Dibujos</option><option value="aventura">Aventuras</option><option value="ciudad">Ciudades</option><option value="paisaje">Paisaje</option><option value="geo">Geométrico</option><option value="foto">Foto (internet)</option><option value="propia">Tu imagen…</option></select></label>
   <label class="tg"><input type="checkbox" id="rot" checked><i></i><span>Girar piezas</span></label>
   <button id="new">Mezclar</button>
   <button id="save">💾 Guardar</button>
@@ -107,6 +107,8 @@ let ghost=false,dirty=true,started=0,elapsed=0,timerOn=false,moves=0,won=false,b
 let drag=null,pan=null,pinch=null;const ptrs=new Map();
 let lastImgSel='dibujo',userImg=null;
 /* Dibujos para armar (assets/puzzle/): salen en este orden, uno distinto en cada puzzle. */
+/* Aventuras: pinturas con mucho detalle, más difíciles (arrancan en 49 piezas). */
+const AVENTURAS=['egipto','tren-del-oeste','ciudad-voladora','base-espacial','barcos'];
 const DIBUJOS=['dragon','granja','nieve','golosinas','oceano','selva','dinosaurios','espacio','playa','parque'];
 /* Fotos de las ciudades de los mapas de Uruguay y Argentina. */
 const CIUDADES=['montevideo','colonia','punta-del-este','cabo-polonio','piriapolis','salto','paysandu','tacuarembo','rivera','durazno','artigas','canelones','florida','lavalleja','rio-negro','san-jose','soriano','treinta-y-tres','cerro-largo','flores','estadio-centenario','buenos-aires','la-plata','rosario','mar-del-plata','cordoba','mendoza-ciudad','salta','jujuy','bariloche','el-calafate','ushuaia','puerto-madryn','villa-carlos-paz','posadas','santa-fe','purmamarca','san-miguel-de-tucuman','corrientes','puerto-iguazu','gualeguaychu','san-martin-de-los-andes'];
@@ -215,8 +217,8 @@ function renderPiece(p){
 async function getSource(){
   const v=$('#img').value;fuente={};
   if(v==='geo')return{aspect:4/3,paint:paintGeo};
-  if(v==='dibujo'){let d={};try{d=JSON.parse(localStorage.getItem('gya_puzzle')||'{}')}catch(_){}const i=(d.dibujo||0)%DIBUJOS.length;d.dibujo=i+1;try{localStorage.setItem('gya_puzzle',JSON.stringify(d))}catch(_){}
-    const a='assets/puzzle/'+DIBUJOS[i]+'.webp';fuente={archivo:a};try{const img=await loadImg(a);return{aspect:clamp(img.width/img.height,.5,2.2),paint:(g,w,h)=>cover(g,img,w,h)}}catch(e){fuente={};toast('No se pudo cargar el dibujo, uso un paisaje')}}
+  if(v==='dibujo'||v==='aventura'){const L=v==='dibujo'?DIBUJOS:AVENTURAS;let d={};try{d=JSON.parse(localStorage.getItem('gya_puzzle')||'{}')}catch(_){}const i=(d[v]||0)%L.length;d[v]=i+1;try{localStorage.setItem('gya_puzzle',JSON.stringify(d))}catch(_){}
+    const a='assets/puzzle/'+L[i]+'.webp';fuente={archivo:a};try{const img=await loadImg(a);return{aspect:clamp(img.width/img.height,.5,2.2),paint:(g,w,h)=>cover(g,img,w,h)}}catch(e){fuente={};toast('No se pudo cargar el dibujo, uso un paisaje')}}
   if(v==='ciudad'){let c;do c=pick(CIUDADES);while(c===ultimaCiudad);ultimaCiudad=c;fuente={ciudad:c};try{const img=await loadImg('assets/worlds/'+c+'.webp');return{aspect:clamp(img.width/img.height,.5,2.2),paint:(g,w,h)=>cover(g,img,w,h)}}catch(e){toast('No se pudo cargar la ciudad, uso un paisaje')}}
   if(v==='propia'&&userImg)return{aspect:clamp(userImg.width/userImg.height,.5,2.2),paint:(g,w,h)=>cover(g,userImg,w,h)};
   if(v==='foto'){toast('Cargando foto…',8000);try{const img=await loadImg(`https://picsum.photos/seed/pz${Date.now()}/1600/1200`);$('#toast').classList.remove('on');return{aspect:img.width/img.height,paint:(g,w,h)=>cover(g,img,w,h)}}
@@ -269,7 +271,7 @@ async function seguir(d){
   if(busy)return;busy=true;
   try{
     const img=await loadImg(d.archivo||(d.ciudad?'assets/worlds/'+d.ciudad+'.webp':d.img));
-    cfg=d.cfg;if(cfg.n==='24')cfg.n='25';revertirCfg();fuente=d.archivo?{archivo:d.archivo}:d.ciudad?{ciudad:d.ciudad}:{};imgSave=d.img;if(d.ciudad)ultimaCiudad=d.ciudad;lastImgSel=cfg.img==='propia'?'propia':cfg.img;
+    cfg=d.cfg;if(cfg.n==='24')cfg.n='25';if(cfg.n==='48')cfg.n='49';revertirCfg();fuente=d.archivo?{archivo:d.archivo}:d.ciudad?{ciudad:d.ciudad}:{};imgSave=d.img;if(d.ciudad)ultimaCiudad=d.ciudad;lastImgSel=cfg.img==='propia'?'propia':cfg.img;
     won=false;$('#win').classList.add('hide');timerOn=false;lastSec=-1;drag=pan=pinch=null;
     cols=d.cols;rows=d.rows;W=cols*S;H=rows*S;q=clamp(2000/(Math.max(cols,rows)*S),1,2.5);
     src=document.createElement('canvas');src.width=Math.round(W*q);src.height=Math.round(H*q);const g=src.getContext('2d');
@@ -387,7 +389,7 @@ $('#prev').onclick=()=>verPrevia(false);
 $('#bTuto').onclick=()=>{$('#tuto').classList.add('hide');try{const d=JSON.parse(localStorage.getItem('gya_puzzle')||'{}');d.tuto=1;localStorage.setItem('gya_puzzle',JSON.stringify(d))}catch(_){}};$('#guide').onclick=toggleGuide;
 $('#count').onchange=nuevoConfirmado;$('#rot').onchange=nuevoConfirmado;
 $('#zin').onclick=()=>zoomAt(1.3,VW/2,VH/2);$('#zout').onclick=()=>zoomAt(1/1.3,VW/2,VH/2);$('#zfit').onclick=fit;
-$('#img').onchange=e=>{if(e.target.value==='propia')$('#file').click();else{lastImgSel=e.target.value;nuevoConfirmado()}};
+$('#img').onchange=e=>{if(e.target.value==='propia')$('#file').click();else{if(e.target.value==='aventura'&&+$('#count').value<49)$('#count').value='49';lastImgSel=e.target.value;nuevoConfirmado()}};
 $('#file').onchange=async e=>{const f=e.target.files[0];if(!f){$('#img').value=lastImgSel;return}
   try{userImg=await loadImg(URL.createObjectURL(f));lastImgSel='propia';nuevoConfirmado()}catch(_){toast('No se pudo leer la imagen');$('#img').value=lastImgSel}e.target.value=''};
 function resize(){dpr=Math.min(window.devicePixelRatio||1,2);TOP=$('header').offsetHeight;VW=innerWidth;VH=innerHeight-TOP;
