@@ -872,3 +872,7 @@ Fecha: 15/10/2026 — Puzzle cooperativo, después de la primera partida real de
 ```text
 Fecha: 15/10/2026 — Puzzle: la foto final (cartel, vista grande y la de compartir) ahora es "estilo puzzle": la imagen con el corte de cada pieza marcado en relieve suave (puzzleArmado), no la imagen lisa. puzzle.html v19, puzzle.js v19, sw v293.
 ```
+
+```text
+Fecha: 15/10/2026 — Puzzle cooperativo, elegir: cuando uno acepta un puzzle, al otro lo LLEVA a ese puzzle (aunque estuviera mirando otro) y le pregunta "✅ Juan eligió este puzzle. ¿Aceptás el puzzle de Juan?" con "✅ Sí, acepto" / "❌ No, hablemos por el chat". Sí → arrancan los dos. No → a Juan le avisa ("Martina no aceptó. Hablen por el chat 💬"), queda en el chat "❌ Martina no aceptó Piratas" y a Martina se le abre el chat para escribir. Botón "💬 Chat" también en esa ventana (el chat ahora se abre por encima). puzzle.html v20, puzzle.js v20, sw v294.
+```

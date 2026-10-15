@@ -70,7 +70,7 @@ select{padding:7px 8px}
 #chatN[hidden]{display:none!important}
 #chatN{position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;border-radius:99px;background:#E5197C;color:#fff;font-size:11px;font-weight:800;display:grid;place-items:center;padding:0 5px;border:2px solid #160B24}
 #chatBurbuja{position:fixed;right:60px;z-index:6;max-width:min(240px,60vw);background:var(--panel);border:1px solid var(--acc);border-radius:14px 14px 4px 14px;padding:7px 11px;font-size:13px;pointer-events:none;box-shadow:0 4px 14px #0008;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#chat{position:fixed;left:8px;right:8px;bottom:8px;z-index:13;max-width:460px;margin:0 auto;max-height:min(46vh,380px);display:flex;flex-direction:column;background:#2A1A3C;border:1px solid var(--line);border-radius:18px;box-shadow:0 10px 40px #000c;padding:10px}
+#chat{position:fixed;left:8px;right:8px;bottom:8px;z-index:21;max-width:460px;margin:0 auto;max-height:min(46vh,380px);display:flex;flex-direction:column;background:#2A1A3C;border:1px solid var(--line);border-radius:18px;box-shadow:0 10px 40px #000c;padding:10px}
 .ch-cab{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
 .ch-cab b{color:var(--acc)}.ch-cab button{padding:3px 10px;box-shadow:none}
 #chatLista{flex:1;min-height:60px;overflow-y:auto;display:flex;flex-direction:column;gap:5px;padding:2px}
@@ -89,7 +89,9 @@ select{padding:7px 8px}
 .el-foto button{flex:0 0 40px;height:56px;font-size:24px;padding:0}
 .el-nombre{font-weight:700;margin:8px 0 2px;font-size:16px}
 .el-otro{min-height:20px;font-size:13px;color:var(--teal);font-weight:700;margin:4px 0 6px}
-#elegir .card #elOk,#elegir .card #elSalir{display:block;width:100%;margin-top:8px}
+#elegir .card #elOk,#elegir .card #elSalir,#elegir .card #elNo,#elegir .card #elChat{display:block;width:100%;margin-top:8px}
+#elegir .card #elNo[hidden]{display:none}
+.el-otro.pregunta{background:#37D6C022;border:1px solid var(--teal);border-radius:12px;padding:8px 10px;font-size:14.5px!important;color:#fff!important}
 #pareja,#invitar{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);z-index:18;transition:opacity .3s;padding:16px}
 #pareja.hide,#invitar.hide{opacity:0;pointer-events:none}
 #pareja .card,#invitar .card{max-width:400px;width:100%;padding:22px 18px;max-height:calc(100% - 20px);overflow-y:auto}
@@ -174,7 +176,7 @@ button:disabled,select:disabled{opacity:.4;cursor:default}
 <select id="elCat" aria-label="Categoría"><option value="dibujo">🎨 Dibujos · 25 piezas</option><option value="aventura">🗺️ Aventuras · 49 piezas</option><option value="ciudad">🏙️ Ciudades · 25 piezas</option></select>
 <div class="el-foto"><button id="elAnt" aria-label="Anterior">‹</button><img id="elImg" alt=""><button id="elSig" aria-label="Siguiente">›</button></div>
 <p class="el-nombre" id="elNombre"></p><p class="el-otro" id="elOtro"></p>
-<button id="elOk">✅ Aceptar</button><button id="elSalir" class="pj-sec">Salir de la sala</button></div></div>
+<button id="elOk">✅ Aceptar</button><button id="elNo" class="pj-sec" hidden>❌ No, hablemos por el chat</button><button id="elChat" class="pj-sec">💬 Chat</button><button id="elSalir" class="pj-sec">Salir de la sala</button></div></div>
 <div id="seguir" class="hide"><div class="card"><div class="big">🧩</div><h2>Tenés un puzzle a medio armar</h2><p id="seguirTxt"></p><button id="bSeguir">Seguir armándolo</button><br><button id="bOtro" style="margin-top:10px;background:var(--btn);color:var(--text);border:1px solid var(--line)">Empezar otro</button></div></div>
 <div id="win" class="hide"><div class="card"><h2>🎉 ¡Puzzle completo!</h2><img id="winImg" class="win-img" alt="Puzzle terminado"><p id="winTxt"></p><button id="winShare" class="pj-wpp">📲 Compartir foto</button><button id="again">Jugar otro</button></div></div>
 <canvas id="fx"></canvas>
@@ -564,7 +566,8 @@ function recibir(pl){
   if(m.k==='hola'||m.k==='todo'){if(m.d){if(!coop.elegido)cargarElegido(m);else if(m.act>coop.act){coop.act=m.act;aplicarTodo(m.d)}else if(m.k==='hola')mandar({k:'todo',act:coop.act,d:estadoCompleto()})}else if(m.k==='hola'){if(coop.elegido)mandar({k:'todo',act:coop.act,d:estadoCompleto()});else mandar({k:'elige',cat:sel.cat,i:sel.i})}}
   else if(m.k==='nuevo'&&m.d)cargarElegido(m);
   else if(m.k==='elige'){if(!coop.elegido){sel={cat:m.cat,i:m.i};otroOk=false;miOk=false;pintarElegir()}}
-  else if(m.k==='ok'){if(!coop.elegido&&m.cat===sel.cat&&m.i===sel.i){otroOk=true;pintarElegir();chequearOk()}}
+  else if(m.k==='ok'){if(!coop.elegido){if(m.cat!==sel.cat||m.i!==sel.i){sel={cat:m.cat,i:m.i};miOk=false}otroOk=true;pintarElegir();try{navigator.vibrate&&navigator.vibrate(40)}catch(_){}chequearOk()}}
+  else if(m.k==='no'){if(!coop.elegido){miOk=otroOk=false;pintarElegir();toast('❌ '+(m.nom||'Tu compañero')+' no aceptó. Hablen por el chat 💬',4500)}}
   else if(m.k==='gr'){coop.act=Math.max(coop.act,m.act||0);aplicarGrupo(m);guardarSalaLuego()}
   else if(m.k==='mv'&&Array.isArray(m.p))moverRemoto(m.p,m.act||0);
   else if(m.k==='chau'){if(!m.pausa&&antes)toast('👋 '+(m.nom||'Tu compañero')+' salió. Podés seguir: queda guardado',3500)}
@@ -674,13 +677,16 @@ const nombreSel=()=>{const id=listaCat(sel.cat)[sel.i];return NOMBRES[id]||id.re
 function pintarElegir(){const L=listaCat(sel.cat);sel.i=((sel.i%L.length)+L.length)%L.length;$('#elCat').value=sel.cat;$('#elImg').src=rutaSel();
   $('#elNombre').textContent=`${nombreSel()} · ${sel.i+1}/${L.length}`;
   const quien=coop&&(coop.compa||otros());
-  $('#elOtro').textContent=!coop||!coop.online?(quien?`${quien} no está ahora: si aceptás, arrancás vos y después se suma`:'Si aceptás, arrancás y tu compañero se suma cuando entre'):otroOk?`✅ ${quien} aceptó este`:miOk?`⏳ Esperando que ${quien} acepte…`:`👀 ${quien} ve lo mismo que vos`;
-  $('#elOk').disabled=miOk;$('#elOk').textContent=miOk?'✅ Aceptado':'✅ Aceptar'}
+  const pregunta=coop&&coop.online&&otroOk&&!miOk;$('#elOtro').classList.toggle('pregunta',!!pregunta);$('#elNo').hidden=!pregunta;
+  $('#elOtro').textContent=pregunta?`✅ ${quien} eligió este puzzle. ¿Aceptás el puzzle de ${quien}?`:!coop||!coop.online?(quien?`${quien} no está ahora: si aceptás, arrancás vos y después se suma`:'Si aceptás, arrancás y tu compañero se suma cuando entre'):otroOk?`✅ ${quien} aceptó este`:miOk?`⏳ Esperando que ${quien} acepte…`:`👀 ${quien} ve lo mismo que vos`;
+  $('#elOk').disabled=miOk;$('#elOk').textContent=miOk?'✅ Aceptado':pregunta?'✅ Sí, acepto':'✅ Aceptar'}
 function abrirElegir(){miOk=otroOk=false;pintarElegir();$('#elegir').classList.remove('hide')}
 const cerrarElegir=()=>$('#elegir').classList.add('hide');
 function moverSel(c,i){sel={cat:c,i};miOk=otroOk=false;pintarElegir();mandar({k:'elige',cat:c,i:sel.i})}
 $('#elCat').onchange=e=>moverSel(e.target.value,0);
 $('#elAnt').onclick=()=>moverSel(sel.cat,sel.i-1);$('#elSig').onclick=()=>moverSel(sel.cat,sel.i+1);
+$('#elNo').onclick=()=>{if(!coop)return;const q=coop.compa||otros();enviarChat('❌ '+miNombre()+' no aceptó '+nombreSel(),true);mandar({k:'no',cat:sel.cat,i:sel.i});otroOk=miOk=false;pintarElegir();$('#chat').classList.remove('hide');pintarChat();setTimeout(()=>{try{$('#chatTxt').focus()}catch(_){}},200)};
+$('#elChat').onclick=()=>{$('#chat').classList.remove('hide');pintarChat()};
 $('#elSalir').onclick=()=>{cerrarElegir();salirSala('Saliste de la sala: queda guardada para elegir el puzzle después')};
 $('#elOk').onclick=()=>{if(!coop)return;miOk=true;mandar({k:'ok',cat:sel.cat,i:sel.i});pintarElegir();chequearOk()};
 function chequearOk(){if(!coop||coop.elegido||!miOk)return;if(coop.online&&!otroOk)return;
