@@ -4,30 +4,34 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Puzzle · Girá y Adiviná</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Outfit:wght@400;500;700&display=swap">
 <style>
-:root{--panel:rgba(18,26,35,.94);--line:#2a3a4c;--text:#eaf0f6;--muted:#93a6ba;--acc:#f5b942}
+:root{--panel:rgba(42,26,60,.96);--line:#FFFFFF22;--text:#F6EFE2;--muted:#CDB8E6;--acc:#F5B301;--teal:#37D6C0;--btn:#3A2552;--sombra:#13091E}
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:#0c1a17;color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+html,body{height:100%;background:#160B24;color:var(--text);font-family:"Outfit",system-ui,sans-serif;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
 header{position:fixed;top:0;left:0;right:0;height:56px;display:flex;align-items:center;gap:10px;padding:0 12px;background:var(--panel);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);z-index:5;overflow-x:auto;white-space:nowrap;scrollbar-width:none}
 header::-webkit-scrollbar{display:none}
 .brand{font-size:17px;margin-right:4px}
+.brand b{font-family:"Archivo Black",sans-serif;font-weight:400;color:var(--acc);letter-spacing:.3px}
 .fld{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
-select,button{font:inherit;font-size:13px;color:var(--text);background:#223142;border:1px solid var(--line);border-radius:8px;padding:7px 10px;cursor:pointer}
-button:hover,select:hover{border-color:#41566d}
+select,button{font:inherit;font-size:13px;font-weight:700;color:var(--text);background:var(--btn);border:1px solid var(--line);border-radius:99px;padding:7px 12px;cursor:pointer;box-shadow:0 3px 0 var(--sombra)}
+button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--sombra)}
+button:hover,select:hover{border-color:#FFFFFF55}
 #volver{font-size:20px;line-height:1;padding:4px 11px}
-#new{background:var(--acc);color:#1b1405;border-color:var(--acc);font-weight:700}
-#guide.on{background:#34506b;border-color:#5d86ad}
+#new{background:var(--acc);color:#2A1300;border-color:var(--acc)}
+#guide.on,#pvBtn.on{background:var(--teal);color:#0B2B27;border-color:var(--teal)}
 .tg{display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer}
 .tg input{display:none}
-.tg i{width:34px;height:20px;border-radius:10px;background:#3a4a5c;position:relative;transition:.2s}
+.tg i{width:34px;height:20px;border-radius:10px;background:#4A3366;position:relative;transition:.2s}
 .tg i:after{content:"";position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:.2s}
-.tg input:checked+i{background:#3aa676}
+.tg input:checked+i{background:var(--teal)}
 .tg input:checked+i:after{left:17px}
 .stats{margin-left:auto;font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted);padding-left:8px}
 #bar{position:fixed;top:54px;left:0;height:2px;width:0;background:var(--acc);z-index:6;transition:width .4s}
 #c{position:fixed;left:0;top:56px;display:block;cursor:default}
 .zoom{position:fixed;right:14px;bottom:14px;display:flex;flex-direction:column;gap:6px;z-index:4}
-.zoom button{width:42px;height:42px;font-size:20px;border-radius:12px;background:var(--panel);padding:0}
+.zoom button{width:44px;height:44px;font-size:20px;border-radius:14px;background:var(--panel);padding:0}
 #hint{position:fixed;left:14px;bottom:14px;right:74px;max-width:560px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:12.5px;line-height:1.5;color:var(--muted);z-index:4;transition:opacity .6s}
 #hint b{color:var(--text)}
 #hint.off{opacity:0;pointer-events:none}
@@ -43,20 +47,19 @@ button:hover,select:hover{border-color:#41566d}
 #tuto li:last-child{border-bottom:0}
 #tuto li span{font-size:24px;line-height:1;flex:0 0 30px;text-align:center}
 #tuto li b{color:var(--acc)}
+#tuto h2{font-size:21px}
 #tuto .card button{display:block;width:100%}
 #ayuda{font-weight:700;padding:7px 11px}
 #seguir{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:16;transition:opacity .4s;padding:16px}
-.card{background:#16222e;border:1px solid var(--line);border-radius:18px;padding:28px 34px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.card{background:#2A1A3C;border:1px solid var(--line);border-radius:19px;padding:28px 34px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5)}
 .card .big{font-size:46px}
-.card h2{margin:6px 0 8px;font-size:24px}
+.card h2{margin:6px 0 8px;font-size:22px;font-family:"Archivo Black",sans-serif;font-weight:400;color:var(--acc)}
 .card p{color:var(--muted);margin-bottom:18px;font-size:14px}
-.card button{background:var(--acc);color:#1b1405;border:0;font-weight:700;padding:10px 22px;font-size:15px}
-#prev{position:fixed;top:68px;right:14px;width:170px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px;z-index:4;cursor:zoom-in;transition:width .25s;box-shadow:0 8px 24px rgba(0,0,0,.4)}
-#prev.big{width:min(86vw,560px);cursor:zoom-out}
+.card button{background:var(--acc);color:#2A1300;border:0;font-weight:700;padding:11px 24px;font-size:15px}
+#prev{position:fixed;inset:0;z-index:14;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(22,11,36,.82);padding:16px;cursor:zoom-out}
 #prev.hide{display:none}
-#prev canvas{width:100%;height:auto;display:block;border-radius:8px}
-#prev span{display:block;font-size:11px;color:var(--muted);text-align:center;padding-top:4px}
-#pvBtn.on{background:#34506b;border-color:#5d86ad}
+#prev canvas{width:auto;height:auto;max-width:min(92vw,560px);max-height:calc(100% - 60px);display:block;border-radius:14px;border:3px solid var(--acc);box-shadow:0 10px 40px #000a}
+#prev span{font-size:14px;color:var(--text);font-weight:700}
 #fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:30}
 </style>
 </head>
@@ -69,7 +72,7 @@ button:hover,select:hover{border-color:#41566d}
   <label class="tg"><input type="checkbox" id="rot" checked><i></i><span>Girar piezas</span></label>
   <button id="new">Mezclar</button>
   <button id="save">💾 Guardar</button>
-  <button id="pvBtn" class="on">Ver imagen</button>
+  <button id="pvBtn">🖼️ Ver imagen</button>
   <button id="guide">Guía</button>
   <button id="ayuda" aria-label="Cómo jugar">❓</button>
   <div class="stats"><span id="stats">00:00 · 0%</span></div>
@@ -79,17 +82,17 @@ button:hover,select:hover{border-color:#41566d}
 <canvas id="c"></canvas>
 <div class="zoom"><button id="zin" title="Acercar">+</button><button id="zout" title="Alejar">−</button><button id="zfit" title="Ver todo">⤢</button></div>
 <div id="hint" class="off"><b>Arrastrá</b> las piezas para unirlas · <b>Tocá/clic</b> una pieza para girarla · <b>Clic derecho</b> gira al revés · <b>R / Espacio</b> gira mientras arrastrás · En celular: <b>otro dedo</b> mientras sostenés gira · <b>Rueda o pellizco</b> = zoom · arrastrá el fondo para moverte</div>
-<div id="prev"><canvas id="pv"></canvas><span>Tocá para agrandar</span></div>
+<div id="prev" class="hide"><canvas id="pv"></canvas><span>Tocá para volver a armar</span></div>
 <div id="toast"></div>
 <div id="tuto" class="hide"><div class="card"><h2>🧩 Cómo jugar</h2><ul>
 <li><span>✋</span><div><b>Arrastrá</b> cada pieza y llevala a su lugar dentro del recuadro punteado.</div></li>
 <li><span>👆</span><div><b>Tocá una pieza</b> (sin arrastrarla) para <b>girarla</b>. Tocala otra vez hasta que quede derecha.</div></li>
 <li><span>🧲</span><div>Cuando una pieza está cerca de su lugar o de su compañera, <b>se pega sola</b>.</div></li>
-<li><span>🖼️</span><div><b>Ver imagen</b> te muestra el dibujo armado. <b>Guía</b> lo marca clarito en el recuadro.</div></li>
+<li><span>🖼️</span><div><b>Ver imagen</b> te muestra el dibujo armado (tocalo para volver). <b>Guía</b> lo marca clarito en el recuadro.</div></li>
 <li><span>🔍</span><div><b>Pellizcá con dos dedos</b> (o usá + y −) para acercar o alejar. Arrastrá el fondo para moverte.</div></li>
 <li><span>💾</span><div><b>Se guarda solo</b>: podés salir y seguirlo después.</div></li>
 </ul><button id="bTuto">¡A armar!</button></div></div>
-<div id="seguir" class="hide"><div class="card"><div class="big">🧩</div><h2>Tenés un puzzle a medio armar</h2><p id="seguirTxt"></p><button id="bSeguir">Seguir armándolo</button><br><button id="bOtro" style="margin-top:10px;background:#223142;color:var(--text);border:1px solid var(--line)">Empezar otro</button></div></div>
+<div id="seguir" class="hide"><div class="card"><div class="big">🧩</div><h2>Tenés un puzzle a medio armar</h2><p id="seguirTxt"></p><button id="bSeguir">Seguir armándolo</button><br><button id="bOtro" style="margin-top:10px;background:var(--btn);color:var(--text);border:1px solid var(--line)">Empezar otro</button></div></div>
 <div id="win" class="hide"><div class="card"><div class="big">🎉</div><h2>¡Puzzle completo!</h2><p id="winTxt"></p><button id="again">Jugar otro</button></div></div>
 <canvas id="fx"></canvas>
 <script>
@@ -378,6 +381,9 @@ $('#volver').onclick=()=>{guardar();try{if(parent!==window&&parent.Extensiones){
 $('#new').onclick=nuevoConfirmado;$('#again').onclick=newGame;$('#save').onclick=()=>guardar(true);
 function verTuto(){$('#tuto').classList.remove('hide')}
 $('#ayuda').onclick=verTuto;
+function verPrevia(v){$('#prev').classList.toggle('hide',!v);$('#pvBtn').classList.toggle('on',v)}
+$('#pvBtn').onclick=()=>verPrevia($('#prev').classList.contains('hide'));
+$('#prev').onclick=()=>verPrevia(false);
 $('#bTuto').onclick=()=>{$('#tuto').classList.add('hide');try{const d=JSON.parse(localStorage.getItem('gya_puzzle')||'{}');d.tuto=1;localStorage.setItem('gya_puzzle',JSON.stringify(d))}catch(_){}};$('#guide').onclick=toggleGuide;
 $('#count').onchange=nuevoConfirmado;$('#rot').onchange=nuevoConfirmado;
 $('#zin').onclick=()=>zoomAt(1.3,VW/2,VH/2);$('#zout').onclick=()=>zoomAt(1/1.3,VW/2,VH/2);$('#zfit').onclick=fit;
@@ -387,7 +393,7 @@ $('#file').onchange=async e=>{const f=e.target.files[0];if(!f){$('#img').value=l
 function resize(){dpr=Math.min(window.devicePixelRatio||1,2);TOP=$('header').offsetHeight;VW=innerWidth;VH=innerHeight-TOP;
   cv.style.top=TOP+'px';cv.style.width=VW+'px';cv.style.height=VH+'px';cv.width=Math.round(VW*dpr);cv.height=Math.round(VH*dpr);
   fx.width=Math.round(innerWidth*dpr);fx.height=Math.round(innerHeight*dpr);
-  bgGrad=ctx.createRadialGradient(VW/2,VH/2,0,VW/2,VH/2,Math.max(VW,VH)*.75);bgGrad.addColorStop(0,'#21463c');bgGrad.addColorStop(1,'#0b1815');
+  bgGrad=ctx.createRadialGradient(VW/2,VH/2,0,VW/2,VH/2,Math.max(VW,VH)*.75);bgGrad.addColorStop(0,'#46206B');bgGrad.addColorStop(1,'#160B24');
   if(pieces.length)fit();dirty=true}
 addEventListener('resize',resize);
 addEventListener('pagehide',()=>guardar());document.addEventListener('visibilitychange',()=>{if(document.hidden)guardar()});
