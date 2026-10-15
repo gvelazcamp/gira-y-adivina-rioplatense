@@ -6,11 +6,11 @@ const Puzzle=(()=>{
   let marco=null;
   function abrir(contenedor){
     salir();
-    marco=document.createElement("iframe");marco.src="puzzle.html?v=13";marco.title="Puzzle";
+    marco=document.createElement("iframe");marco.src="puzzle.html?v=14";marco.title="Puzzle";
     marco.style.cssText="position:fixed;left:0;right:0;bottom:0;top:env(safe-area-inset-top,0px);width:100%;height:calc(100% - env(safe-area-inset-top,0px));border:0;z-index:60;background:#160B24";
     contenedor.appendChild(marco);
   }
-  function salir(){if(marco){try{const w=marco.contentWindow;if(w&&w.coopActivo&&w.coopActivo()&&window.Duelo)Duelo.salir();}catch(e){}marco.remove();marco=null;}}
+  function salir(){if(marco){try{const w=marco.contentWindow;if(w&&w.salirSalaSilencio)w.salirSalaSilencio();}catch(e){}marco.remove();marco=null;}}
   function armados(){try{return(JSON.parse(localStorage.getItem("gya_puzzle")||"{}").armados)||0;}catch(e){return 0;}}
   return{abrir,salir,armados};
 })();
