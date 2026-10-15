@@ -796,3 +796,7 @@ Fecha: 15/10/2026 — Mapa Argentina sin nada de Uruguay (Gonzalo: "argentina no
 ```text
 Fecha: 15/10/2026 — Más frases de Argentina (Gonzalo: "agregá buenas frases para argentina"): +138 frases p:"ar" (total 214): Lugares de Argentina 76, Historia argentina 36, Cultura argentina 34 y tres categorías nuevas: "Comida argentina" 28, "Deporte argentino" 17 (Superclásico, Scaloneta, tercera estrella, Pumas, Leonas…), "Dichos argentinos" 23 (al horno, me cayó la ficha, hacer la gamba, laburar, sin un mango…; sin malas palabras ni alcohol). Ciudades de MUNDO_ARGENTINA que usaban categorías genéricas (Viaje/Comida) ahora usan estas: Buenos Aires, La Plata, Rosario, Mar del Plata, Córdoba, Mendoza, Salta, Carlos Paz, Tucumán, Gualeguaychú. sw v274.
 ```
+
+```text
+Fecha: 15/10/2026 — Nuevo juego PUZZLE en Extensiones ("Más juegos", no previa). Gonzalo pasó puzzle.html (rompecabezas en canvas: 12 a 150 piezas, girar piezas, guía, zoom, imagen propia) y pidió sumarlo con logo; "lo vamos a ir afinando". Queda como puzzle.html (página propia, porque usa globales $ y S que chocan con index.html) abierta en un iframe a pantalla completa por puzzle.js (Puzzle.abrir/salir/armados); botón "‹" vuelve al lobby. Se agregó la opción de imagen "Ciudades" (por defecto): fotos de assets/worlds/ de Uruguay y Argentina. Récord: gya_puzzle {armados}. Logo: logo-puzzle.svg. extensiones.js v40, sw v275.
+```
