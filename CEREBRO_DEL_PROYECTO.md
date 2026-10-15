@@ -824,3 +824,7 @@ Fecha: 15/10/2026 — Puzzle: dibujo nuevo "nieve" (muñeco de nieve, assets/puz
 ```text
 Fecha: 15/10/2026 — Puzzle: ventanita "🧩 Cómo jugar" al entrar por primera vez (arrastrar, TOCAR UNA PIEZA PARA GIRARLA, se pega sola, Ver imagen/Guía, pellizcar para zoom, se guarda solo) con botón "¡A armar!"; se vuelve a abrir con el botón ❓ de arriba. Visto = gya_puzzle.tuto. Se sacó el cartelito de ayuda de abajo (tapaba piezas). puzzle.html v7, puzzle.js v7, sw v281.
 ```
+
+```text
+Fecha: 15/10/2026 — Puzzle, comentarios de un tester: (1) la vista previa "Tocá para agrandar" no funcionaba (no tenía código) y tapaba piezas arriba a la derecha → ahora está oculta; "🖼️ Ver imagen" la abre grande y centrada sobre el tablero y se cierra tocándola ("Tocá para volver a armar"). (2) "No mantiene la estética del juego" → colores y letras del resto: violeta (#160B24/#2A1A3C/#46206B), dorado #F5B301, turquesa #37D6C0, letras Outfit y Archivo Black, botones redondos con sombra, mesa violeta. puzzle.html v8, puzzle.js v8, sw v282.
+```
