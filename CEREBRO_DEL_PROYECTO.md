@@ -820,3 +820,7 @@ Fecha: 15/10/2026 — Puzzle: la opción "24" pasa a "25" (Gonzalo: "que no haya
 ```text
 Fecha: 15/10/2026 — Puzzle: dibujo nuevo "nieve" (muñeco de nieve, assets/puzzle/nieve.webp), 3º en el orden (dragón, granja, nieve, golosinas, océano, selva, dinosaurios, espacio, playa, parque). 10 dibujos. puzzle.html v6, puzzle.js v6, sw v280.
 ```
+
+```text
+Fecha: 15/10/2026 — Puzzle: ventanita "🧩 Cómo jugar" al entrar por primera vez (arrastrar, TOCAR UNA PIEZA PARA GIRARLA, se pega sola, Ver imagen/Guía, pellizcar para zoom, se guarda solo) con botón "¡A armar!"; se vuelve a abrir con el botón ❓ de arriba. Visto = gya_puzzle.tuto. Se sacó el cartelito de ayuda de abajo (tapaba piezas). puzzle.html v7, puzzle.js v7, sw v281.
+```
