@@ -840,3 +840,7 @@ Fecha: 15/10/2026 — Puzzle, Aventuras +5: piratas, torneo-medieval, vikingos, 
 ```text
 Fecha: 15/10/2026 — Puzzle: la tester extrañó "el cosito de referencia" (la imagen chiquita), que en v8 había quedado solo detrás de "Ver imagen". Vuelve como miniatura chica abajo a la izquierda (86px, borde dorado, 🔍); tocándola se ve grande y se cierra tocando. Además el iframe del Puzzle arranca debajo de la barra del celular (env(safe-area-inset-top)) para que la barra de arriba del juego no quede tapada. puzzle.html v11, puzzle.js v11, sw v285.
 ```
+
+```text
+Fecha: 15/10/2026 — Puzzle: la barra de arriba no entraba en iPhone (se cortaba a la derecha: Mezclar/Guardar/Guía quedaban fuera de pantalla). Ahora son 2 filas centradas que entran enteras: (1) ‹ 🧩 [25 piezas] [Dibujos] ❓ · (2) Girar · 🔀 Mezclar · 💾 Guardar · Guía. El tiempo/% pasó a una pastilla chica arriba a la izquierda del tablero. "Ver imagen" se sacó de la barra (la miniatura de abajo hace eso). Probado en 320, 375 y 800 px. puzzle.html v12, puzzle.js v12, sw v286.
+```

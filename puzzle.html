@@ -10,15 +10,20 @@
 :root{--panel:rgba(42,26,60,.96);--line:#FFFFFF22;--text:#F6EFE2;--muted:#CDB8E6;--acc:#F5B301;--teal:#37D6C0;--btn:#3A2552;--sombra:#13091E}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:#160B24;color:var(--text);font-family:"Outfit",system-ui,sans-serif;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
-header{position:fixed;top:0;left:0;right:0;height:56px;display:flex;align-items:center;gap:10px;padding:0 12px;background:var(--panel);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);z-index:5;overflow-x:auto;white-space:nowrap;scrollbar-width:none}
+header{position:fixed;top:0;left:0;right:0;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px 7px;padding:7px 8px;background:var(--panel);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);z-index:5}
+.salto{flex-basis:100%;height:0}
 header::-webkit-scrollbar{display:none}
-.brand{font-size:17px;margin-right:4px}
+.brand{font-size:16px;white-space:nowrap}
 .brand b{font-family:"Archivo Black",sans-serif;font-weight:400;color:var(--acc);letter-spacing:.3px}
 .fld{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
-select,button{font:inherit;font-size:13px;font-weight:700;color:var(--text);background:var(--btn);border:1px solid var(--line);border-radius:99px;padding:7px 12px;cursor:pointer;box-shadow:0 3px 0 var(--sombra)}
+select,button{font:inherit;font-size:12.5px;font-weight:700;color:var(--text);background:var(--btn);border:1px solid var(--line);border-radius:99px;padding:7px 12px;cursor:pointer;box-shadow:0 3px 0 var(--sombra)}
 button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--sombra)}
 button:hover,select:hover{border-color:#FFFFFF55}
-#volver{font-size:20px;line-height:1;padding:4px 11px}
+#volver{font-size:20px;line-height:1;padding:3px 11px}
+#count{width:96px}#img{width:112px}
+select{padding:7px 8px}
+@media(max-width:430px){.brand b{display:none}}
+@media(max-width:350px){.brand{display:none}#count{width:88px}#img{width:100px}select,button{font-size:12px}button{padding:6px 9px}.tg span{display:none}}
 #new{background:var(--acc);color:#2A1300;border-color:var(--acc)}
 #guide.on,#pvBtn.on{background:var(--teal);color:#0B2B27;border-color:var(--teal)}
 .tg{display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer}
@@ -27,8 +32,8 @@ button:hover,select:hover{border-color:#FFFFFF55}
 .tg i:after{content:"";position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:.2s}
 .tg input:checked+i{background:var(--teal)}
 .tg input:checked+i:after{left:17px}
-.stats{margin-left:auto;font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted);padding-left:8px}
-#bar{position:fixed;top:54px;left:0;height:2px;width:0;background:var(--acc);z-index:6;transition:width .4s}
+.stats{position:fixed;left:10px;z-index:4;font-variant-numeric:tabular-nums;font-size:12px;font-weight:700;color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:99px;padding:3px 10px;pointer-events:none}
+#bar{position:fixed;top:0;left:0;height:2px;width:0;background:var(--acc);z-index:6;transition:width .4s}
 #c{position:fixed;left:0;top:56px;display:block;cursor:default}
 .zoom{position:fixed;right:14px;bottom:14px;display:flex;flex-direction:column;gap:6px;z-index:4}
 .zoom button{width:44px;height:44px;font-size:20px;border-radius:14px;background:var(--panel);padding:0}
@@ -70,17 +75,18 @@ button:hover,select:hover{border-color:#FFFFFF55}
 <header>
   <button id="volver" type="button" aria-label="Volver">‹</button>
   <div class="brand">🧩 <b>Puzzle</b></div>
-  <label class="fld"><span>Piezas</span><select id="count"><option>12</option><option selected>25</option><option>49</option><option>70</option><option>100</option><option>150</option></select></label>
-  <label class="fld"><span>Imagen</span><select id="img"><option value="dibujo" selected>Dibujos</option><option value="aventura">Aventuras</option><option value="ciudad">Ciudades</option><option value="paisaje">Paisaje</option><option value="geo">Geométrico</option><option value="foto">Foto (internet)</option><option value="propia">Tu imagen…</option></select></label>
-  <label class="tg"><input type="checkbox" id="rot" checked><i></i><span>Girar piezas</span></label>
-  <button id="new">Mezclar</button>
-  <button id="save">💾 Guardar</button>
-  <button id="pvBtn">🖼️ Ver imagen</button>
-  <button id="guide">Guía</button>
+  <select id="count" aria-label="Piezas"><option value="12">12 piezas</option><option value="25" selected>25 piezas</option><option value="49">49 piezas</option><option value="70">70 piezas</option><option value="100">100 piezas</option><option value="150">150 piezas</option></select>
+  <select id="img" aria-label="Imagen"><option value="dibujo" selected>Dibujos</option><option value="aventura">Aventuras</option><option value="ciudad">Ciudades</option><option value="paisaje">Paisaje</option><option value="geo">Geométrico</option><option value="foto">Foto (internet)</option><option value="propia">Tu imagen…</option></select>
   <button id="ayuda" aria-label="Cómo jugar">❓</button>
-  <div class="stats"><span id="stats">00:00 · 0%</span></div>
+  <div class="salto"></div>
+  <label class="tg"><input type="checkbox" id="rot" checked><i></i><span>Girar</span></label>
+  <button id="new">🔀 Mezclar</button>
+  <button id="save">💾 Guardar</button>
+  <button id="guide">Guía</button>
+  <button id="pvBtn" hidden>Ver imagen</button>
   <input type="file" id="file" accept="image/*" hidden>
 </header>
+<div class="stats"><span id="stats">00:00 · 0%</span></div>
 <div id="bar"></div>
 <canvas id="c"></canvas>
 <div class="zoom"><button id="zin" title="Acercar">+</button><button id="zout" title="Alejar">−</button><button id="zfit" title="Ver todo">⤢</button></div>
@@ -92,7 +98,7 @@ button:hover,select:hover{border-color:#FFFFFF55}
 <li><span>✋</span><div><b>Arrastrá</b> cada pieza y llevala a su lugar dentro del recuadro punteado.</div></li>
 <li><span>👆</span><div><b>Tocá una pieza</b> (sin arrastrarla) para <b>girarla</b>. Tocala otra vez hasta que quede derecha.</div></li>
 <li><span>🧲</span><div>Cuando una pieza está cerca de su lugar o de su compañera, <b>se pega sola</b>.</div></li>
-<li><span>🖼️</span><div>Abajo a la izquierda tenés <b>la imagen chiquita</b>: tocala (o <b>Ver imagen</b>) para verla grande. <b>Guía</b> lo marca clarito en el recuadro.</div></li>
+<li><span>🖼️</span><div>Abajo a la izquierda tenés <b>la imagen chiquita</b>: tocala para verla grande. <b>Guía</b> lo marca clarito en el recuadro.</div></li>
 <li><span>🔍</span><div><b>Pellizcá con dos dedos</b> (o usá + y −) para acercar o alejar. Arrastrá el fondo para moverte.</div></li>
 <li><span>💾</span><div><b>Se guarda solo</b>: podés salir y seguirlo después.</div></li>
 </ul><button id="bTuto">¡A armar!</button></div></div>
@@ -397,12 +403,12 @@ $('#zin').onclick=()=>zoomAt(1.3,VW/2,VH/2);$('#zout').onclick=()=>zoomAt(1/1.3,
 $('#img').onchange=e=>{if(e.target.value==='propia')$('#file').click();else{if(e.target.value==='aventura'&&+$('#count').value<49)$('#count').value='49';lastImgSel=e.target.value;nuevoConfirmado()}};
 $('#file').onchange=async e=>{const f=e.target.files[0];if(!f){$('#img').value=lastImgSel;return}
   try{userImg=await loadImg(URL.createObjectURL(f));lastImgSel='propia';nuevoConfirmado()}catch(_){toast('No se pudo leer la imagen');$('#img').value=lastImgSel}e.target.value=''};
-function resize(){dpr=Math.min(window.devicePixelRatio||1,2);TOP=$('header').offsetHeight;VW=innerWidth;VH=innerHeight-TOP;
+function resize(){dpr=Math.min(window.devicePixelRatio||1,2);TOP=$('header').offsetHeight;$('#bar').style.top=(TOP-2)+'px';$('.stats').style.top=(TOP+8)+'px';VW=innerWidth;VH=innerHeight-TOP;
   cv.style.top=TOP+'px';cv.style.width=VW+'px';cv.style.height=VH+'px';cv.width=Math.round(VW*dpr);cv.height=Math.round(VH*dpr);
   fx.width=Math.round(innerWidth*dpr);fx.height=Math.round(innerHeight*dpr);
   bgGrad=ctx.createRadialGradient(VW/2,VH/2,0,VW/2,VH/2,Math.max(VW,VH)*.75);bgGrad.addColorStop(0,'#46206B');bgGrad.addColorStop(1,'#160B24');
   if(pieces.length)fit();dirty=true}
-addEventListener('resize',resize);
+addEventListener('resize',resize);try{document.fonts.ready.then(resize)}catch(_){}
 addEventListener('pagehide',()=>guardar());document.addEventListener('visibilitychange',()=>{if(document.hidden)guardar()});
 resize();{const d=leerGuardado();if(d)ofrecerSeguir(d);else newGame()}
 try{if(!JSON.parse(localStorage.getItem('gya_puzzle')||'{}').tuto)verTuto()}catch(_){verTuto()}requestAnimationFrame(loop);
