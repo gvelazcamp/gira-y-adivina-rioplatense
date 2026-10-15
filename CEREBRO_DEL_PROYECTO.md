@@ -832,3 +832,7 @@ Fecha: 15/10/2026 — Puzzle, comentarios de un tester: (1) la vista previa "Toc
 ```text
 Fecha: 15/10/2026 — Puzzle: categoría nueva "Aventuras" (pinturas con mucho detalle, más difíciles): egipto, tren-del-oeste, ciudad-voladora, base-espacial, barcos (assets/puzzle/). Al elegirla sube sola a 49 piezas (7×7). Rotan igual que los Dibujos (índice gya_puzzle.aventura). La opción "48" pasa a "49" (las imágenes cuadradas arman 7×7). Categorías de imagen: Dibujos (fáciles, 25) · Aventuras (49) · Ciudades · Paisaje · Geométrico · Foto · Tu imagen. puzzle.html v9, puzzle.js v9, sw v283.
 ```
+
+```text
+Fecha: 15/10/2026 — Puzzle, Aventuras +5: piratas, torneo-medieval, vikingos, samurai, futbol. Orden: piratas, egipto, torneo medieval, tren del oeste, vikingos, ciudad voladora, samurái, base espacial, fútbol, barcos (10). puzzle.html v10, puzzle.js v10, sw v284.
+```
