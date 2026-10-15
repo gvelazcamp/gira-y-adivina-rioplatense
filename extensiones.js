@@ -174,14 +174,16 @@ try{
   /* Invitación simple a un juego (?ext=<id>), sin sala. */
   /* Sala de Tutti Frutti (?tutti=XXXX&de=<nombre>). */
   const salaTutti=(q.get("tutti")||"").toUpperCase(),hayTutti=/^[A-HJ-NP-Z2-9]{4}$/.test(salaTutti),deTutti=(q.get("de")||"").replace(/[^\p{L}\p{N} ]/gu,"").trim().slice(0,14);
+  /* Sala del Puzzle en pareja (?puzzle=XXXXX&de=<nombre>). */
+  const salaPuzzle=(q.get("puzzle")||"").toUpperCase(),hayPuzzle=/^[A-HJ-NP-Z2-9]{5}$/.test(salaPuzzle);
   const extDirecta=!haySala&&/^[a-z-]{3,40}$/.test(q.get("ext")||"")?q.get("ext"):"";
-  if(EXTENSIONES_HABILITADAS&&(haySala||extDirecta||hayTutti)){
+  if(EXTENSIONES_HABILITADAS&&(haySala||extDirecta||hayTutti||hayPuzzle)){
     let intentos=0;
     const t=setInterval(()=>{
       if(++intentos>80){clearInterval(t);return;}
       if(document.readyState!=="complete"||typeof perfil==="undefined"||!perfil||!perfil.nombre)return;
       clearInterval(t);
-      setTimeout(()=>{try{if(hayTutti){try{history.replaceState(null,"",location.pathname);}catch(e){}if(window.TuttiFrutti)TuttiFrutti.abrirInvitacion(salaTutti,deTutti);}else if(extDirecta){try{history.replaceState(null,"",location.pathname);}catch(e){}Extensiones.abrirJuego(extDirecta);}else if(hayDuelo){if(window.Duelo)Duelo.abrirInvitacion();}else Extensiones.abrirJuego("contra-reloj-rioplatense");}catch(e){}},1200);
+      setTimeout(()=>{try{if(hayPuzzle){try{history.replaceState(null,"",location.pathname);}catch(e){}window.gyaPuzzleInvitacion=salaPuzzle;Extensiones.abrirJuego("puzzle");}else if(hayTutti){try{history.replaceState(null,"",location.pathname);}catch(e){}if(window.TuttiFrutti)TuttiFrutti.abrirInvitacion(salaTutti,deTutti);}else if(extDirecta){try{history.replaceState(null,"",location.pathname);}catch(e){}Extensiones.abrirJuego(extDirecta);}else if(hayDuelo){if(window.Duelo)Duelo.abrirInvitacion();}else Extensiones.abrirJuego("contra-reloj-rioplatense");}catch(e){}},1200);
     },1500);
   }
 }catch(e){}
