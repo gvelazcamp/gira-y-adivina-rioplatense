@@ -800,3 +800,7 @@ Fecha: 15/10/2026 — Más frases de Argentina (Gonzalo: "agregá buenas frases 
 ```text
 Fecha: 15/10/2026 — Nuevo juego PUZZLE en Extensiones ("Más juegos", no previa). Gonzalo pasó puzzle.html (rompecabezas en canvas: 12 a 150 piezas, girar piezas, guía, zoom, imagen propia) y pidió sumarlo con logo; "lo vamos a ir afinando". Queda como puzzle.html (página propia, porque usa globales $ y S que chocan con index.html) abierta en un iframe a pantalla completa por puzzle.js (Puzzle.abrir/salir/armados); botón "‹" vuelve al lobby. Se agregó la opción de imagen "Ciudades" (por defecto): fotos de assets/worlds/ de Uruguay y Argentina. Récord: gya_puzzle {armados}. Logo: logo-puzzle.svg. extensiones.js v40, sw v275.
 ```
+
+```text
+Fecha: 15/10/2026 — Puzzle con GUARDADO (Gonzalo: "guardar y seguir después con lo que hicieron"). Se guarda solo (al soltar/unir piezas, al salir con ‹, al cerrar o minimizar) y con el botón "💾 Guardar". Al volver a entrar aparece "Tenés un puzzle a medio armar · N piezas · X% · tiempo" con "Seguir armándolo" / "Empezar otro". Se guarda forma de cada pieza, posición, giro, grupos unidos, tiempo y movimientos en localStorage "pz_partida" (sin prefijo gya_, para no subir la imagen al respaldo de Supabase); si la imagen es de una ciudad va solo el nombre, si no una copia jpg chica. Al terminar el puzzle se borra. Mezclar o cambiar piezas/imagen con uno empezado pide confirmación. puzzle.html v2, puzzle.js v2, sw v276.
+```
