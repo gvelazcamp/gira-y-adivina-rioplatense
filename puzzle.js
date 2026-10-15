@@ -6,7 +6,7 @@ const Puzzle=(()=>{
   let marco=null;
   function abrir(contenedor){
     salir();
-    marco=document.createElement("iframe");marco.src="puzzle.html?v=2";marco.title="Puzzle";
+    marco=document.createElement("iframe");marco.src="puzzle.html?v=3";marco.title="Puzzle";
     marco.style.cssText="position:fixed;inset:0;width:100%;height:100%;border:0;z-index:60;background:#0c1a17";
     contenedor.appendChild(marco);
   }
