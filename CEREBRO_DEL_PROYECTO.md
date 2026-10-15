@@ -808,3 +808,7 @@ Fecha: 15/10/2026 — Puzzle con GUARDADO (Gonzalo: "guardar y seguir después c
 ```text
 Fecha: 15/10/2026 — Puzzle: DIBUJOS como primeras imágenes (Gonzalo pasó 5 dibujos). Nueva opción de imagen "Dibujos" (por defecto, con 24 piezas): assets/puzzle/golosinas, playa, espacio, dinosaurios, parque (.webp, 1254×1254). Salen en ese orden, uno distinto en cada puzzle (índice en gya_puzzle.dibujo); "Ciudades" sigue como opción. Como son cuadradas, "24" arma 5×5 = 25 piezas. El guardado guarda solo la ruta del dibujo (campo archivo). puzzle.html v3, puzzle.js v3, extensiones.js v41, sw v277.
 ```
+
+```text
+Fecha: 15/10/2026 — Puzzle: 4 dibujos más (dragon, granja, oceano, selva; la playa que vino repetida no se duplicó). Orden de DIBUJOS: dragón (el primero que arma alguien nuevo: zonas bien distintas —dragón, castillo, arcoíris, flores— ideal para 24), granja, golosinas, océano, selva, dinosaurios, espacio, playa, parque. puzzle.html v4, puzzle.js v4, sw v278.
+```
