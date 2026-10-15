@@ -42,7 +42,10 @@ select{padding:7px 8px}
 #hint.off{opacity:0;pointer-events:none}
 #toast{position:fixed;left:50%;top:70px;transform:translateX(-50%);background:var(--panel);border:1px solid var(--line);padding:8px 14px;border-radius:10px;font-size:13px;z-index:8;opacity:0;transition:opacity .3s;pointer-events:none}
 #toast.on{opacity:1}
-#win{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.45);z-index:15;transition:opacity .4s}
+#win{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:15;transition:opacity .4s;padding:14px}
+#win .card{padding:20px 18px;max-width:380px;width:100%;max-height:calc(100% - 10px);overflow-y:auto}
+#win .card button{display:block;width:100%;margin-top:9px}
+.win-img{display:block;width:100%;max-width:300px;margin:6px auto 10px;border-radius:14px;border:3px solid var(--acc);cursor:zoom-in;box-shadow:0 8px 24px #000a}
 #win.hide,#seguir.hide,#tuto.hide{opacity:0;pointer-events:none}
 #tuto{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);z-index:17;transition:opacity .3s;padding:16px}
 #tuto .card{max-width:400px;width:100%;text-align:left;padding:22px 20px;max-height:calc(100% - 20px);overflow-y:auto}
@@ -62,6 +65,21 @@ select{padding:7px 8px}
 .av i{position:absolute;right:-2px;bottom:-2px;width:12px;height:12px;border-radius:50%;background:#7A6A8C;border:2px solid #160B24}
 .av.on{border-color:#3BE07A}.av.on i{background:#3BE07A;box-shadow:0 0 6px #3BE07A}
 .av.off{opacity:.55;filter:grayscale(.6)}
+#chatBtn{position:fixed;right:10px;z-index:6;width:44px;height:40px;padding:0;font-size:20px;border-radius:14px;background:var(--panel)}
+#chatBtn.hide,#chat.hide,#chatBurbuja.hide{display:none}
+#chatN[hidden]{display:none!important}
+#chatN{position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;border-radius:99px;background:#E5197C;color:#fff;font-size:11px;font-weight:800;display:grid;place-items:center;padding:0 5px;border:2px solid #160B24}
+#chatBurbuja{position:fixed;right:60px;z-index:6;max-width:min(240px,60vw);background:var(--panel);border:1px solid var(--acc);border-radius:14px 14px 4px 14px;padding:7px 11px;font-size:13px;pointer-events:none;box-shadow:0 4px 14px #0008;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#chat{position:fixed;left:8px;right:8px;bottom:8px;z-index:13;max-width:460px;margin:0 auto;max-height:min(46vh,380px);display:flex;flex-direction:column;background:#2A1A3C;border:1px solid var(--line);border-radius:18px;box-shadow:0 10px 40px #000c;padding:10px}
+.ch-cab{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.ch-cab b{color:var(--acc)}.ch-cab button{padding:3px 10px;box-shadow:none}
+#chatLista{flex:1;min-height:60px;overflow-y:auto;display:flex;flex-direction:column;gap:5px;padding:2px}
+.ch-m{align-self:flex-start;max-width:85%;background:#3A2552;border-radius:12px 12px 12px 4px;padding:6px 10px;font-size:13.5px;line-height:1.35;word-wrap:break-word}
+.ch-m small{display:block;color:var(--teal);font-weight:700;font-size:11px}
+.ch-m.yo{align-self:flex-end;background:#5B3A10;border-radius:12px 12px 4px 12px}.ch-m.yo small{color:var(--acc)}
+.ch-m.sis{align-self:center;background:none;color:var(--muted);font-size:12px;text-align:center}
+.ch-rap{display:flex;gap:6px;margin:7px 0 6px}.ch-rap button{flex:1;padding:5px 0;font-size:17px;box-shadow:none}
+.ch-env{display:flex;gap:6px}.ch-env input{flex:1;min-width:0;font:inherit;font-size:14px;color:var(--text);background:#160B24;border:1px solid var(--line);border-radius:99px;padding:8px 12px}
 #elegir{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);z-index:19;transition:opacity .3s;padding:12px}
 #elegir.hide{opacity:0;pointer-events:none}
 #elegir .card{max-width:420px;width:100%;padding:18px 16px;max-height:calc(100% - 10px);overflow-y:auto}
@@ -93,7 +111,7 @@ button:disabled,select:disabled{opacity:.4;cursor:default}
 .card h2{margin:6px 0 8px;font-size:22px;font-family:"Archivo Black",sans-serif;font-weight:400;color:var(--acc)}
 .card p{color:var(--muted);margin-bottom:18px;font-size:14px}
 .card button{background:var(--acc);color:#2A1300;border:0;font-weight:700;padding:11px 24px;font-size:15px}
-#prev{position:fixed;inset:0;z-index:14;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(22,11,36,.82);padding:16px;cursor:zoom-out}
+#prev{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(22,11,36,.82);padding:16px;cursor:zoom-out}
 #prev.hide{display:none}
 #mini{position:fixed;left:12px;bottom:12px;width:86px;z-index:4;padding:3px;background:var(--panel);border:2px solid var(--acc);border-radius:12px;box-shadow:0 4px 0 var(--sombra);cursor:zoom-in}
 #mini canvas{display:block;width:100%;height:auto;border-radius:8px}
@@ -121,6 +139,11 @@ button:disabled,select:disabled{opacity:.4;cursor:default}
 </header>
 <div class="stats"><span id="stats">00:00 · 0%</span></div>
 <div id="gente" class="hide"></div>
+<button id="chatBtn" class="hide" aria-label="Chat">💬<span id="chatN" hidden></span></button>
+<div id="chatBurbuja" class="hide"></div>
+<div id="chat" class="hide"><div class="ch-cab"><b>💬 Chat de la sala</b><button id="chatX" aria-label="Cerrar">✕</button></div><div id="chatLista"></div>
+<div class="ch-rap"><button data-t="👍">👍</button><button data-t="¡Bien ahí! 🙌">🙌</button><button data-t="¿Dónde va esta? 🤔">🤔</button><button data-t="Sigo más tarde ⏰">⏰</button><button data-t="😂">😂</button></div>
+<div class="ch-env"><input id="chatTxt" maxlength="120" placeholder="Escribí un mensaje…" autocomplete="off"><button id="chatEnviar">Enviar</button></div></div>
 <div id="bar"></div>
 <canvas id="c"></canvas>
 <div class="zoom"><button id="zin" title="Acercar">+</button><button id="zout" title="Alejar">−</button><button id="zfit" title="Ver todo">⤢</button></div>
@@ -135,6 +158,7 @@ button:disabled,select:disabled{opacity:.4;cursor:default}
 <li><span>🖼️</span><div>Abajo a la izquierda tenés <b>la imagen chiquita</b>: tocala para verla grande. <b>Guía</b> lo marca clarito en el recuadro.</div></li>
 <li><span>🔍</span><div><b>Pellizcá con dos dedos</b> (o usá + y −) para acercar o alejar. Arrastrá el fondo para moverte.</div></li>
 <li><span>👥</span><div>Arriba elegí <b>Cooperativo</b>: creás una sala, invitás a alguien y arman <b>el mismo puzzle juntos</b>, cada uno en su celular. La sala queda guardada hasta terminarlo.</div></li>
+<li><span>💬</span><div>En la sala tenés el <b>chat 💬</b> arriba a la derecha, y en el menú de la sala <b>⏸️ Pausar y salir</b> le avisa a tu compañero.</div></li>
 <li><span>💾</span><div><b>Se guarda solo</b>: podés salir y seguirlo después.</div></li>
 </ul><button id="bTuto">¡A armar!</button></div></div>
 <div id="pareja" class="hide"><div class="card"><h2>👥 Puzzle cooperativo</h2>
@@ -152,7 +176,7 @@ button:disabled,select:disabled{opacity:.4;cursor:default}
 <p class="el-nombre" id="elNombre"></p><p class="el-otro" id="elOtro"></p>
 <button id="elOk">✅ Aceptar</button><button id="elSalir" class="pj-sec">Salir de la sala</button></div></div>
 <div id="seguir" class="hide"><div class="card"><div class="big">🧩</div><h2>Tenés un puzzle a medio armar</h2><p id="seguirTxt"></p><button id="bSeguir">Seguir armándolo</button><br><button id="bOtro" style="margin-top:10px;background:var(--btn);color:var(--text);border:1px solid var(--line)">Empezar otro</button></div></div>
-<div id="win" class="hide"><div class="card"><div class="big">🎉</div><h2>¡Puzzle completo!</h2><p id="winTxt"></p><button id="again">Jugar otro</button></div></div>
+<div id="win" class="hide"><div class="card"><h2>🎉 ¡Puzzle completo!</h2><img id="winImg" class="win-img" alt="Puzzle terminado"><p id="winTxt"></p><button id="winShare" class="pj-wpp">📲 Compartir foto</button><button id="again">Jugar otro</button></div></div>
 <canvas id="fx"></canvas>
 <script>
 const $=s=>document.querySelector(s);
@@ -375,11 +399,12 @@ function snap(g){let j=false,n;while((n=joinPass(g))){g=n;j=true}
 function updateStats(){const N=pieces.length,pct=N>1?Math.round((N-groups.length)/(N-1)*100):0;$('#stats').textContent=(coop?'👥 '+coop.sala+' · ':'')+`${fmt(elapsed)} · ${pct}% · ${N} piezas`;$('#bar').style.width=pct+'%';pintarGente()}
 function startTimer(){if(!timerOn&&!won){timerOn=true;started=performance.now()-elapsed}hideHint()}
 function hideHint(){if(!hideHint.d){hideHint.d=1;setTimeout(()=>$('#hint').classList.add('off'),2500)}}
-function win(){if(won)return;won=true;timerOn=false;
+function win(){if(won)return;won=true;timerOn=false;drag=null;pendientes=[];
+  for(const p of pieces){p.x=p.col*S+S/2;p.y=p.row*S+S/2;p.r=0}for(const g of groups){g.locked=true;g.anim=0}dirty=true;
   if(!coop)try{localStorage.removeItem(KEY)}catch(_){}
   if(coop){coop.fin=true;guardarSala(true);toast('🎉 ¡Lo terminaron juntos!',3500)}
   try{const d=JSON.parse(localStorage.getItem('gya_puzzle')||'{}');d.armados=(d.armados||0)+1;localStorage.setItem('gya_puzzle',JSON.stringify(d))}catch(_){}updateStats();sound('win');confetti();
-  setTimeout(()=>{$('#winTxt').textContent=`Tiempo ${fmt(elapsed)} · ${pieces.length} piezas · ${moves} movimientos`;$('#win').classList.remove('hide')},900)}
+  setTimeout(()=>{$('#winTxt').textContent=`Tiempo ${fmt(elapsed)} · ${pieces.length} piezas · ${moves} movimientos`;try{$('#winImg').src=src.toDataURL('image/jpeg',.85)}catch(_){}$('#win').classList.remove('hide')},900)}
 
 /* ---------- draw ---------- */
 function drawImg(p,img,ox,oy){ctx.save();ctx.translate(p.x+ox,p.y+oy);ctx.rotate(p.r*Math.PI/2);ctx.drawImage(img,-SIDE/2,-SIDE/2,SIDE,SIDE);ctx.restore()}
@@ -442,7 +467,25 @@ function toggleGuide(){ghost=!ghost;$('#guide').classList.toggle('on',ghost);dir
 
 /* ---------- ui ---------- */
 $('#volver').onclick=()=>{guardar();if(coop)salirSalaSilencio();try{if(parent!==window&&parent.Extensiones){parent.Extensiones.abrirLobby();return}}catch(_){}location.href='index.html'};
-$('#new').onclick=nuevoConfirmado;$('#again').onclick=()=>{if(coop){salirSala(null,true);return}newGame()};$('#save').onclick=()=>guardar(true);
+$('#new').onclick=nuevoConfirmado;$('#winImg').onclick=()=>verPrevia(true);
+/* Foto para compartir: el puzzle armado + cartel con piezas, tiempo y con quién. */
+async function fotoCompartir(){
+  const W2=1080,img=src,lado=1000,k=Math.min(lado/img.width,lado/img.height),iw=Math.round(img.width*k),ih=Math.round(img.height*k);
+  const c=document.createElement('canvas');c.width=W2;c.height=ih+330;const g=c.getContext('2d');
+  const gr=g.createLinearGradient(0,0,0,c.height);gr.addColorStop(0,'#46206B');gr.addColorStop(1,'#160B24');g.fillStyle=gr;g.fillRect(0,0,c.width,c.height);
+  try{await document.fonts.load('60px "Archivo Black"')}catch(_){}
+  g.fillStyle='#F5B301';g.font='58px "Archivo Black",sans-serif';g.textAlign='center';g.fillText('🧩 ¡Puzzle completo!',W2/2,92);
+  const x=(W2-iw)/2,y=130;g.save();g.beginPath();g.roundRect?g.roundRect(x,y,iw,ih,28):g.rect(x,y,iw,ih);g.clip();g.drawImage(img,x,y,iw,ih);g.restore();
+  g.lineWidth=8;g.strokeStyle='#F5B301';g.beginPath();g.roundRect?g.roundRect(x,y,iw,ih,28):g.rect(x,y,iw,ih);g.stroke();
+  const con=coop&&otros()?' · con '+otros():'';g.fillStyle='#F6EFE2';g.font='700 40px Outfit,sans-serif';g.fillText(`${pieces.length} piezas · ${fmt(elapsed)}${con}`,W2/2,y+ih+80);
+  g.fillStyle='#CDB8E6';g.font='600 32px Outfit,sans-serif';g.fillText('Girá y Adiviná Rioplatense · Extensiones › Puzzle',W2/2,y+ih+140);
+  return new Promise(res=>c.toBlob(res,'image/jpeg',.9))}
+$('#winShare').onclick=async()=>{
+  let blob=null;try{blob=await fotoCompartir()}catch(_){}if(!blob){toast('No se pudo armar la foto');return}
+  const file=new File([blob],'puzzle-completo.jpg',{type:'image/jpeg'}),texto='🧩 ¡Armé este puzzle en Girá y Adiviná! '+(coop&&otros()?'con '+otros()+' ':'')+'¿Te animás?';
+  try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],text:texto});return}}catch(e){if(e&&e.name==='AbortError')return}
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='puzzle-completo.jpg';document.body.appendChild(a);a.click();a.remove();toast('📥 Foto guardada en el celular')};
+$('#again').onclick=()=>{if(coop){salirSala(null,true);return}newGame()};$('#save').onclick=()=>guardar(true);
 function verTuto(){$('#tuto').classList.remove('hide')}
 $('#ayuda').onclick=verTuto;
 function verPrevia(v){$('#prev').classList.toggle('hide',!v);$('#pvBtn').classList.toggle('on',v)}
@@ -455,7 +498,7 @@ $('#zin').onclick=()=>zoomAt(1.3,VW/2,VH/2);$('#zout').onclick=()=>zoomAt(1/1.3,
 $('#img').onchange=e=>{if(e.target.value==='propia')$('#file').click();else{if(e.target.value==='aventura'&&+$('#count').value<49)$('#count').value='49';lastImgSel=e.target.value;nuevoConfirmado()}};
 $('#file').onchange=async e=>{const f=e.target.files[0];if(!f){$('#img').value=lastImgSel;return}
   try{userImg=await loadImg(URL.createObjectURL(f));lastImgSel='propia';nuevoConfirmado()}catch(_){toast('No se pudo leer la imagen');$('#img').value=lastImgSel}e.target.value=''};
-function resize(){dpr=Math.min(window.devicePixelRatio||1,2);TOP=$('header').offsetHeight;$('#bar').style.top=(TOP-2)+'px';$('.stats').style.top=(TOP+8)+'px';$('#gente').style.top=(TOP+38)+'px';VW=innerWidth;VH=innerHeight-TOP;
+function resize(){dpr=Math.min(window.devicePixelRatio||1,2);TOP=$('header').offsetHeight;$('#bar').style.top=(TOP-2)+'px';$('.stats').style.top=(TOP+8)+'px';$('#gente').style.top=(TOP+38)+'px';$('#chatBtn').style.top=(TOP+8)+'px';$('#chatBurbuja').style.top=(TOP+14)+'px';VW=innerWidth;VH=innerHeight-TOP;
   cv.style.top=TOP+'px';cv.style.width=VW+'px';cv.style.height=VH+'px';cv.width=Math.round(VW*dpr);cv.height=Math.round(VH*dpr);
   fx.width=Math.round(innerWidth*dpr);fx.height=Math.round(innerHeight*dpr);
   bgGrad=ctx.createRadialGradient(VW/2,VH/2,0,VW/2,VH/2,Math.max(VW,VH)*.75);bgGrad.addColorStop(0,'#46206B');bgGrad.addColorStop(1,'#160B24');
@@ -486,7 +529,7 @@ function anotarSala(info){const a=misSalas().filter(x=>x.s!==info.s);if(!info.fi
 async function leerSala(c){const sb=supa();if(!sb)throw new Error('sin');const r=await sb.from('gya_ranking').select('estado_juego').eq('grupo',GRUPO).eq('apodo',c).limit(1);if(r.error)throw r.error;return r.data&&r.data[0]?r.data[0].estado_juego:null}
 async function guardarSala(fin){
   if(!coop||(coop.elegido&&!pieces.length))return false;clearTimeout(tNube);
-  fin=!!(fin||coop.fin);const ej={v:1,d:coop.elegido?estadoCompleto():null,nombres:coop.nombres,av:coop.av,act:coop.act,fin};
+  fin=!!(fin||coop.fin);const ej={v:1,d:coop.elegido?estadoCompleto():null,nombres:coop.nombres,av:coop.av,chat:(coop.chat||[]).slice(-40),act:coop.act,reloj:coop.reloj||0,fin};
   anotarSala({s:coop.sala,con:otros(),pct:ej.d?pctDe(ej.d):0,act:coop.act,fin});
   const sb=supa();if(!sb)return false;
   try{const r=await sb.from('gya_ranking').upsert({grupo:GRUPO,apodo:coop.sala,monedas_totales:0,ciudades_ganadas:0,mejor_racha:0,logros:0,estado_juego:ej,actualizado_en:new Date().toISOString()},{onConflict:'grupo,apodo'});return!r.error}catch(_){return false}}
@@ -503,7 +546,7 @@ function conectarRed(){
 function cortarRed(){clearInterval(tPing);if(red){try{mandar({k:'chau'})}catch(_){}const w=red;red=null;setTimeout(()=>{try{w.end()}catch(_){}},200)}}
 function recibir(pl){
   let m;try{m=JSON.parse(String(pl))}catch(_){return}if(!coop||!m||m.de===miId)return;
-  tVisto=Date.now();const antes=coop.online;coop.online=m.k!=='chau';
+  tVisto=Date.now();const antes=coop.online;coop.online=m.k!=='chau';if(m.act)coop.reloj=Math.max(coop.reloj||0,m.act);
   if(m.nom&&m.av&&coop.av[m.nom]!==m.av){coop.av[m.nom]=m.av;guardarSalaLuego()}
   if(m.nom){coop.compa=m.nom;if(!coop.nombres.includes(m.nom)){coop.nombres.push(m.nom);guardarSalaLuego()}}
   if(!antes&&coop.online)toast('🟢 '+(m.nom||'Tu compañero')+' está armando con vos',3000);
@@ -513,28 +556,34 @@ function recibir(pl){
   else if(m.k==='elige'){if(!coop.elegido){sel={cat:m.cat,i:m.i};otroOk=false;miOk=false;pintarElegir()}}
   else if(m.k==='ok'){if(!coop.elegido&&m.cat===sel.cat&&m.i===sel.i){otroOk=true;pintarElegir();chequearOk()}}
   else if(m.k==='gr'){coop.act=Math.max(coop.act,m.act||0);aplicarGrupo(m);guardarSalaLuego()}
-  else if(m.k==='mv'&&Array.isArray(m.p))moverRemoto(m.p);
-  else if(m.k==='chau')toast('👋 '+(m.nom||'Tu compañero')+' salió. Podés seguir: queda guardado',3500);
+  else if(m.k==='mv'&&Array.isArray(m.p))moverRemoto(m.p,m.act||0);
+  else if(m.k==='chau'){if(!m.pausa&&antes)toast('👋 '+(m.nom||'Tu compañero')+' salió. Podés seguir: queda guardado',3500)}
+  else if(m.k==='chat'&&m.c)recibirChat(m.c);
   if(!coop.elegido&&!$('#elegir').classList.contains('hide'))pintarElegir();
   updateStats()}
-function cambio(g){guardarLuego();if(!coop||!g||!coop.elegido)return;coop.act=Date.now();mandar({k:'gr',act:coop.act,l:g.locked?1:0,p:g.pieces.map(p=>[p.i,r1(p.x),r1(p.y),p.r])});guardarSalaLuego()}
-function enviarMov(g){if(!coop||!coop.online)return;const t=performance.now();if(t-tMv<110)return;tMv=t;mandar({k:'mv',p:g.pieces.map(p=>[p.i,Math.round(p.x),Math.round(p.y),p.r])})}
+/* Reloj de la sala: cada jugada lleva un número que siempre crece (aunque los
+   relojes de los celulares no coincidan). Cada pieza guarda el de su última
+   jugada y solo acepta jugadas más nuevas: así los mensajes repetidos o que
+   llegan tarde por otro servidor no hacen "bailar" ni separar piezas. */
+function tick(){coop.reloj=Math.max(Date.now(),(coop.reloj||0)+1);return coop.reloj}
+function cambio(g){guardarLuego();if(!coop||!g||!coop.elegido)return;const t=tick();coop.act=t;for(const p of g.pieces)p.t=t;mandar({k:'gr',act:t,l:g.locked?1:0,p:g.pieces.map(p=>[p.i,r1(p.x),r1(p.y),p.r])});guardarSalaLuego()}
+function enviarMov(g){if(!coop||!coop.online)return;const n=performance.now();if(n-tMv<110)return;tMv=n;const t=tick();for(const p of g.pieces)p.t=t;mandar({k:'mv',act:t,p:g.pieces.map(p=>[p.i,Math.round(p.x),Math.round(p.y),p.r])})}
 /* Llega un grupo que la pareja soltó o unió: esas piezas pasan a formar
    exactamente ese grupo (saliendo de los grupos donde estaban acá). */
 function aplicarGrupo(m){
-  if(!m||!Array.isArray(m.p))return;
+  if(!m||!Array.isArray(m.p)||won)return;
   if(drag){pendientes.push(()=>aplicarGrupo(m));return}
   const nuevo={pieces:[],locked:!!m.l,anim:0,px:0,py:0};
-  for(const[i,x,y,r]of m.p){const p=pieces[i];if(!p)continue;const v=p.g;if(v){const k=v.pieces.indexOf(p);if(k>=0)v.pieces.splice(k,1)}p.x=x;p.y=y;p.r=r;p.g=nuevo;nuevo.pieces.push(p)}
+  const t=m.act||0;for(const[i,x,y,r]of m.p){const p=pieces[i];if(!p||(t&&(p.t||0)>=t))continue;const v=p.g;if(v){const k=v.pieces.indexOf(p);if(k>=0)v.pieces.splice(k,1)}if(m.l){p.x=p.col*S+S/2;p.y=p.row*S+S/2;p.r=0}else{p.x=x;p.y=y;p.r=r}p.t=t;p.g=nuevo;nuevo.pieces.push(p)}
   if(!nuevo.pieces.length)return;
   groups=groups.filter(g=>g.pieces.length);groups.push(nuevo);dirty=true;updateStats();if(groups.length===1&&pieces.length>1)win()}
 function aplicarTodo(d){
-  if(!d||!d.p||d.p.length!==pieces.length)return;
+  if(!d||!d.p||d.p.length!==pieces.length||won)return;
   if(drag){pendientes.push(()=>aplicarTodo(d));return}
   const gs=d.g.map(l=>({pieces:[],locked:!!l,anim:0,px:0,py:0}));
-  pieces.forEach((p,i)=>{const s=d.p[i];p.x=s[0];p.y=s[1];p.r=s[2];const g=gs[s[3]];if(g){p.g=g;g.pieces.push(p)}});
+  pieces.forEach((p,i)=>{const s=d.p[i];p.x=s[0];p.y=s[1];p.r=s[2];p.t=coop?coop.act:0;const g=gs[s[3]];if(g){p.g=g;g.pieces.push(p)}});
   groups=gs.filter(g=>g.pieces.length);if(d.t>elapsed){elapsed=d.t;if(timerOn)started=performance.now()-elapsed}dirty=true;updateStats();if(groups.length===1&&pieces.length>1)win()}
-function moverRemoto(lista){for(const[i,x,y,r]of lista){const p=pieces[i];if(!p||(drag&&drag.g===p.g))continue;p.x=x;p.y=y;p.r=r}dirty=true}
+function moverRemoto(lista,t){if(won)return;for(const[i,x,y,r]of lista){const p=pieces[i];if(!p||(drag&&drag.g===p.g)||(t&&(p.t||0)>=t)||p.g.locked)continue;p.x=x;p.y=y;p.r=r;p.t=t}dirty=true}
 /* Caritas de los jugadores de la sala (arriba a la izquierda, sin tocar el
    tablero: pointer-events none). Verde = conectado ahora; gris = no está. */
 function pintarGente(){const el=$('#gente');if(!el)return;if(!coop){el.classList.add('hide');el.innerHTML='';return}
@@ -542,8 +591,28 @@ function pintarGente(){const el=$('#gente');if(!el)return;if(!coop){el.classList
   el.innerHTML=lista.map(n=>{const on=n===yo||(coop.online&&n===coop.compa),av=coop.av&&coop.av[n],ini=(n||'?').trim().charAt(0).toUpperCase().replace(/[<>&"]/g,'');
     return `<div class="av ${on?'on':'off'}" title="${n.replace(/[<>&"]/g,'')}">${av&&/^[\w-]+$/.test(av)?`<img src="assets/avatars/${av}.webp" alt="" onerror="this.remove()">`:''}${av?'':ini}<i></i></div>`}).join('');
   el.classList.remove('hide')}
+/* Chat de la sala: botón 💬 arriba a la derecha (con globito de no leídos) y
+   panel abajo que se abre y cierra; no tapa el tablero salvo abierto. Los
+   mensajes se guardan en la sala (últimos 40), así el que no estaba los ve
+   al volver. Visto por sala en gya_puzzle_chatvisto. */
+const esc=t=>String(t||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function chatVisto(v){try{const o=JSON.parse(localStorage.getItem('gya_puzzle_chatvisto')||'{}');if(v===undefined)return o[coop.sala]||0;o[coop.sala]=v;localStorage.setItem('gya_puzzle_chatvisto',JSON.stringify(o))}catch(_){return 0}}
+function pintarChat(){const b=$('#chatBtn'),abierto=!$('#chat').classList.contains('hide');if(!coop){b.classList.add('hide');$('#chat').classList.add('hide');$('#chatBurbuja').classList.add('hide');return}b.classList.remove('hide');
+  const yo=miNombre(),visto=abierto?Date.now():chatVisto(),n=(coop.chat||[]).filter(m=>m.n!==yo&&m.ts>visto).length;
+  $('#chatN').hidden=!n;$('#chatN').textContent=n>9?'9+':n;
+  if(abierto){$('#chatLista').innerHTML=(coop.chat||[]).map(m=>m.s?`<div class="ch-m sis">${esc(m.t)}</div>`:`<div class="ch-m${m.n===yo?' yo':''}"><small>${esc(m.n===yo?'Vos':m.n)}</small>${esc(m.t)}</div>`).join('')||'<div class="ch-m sis">Escribile algo a tu compañero 👋</div>';$('#chatLista').scrollTop=1e6;chatVisto(Date.now())}}
+function enviarChat(t,sis){t=String(t||'').trim().slice(0,120);if(!t||!coop)return;const c={n:miNombre(),t,ts:Date.now()};if(sis)c.s=1;coop.chat=(coop.chat||[]).concat(c).slice(-40);mandar({k:'chat',c});guardarSalaLuego();pintarChat()}
+function recibirChat(c){if(!c||typeof c.t!=='string'||!coop)return;if((coop.chat||[]).some(x=>x.ts===c.ts&&x.n===c.n))return;
+  c={n:String(c.n||'').slice(0,20),t:c.t.slice(0,120),ts:+c.ts||Date.now(),s:c.s?1:undefined};coop.chat=(coop.chat||[]).concat(c).sort((a,b)=>a.ts-b.ts).slice(-40);
+  if(c.s)toast(c.t,4500);else if($('#chat').classList.contains('hide')){const bu=$('#chatBurbuja');bu.textContent=`💬 ${c.n}: ${c.t}`;bu.classList.remove('hide');clearTimeout(recibirChat.t);recibirChat.t=setTimeout(()=>bu.classList.add('hide'),4000);try{navigator.vibrate&&navigator.vibrate(20)}catch(_){}}
+  pintarChat()}
+$('#chatBtn').onclick=()=>{$('#chat').classList.toggle('hide');$('#chatBurbuja').classList.add('hide');pintarChat()};
+$('#chatX').onclick=()=>{$('#chat').classList.add('hide');pintarChat()};
+$('#chatEnviar').onclick=()=>{enviarChat($('#chatTxt').value);$('#chatTxt').value=''};
+$('#chatTxt').onkeydown=e=>{if(e.key==='Enter'){enviarChat($('#chatTxt').value);$('#chatTxt').value=''}};
+document.querySelectorAll('.ch-rap button').forEach(b=>b.onclick=()=>enviarChat(b.dataset.t));
 function bloquearControles(v){for(const id of['#count','#img','#new','#rot'])$(id).disabled=v}
-function menuModo(){const m=$('#modo');m.innerHTML=coop?`<option value="sala">👥 ${coop.sala}</option><option value="invitar">📲 Invitar</option><option value="solo">👤 Salir a solo</option>`:'<option value="solo">👤 Solo</option><option value="pareja">👥 Cooperativo</option>';m.value=coop?'sala':'solo'}
+function menuModo(){const m=$('#modo');m.innerHTML=coop?`<option value="sala">👥 ${coop.sala}</option><option value="invitar">📲 Invitar</option><option value="pausa">⏸️ Pausar y salir</option>`:'<option value="solo">👤 Solo</option><option value="pareja">👥 Cooperativo</option>';m.value=coop?'sala':'solo'}
 const estadoPj=t=>{$('#pjEstado').textContent=t};
 const hace=ms=>{const m=Math.round((Date.now()-ms)/60000);return m<1?'recién':m<60?`hace ${m} min`:m<1440?`hace ${Math.round(m/60)} h`:`hace ${Math.round(m/1440)} días`};
 function abrirPj(){
@@ -553,11 +622,11 @@ function abrirPj(){
 const cerrarPj=()=>$('#pareja').classList.add('hide');
 async function entrarSala(c,ej,nuevo){
   coop={sala:c,nombres:Array.isArray(ej.nombres)?ej.nombres.slice(0,6):[],act:ej.act||Date.now(),online:false,compa:'',elegido:!!ej.d};
-  coop.av=Object.assign({},ej.av||{});if(miAvatar())coop.av[miNombre()]=miAvatar();
+  coop.av=Object.assign({},ej.av||{});coop.chat=Array.isArray(ej.chat)?ej.chat.slice(-40):[];coop.reloj=Math.max(ej.reloj||0,ej.act||0);if(miAvatar())coop.av[miNombre()]=miAvatar();
   if(!coop.nombres.includes(miNombre()))coop.nombres.push(miNombre());
   pendientes=[];bloquearControles(true);menuModo();$('#win').classList.add('hide');$('#seguir').classList.add('hide');
   if(ej.d)await seguir(ej.d,true);
-  updateStats();conectarRed();if(!coop.elegido&&!nuevo)abrirElegir();return guardarSala()}
+  updateStats();pintarChat();conectarRed();if(!coop.elegido&&!nuevo)abrirElegir();return guardarSala()}
 async function crearSala(){
   if(!supa()){estadoPj('Para jugar cooperativo necesitás internet');return}
   estadoPj('Creando la sala…');
@@ -580,7 +649,7 @@ function verInvitar(){if(!coop)return;$('#invCodigo').textContent=coop.sala;$('#
 $('#invWpp').onclick=()=>{const u='https://wa.me/?text='+encodeURIComponent(textoInvitacion());try{(parent.open||window.open)(u,'_blank')}catch(_){window.open(u,'_blank')}};
 $('#invCopiar').onclick=async()=>{try{await navigator.clipboard.writeText(textoInvitacion())}catch(_){}const b=$('#invCopiar');b.textContent='¡Copiada!';setTimeout(()=>b.textContent='Copiar invitación',1500)};
 $('#invListo').onclick=()=>{$('#invitar').classList.add('hide');if(coop&&!coop.elegido)abrirElegir()};
-function salirSalaSilencio(){if(!coop)return;guardarSala();cortarRed();coop=null;pendientes=[];bloquearControles(false);menuModo()}
+function salirSalaSilencio(){if(!coop)return;guardarSala();cortarRed();coop=null;pendientes=[];bloquearControles(false);menuModo();pintarChat()}
 function salirSala(aviso,nuevo,sinCargar){salirSalaSilencio();updateStats();if(aviso)toast(aviso,3500);if(sinCargar)return;const d=nuevo?null:leerGuardado();if(d)seguir(d);else newGame()}
 window.salirSalaSilencio=salirSalaSilencio;
 /* Elegir el puzzle de la sala (al crearla / al unirse si todavía no hay):
@@ -614,7 +683,7 @@ async function generarElegido(){
 function cargarElegido(m){if(!coop)return;coop.elegido=true;coop.act=m.act||Date.now();cerrarElegir();seguir(m.d,true).then(()=>{updateStats();guardarSala()})}
 $('#pjCrear').onclick=crearSala;$('#pjUnir').onclick=()=>unirse($('#pjCodigo').value);$('#pjCodigo').onkeydown=e=>{if(e.key==='Enter')unirse($('#pjCodigo').value)};
 $('#pjCerrar').onclick=cerrarPj;
-$('#modo').onchange=e=>{const v=e.target.value;if(v==='pareja'){e.target.value='solo';abrirPj()}else if(v==='invitar'){e.target.value='sala';verInvitar()}else if(v==='solo'&&coop)salirSala('Saliste de la sala: queda guardada para seguirla cuando quieras')};
+$('#modo').onchange=e=>{const v=e.target.value;if(v==='pareja'){e.target.value='solo';abrirPj()}else if(v==='invitar'){e.target.value='sala';verInvitar()}else if(v==='pausa'&&coop){enviarChat('⏸️ '+miNombre()+' pausó por ahora y salió',true);mandar({k:'chau',pausa:1});salirSala('⏸️ Pausaste. La sala queda guardada para seguirla cuando quieras')}};
 addEventListener('pagehide',()=>{if(coop){guardarSala();cortarRed()}});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&coop)guardarSala()});
 addEventListener('pagehide',()=>guardar());document.addEventListener('visibilitychange',()=>{if(document.hidden)guardar()});
