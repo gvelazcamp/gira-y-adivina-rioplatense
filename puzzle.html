@@ -404,7 +404,7 @@ function win(){if(won)return;won=true;timerOn=false;drag=null;pendientes=[];
   if(!coop)try{localStorage.removeItem(KEY)}catch(_){}
   if(coop){coop.fin=true;guardarSala(true);toast('🎉 ¡Lo terminaron juntos!',3500)}
   try{const d=JSON.parse(localStorage.getItem('gya_puzzle')||'{}');d.armados=(d.armados||0)+1;localStorage.setItem('gya_puzzle',JSON.stringify(d))}catch(_){}updateStats();sound('win');confetti();
-  setTimeout(()=>{$('#winTxt').textContent=`Tiempo ${fmt(elapsed)} · ${pieces.length} piezas · ${moves} movimientos`;try{$('#winImg').src=src.toDataURL('image/jpeg',.85)}catch(_){}$('#win').classList.remove('hide')},900)}
+  setTimeout(()=>{$('#winTxt').textContent=`Tiempo ${fmt(elapsed)} · ${pieces.length} piezas · ${moves} movimientos`;try{const pa=puzzleArmado(900);$('#winImg').src=pa.toDataURL('image/jpeg',.88);const pv=$('#pv');pv.width=pa.width;pv.height=pa.height;pv.getContext('2d').drawImage(pa,0,0)}catch(_){}$('#win').classList.remove('hide')},900)}
 
 /* ---------- draw ---------- */
 function drawImg(p,img,ox,oy){ctx.save();ctx.translate(p.x+ox,p.y+oy);ctx.rotate(p.r*Math.PI/2);ctx.drawImage(img,-SIDE/2,-SIDE/2,SIDE,SIDE);ctx.restore()}
@@ -468,9 +468,19 @@ function toggleGuide(){ghost=!ghost;$('#guide').classList.toggle('on',ghost);dir
 /* ---------- ui ---------- */
 $('#volver').onclick=()=>{guardar();if(coop)salirSalaSilencio();try{if(parent!==window&&parent.Extensiones){parent.Extensiones.abrirLobby();return}}catch(_){}location.href='index.html'};
 $('#new').onclick=nuevoConfirmado;$('#winImg').onclick=()=>verPrevia(true);
+/* El puzzle armado "estilo puzzle": la imagen con el corte de cada pieza
+   marcado (relieve claro/oscuro como en el tablero). */
+function puzzleArmado(lado){
+  const k=Math.min(lado/W,lado/H),c=document.createElement('canvas');c.width=Math.round(W*k);c.height=Math.round(H*k);const g=c.getContext('2d');
+  g.drawImage(src,0,0,c.width,c.height);g.scale(k,k);g.lineJoin='round';
+  for(const p of pieces){g.save();g.translate(p.col*S,p.row*S);
+    const u=1/k;g.lineWidth=2.4*u;g.strokeStyle='rgba(255,255,255,.38)';g.translate(1.2*u,1.2*u);g.stroke(p.path);
+    g.translate(-2.4*u,-2.4*u);g.strokeStyle='rgba(0,0,0,.32)';g.stroke(p.path);
+    g.translate(1.2*u,1.2*u);g.lineWidth=1*u;g.strokeStyle='rgba(0,0,0,.45)';g.stroke(p.path);g.restore()}
+  return c}
 /* Foto para compartir: el puzzle armado + cartel con piezas, tiempo y con quién. */
 async function fotoCompartir(){
-  const W2=1080,img=src,lado=1000,k=Math.min(lado/img.width,lado/img.height),iw=Math.round(img.width*k),ih=Math.round(img.height*k);
+  const W2=1080,img=puzzleArmado(1000),lado=1000,k=Math.min(lado/img.width,lado/img.height),iw=Math.round(img.width*k),ih=Math.round(img.height*k);
   const c=document.createElement('canvas');c.width=W2;c.height=ih+330;const g=c.getContext('2d');
   const gr=g.createLinearGradient(0,0,0,c.height);gr.addColorStop(0,'#46206B');gr.addColorStop(1,'#160B24');g.fillStyle=gr;g.fillRect(0,0,c.width,c.height);
   try{await document.fonts.load('60px "Archivo Black"')}catch(_){}
