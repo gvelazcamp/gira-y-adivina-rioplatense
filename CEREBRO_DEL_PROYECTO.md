@@ -784,3 +784,7 @@ Fecha: 14/10/2026 — Palabra Secreta, compartir (2ª vuelta, Gonzalo: "tira dos
 ```text
 Fecha: 14/10/2026 — Palabra Secreta: WhatsApp seguía mostrando la tarjeta vieja (ASADO) porque guarda la vista previa por link. El link compartido pasa a ps.html?v=2 (link nuevo = tarjeta nueva). Si algún día se cambia otra vez la imagen, subir ese ?v=. palabra-secreta.js v15, sw v271.
 ```
+
+```text
+Fecha: 15/10/2026 — Rueda de Letras, ideas tomadas de "Colmena" (criptico.es) sin sacar nada de lo que había: (1) cada rueda tiene un TEMA (campo tema en rueda-de-letras-datos.js; 103 ruedas, se sumaron 6 de ❤️ Amor: ROMANCE, AMORES, CORAZON, ABRAZOS, AMANTES, POEMAS) que se muestra arriba ("Tema: 🍅 Verduras") para adivinar más encaminado; la palabra base es del tema y las chicas son palabras comunes con esas letras (no siempre del tema); (2) en los niveles pares (2, 4, 6…) una letra va EN EL MEDIO de la rueda (la que más palabras comunes tiene) y todas las palabras del crucigrama y las extra la tienen que llevar ("Tiene que llevar la O del medio"); Girar no la mueve; (3) RANGOS por puntos dentro de cada rueda con barrita de puntitos: 🐣 Arrancando → 🙂 Va bien → 🔥 Picante → ⭐ Crack → 👑 Maestro (al completar). Probado: nivel 1 con tema, nivel 2 con letra del medio y rechazo de palabras sin ella. rueda-de-letras.js v14, datos v4, extensiones.css v83, sw v272.
+```
