@@ -129,7 +129,7 @@ button:disabled,select:disabled{opacity:.4;cursor:default}
   <div class="brand">🧩 <b>Puzzle</b></div>
   <select id="modo" aria-label="Modo"><option value="solo" selected>👤 Solo</option><option value="pareja">👥 Cooperativo</option></select>
   <select id="count" aria-label="Piezas"><option value="12">12 piezas</option><option value="25" selected>25 piezas</option><option value="49">49 piezas</option><option value="70">70 piezas</option><option value="100">100 piezas</option><option value="150">150 piezas</option></select>
-  <select id="img" aria-label="Imagen"><option value="dibujo" selected>Dibujos</option><option value="aventura">Aventuras</option><option value="ciudad">Ciudades</option><option value="paisaje">Paisaje</option><option value="geo">Geométrico</option><option value="foto">Foto (internet)</option><option value="propia">Tu imagen…</option></select>
+  <select id="img" aria-label="Imagen"><option value="dibujo" selected>Dibujos</option><option value="aventura">Aventuras</option><option value="heroe">Héroes</option><option value="ciudad">Ciudades</option><option value="paisaje">Paisaje</option><option value="geo">Geométrico</option><option value="foto">Foto (internet)</option><option value="propia">Tu imagen…</option></select>
   <div class="salto"></div>
   <label class="tg"><input type="checkbox" id="rot" checked><i></i><span>Girar</span></label>
   <button id="new">🔀 Mezclar</button>
@@ -173,7 +173,7 @@ button:disabled,select:disabled{opacity:.4;cursor:default}
 <div id="invitar" class="hide"><div class="card"><h2>📲 Invitá a jugar</h2><p>Código de la sala</p><div id="invCodigo" class="pj-codigo"></div>
 <button id="invWpp" class="pj-wpp">📲 Invitar por WhatsApp</button><button id="invCopiar" class="pj-sec">Copiar invitación</button><button id="invListo">🧩 Elegir el puzzle</button></div></div>
 <div id="elegir" class="hide"><div class="card"><h2>🧩 Elijan el puzzle</h2>
-<select id="elCat" aria-label="Categoría"><option value="dibujo">🎨 Dibujos · 25 piezas</option><option value="aventura">🗺️ Aventuras · 49 piezas</option><option value="ciudad">🏙️ Ciudades · 25 piezas</option></select>
+<select id="elCat" aria-label="Categoría"><option value="dibujo">🎨 Dibujos · 25 piezas</option><option value="aventura">🗺️ Aventuras · 49 piezas</option><option value="heroe">🦸 Héroes · 25 piezas</option><option value="ciudad">🏙️ Ciudades · 25 piezas</option></select>
 <div class="el-foto"><button id="elAnt" aria-label="Anterior">‹</button><img id="elImg" alt=""><button id="elSig" aria-label="Siguiente">›</button></div>
 <p class="el-nombre" id="elNombre"></p><p class="el-otro" id="elOtro"></p>
 <button id="elOk">✅ Aceptar</button><button id="elNo" class="pj-sec" hidden>❌ No, hablemos por el chat</button><button id="elChat" class="pj-sec">💬 Chat</button><button id="elSalir" class="pj-sec">Salir de la sala</button></div></div>
@@ -193,6 +193,8 @@ let drag=null,pan=null,pinch=null;const ptrs=new Map();
 let lastImgSel='dibujo',userImg=null;
 /* Dibujos para armar (assets/puzzle/): salen en este orden, uno distinto en cada puzzle. */
 /* Aventuras: pinturas con mucho detalle, más difíciles (arrancan en 49 piezas). */
+/* Héroes: personajes con poderes (25 piezas). */
+const HEROES=['princesa-hielo','super-veloz','jaguar','chica-rayo','rey-del-mar','hombre-lava','chica-estelar','viajero-tiempo','gata-nocturna'];
 const AVENTURAS=['piratas','egipto','torneo-medieval','tren-del-oeste','vikingos','ciudad-voladora','samurai','base-espacial','futbol','barcos'];
 const DIBUJOS=['dragon','granja','nieve','golosinas','oceano','selva','dinosaurios','espacio','playa','parque'];
 /* Fotos de las ciudades de los mapas de Uruguay y Argentina. */
@@ -310,7 +312,7 @@ async function getSource(){
   const v=$('#img').value;fuente={};
   if(forzar){const a=forzar;forzar=null;fuente=/assets\/worlds\//.test(a)?{ciudad:a.replace(/^.*\/|\.webp$/g,'')}:{archivo:a};try{const img=await loadImg(a);return{aspect:clamp(img.width/img.height,.5,2.2),paint:(g,w,h)=>cover(g,img,w,h)}}catch(e){fuente={}}}
   if(v==='geo')return{aspect:4/3,paint:paintGeo};
-  if(v==='dibujo'||v==='aventura'){const L=v==='dibujo'?DIBUJOS:AVENTURAS;let d={};try{d=JSON.parse(localStorage.getItem('gya_puzzle')||'{}')}catch(_){}const i=(d[v]||0)%L.length;d[v]=i+1;try{localStorage.setItem('gya_puzzle',JSON.stringify(d))}catch(_){}
+  if(v==='dibujo'||v==='aventura'||v==='heroe'){const L=v==='dibujo'?DIBUJOS:v==='heroe'?HEROES:AVENTURAS;let d={};try{d=JSON.parse(localStorage.getItem('gya_puzzle')||'{}')}catch(_){}const i=(d[v]||0)%L.length;d[v]=i+1;try{localStorage.setItem('gya_puzzle',JSON.stringify(d))}catch(_){}
     const a='assets/puzzle/'+L[i]+'.webp';fuente={archivo:a};try{const img=await loadImg(a);return{aspect:clamp(img.width/img.height,.5,2.2),paint:(g,w,h)=>cover(g,img,w,h)}}catch(e){fuente={};toast('No se pudo cargar el dibujo, uso un paisaje')}}
   if(v==='ciudad'){let c;do c=pick(CIUDADES);while(c===ultimaCiudad);ultimaCiudad=c;fuente={ciudad:c};try{const img=await loadImg('assets/worlds/'+c+'.webp');return{aspect:clamp(img.width/img.height,.5,2.2),paint:(g,w,h)=>cover(g,img,w,h)}}catch(e){toast('No se pudo cargar la ciudad, uso un paisaje')}}
   if(v==='propia'&&userImg)return{aspect:clamp(userImg.width/userImg.height,.5,2.2),paint:(g,w,h)=>cover(g,userImg,w,h)};
@@ -676,9 +678,9 @@ window.salirSalaSilencio=salirSalaSilencio;
    categoría + imagen de referencia, lo mismo en los dos celulares ("elige");
    "Aceptar" ("ok"): si la pareja está en vivo arranca cuando aceptan los dos
    (lo genera el de id menor y lo manda con "nuevo"); si no, arranca al toque. */
-const NOMBRES={dragon:'Dragón',granja:'Granja',nieve:'Muñeco de nieve',golosinas:'Golosinas',oceano:'Océano',selva:'Selva',dinosaurios:'Dinosaurios',espacio:'Espacio',playa:'Playa',parque:'Parque',piratas:'Piratas',egipto:'Egipto','torneo-medieval':'Torneo medieval','tren-del-oeste':'Tren del Oeste',vikingos:'Vikingos','ciudad-voladora':'Ciudad voladora',samurai:'Samurái','base-espacial':'Base espacial',futbol:'Fútbol',barcos:'Barcos de guerra'};
+const NOMBRES={'princesa-hielo':'Princesa de hielo','super-veloz':'Súper veloz',jaguar:'La chica y el jaguar','chica-rayo':'Chica rayo','rey-del-mar':'Rey del mar','hombre-lava':'Héroe de lava','chica-estelar':'Chica estelar','viajero-tiempo':'Viajero del tiempo','gata-nocturna':'Gata nocturna',dragon:'Dragón',granja:'Granja',nieve:'Muñeco de nieve',golosinas:'Golosinas',oceano:'Océano',selva:'Selva',dinosaurios:'Dinosaurios',espacio:'Espacio',playa:'Playa',parque:'Parque',piratas:'Piratas',egipto:'Egipto','torneo-medieval':'Torneo medieval','tren-del-oeste':'Tren del Oeste',vikingos:'Vikingos','ciudad-voladora':'Ciudad voladora',samurai:'Samurái','base-espacial':'Base espacial',futbol:'Fútbol',barcos:'Barcos de guerra'};
 let sel={cat:'dibujo',i:0},miOk=false,otroOk=false;
-const listaCat=c=>c==='aventura'?AVENTURAS:c==='ciudad'?CIUDADES:DIBUJOS;
+const listaCat=c=>c==='aventura'?AVENTURAS:c==='heroe'?HEROES:c==='ciudad'?CIUDADES:DIBUJOS;
 const rutaSel=()=>{const id=listaCat(sel.cat)[sel.i];return sel.cat==='ciudad'?'assets/worlds/'+id+'.webp':'assets/puzzle/'+id+'.webp'};
 const nombreSel=()=>{const id=listaCat(sel.cat)[sel.i];return NOMBRES[id]||id.replace(/-/g,' ').replace(/\b\w/g,l=>l.toUpperCase())};
 function pintarElegir(){const L=listaCat(sel.cat);sel.i=((sel.i%L.length)+L.length)%L.length;$('#elCat').value=sel.cat;$('#elImg').src=rutaSel();
