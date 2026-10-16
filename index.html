@@ -7385,6 +7385,8 @@ function cargarPerfil(){
   return{nombre,avatar,pais,ciudad:normalizarCiudad(ciudad)};
 }
 let perfil=cargarPerfil();
+/* El Puzzle (iframe) lee el perfil por acá: perfil es let y no queda en window. */
+window.gyaPerfil=()=>perfil;
 function normalizarCiudad(valor){return typeof valor==="string"?valor.replace(/[\u0000-\u001F\u007F]/g," ").replace(/\s+/g," ").trim().slice(0,40):"";}
 /* Versiones viejas podían dejar nombres de respaldo como "Explorer 1"
    o "Jugador 2" cuando el alta quedaba incompleta. No cuentan como una
@@ -11301,7 +11303,7 @@ document.addEventListener("keydown",e=>{
 <script src="contra-reloj-rioplatense-online.js?v=12"></script>
 <script src="contra-reloj-rioplatense.js?v=12"></script>
 <script src="moon-tap.js?v=5"></script>
-<script src="puzzle.js?v=23"></script>
+<script src="puzzle.js?v=24"></script>
 <script src="pantalla-fija.js?v=5"></script>
 <script src="que-numero-soy.js?v=6"></script>
 <script src="quien-soy-datos.js?v=1"></script>

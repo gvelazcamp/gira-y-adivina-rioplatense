@@ -538,11 +538,12 @@ let forzar=null,coop=null,pendientes=[],tMv=0,gen=0,tNube=0,red=null,tPing=0,tVi
 const miId=Math.random().toString(36).slice(2,10),GRUPO='puzzle_sala',SALAS='gya_puzzle_salas',CHS='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 window.coopActivo=()=>!!coop;
 const supa=()=>{try{return parent!==window&&parent.obtenerSupa?parent.obtenerSupa():null}catch(_){return null}};
-const miAvatar=()=>{try{return(parent.perfil&&parent.perfil.avatar)||''}catch(_){return''}};
-const miNombre=()=>{try{return(parent.perfil&&parent.perfil.nombre)||'Jugador'}catch(_){return'Jugador'}};
+const perfilPadre=()=>{try{return(parent.gyaPerfil&&parent.gyaPerfil())||parent.perfil||null}catch(_){return null}};
+const miAvatar=()=>{const p=perfilPadre();return(p&&p.avatar)||''};
+const miNombre=()=>{const p=perfilPadre();return(p&&String(p.nombre||'').trim())||'Jugador'};
 const r1=v=>Math.round(v*10)/10;
 function estadoPiezas(){const gi=new Map(groups.map((g,i)=>[g,i]));return{p:pieces.map(p=>[r1(p.x),r1(p.y),p.r,gi.get(p.g)]),g:groups.map(g=>g.locked?1:0)}}
-function estadoCompleto(){const e=estadoPiezas();return{cfg,cols,rows,ciudad:fuente.ciudad||null,archivo:fuente.archivo||null,e:edges,p:e.p,g:e.g,t:Math.round(elapsed),m:moves,tb:table}}
+function estadoCompleto(){const e=estadoPiezas();return{creado:coop?coop.creado||0:0,cfg,cols,rows,ciudad:fuente.ciudad||null,archivo:fuente.archivo||null,e:edges,p:e.p,g:e.g,t:Math.round(elapsed),m:moves,tb:table}}
 function pctDe(d){const N=d.p.length;return N>1?Math.round((N-d.g.length)/(N-1)*100):0}
 function otros(){const yo=miNombre();return((coop&&coop.nombres)||[]).filter(n=>n!==yo).join(' y ')}
 function misSalas(){try{const a=JSON.parse(localStorage.getItem(SALAS)||'[]');return Array.isArray(a)?a:[]}catch(_){return[]}}
@@ -560,7 +561,7 @@ function conectarRed(){
   let MB=null;try{MB=parent.MultiBroker}catch(_){}if(!MB||!coop)return;const sala=coop.sala,tema='gyapuzzle/'+sala;
   let mio=null;MB.conectar(()=>{if(!coop||coop.sala!==sala||red!==mio){try{mio.end()}catch(_){}return}
     red.subscribe(tema);red.on('message',(t,pl)=>{if(t===tema)recibir(pl)});
-    mandar({k:'hola',act:coop.act,d:coop.elegido?estadoCompleto():null});
+    mandar({k:'hola',act:coop.act,d:coop.elegido?estadoCompleto():null});if(!coop.elegido&&!$('#elegir').classList.contains('hide'))pintarElegir();
     clearInterval(tPing);tPing=setInterval(()=>{mandar({k:'ping'});if(coop&&coop.online&&Date.now()-tVisto>50000){coop.online=false;updateStats()}},20000)},
     ()=>{if(coop&&red===mio)toast('Sin conexión en vivo: igual se guarda lo que armes',3500)},w=>{mio=w;red=w});
 }
@@ -572,10 +573,10 @@ function recibir(pl){
   if(m.nom){coop.compa=m.nom;if(!coop.nombres.includes(m.nom)){coop.nombres.push(m.nom);guardarSalaLuego()}}
   if(!antes&&coop.online)toast('🟢 '+(m.nom||'Tu compañero')+' está armando con vos',3000);
   if(m.de)coop.otroId=m.de;
-  if(m.k==='hola'||m.k==='todo'){if(m.d){if(!coop.elegido)cargarElegido(m);else if(m.act>coop.act){coop.act=m.act;aplicarTodo(m.d)}else if(m.k==='hola')mandar({k:'todo',act:coop.act,d:estadoCompleto()})}else if(m.k==='hola'){if(coop.elegido)mandar({k:'todo',act:coop.act,d:estadoCompleto()});else mandar({k:'elige',cat:sel.cat,i:sel.i})}}
-  else if(m.k==='nuevo'&&m.d)cargarElegido(m);
-  else if(m.k==='elige'){if(!coop.elegido){sel={cat:m.cat,i:m.i};otroOk=false;miOk=false;pintarElegir()}}
-  else if(m.k==='ok'){if(!coop.elegido){if(m.cat!==sel.cat||m.i!==sel.i){sel={cat:m.cat,i:m.i};miOk=false}otroOk=true;pintarElegir();try{navigator.vibrate&&navigator.vibrate(40)}catch(_){}chequearOk()}}
+  if(m.d&&(m.k==='hola'||m.k==='todo'||m.k==='nuevo'))recibirPuzzle(m);
+  else if(m.k==='hola'&&coop.elegido)mandar({k:'todo',act:coop.act,d:estadoCompleto()});
+  if(m.k==='hola'&&!coop.elegido)mandarSel();
+  else if(m.k==='sel')recibirSel(m);
   else if(m.k==='no'){if(!coop.elegido){miOk=otroOk=false;pintarElegir();toast('❌ '+(m.nom||'Tu compañero')+' no aceptó. Hablen por el chat 💬',4500)}}
   else if(m.k==='gr'){coop.act=Math.max(coop.act,m.act||0);aplicarGrupo(m);guardarSalaLuego()}
   else if(m.k==='mv'&&Array.isArray(m.p))moverRemoto(m.p,m.act||0);
@@ -643,7 +644,7 @@ function abrirPj(){
   estadoPj('');$('#pareja').classList.remove('hide')}
 const cerrarPj=()=>$('#pareja').classList.add('hide');
 async function entrarSala(c,ej,nuevo){
-  coop={sala:c,nombres:Array.isArray(ej.nombres)?ej.nombres.slice(0,6):[],act:ej.act||Date.now(),online:false,compa:'',elegido:!!ej.d};
+  coop={sala:c,nombres:Array.isArray(ej.nombres)?ej.nombres.filter(n=>n&&n!=='Jugador').slice(0,6):[],act:ej.act||Date.now(),online:false,compa:'',elegido:!!ej.d,creado:(ej.d&&ej.d.creado)||0};
   coop.av=Object.assign({},ej.av||{});coop.chat=Array.isArray(ej.chat)?ej.chat.slice(-40):[];coop.reloj=Math.max(ej.reloj||0,ej.act||0);if(miAvatar())coop.av[miNombre()]=miAvatar();
   if(!coop.nombres.includes(miNombre()))coop.nombres.push(miNombre());
   pendientes=[];bloquearControles(true);menuModo();$('#win').classList.add('hide');$('#seguir').classList.add('hide');
@@ -679,33 +680,53 @@ window.salirSalaSilencio=salirSalaSilencio;
    "Aceptar" ("ok"): si la pareja está en vivo arranca cuando aceptan los dos
    (lo genera el de id menor y lo manda con "nuevo"); si no, arranca al toque. */
 const NOMBRES={'princesa-hielo':'Princesa de hielo','hada-bosque':'Hada del bosque','super-veloz':'Súper veloz',jaguar:'La chica y el jaguar','chica-rayo':'Chica rayo','rey-del-mar':'Rey del mar','hombre-lava':'Héroe de lava','chica-estelar':'Chica estelar','viajero-tiempo':'Viajero del tiempo','gata-nocturna':'Gata nocturna',dragon:'Dragón',granja:'Granja',nieve:'Muñeco de nieve',golosinas:'Golosinas',oceano:'Océano',selva:'Selva',dinosaurios:'Dinosaurios',espacio:'Espacio',playa:'Playa',parque:'Parque',piratas:'Piratas',egipto:'Egipto','torneo-medieval':'Torneo medieval','tren-del-oeste':'Tren del Oeste',vikingos:'Vikingos','ciudad-voladora':'Ciudad voladora',samurai:'Samurái','base-espacial':'Base espacial',futbol:'Fútbol',barcos:'Barcos de guerra'};
-let sel={cat:'dibujo',i:0},miOk=false,otroOk=false;
+let sel={cat:'dibujo',i:0},selT=0,miOk=false,otroOk=false,tSel=0,tNuevo=0;
 const listaCat=c=>c==='aventura'?AVENTURAS:c==='heroe'?HEROES:c==='ciudad'?CIUDADES:DIBUJOS;
 const rutaSel=()=>{const id=listaCat(sel.cat)[sel.i];return sel.cat==='ciudad'?'assets/worlds/'+id+'.webp':'assets/puzzle/'+id+'.webp'};
 const nombreSel=()=>{const id=listaCat(sel.cat)[sel.i];return NOMBRES[id]||id.replace(/-/g,' ').replace(/\b\w/g,l=>l.toUpperCase())};
 function pintarElegir(){const L=listaCat(sel.cat);sel.i=((sel.i%L.length)+L.length)%L.length;$('#elCat').value=sel.cat;$('#elImg').src=rutaSel();
   $('#elNombre').textContent=`${nombreSel()} · ${sel.i+1}/${L.length}`;
   const quien=coop&&(coop.compa||otros());
-  const pregunta=coop&&coop.online&&otroOk&&!miOk;$('#elOtro').classList.toggle('pregunta',!!pregunta);$('#elNo').hidden=!pregunta;
-  $('#elOtro').textContent=pregunta?`✅ ${quien} eligió este puzzle. ¿Aceptás el puzzle de ${quien}?`:!coop||!coop.online?(quien?`${quien} no está ahora: si aceptás, arrancás vos y después se suma`:'Si aceptás, arrancás y tu compañero se suma cuando entre'):otroOk?`✅ ${quien} aceptó este`:miOk?`⏳ Esperando que ${quien} acepte…`:`👀 ${quien} ve lo mismo que vos`;
+  const enRed=red&&red.connected,pregunta=coop&&coop.online&&otroOk&&!miOk;$('#elOtro').classList.toggle('pregunta',!!pregunta);$('#elNo').hidden=!pregunta;
+  $('#elOtro').textContent=pregunta?`✅ ${quien} eligió este puzzle. ¿Aceptás el puzzle de ${quien}?`:coop&&!enRed?'🔄 Conectando con la sala…':!coop||!coop.online?(quien?`${quien} no está ahora: si aceptás, arrancás vos y después se suma`:'Si aceptás, arrancás y tu compañero se suma cuando entre'):otroOk?`✅ ${quien} aceptó este`:miOk?`⏳ Esperando que ${quien} acepte…`:`👀 ${quien} ve lo mismo que vos`;
   $('#elOk').disabled=miOk;$('#elOk').textContent=miOk?'✅ Aceptado':pregunta?'✅ Sí, acepto':'✅ Aceptar'}
-function abrirElegir(){miOk=otroOk=false;pintarElegir();$('#elegir').classList.remove('hide')}
+function abrirElegir(){miOk=otroOk=false;pintarElegir();$('#elegir').classList.remove('hide');mandarSel();
+  /* Cada 2 s se repite lo elegido: si un mensaje se pierde o la otra persona
+     tarda en conectarse, igual quedan sincronizados. */
+  clearInterval(tSel);tSel=setInterval(()=>{if(!coop||coop.elegido||$('#elegir').classList.contains('hide')){clearInterval(tSel);return}mandarSel();pintarElegir()},2000)}
+function mandarSel(){if(coop&&!coop.elegido)mandar({k:'sel',cat:sel.cat,i:sel.i,st:selT,ok:miOk?1:0})}
+function recibirSel(m){
+  if(!coop)return;
+  if(coop.elegido){const t=Date.now();if(t-tNuevo>3000){tNuevo=t;mandar({k:'nuevo',act:coop.act,d:estadoCompleto()})}return}
+  if(typeof m.cat!=='string'||!listaCat(m.cat))return;
+  if((m.st||0)>selT){const cambio=m.cat!==sel.cat||m.i!==sel.i;sel={cat:m.cat,i:+m.i||0};selT=m.st;if(cambio)miOk=false}
+  const antes=otroOk;otroOk=!!m.ok&&m.cat===sel.cat&&m.i===sel.i;
+  if(otroOk&&!antes){try{navigator.vibrate&&navigator.vibrate(40)}catch(_){}}
+  if($('#elegir').classList.contains('hide')&&!coop.elegido)abrirElegir();else pintarElegir();chequearOk()}
+/* Llega un puzzle ya armado de la pareja. Si yo también había arrancado uno
+   (los dos aceptaron sin verse), queda el que se creó primero. */
+function recibirPuzzle(m){
+  if(!coop.elegido){cargarElegido(m);return}
+  const d=m.d,mismo=d.p&&d.p.length===pieces.length&&(d.archivo||null)===(fuente.archivo||null)&&(d.ciudad||null)===(fuente.ciudad||null);
+  if(mismo){if(m.act>coop.act){coop.act=m.act;aplicarTodo(d)}else if(m.k==='hola')mandar({k:'todo',act:coop.act,d:estadoCompleto()});return}
+  if((d.creado||0)<(coop.creado||0)||((d.creado||0)===(coop.creado||0)&&(m.de||'')<miId)){coop.creado=d.creado||0;coop.act=m.act||Date.now();seguir(d,true).then(()=>{updateStats();guardarSala()})}
+  else mandar({k:'todo',act:coop.act,d:estadoCompleto()})}
 const cerrarElegir=()=>$('#elegir').classList.add('hide');
-function moverSel(c,i){sel={cat:c,i};miOk=otroOk=false;pintarElegir();mandar({k:'elige',cat:c,i:sel.i})}
+function moverSel(c,i){const L=listaCat(c);sel={cat:c,i:((i%L.length)+L.length)%L.length};selT=Math.max(Date.now(),selT+1);miOk=otroOk=false;pintarElegir();mandarSel()}
 $('#elCat').onchange=e=>moverSel(e.target.value,0);
 $('#elAnt').onclick=()=>moverSel(sel.cat,sel.i-1);$('#elSig').onclick=()=>moverSel(sel.cat,sel.i+1);
-$('#elNo').onclick=()=>{if(!coop)return;const q=coop.compa||otros();enviarChat('❌ '+miNombre()+' no aceptó '+nombreSel(),true);mandar({k:'no',cat:sel.cat,i:sel.i});otroOk=miOk=false;pintarElegir();$('#chat').classList.remove('hide');pintarChat();setTimeout(()=>{try{$('#chatTxt').focus()}catch(_){}},200)};
+$('#elNo').onclick=()=>{if(!coop)return;const q=coop.compa||otros();enviarChat('❌ '+miNombre()+' no aceptó '+nombreSel(),true);mandar({k:'no',cat:sel.cat,i:sel.i});otroOk=miOk=false;selT=Math.max(Date.now(),selT+1);mandarSel();pintarElegir();$('#chat').classList.remove('hide');pintarChat();setTimeout(()=>{try{$('#chatTxt').focus()}catch(_){}},200)};
 $('#elChat').onclick=()=>{$('#chat').classList.remove('hide');pintarChat()};
 $('#elSalir').onclick=()=>{cerrarElegir();salirSala('Saliste de la sala: queda guardada para elegir el puzzle después')};
-$('#elOk').onclick=()=>{if(!coop)return;miOk=true;mandar({k:'ok',cat:sel.cat,i:sel.i});pintarElegir();chequearOk()};
+$('#elOk').onclick=()=>{if(!coop)return;miOk=true;mandarSel();pintarElegir();chequearOk()};
 function chequearOk(){if(!coop||coop.elegido||!miOk)return;if(coop.online&&!otroOk)return;
   if(coop.online&&coop.otroId&&coop.otroId<miId)return; /* lo arma la pareja y lo manda */
   generarElegido()}
 async function generarElegido(){
   cerrarElegir();forzar=rutaSel();$('#img').value=sel.cat;lastImgSel=sel.cat;$('#count').value=sel.cat==='aventura'?'49':'25';
   busy=false;await newGame();if(!coop)return;
-  coop.elegido=true;coop.act=Date.now();updateStats();mandar({k:'nuevo',act:coop.act,d:estadoCompleto()});guardarSala();toast('👥 ¡A armar juntos!')}
-function cargarElegido(m){if(!coop)return;coop.elegido=true;coop.act=m.act||Date.now();cerrarElegir();seguir(m.d,true).then(()=>{updateStats();guardarSala()})}
+  coop.elegido=true;coop.act=Date.now();coop.creado=coop.act;clearInterval(tSel);updateStats();mandar({k:'nuevo',act:coop.act,d:estadoCompleto()});guardarSala();toast('👥 ¡A armar juntos!')}
+function cargarElegido(m){if(!coop)return;coop.elegido=true;coop.act=m.act||Date.now();coop.creado=(m.d&&m.d.creado)||coop.act;clearInterval(tSel);cerrarElegir();seguir(m.d,true).then(()=>{updateStats();guardarSala()})}
 $('#pjCrear').onclick=crearSala;$('#pjUnir').onclick=()=>unirse($('#pjCodigo').value);$('#pjCodigo').onkeydown=e=>{if(e.key==='Enter')unirse($('#pjCodigo').value)};
 $('#pjCerrar').onclick=cerrarPj;
 $('#modo').onchange=e=>{const v=e.target.value;if(v==='pareja'){e.target.value='solo';abrirPj()}else if(v==='invitar'){e.target.value='sala';verInvitar()}else if(v==='pausa'&&coop){enviarChat('⏸️ '+miNombre()+' pausó por ahora y salió',true);mandar({k:'chau',pausa:1});salirSala('⏸️ Pausaste. La sala queda guardada para seguirla cuando quieras')}};
