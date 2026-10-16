@@ -34,7 +34,7 @@ function recorte(g,p){g.save();for(const grupo of p.clip){g.beginPath();for(cons
       const dueno=comps.map((c,i)=>{if(grandes.includes(i))return i;let mej=grandes[0],md=1e18;for(const j of grandes){const dd=(comps[j].cx-c.cx)**2+(comps[j].cy-c.cy)**2;if(dd<md){md=dd;mej=j}}return mej});
       for(const j of grandes){const sel=new Uint8Array(IW*IH);let n=0,sx=0,sy=0;for(let s=0;s<IW*IH;s++)if(lab[s]>=0&&dueno[lab[s]]===j){sel[s]=1;n++;sx+=s%IW;sy+=(s/IW)|0}
         nuevas.push({capa:p.capa,sel,n,cx:sx/n,cy:sy/n})}}
-    let cambio=true;while(cambio){cambio=false;nuevas.sort((a,b)=>a.n-b.n);const p=nuevas.find(q=>q.capa!==noJuntar&&q.n<CHICA&&nuevas.some(o=>o!==q&&o.capa===q.capa));
+    let cambio=true;while(cambio){cambio=false;nuevas.sort((a,b)=>a.n-b.n);const p=nuevas.find(q=>!noJuntar.includes(q.capa)&&q.n<CHICA&&nuevas.some(o=>o!==q&&o.capa===q.capa));
       if(p){let mej=null,md=1e18;for(const o of nuevas)if(o!==p&&o.capa===p.capa){const dd=(o.cx-p.cx)**2+(o.cy-p.cy)**2;if(dd<md){md=dd;mej=o}}
         for(let s=0;s<IW*IH;s++)if(p.sel[s])mej.sel[s]=1;mej.cx=(mej.cx*mej.n+p.cx*p.n)/(mej.n+p.n);mej.cy=(mej.cy*mej.n+p.cy*p.n)/(mej.n+p.n);mej.n+=p.n;nuevas.splice(nuevas.indexOf(p),1);cambio=true}}
     nuevas.sort((a,b)=>a.capa-b.capa||a.cy-b.cy||a.cx-b.cx);
@@ -48,7 +48,7 @@ function definirFut(){const STADIUM=sc([[330,280],[380,190],[420,130],[520,82],[
         const ARCO2=sc(banda([[898,445],[920,385],[958,315],[1000,250],[1035,205],[1062,185]],44));
         const EX=[ARCO1,ARCO2],ps=[],an=(i,n,d)=>[i/n*Math.PI*2+d,(i+1)/n*Math.PI*2+d];
         for(let i=0;i<8;i++){const[a0,a1]=an(i,8,.3);ps.push({capa:6,clip:[[cuna([620*K,800*K],a0,a1)],[TODO,STADIUM]]})}
-        for(let i=0;i<3;i++){const[a0,a1]=an(i,3,.5);ps.push({capa:1,clip:[[cuna([780*K,340*K],a0,a1)],[FIELD],[TODO,...EX]]})}
+        for(let i=0;i<4;i++){const[a0,a1]=an(i,4,.27);ps.push({capa:1,clip:[[cuna([790*K,335*K],a0,a1)],[FIELD],[TODO,...EX]]})}
         for(let i=0;i<5;i++){const[a0,a1]=an(i,5,.2);ps.push({capa:2,clip:[[cuna([790*K,300*K],a0,a1)],[BOWL,FIELD],[TODO,...EX]]})}
         for(let i=0;i<6;i++){const[a0,a1]=an(i,6,.4);ps.push({capa:3,clip:[[cuna([760*K,330*K],a0,a1)],[STADIUM,ROOF],[TODO,...EX]]})}
         for(let i=0;i<6;i++){const[a0,a1]=an(i,6,.1);ps.push({capa:4,clip:[[cuna([780*K,280*K],a0,a1)],[ROOF,BOWL],[TODO,...EX]]})}
@@ -62,7 +62,7 @@ window.gen=async(R,NB)=>{const im=await ld('futurista.webp'),bi=await ld('futuri
   /* base gris: imagen de Gonzalo (fondo blanco fuera) puesta bajo el estadio y recortada a la silueta de la maqueta */
   const bc=document.createElement('canvas');bc.width=bi.width;bc.height=bi.height;const bg=bc.getContext('2d');bg.drawImage(bi,0,0);
   const BI=(()=>{const t=lienzo(),tg=t.getContext('2d');tg.drawImage(sinFondoGen(bc),9,152,882,675,R[0],R[1],R[2]-R[0],R[3]-R[1]);tg.globalCompositeOperation='destination-in';tg.drawImage(IMG,0,0);return t})();
-  let ps=partirIslas(definirFut(),5).map(p=>({...p,capa:p.capa+1}));
+  let ps=partirIslas(definirFut(),[1,5]).map(p=>({...p,capa:p.capa+1}));
   const C=[(R[0]+R[2])/2,(R[1]+R[3])/2],bs=[];for(let i=0;i<NB;i++){const a0=i/NB*Math.PI*2+.4,a1=(i+1)/NB*Math.PI*2+.4;bs.push({capa:1,src:BI,clip:[[cuna(C,a0,a1)]]})}
   const todas=[...bs,...ps].map(cortar).filter(Boolean);
   /* atlas: estantes */
