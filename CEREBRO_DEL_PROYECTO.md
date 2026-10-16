@@ -129,6 +129,7 @@ No se corrigieron estos documentos en este trabajo: se registran las diferencias
 | Voz online en redes difíciles | `CONTRA_RELOJ_VOZ_PENDIENTE.md`: TURN pendiente; existe enganche `window.GYA_TURN_SERVERS`. No publicar credenciales fijas en el cliente. |
 | Micrófono en Android si falla | El mismo documento señala revisar `RECORD_AUDIO` en el proyecto Android externo. No se comprobó un fallo en esta revisión. |
 | Sala TV en dispositivos reales | `SALA_TV_PRUEBA.md`: pruebas físicas de TV, mando, suspensión y redes pendientes; cierre del anfitrión no recupera partida. |
+| **Terminar la Sala TV DESPUÉS de que Play apruebe producción** (Gonzalo, 16/10/2026) | Gonzalo: "tenemos pendiente para cuando se apruebe lo de la TV, eso no lo tenemos terminado". No tocar la TV antes del lanzamiento; retomarla cuando la app esté aprobada en producción (ver también la fila de arriba y `SALA_TV_PRUEBA.md`). En la revisión de código del 16/10 apareció que el lobby de la TV mete sin escapar datos que llegan por MQTT (avatar/nombre de `tv_hola`): arreglarlo junto con eso o antes si se arreglan las fallas de la revisión. |
 | Inicio de Mahjong | Comentario de `extensiones.js`: mantenerlo oculto hasta corregir el inicio. |
 | Segunda app y popup promocional | `IDEAS.md`: propuestas que no deben activarse sin pedido y definición de Gonzalo. |
 | Marcos de ciudad y Pack Pescera/Acuario | `IDEAS.md` los menciona como pendientes/futuros. Antes de actuar, volver a contrastar catálogo y assets actuales. |
