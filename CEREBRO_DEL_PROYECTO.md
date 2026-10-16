@@ -920,3 +920,7 @@ Fecha: 16/10/2026 — Puzzle 3D: SEGUNDO estadio, el ESTADIO FUTURISTA (inventad
 ```text
 Fecha: 16/10/2026 — Estadio Futurista: ARREGLO "no carga, solo se ve la pantalla" en el celular + empieza por la BASE GRIS. Causa: el teléfono recortaba las piezas al abrir (fondo blanco fuera, partir pedazos sueltos: decenas de lienzos de 900×900) y se quedaba sin memoria. Ahora las piezas vienen YA RECORTADAS en assets/puzzle/3d/futurista-piezas.webp + la lista ESTADIOS.futurista.piezas (capa, x, y, ancho, alto, x/y en el atlas); carga en ~0,3 s. Para regenerarlas: assets/puzzle/3d/generar-piezas.html (herramienta, no es del juego). El Centenario reusa un solo lienzo para recortar (menos memoria). Capas del Futurista (30 piezas, 7 capas): base gris (6, la imagen de la base que mandó Gonzalo: futurista-base.webp, puesta bajo el estadio), cancha (2), tribunas (4), fachada (3), techo de vidrio (4), arcos (2), explanada y estacionamiento (9). Progreso nuevo en gya_puzzle3d_futurista2 (el anterior no sirve porque cambiaron las piezas). puzzle.html v32, puzzle.js v32, sw v306.
 ```
+
+```text
+Fecha: 16/10/2026 — Estadio Futurista: la BASE GRIS ya viene ARMADA (Gonzalo: "la base gris ya venía armada"). Sus 6 piezas son capa 0, puestas desde el principio; el juego arranca por la cancha. Quedan 24 piezas para armar en 6 capas: cancha (2), tribunas (4), fachada (3), techo de vidrio (4), arcos (2), explanada y estacionamiento (9). Progreso en gya_puzzle3d_futurista3. puzzle.html v33, puzzle.js v33, sw v307.
+```
