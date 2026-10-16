@@ -80,6 +80,25 @@ select{padding:7px 8px}
 .ch-m.sis{align-self:center;background:none;color:var(--muted);font-size:12px;text-align:center}
 .ch-rap{display:flex;gap:6px;margin:7px 0 6px}.ch-rap button{flex:1;padding:5px 0;font-size:17px;box-shadow:none}
 .ch-env{display:flex;gap:6px}.ch-env input{flex:1;min-width:0;font:inherit;font-size:14px;color:var(--text);background:#160B24;border:1px solid var(--line);border-radius:99px;padding:8px 12px}
+#p3d{position:fixed;inset:0;z-index:24;background:#160B24;touch-action:none}
+#p3d.hide{display:none}
+#p3d header{position:absolute;top:0;left:0;right:0;height:auto;display:block;padding:9px 12px 8px;background:#2A1A3Cf2;border-bottom:1px solid var(--line);z-index:2}
+.p3-fila{display:flex;align-items:center;gap:8px}
+.p3-fila h2{flex:1;font-family:"Archivo Black",sans-serif;font-weight:400;color:var(--acc);font-size:17px;margin:0}
+.p3-fila button{padding:4px 11px;font-size:18px;line-height:1}
+#p3Capa{font-size:13px;font-weight:700;margin-top:3px}
+#p3Barra{height:6px;border-radius:9px;background:#3A2552;margin-top:6px;overflow:hidden}#p3Barra i{display:block;height:100%;width:0;background:var(--teal);transition:width .4s}
+#p3Cv{position:absolute;left:0;top:0;display:block}
+#p3Msg{position:absolute;left:50%;transform:translate(-50%,-10px);top:92px;background:#2A1A3Cf2;border:1px solid var(--acc);color:#fff;font-weight:700;font-size:14px;padding:8px 14px;border-radius:12px;opacity:0;transition:.35s;z-index:3;text-align:center;max-width:90vw;pointer-events:none}
+#p3Msg.on{opacity:1;transform:translate(-50%,0)}
+.p3-ayuda{position:absolute;left:0;right:0;bottom:8px;text-align:center;font-size:12px;color:var(--muted);pointer-events:none;z-index:1;padding:0 10px}
+#p3Fin{position:absolute;inset:0;background:#0b0514dd;display:flex;align-items:center;justify-content:center;z-index:4;padding:16px}
+#p3Fin.hide{display:none}
+#p3Fin .card{max-width:380px;padding:20px}
+#p3Fin img{width:100%;border-radius:12px;margin:6px 0 10px}
+#p3Fin button{display:block;width:100%;margin-top:8px}
+#elegir .card #el3d{display:block;width:100%;margin-top:8px;border-color:var(--teal)}
+#elegir .card #el3d[hidden]{display:none}
 #elegir{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);z-index:19;transition:opacity .3s;padding:12px}
 #elegir.hide{opacity:0;pointer-events:none}
 #elegir .card{max-width:420px;width:100%;padding:18px 16px;max-height:calc(100% - 10px);overflow-y:auto}
@@ -132,7 +151,7 @@ button:disabled,select:disabled{opacity:.4;cursor:default}
   <div class="brand">🧩 <b>Puzzle</b></div>
   <select id="modo" aria-label="Modo"><option value="solo" selected>👤 Solo</option><option value="pareja">👥 Cooperativo</option></select>
   <select id="count" aria-label="Piezas"><option value="12">12 piezas</option><option value="25" selected>25 piezas</option><option value="49">49 piezas</option><option value="70">70 piezas</option><option value="100">100 piezas</option><option value="150">150 piezas</option><option value="300">300 piezas</option><option value="500">500 piezas</option><option value="1000">1000 pzs</option></select>
-  <select id="img" aria-label="Imagen"><option value="dibujo" selected>Dibujos</option><option value="aventura">Aventuras</option><option value="heroe">Héroes</option><option value="gigante">🧠 Gigantes</option><option value="ciudad">Ciudades</option><option value="paisaje">Paisaje</option><option value="geo">Geométrico</option><option value="foto">Foto (internet)</option><option value="propia">Tu imagen…</option></select>
+  <select id="img" aria-label="Imagen"><option value="dibujo" selected>Dibujos</option><option value="aventura">Aventuras</option><option value="heroe">Héroes</option><option value="gigante">🧠 Gigantes</option><option value="p3d">🧊 3D</option><option value="ciudad">Ciudades</option><option value="paisaje">Paisaje</option><option value="geo">Geométrico</option><option value="foto">Foto (internet)</option><option value="propia">Tu imagen…</option></select>
   <div class="salto"></div>
   <label class="tg"><input type="checkbox" id="rot" checked><i></i><span>Girar</span></label>
   <button id="new">🧩 Elegir</button>
@@ -162,6 +181,7 @@ button:disabled,select:disabled{opacity:.4;cursor:default}
 <li><span>👆</span><div><b>Tocá una pieza</b> (sin arrastrarla) para <b>girarla</b>. Tocala otra vez hasta que quede derecha.</div></li>
 <li><span>🧲</span><div>Cuando una pieza está cerca de su lugar o de su compañera, <b>se pega sola</b>.</div></li>
 <li><span>🖼️</span><div>Abajo a la izquierda tenés <b>la imagen chiquita</b>: tocala para verla grande. <b>Guía</b> lo marca clarito en el recuadro.</div></li>
+<li><span>🧊</span><div><b>Puzzle 3D</b> (en 🧩 Elegir): armá el Estadio Centenario encastrable capa por capa. Las piezas vienen giradas: tocalas para enderezarlas.</div></li>
 <li><span>🔲</span><div>En los puzzles grandes (<b>🧠 Gigantes</b>, 500 o 1000 piezas) el botón <b>🔲</b> junta todas las piezas de borde alrededor del marco.</div></li>
 <li><span>🔍</span><div><b>Pellizcá con dos dedos</b> (o usá + y −) para acercar o alejar. Arrastrá el fondo para moverte.</div></li>
 <li><span>👥</span><div>Arriba elegí <b>Cooperativo</b>: creás una sala, invitás a alguien y arman <b>el mismo puzzle juntos</b>, cada uno en su celular. La sala queda guardada hasta terminarlo.</div></li>
@@ -177,11 +197,14 @@ button:disabled,select:disabled{opacity:.4;cursor:default}
 <button id="pjCerrar" class="pj-sec">Cancelar</button></div></div>
 <div id="invitar" class="hide"><div class="card"><h2>📲 Invitá a jugar</h2><p>Código de la sala</p><div id="invCodigo" class="pj-codigo"></div>
 <button id="invWpp" class="pj-wpp">📲 Invitar por WhatsApp</button><button id="invCopiar" class="pj-sec">Copiar invitación</button><button id="invListo">🧩 Elegir el puzzle</button></div></div>
+<div id="p3d" class="hide"><header><div class="p3-fila"><button id="p3Volver" aria-label="Volver">‹</button><h2>🧊 Estadio Centenario 3D</h2></div><div id="p3Capa"></div><div id="p3Barra"><i></i></div></header>
+<canvas id="p3Cv"></canvas><div id="p3Msg"></div><div class="p3-ayuda">Tocá una pieza para girarla · arrastrala a su hueco amarillo cuando esté derecha</div>
+<div id="p3Fin" class="hide"><div class="card"><h2>🏆 ¡Estadio Centenario armado!</h2><p>Armaste la maqueta completa, capa por capa.</p><img id="p3FinImg" alt="Maqueta completa"><button id="p3Otra">🔁 Armarla de nuevo</button><button id="p3Salir" class="pj-sec">Volver al Puzzle</button></div></div></div>
 <div id="elegir" class="hide"><div class="card"><h2>🧩 Elijan el puzzle</h2>
 <select id="elCat" aria-label="Categoría"><option value="dibujo">🎨 Dibujos · 25 piezas</option><option value="aventura">🗺️ Aventuras · 49 piezas</option><option value="heroe">🦸 Héroes · 25 piezas</option><option value="gigante">🧠 Gigantes · 500 o 1000 piezas</option><option value="ciudad">🏙️ Ciudades · 25 piezas</option></select>
 <div class="el-foto"><button id="elAnt" aria-label="Anterior">‹</button><img id="elImg" alt=""><span id="elSello" class="el-sello" hidden>✅ Ya lo armaste</span><button id="elSig" aria-label="Siguiente">›</button></div>
 <p class="el-nombre" id="elNombre"></p><p class="el-otro" id="elOtro"></p>
-<button id="elOk">✅ Aceptar</button><button id="elNo" class="pj-sec" hidden>❌ No, hablemos por el chat</button><button id="elChat" class="pj-sec">💬 Chat</button><button id="elSalir" class="pj-sec">Salir de la sala</button></div></div>
+<button id="el3d" class="pj-sec" hidden>🧊 Puzzle 3D: Estadio Centenario encastrable</button><button id="elOk">✅ Aceptar</button><button id="elNo" class="pj-sec" hidden>❌ No, hablemos por el chat</button><button id="elChat" class="pj-sec">💬 Chat</button><button id="elSalir" class="pj-sec">Salir de la sala</button></div></div>
 <div id="seguir" class="hide"><div class="card"><div class="big">🧩</div><h2>Tenés un puzzle a medio armar</h2><p id="seguirTxt"></p><button id="bSeguir">Seguir armándolo</button><br><button id="bOtro" style="margin-top:10px;background:var(--btn);color:var(--text);border:1px solid var(--line)">Empezar otro</button></div></div>
 <div id="win" class="hide"><div class="card"><h2>🎉 ¡Puzzle completo!</h2><img id="winImg" class="win-img" alt="Puzzle terminado"><p id="winTxt"></p><button id="winShare" class="pj-wpp">📲 Compartir foto</button><button id="again">Jugar otro</button></div></div>
 <canvas id="fx"></canvas>
@@ -571,7 +594,7 @@ $('#bordes').onclick=()=>{if(coop||won)return;const off=S*1.7,ps=groups.filter(g
   ps.sort((a,b)=>Math.random()-.5).forEach((p,k)=>{let d=k*paso;if(d<w){p.x=x0+d;p.y=y0}else if((d-=w)<h){p.x=x0+w;p.y=y0+d}else if((d-=h)<w){p.x=x0+w-d;p.y=y0+h}else{d-=w;p.x=x0;p.y=y0+h-d}});
   dirty=true;guardarLuego();toast(`🔲 ${ps.length} piezas de borde alrededor del marco`)};
 $('#zin').onclick=()=>zoomAt(1.3,VW/2,VH/2);$('#zout').onclick=()=>zoomAt(1/1.3,VW/2,VH/2);$('#zfit').onclick=fit;
-$('#img').onchange=e=>{if(e.target.value==='propia')$('#file').click();else{if(e.target.value==='aventura'&&+$('#count').value<49)$('#count').value='49';if(e.target.value==='gigante'&&+$('#count').value<500)$('#count').value='500';lastImgSel=e.target.value;nuevoConfirmado()}};
+$('#img').onchange=e=>{if(e.target.value==='p3d'){e.target.value=lastImgSel||'dibujo';P3D.abrir();return}if(e.target.value==='propia')$('#file').click();else{if(e.target.value==='aventura'&&+$('#count').value<49)$('#count').value='49';if(e.target.value==='gigante'&&+$('#count').value<500)$('#count').value='500';lastImgSel=e.target.value;nuevoConfirmado()}};
 $('#file').onchange=async e=>{const f=e.target.files[0];if(!f){$('#img').value=lastImgSel;return}
   try{userImg=await loadImg(URL.createObjectURL(f));lastImgSel='propia';nuevoConfirmado()}catch(_){toast('No se pudo leer la imagen');$('#img').value=lastImgSel}e.target.value=''};
 function resize(){dpr=Math.min(window.devicePixelRatio||1,2);TOP=$('header').offsetHeight;$('#bar').style.top=(TOP-2)+'px';$('.stats').style.top=(TOP+8)+'px';$('#gente').style.top=(TOP+38)+'px';$('#chatBtn').style.top=(TOP+8)+'px';$('#chatBurbuja').style.top=(TOP+14)+'px';VW=innerWidth;VH=innerHeight-TOP;
@@ -747,6 +770,7 @@ function anotarHecho(){const k=claveFuente();if(!k)return;try{const d=JSON.parse
 function pintarElegir(){{const o=$('#elCat').querySelector('[value=gigante]');o.disabled=o.hidden=!!coop;if(coop&&sel.cat==='gigante')sel={cat:'dibujo',i:0}}const L=listaCat(sel.cat);sel.i=((sel.i%L.length)+L.length)%L.length;$('#elCat').value=sel.cat;{const ru=rutaSel();$('#elImg').src=sel.cat==='ciudad'?ru:miniDe(ru)}
   const hechos=leerHechos(),hecho=hechos.has(sel.cat+':'+L[sel.i]),nH=L.filter(id=>hechos.has(sel.cat+':'+id)).length;
   $('#elImg').classList.toggle('hecho',hecho);$('#elSello').hidden=!hecho;
+  $('#el3d').hidden=!!coop;
   if(!coop){$('#elegir h2').textContent='🧩 Elegí el puzzle';$('#elNombre').textContent=`${nombreSel()} · ${sel.i+1}/${L.length}`+(nH?` · ✅ ${nH} armado${nH>1?'s':''}`:'');
     $('#elOtro').textContent=hecho?'Ya lo armaste, pero podés volver a armarlo':'';$('#elOtro').classList.remove('pregunta');
     $('#elNo').hidden=true;$('#elChat').hidden=true;$('#elOk').disabled=false;$('#elOk').textContent=hecho?'🔁 Armarlo de nuevo':'▶ Armar este';$('#elSalir').textContent='Cancelar';return}
@@ -784,6 +808,7 @@ $('#elAnt').onclick=()=>moverSel(sel.cat,sel.i-1);$('#elSig').onclick=()=>moverS
 $('#elNo').onclick=()=>{if(!coop)return;const q=coop.compa||otros();enviarChat('❌ '+miNombre()+' no aceptó '+nombreSel(),true);mandar({k:'no',cat:sel.cat,i:sel.i});otroOk=miOk=false;selT=Math.max(Date.now(),selT+1);mandarSel();pintarElegir();$('#chat').classList.remove('hide');pintarChat();setTimeout(()=>{try{$('#chatTxt').focus()}catch(_){}},200)};
 $('#elChat').onclick=()=>{$('#chat').classList.remove('hide');pintarChat()};
 $('#elSalir').onclick=()=>{if(!coop){cerrarElegir();return}cerrarElegir();salirSala('Saliste de la sala: queda guardada para elegir el puzzle después')};
+$('#el3d').onclick=()=>{cerrarElegir();P3D.abrir()};
 $('#elOk').onclick=()=>{if(!coop){armarElegidoSolo();return}miOk=true;mandarSel();pintarElegir();chequearOk()};
 function chequearOk(){if(!coop||coop.elegido||!miOk)return;if(coop.online&&!otroOk)return;
   if(coop.online&&coop.otroId&&coop.otroId<miId)return; /* lo arma la pareja y lo manda */
@@ -803,6 +828,95 @@ async function armarElegidoSolo(){
   if(enCurso()&&!won&&!confirm('¿Empezar este puzzle? Se pierde el que estás armando.'))return;
   cerrarElegir();forzar=rutaSel();$('#img').value=sel.cat;lastImgSel=sel.cat;if(sel.cat==='aventura'&&+$('#count').value<49)$('#count').value='49';if(sel.cat==='gigante'&&+$('#count').value<500)$('#count').value='500';
   busy=false;await newGame()}
+/* ================= PUZZLE 3D (encastrable) =================
+   Maqueta del Estadio Centenario (assets/puzzle/3d/centenario.webp, imagen
+   que Gonzalo generó con ChatGPT) cortada en 24 piezas y 5 capas: cancha (4),
+   pista (6), tribunas y butacas (10), Torre de los Homenajes (2), torres de
+   luz (2). Se arma de abajo hacia arriba: cada capa aparece al terminar la
+   anterior. Todos los huecos de la capa se ven con contorno amarillo (no dice
+   cuál va en cuál); las piezas vienen giradas: tocar = girar 90°, y solo
+   encastra derecha en su hueco. Progreso en gya_puzzle3d. Solo, no cooperativo. */
+const P3D=(()=>{
+  const IW=900,IH=900,K=900/1254,sc=p=>p.map(([x,y])=>[x*K,y*K]);
+  const FIELD=sc([[783,405],[1020,575],[565,880],[340,665]]);
+  const PISTA=sc([[265,720],[310,580],[520,450],[740,365],[870,340],[1000,380],[1080,470],[1105,570],[870,770],[640,935],[520,950],[390,900],[300,810]]);
+  const TORRE=sc([[408,112],[468,112],[472,300],[486,300],[486,374],[397,374],[397,300],[410,300]]);
+  const LUZ1=sc([[1048,136],[1114,136],[1114,218],[1097,218],[1094,302],[1070,306],[1067,218],[1048,218]]);
+  const LUZ2=sc([[162,552],[228,552],[228,632],[214,634],[217,768],[191,772],[187,634],[162,632]]);
+  const C=[690*K,650*K],CAPAS=['La cancha','La pista','Las tribunas y las butacas','La Torre de los Homenajes','Las torres de luz'],CLAVE='gya_puzzle3d';
+  const lp=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];
+  const cuna=(a0,a1)=>{const R=2000;return[C,[C[0]+Math.cos(a0)*R,C[1]+Math.sin(a0)*R],[C[0]+Math.cos((a0+a1)/2)*R*1.5,C[1]+Math.sin((a0+a1)/2)*R*1.5],[C[0]+Math.cos(a1)*R,C[1]+Math.sin(a1)*R]]};
+  const TODO=[[0,0],[IW,0],[IW,IH],[0,IH]];
+  function definir(){const ps=[];const[a,b,c,d]=FIELD,m=(p,q)=>lp(p,q,.5),o=m(m(a,c),m(b,d));
+    for(const P of[[a,m(a,b),o,m(d,a)],[m(a,b),b,m(b,c),o],[o,m(b,c),c,m(c,d)],[m(d,a),o,m(c,d),d]])ps.push({capa:1,clip:[[P]]});
+    for(let i=0;i<6;i++){const a0=i/6*Math.PI*2-.3,a1=(i+1)/6*Math.PI*2-.3;ps.push({capa:2,clip:[[cuna(a0,a1)],[PISTA,FIELD]]})}
+    for(let i=0;i<10;i++){const a0=i/10*Math.PI*2+.15,a1=(i+1)/10*Math.PI*2+.15;ps.push({capa:3,clip:[[cuna(a0,a1)],[TODO,PISTA,TORRE,LUZ1,LUZ2]]})}
+    ps.push({capa:4,clip:[[TORRE],[[[0,0],[IW,0],[IW,250*K],[0,250*K]]]]});ps.push({capa:4,clip:[[TORRE],[[[0,250*K],[IW,250*K],[IW,IH],[0,IH]]]]});
+    ps.push({capa:5,clip:[[LUZ1]]});ps.push({capa:5,clip:[[LUZ2]]});ps.forEach((p,i)=>p.id=i);return ps}
+  let IMG=null,piezas=[],capa=1,drag=null,listo=false,brillo=[],raf=0,dpr=1,VW=0,VH=0,TOP=0,esc=1,ox=0,oy=0,trayY=0,abierto=false;
+  const cv=$('#p3Cv'),ctx=cv.getContext('2d');
+  function recortar(p){const c=document.createElement('canvas');c.width=IW;c.height=IH;const g=c.getContext('2d');g.save();
+    for(const grupo of p.clip){g.beginPath();for(const pl of grupo){pl.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.closePath()}g.clip('evenodd')}
+    g.drawImage(IMG,0,0,IW,IH);g.restore();
+    const d=g.getImageData(0,0,IW,IH).data;let x0=IW,y0=IH,x1=0,y1=0;for(let y=0;y<IH;y+=2)for(let x=0;x<IW;x+=2)if(d[(y*IW+x)*4+3]>20){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
+    if(x1<x0){p.vacia=true;return}x0=Math.max(0,x0-3);y0=Math.max(0,y0-3);x1=Math.min(IW,x1+3);y1=Math.min(IH,y1+3);
+    const r=document.createElement('canvas');r.width=x1-x0;r.height=y1-y0;r.getContext('2d').drawImage(c,-x0,-y0);
+    const s=document.createElement('canvas');s.width=r.width;s.height=r.height;const sg=s.getContext('2d');sg.drawImage(r,0,0);sg.globalCompositeOperation='source-in';sg.fillStyle='#F5B301';sg.fillRect(0,0,s.width,s.height);
+    const o=document.createElement('canvas');o.width=r.width;o.height=r.height;const og=o.getContext('2d');
+    for(const[dx,dy]of[[-2,0],[2,0],[0,-2],[0,2],[-1.5,-1.5],[1.5,1.5],[-1.5,1.5],[1.5,-1.5]])og.drawImage(s,dx,dy);og.globalCompositeOperation='destination-out';og.drawImage(s,0,0);
+    p.cv=r;p.sil=s;p.borde=o;p.bx=x0;p.by=y0;p.w=r.width;p.h=r.height}
+  function resize(){dpr=Math.min(devicePixelRatio||1,2);VW=innerWidth;VH=innerHeight;cv.width=VW*dpr;cv.height=VH*dpr;cv.style.width=VW+'px';cv.style.height=VH+'px';
+    TOP=$('#p3d header').offsetHeight;esc=Math.min((VW-12)/IW,(VH-TOP)*.62/IH);ox=(VW-IW*esc)/2;oy=TOP+6;trayY=oy+IH*esc+6;acomodar(false)}
+  function acomodar(nuevas){const ps=piezas.filter(p=>p.capa===capa&&!p.ok);const n=ps.length;if(!n)return;const cols=Math.min(n,n>6?4:3),filas=Math.ceil(n/cols),cw=VW/cols,ch=(VH-trayY-26)/filas;
+    ps.forEach((p,i)=>{const c=i%cols,f=Math.floor(i/cols),L=Math.max(p.w,p.h)*esc,k=Math.min(1,(cw-10)/L,(ch-8)/L);p.k=Math.max(.25,k);
+      p.x=c*cw+cw/2-p.w*esc*p.k/2;p.y=trayY+f*ch+ch/2-p.h*esc*p.k/2;if(nuevas||p.giro==null){p.giro=1+Math.floor(Math.random()*3);p.ang=p.giro*Math.PI/2}})}
+  const destino=p=>({x:ox+p.bx*esc,y:oy+p.by*esc});
+  let AC=null;function son(f,d,v){if(!sonidoOk())return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime;o.type='triangle';o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(f*.5,t+d);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g).connect(AC.destination);o.start(t);o.stop(t+d)}catch(_){}}
+  function msg(t,ms){const m=$('#p3Msg');m.textContent=t;m.classList.add('on');clearTimeout(msg.t);msg.t=setTimeout(()=>m.classList.remove('on'),ms||2400)}
+  function texto(){const ps=piezas.filter(p=>p.capa===capa),ok=ps.filter(p=>p.ok).length;$('#p3Capa').textContent=`Capa ${capa} de 5 · ${CAPAS[capa-1]} (${ok}/${ps.length})`;$('#p3Barra i').style.width=(piezas.filter(p=>p.ok).length/piezas.length*100)+'%'}
+  function guardar3(){try{localStorage.setItem(CLAVE,JSON.stringify({capa,ok:piezas.filter(p=>p.ok).map(p=>p.id)}))}catch(_){}}
+  function dibujar(t){if(!abierto)return;ctx.setTransform(dpr,0,0,dpr,0,0);const gr=ctx.createRadialGradient(VW/2,TOP+VH*.3,0,VW/2,TOP+VH*.3,VH);gr.addColorStop(0,'#46206B');gr.addColorStop(1,'#160B24');ctx.fillStyle=gr;ctx.fillRect(0,0,VW,VH);
+    ctx.fillStyle='#ffffff08';ctx.fillRect(0,trayY-4,VW,VH-trayY);ctx.strokeStyle='#ffffff22';ctx.beginPath();ctx.moveTo(0,trayY-4);ctx.lineTo(VW,trayY-4);ctx.stroke();
+    ctx.globalAlpha=.08;ctx.drawImage(IMG,ox,oy,IW*esc,IH*esc);ctx.globalAlpha=1;
+    for(const p of piezas)if(p.capa===capa&&!p.ok){const d=destino(p);ctx.globalAlpha=.1;ctx.drawImage(p.sil,d.x,d.y,p.w*esc,p.h*esc);ctx.globalAlpha=.95;ctx.drawImage(p.borde,d.x,d.y,p.w*esc,p.h*esc);ctx.globalAlpha=1}
+    for(const p of piezas)if(p.ok){const d=destino(p),s=p.pop?1+Math.max(0,.07*(1-(t-p.pop)/350)):1;ctx.save();ctx.translate(d.x+p.w*esc/2,d.y+p.h*esc/2);ctx.scale(s,s);ctx.drawImage(p.cv,-p.w*esc/2,-p.h*esc/2,p.w*esc,p.h*esc);ctx.restore()}
+    for(const p of piezas)if(p.capa===capa&&!p.ok){p.ang+=(p.giro*Math.PI/2-p.ang)*.3}
+    for(const p of piezas)if(p.capa===capa&&!p.ok&&p.x!=null&&(!drag||drag.p!==p))pz(p,p.x,p.y,p.k,p.ang,false);
+    if(drag)pz(drag.p,drag.x,drag.y,1,drag.p.ang,true);
+    brillo=brillo.filter(b=>t-b.t<600);for(const b of brillo){const a=1-(t-b.t)/600;ctx.fillStyle=`rgba(255,230,140,${a})`;for(let i=0;i<8;i++){const an=i*.785+b.t,r=10+(t-b.t)/12;ctx.beginPath();ctx.arc(b.x+Math.cos(an)*r,b.y+Math.sin(an)*r,3*a,0,7);ctx.fill()}}
+    raf=requestAnimationFrame(dibujar)}
+  function pz(p,x,y,k,rot,alz){const w=p.w*esc*k,h=p.h*esc*k;ctx.save();ctx.translate(x+w/2,y+h/2);ctx.rotate(rot);
+    ctx.shadowColor='rgba(0,0,0,.55)';ctx.shadowBlur=alz?22:8;ctx.shadowOffsetY=alz?16:5;
+    ctx.filter='brightness(.45)';ctx.drawImage(p.cv,-w/2,-h/2+(alz?6:3)*k,w,h);ctx.filter='none';ctx.shadowColor='transparent';
+    ctx.drawImage(p.cv,-w/2,-h/2-(alz?5:0),w,h);ctx.restore()}
+  function enPieza(p,x,y){if(p.x==null)return false;const w=p.w*esc*p.k,h=p.h*esc*p.k,cx=p.x+w/2,cy=p.y+h/2,L=Math.max(w,h)/2;return Math.abs(x-cx)<=L&&Math.abs(y-cy)<=L}
+  cv.addEventListener('pointerdown',e=>{if(listo||!abierto)return;initAudio();const x=e.clientX,y=e.clientY;const ps=piezas.filter(p=>p.capa===capa&&!p.ok);for(let i=ps.length-1;i>=0;i--){const p=ps[i];if(enPieza(p,x,y)){
+    const w=p.w*esc,h=p.h*esc;drag={p,dx:w/2,dy:h*.6,x:x-w/2,y:y-h*.6,sx:x,sy:y,movio:false};try{cv.setPointerCapture(e.pointerId)}catch(_){}son(520,.06,.05);break}}});
+  cv.addEventListener('pointermove',e=>{if(!drag)return;if(Math.hypot(e.clientX-drag.sx,e.clientY-drag.sy)>8)drag.movio=true;if(!drag.movio)return;drag.x=e.clientX-drag.dx;drag.y=e.clientY-drag.dy});
+  const soltar=()=>{if(!drag)return;const p=drag.p;
+    if(!drag.movio){p.giro=(p.giro+1)%4;if(p.giro===0)p.ang-=Math.PI*2;son(660,.05,.06);drag=null;return}
+    const d=destino(p),dist=Math.hypot(drag.x-d.x,drag.y-d.y),cerca=dist<Math.max(24,36*esc);
+    if(cerca&&p.giro%4!==0){msg('Va ahí, pero está girada: tocala para enderezarla 🔄',1800);son(300,.1,.05);drag=null;return}
+    if(cerca){p.ang=0;p.ok=true;p.pop=performance.now();brillo.push({x:d.x+p.w*esc/2,y:d.y+p.h*esc/2,t:performance.now()});son(880,.12,.15);setTimeout(()=>son(1320,.1,.08),60);try{navigator.vibrate&&navigator.vibrate(25)}catch(_){}
+      guardar3();texto();if(piezas.filter(q=>q.capa===capa).every(q=>q.ok)){if(capa<5){const hecha=CAPAS[capa-1];setTimeout(()=>{capa++;acomodar(true);texto();guardar3();msg(`✅ ¡${hecha} lista! Ahora: ${CAPAS[capa-1].toLowerCase()}`,2800)},500)}else terminar()}}
+    else{msg('Esa no va ahí 😅 Probá en otro hueco',1300);son(200,.12,.05)}
+    drag=null};
+  cv.addEventListener('pointerup',soltar);cv.addEventListener('pointercancel',soltar);
+  function terminar(){listo=true;try{localStorage.removeItem(CLAVE);const d=JSON.parse(localStorage.getItem('gya_puzzle')||'{}');const h=new Set(Array.isArray(d.hechos)?d.hechos:[]);h.add('p3d:centenario');d.hechos=[...h];d.armados=(d.armados||0)+1;localStorage.setItem('gya_puzzle',JSON.stringify(d))}catch(_){}
+    sound('win');setTimeout(()=>{$('#p3FinImg').src=IMG.src;$('#p3Fin').classList.remove('hide');confetti()},900)}
+  function empezar(guardado){piezas=definir();IMG._ok&&0;piezas.forEach(recortar);piezas=piezas.filter(p=>!p.vacia);capa=1;listo=false;drag=null;
+    if(guardado&&Array.isArray(guardado.ok)){const ok=new Set(guardado.ok);piezas.forEach(p=>{if(ok.has(p.id))p.ok=true});capa=Math.min(5,Math.max(1,guardado.capa||1))}
+    piezas.sort(()=>Math.random()-.5);resize();acomodar(true);texto();$('#p3Fin').classList.add('hide');
+    msg(guardado?'🧊 Seguís con tu estadio':'Las piezas vienen giradas: tocalas para enderezarlas 🔄',3000)}
+  async function abrir(){if(coop){toast('El Puzzle 3D es para jugar solo');return}
+    $('#p3d').classList.remove('hide');abierto=true;cancelAnimationFrame(raf);
+    if(!IMG){toast('🧊 Cargando el estadio…',4000);try{IMG=await loadImg('assets/puzzle/3d/centenario.webp')}catch(_){toast('No se pudo cargar el estadio');cerrar();return}}
+    let g=null;try{g=JSON.parse(localStorage.getItem(CLAVE)||'null')}catch(_){}
+    if(!piezas.length||listo)empezar(g);else resize();raf=requestAnimationFrame(dibujar)}
+  function cerrar(){abierto=false;cancelAnimationFrame(raf);drag=null;$('#p3d').classList.add('hide')}
+  $('#p3Volver').onclick=cerrar;$('#p3Salir').onclick=cerrar;$('#p3Otra').onclick=()=>{try{localStorage.removeItem(CLAVE)}catch(_){}empezar(null)};
+  addEventListener('resize',()=>{if(abierto)resize()});
+  return{abrir,cerrar,_estado:()=>({piezas,capa,esc,listo,destino})}})();
 function cargarElegido(m){if(!coop)return;coop.elegido=true;coop.act=m.act||Date.now();coop.creado=(m.d&&m.d.creado)||coop.act;clearInterval(tSel);cerrarElegir();seguir(m.d,true).then(()=>{updateStats();guardarSala()})}
 $('#pjCrear').onclick=crearSala;$('#pjUnir').onclick=()=>unirse($('#pjCodigo').value);$('#pjCodigo').onkeydown=e=>{if(e.key==='Enter')unirse($('#pjCodigo').value)};
 $('#pjCerrar').onclick=cerrarPj;
