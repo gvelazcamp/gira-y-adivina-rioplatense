@@ -131,8 +131,8 @@ button:disabled,select:disabled{opacity:.4;cursor:default}
   <button id="volver" type="button" aria-label="Volver">‹</button>
   <div class="brand">🧩 <b>Puzzle</b></div>
   <select id="modo" aria-label="Modo"><option value="solo" selected>👤 Solo</option><option value="pareja">👥 Cooperativo</option></select>
-  <select id="count" aria-label="Piezas"><option value="12">12 piezas</option><option value="25" selected>25 piezas</option><option value="49">49 piezas</option><option value="70">70 piezas</option><option value="100">100 piezas</option><option value="150">150 piezas</option></select>
-  <select id="img" aria-label="Imagen"><option value="dibujo" selected>Dibujos</option><option value="aventura">Aventuras</option><option value="heroe">Héroes</option><option value="ciudad">Ciudades</option><option value="paisaje">Paisaje</option><option value="geo">Geométrico</option><option value="foto">Foto (internet)</option><option value="propia">Tu imagen…</option></select>
+  <select id="count" aria-label="Piezas"><option value="12">12 piezas</option><option value="25" selected>25 piezas</option><option value="49">49 piezas</option><option value="70">70 piezas</option><option value="100">100 piezas</option><option value="150">150 piezas</option><option value="300">300 piezas</option><option value="500">500 piezas</option><option value="1000">1000 pzs</option></select>
+  <select id="img" aria-label="Imagen"><option value="dibujo" selected>Dibujos</option><option value="aventura">Aventuras</option><option value="heroe">Héroes</option><option value="gigante">🧠 Gigantes</option><option value="ciudad">Ciudades</option><option value="paisaje">Paisaje</option><option value="geo">Geométrico</option><option value="foto">Foto (internet)</option><option value="propia">Tu imagen…</option></select>
   <div class="salto"></div>
   <label class="tg"><input type="checkbox" id="rot" checked><i></i><span>Girar</span></label>
   <button id="new">🧩 Elegir</button>
@@ -151,7 +151,7 @@ button:disabled,select:disabled{opacity:.4;cursor:default}
 <div class="ch-env"><input id="chatTxt" maxlength="120" placeholder="Escribí un mensaje…" autocomplete="off"><button id="chatEnviar">Enviar</button></div></div>
 <div id="bar"></div>
 <canvas id="c"></canvas>
-<div class="zoom"><button id="zin" title="Acercar">+</button><button id="zout" title="Alejar">−</button><button id="zfit" title="Ver todo">⤢</button></div>
+<div class="zoom"><button id="bordes" title="Juntar los bordes" hidden>🔲</button><button id="zin" title="Acercar">+</button><button id="zout" title="Alejar">−</button><button id="zfit" title="Ver todo">⤢</button></div>
 <div id="hint" class="off"><b>Arrastrá</b> las piezas para unirlas · <b>Tocá/clic</b> una pieza para girarla · <b>Clic derecho</b> gira al revés · <b>R / Espacio</b> gira mientras arrastrás · En celular: <b>otro dedo</b> mientras sostenés gira · <b>Rueda o pellizco</b> = zoom · arrastrá el fondo para moverte</div>
 <div id="mini" aria-label="Ver imagen"><canvas id="mv"></canvas><span>🔍</span></div>
 <div id="prev" class="hide"><canvas id="pv"></canvas><span>Tocá para volver a armar</span></div>
@@ -162,6 +162,7 @@ button:disabled,select:disabled{opacity:.4;cursor:default}
 <li><span>👆</span><div><b>Tocá una pieza</b> (sin arrastrarla) para <b>girarla</b>. Tocala otra vez hasta que quede derecha.</div></li>
 <li><span>🧲</span><div>Cuando una pieza está cerca de su lugar o de su compañera, <b>se pega sola</b>.</div></li>
 <li><span>🖼️</span><div>Abajo a la izquierda tenés <b>la imagen chiquita</b>: tocala para verla grande. <b>Guía</b> lo marca clarito en el recuadro.</div></li>
+<li><span>🔲</span><div>En los puzzles grandes (<b>🧠 Gigantes</b>, 500 o 1000 piezas) el botón <b>🔲</b> junta todas las piezas de borde alrededor del marco.</div></li>
 <li><span>🔍</span><div><b>Pellizcá con dos dedos</b> (o usá + y −) para acercar o alejar. Arrastrá el fondo para moverte.</div></li>
 <li><span>👥</span><div>Arriba elegí <b>Cooperativo</b>: creás una sala, invitás a alguien y arman <b>el mismo puzzle juntos</b>, cada uno en su celular. La sala queda guardada hasta terminarlo.</div></li>
 <li><span>💬</span><div>En la sala tenés el <b>chat 💬</b> arriba a la derecha, y en el menú de la sala <b>⏸️ Pausar y salir</b> le avisa a tu compañero.</div></li>
@@ -177,7 +178,7 @@ button:disabled,select:disabled{opacity:.4;cursor:default}
 <div id="invitar" class="hide"><div class="card"><h2>📲 Invitá a jugar</h2><p>Código de la sala</p><div id="invCodigo" class="pj-codigo"></div>
 <button id="invWpp" class="pj-wpp">📲 Invitar por WhatsApp</button><button id="invCopiar" class="pj-sec">Copiar invitación</button><button id="invListo">🧩 Elegir el puzzle</button></div></div>
 <div id="elegir" class="hide"><div class="card"><h2>🧩 Elijan el puzzle</h2>
-<select id="elCat" aria-label="Categoría"><option value="dibujo">🎨 Dibujos · 25 piezas</option><option value="aventura">🗺️ Aventuras · 49 piezas</option><option value="heroe">🦸 Héroes · 25 piezas</option><option value="ciudad">🏙️ Ciudades · 25 piezas</option></select>
+<select id="elCat" aria-label="Categoría"><option value="dibujo">🎨 Dibujos · 25 piezas</option><option value="aventura">🗺️ Aventuras · 49 piezas</option><option value="heroe">🦸 Héroes · 25 piezas</option><option value="gigante">🧠 Gigantes · 500 o 1000 piezas</option><option value="ciudad">🏙️ Ciudades · 25 piezas</option></select>
 <div class="el-foto"><button id="elAnt" aria-label="Anterior">‹</button><img id="elImg" alt=""><span id="elSello" class="el-sello" hidden>✅ Ya lo armaste</span><button id="elSig" aria-label="Siguiente">›</button></div>
 <p class="el-nombre" id="elNombre"></p><p class="el-otro" id="elOtro"></p>
 <button id="elOk">✅ Aceptar</button><button id="elNo" class="pj-sec" hidden>❌ No, hablemos por el chat</button><button id="elChat" class="pj-sec">💬 Chat</button><button id="elSalir" class="pj-sec">Salir de la sala</button></div></div>
@@ -186,7 +187,8 @@ button:disabled,select:disabled{opacity:.4;cursor:default}
 <canvas id="fx"></canvas>
 <script>
 const $=s=>document.querySelector(s);
-const cv=$('#c'),ctx=cv.getContext('2d'),fx=$('#fx'),fctx=fx.getContext('2d');
+const cv=$('#c'),fx=$('#fx'),fctx=fx.getContext('2d');
+let ctx=cv.getContext('2d');
 const hctx=document.createElement('canvas').getContext('2d');
 const S=100,PAD=32,SIDE=S+2*PAD,SNAP=45;
 let dpr=1,VW=0,VH=0,TOP=56,bgGrad=null;
@@ -198,6 +200,8 @@ let lastImgSel='dibujo',userImg=null;
 /* Dibujos para armar (assets/puzzle/): salen en este orden, uno distinto en cada puzzle. */
 /* Aventuras: pinturas con mucho detalle, más difíciles (arrancan en 49 piezas). */
 /* Héroes: personajes con poderes (25 piezas). */
+/* Gigantes: imágenes grandes con muchísimo detalle para 500/1000 piezas (solo). */
+const GIGANTES=['mercado-puerto'];
 const HEROES=['princesa-hielo','hada-bosque','super-veloz','jaguar','chica-rayo','rey-del-mar','hombre-lava','chica-estelar','viajero-tiempo','gata-nocturna'];
 const AVENTURAS=['piratas','egipto','torneo-medieval','tren-del-oeste','vikingos','ciudad-voladora','samurai','base-espacial','futbol','barcos'];
 const DIBUJOS=['dragon','granja','nieve','golosinas','oceano','selva','dinosaurios','espacio','playa','parque'];
@@ -234,7 +238,7 @@ function toast(t,ms){const el=$('#toast');el.textContent=t;el.classList.add('on'
 function loadImg(url){return new Promise((res,rej)=>{const i=new Image();if(/^https?:/.test(url))i.crossOrigin='anonymous';i.onload=()=>res(i);i.onerror=rej;i.src=url})}
 function cover(g,img,w,h){const s=Math.max(w/img.width,h/img.height),iw=img.width*s,ih=img.height*s;g.drawImage(img,(w-iw)/2,(h-ih)/2,iw,ih)}
 const toWorld=(x,y)=>({x:(x-cam.x)/cam.z,y:(y-cam.y)/cam.z});
-const clampZ=z=>clamp(z,zFit*.5,zFit*8);
+const clampZ=z=>clamp(z,zFit*.5,Math.max(zFit*8,(VW||400)/(S*3.2)));
 const fmt=ms=>{const s=Math.floor(ms/1000);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
 
 /* ---------- procedural images ---------- */
@@ -301,12 +305,16 @@ function edgeTo(p,x0,y0,x1,y1,e){
 function piecePath(sd){const p=new Path2D();p.moveTo(0,0);edgeTo(p,0,0,S,0,sd[0]);edgeTo(p,S,0,S,S,sd[1]);edgeTo(p,S,S,0,S,sd[2]);edgeTo(p,0,S,0,0,sd[3]);p.closePath();return p}
 const mkEdge=()=>({s:Math.random()<.5?1:-1,d:rnd(-.06,.06),k:rnd(.92,1.08)});
 const inv=e=>e&&{s:-e.s,d:-e.d,k:e.k};
+/* Resolución de cada pieza: con muchas piezas (300, 500, 1000) se baja para
+   que entren en la memoria del celular (~36 MB de piezas en total). */
+function calidad(c,r){const N=c*r;return clamp(Math.min(2000/(Math.max(c,r)*S),Math.sqrt(36e6/(N*SIDE*SIDE*4))),.45,2.5)}
 function renderPiece(p){
   const n=Math.ceil(SIDE*q),c=document.createElement('canvas');c.width=c.height=n;const g=c.getContext('2d');
   g.scale(q,q);g.translate(PAD,PAD);g.save();g.clip(p.path);g.drawImage(src,-p.col*S,-p.row*S,W,H);
   g.lineWidth=3;g.translate(1.2,1.2);g.strokeStyle='rgba(255,255,255,.42)';g.stroke(p.path);
   g.translate(-2.4,-2.4);g.strokeStyle='rgba(0,0,0,.42)';g.stroke(p.path);g.restore();
   g.lineWidth=.8;g.strokeStyle='rgba(0,0,0,.5)';g.stroke(p.path);p.cv=c;
+  if(cols*rows>250){p.sh=null;return}/* sin sombra propia con muchas piezas: ahorra memoria */
   const qs=Math.max(.35,q*.4),m=Math.ceil(SIDE*qs),s=document.createElement('canvas');s.width=s.height=m;const h=s.getContext('2d');
   h.shadowColor='#000';h.shadowBlur=9*qs;h.shadowOffsetX=5000;h.setTransform(qs,0,0,qs,PAD*qs-5000,PAD*qs);h.fill(p.path);p.sh=s;
 }
@@ -316,7 +324,7 @@ async function getSource(){
   const v=$('#img').value;fuente={};
   if(forzar){const a=forzar;forzar=null;fuente=/assets\/worlds\//.test(a)?{ciudad:a.replace(/^.*\/|\.webp$/g,'')}:{archivo:a};try{const img=await loadImg(a);return{aspect:clamp(img.width/img.height,.5,2.2),paint:(g,w,h)=>cover(g,img,w,h)}}catch(e){fuente={}}}
   if(v==='geo')return{aspect:4/3,paint:paintGeo};
-  if(v==='dibujo'||v==='aventura'||v==='heroe'){const L=v==='dibujo'?DIBUJOS:v==='heroe'?HEROES:AVENTURAS;let d={};try{d=JSON.parse(localStorage.getItem('gya_puzzle')||'{}')}catch(_){}const i=(d[v]||0)%L.length;d[v]=i+1;try{localStorage.setItem('gya_puzzle',JSON.stringify(d))}catch(_){}
+  if(v==='dibujo'||v==='aventura'||v==='heroe'||v==='gigante'){const L=v==='dibujo'?DIBUJOS:v==='heroe'?HEROES:v==='gigante'?GIGANTES:AVENTURAS;let d={};try{d=JSON.parse(localStorage.getItem('gya_puzzle')||'{}')}catch(_){}const i=(d[v]||0)%L.length;d[v]=i+1;try{localStorage.setItem('gya_puzzle',JSON.stringify(d))}catch(_){}
     const a='assets/puzzle/'+L[i]+'.webp';fuente={archivo:a};try{const img=await loadImg(a);return{aspect:clamp(img.width/img.height,.5,2.2),paint:(g,w,h)=>cover(g,img,w,h)}}catch(e){fuente={};toast('No se pudo cargar el dibujo, uso un paisaje')}}
   if(v==='ciudad'){let c;do c=pick(CIUDADES);while(c===ultimaCiudad);ultimaCiudad=c;fuente={ciudad:c};try{const img=await loadImg('assets/worlds/'+c+'.webp');return{aspect:clamp(img.width/img.height,.5,2.2),paint:(g,w,h)=>cover(g,img,w,h)}}catch(e){toast('No se pudo cargar la ciudad, uso un paisaje')}}
   if(v==='propia'&&userImg)return{aspect:clamp(userImg.width/userImg.height,.5,2.2),paint:(g,w,h)=>cover(g,userImg,w,h)};
@@ -338,16 +346,17 @@ function copiaImagen(){const k=Math.min(1,1200/src.width),c=document.createEleme
 async function newGame(){
   if(busy)return;busy=true;$('#seguir').classList.add('hide');const yo=++gen;
   won=false;$('#win').classList.add('hide');elapsed=0;timerOn=false;moves=0;lastSec=-1;drag=pan=pinch=null;
-  const n=+$('#count').value,so=await getSource();if(yo!==gen)return;
+  const n=+$('#count').value;if(n>=300){toast(`🧩 Armando ${n} piezas…`,5000);await new Promise(r=>setTimeout(r,80))}
+  const so=await getSource();if(yo!==gen)return;
   cols=Math.max(2,Math.round(Math.sqrt(n*so.aspect)));rows=Math.max(2,Math.round(n/cols));W=cols*S;H=rows*S;
-  q=clamp(2000/(Math.max(cols,rows)*S),1,2.5);
+  q=calidad(cols,rows);
   src=document.createElement('canvas');src.width=Math.round(W*q);src.height=Math.round(H*q);so.paint(src.getContext('2d'),src.width,src.height);
   pintarPrevia();cfg={n:$('#count').value,img:$('#img').value,rot:$('#rot').checked};imgSave=fuente.ciudad||fuente.archivo?null:copiaImagen();
   const hE=[],vE=[];for(let r=0;r<rows;r++){hE.push([]);vE.push([]);for(let c=0;c<cols;c++){hE[r].push(mkEdge());vE[r].push(mkEdge())}}
   edges={h:hE,v:vE};const rotOn=$('#rot').checked;
   armarPiezas(()=>rotOn?Math.floor(Math.random()*4):0);
   for(const p of pieces){const g={pieces:[p],locked:false,anim:0,px:0,py:0};p.g=g;groups.push(g)}
-  layout();fit();updateStats();dirty=true;busy=false;guardar();sincMusica();
+  layout();fit();updateStats();dirty=true;busy=false;guardar();$('#bordes').hidden=pieces.length<150||!!coop;sincMusica();
 }
 function guardar(manual){
   if(coop){if(manual)guardarSala().then(ok=>toast(ok?'✅ Sala guardada':'No se pudo guardar la sala (sin internet)'));return}
@@ -373,14 +382,14 @@ async function seguir(d,compartido){
     const img=await loadImg(d.archivo||(d.ciudad?'assets/worlds/'+d.ciudad+'.webp':d.img));if(yo!==gen)return;
     cfg=d.cfg;if(cfg.n==='24')cfg.n='25';if(cfg.n==='48')cfg.n='49';revertirCfg();fuente=d.archivo?{archivo:d.archivo}:d.ciudad?{ciudad:d.ciudad}:{};imgSave=d.img;if(d.ciudad)ultimaCiudad=d.ciudad;lastImgSel=cfg.img==='propia'?'propia':cfg.img;
     won=false;$('#win').classList.add('hide');timerOn=false;lastSec=-1;drag=pan=pinch=null;
-    cols=d.cols;rows=d.rows;W=cols*S;H=rows*S;q=clamp(2000/(Math.max(cols,rows)*S),1,2.5);
+    cols=d.cols;rows=d.rows;W=cols*S;H=rows*S;q=calidad(cols,rows);
     src=document.createElement('canvas');src.width=Math.round(W*q);src.height=Math.round(H*q);const g=src.getContext('2d');
     if(d.ciudad||d.archivo)cover(g,img,src.width,src.height);else g.drawImage(img,0,0,src.width,src.height);
     pintarPrevia();edges=d.e;armarPiezas(i=>d.p[i][2]);
     groups=d.g.map(l=>({pieces:[],locked:!!l,anim:0,px:0,py:0}));
     pieces.forEach((p,i)=>{const s=d.p[i];p.x=s[0];p.y=s[1];const gr=groups[s[3]];p.g=gr;gr.pieces.push(p)});
     groups=groups.filter(g=>g.pieces.length);
-    table=d.tb;elapsed=d.t||0;moves=d.m||0;fit();updateStats();dirty=true;busy=false;toast(compartido?'👥 ¡A armar juntos!':'🧩 Seguís con tu puzzle');sincMusica();
+    table=d.tb;elapsed=d.t||0;moves=d.m||0;fit();$('#bordes').hidden=pieces.length<150||!!coop;updateStats();dirty=true;busy=false;toast(compartido?'👥 ¡A armar juntos!':'🧩 Seguís con tu puzzle');sincMusica();
   }catch(e){busy=false;if(compartido){toast('No se pudo cargar el puzzle de tu compañero');return}toast('No se pudo abrir el guardado, empiezo otro');try{localStorage.removeItem(KEY)}catch(_){}newGame()}
 }
 function layout(){
@@ -388,7 +397,7 @@ function layout(){
   let tw=Math.sqrt(area*va),th=area/tw;if(tw<W+2.2*SIDE){tw=W+2.2*SIDE;th=Math.max(th,area/tw)}if(th<H+2.2*SIDE){th=H+2.2*SIDE;tw=Math.max(tw,area/th)}
   table={x:W/2-tw/2,y:H/2-th/2,w:tw,h:th};const placed=[],m=S*.3;
   for(const p of [...pieces].sort(()=>Math.random()-.5)){let best=null,bd=-1;
-    for(let t=0;t<50;t++){const x=rnd(table.x+SIDE/2,table.x+tw-SIDE/2),y=rnd(table.y+SIDE/2,table.y+th-SIDE/2);
+    for(let t=0,T=N>250?10:50;t<T;t++){const x=rnd(table.x+SIDE/2,table.x+tw-SIDE/2),y=rnd(table.y+SIDE/2,table.y+th-SIDE/2);
       if(x>-m-S/2&&x<W+m+S/2&&y>-m-S/2&&y<H+m+S/2)continue;let d=1e9;for(const o of placed)d=Math.min(d,Math.hypot(o.x-x,o.y-y));
       if(d>bd){bd=d;best={x,y}}if(d>S*1.25)break}
     if(!best)best={x:table.x+SIDE/2,y:table.y+SIDE/2};p.x=best.x;p.y=best.y;placed.push(best)}
@@ -422,19 +431,27 @@ function win(){if(won)return;won=true;timerOn=false;anotarHecho();try{musica.pau
   setTimeout(()=>{$('#winTxt').textContent=`Tiempo ${fmt(elapsed)} · ${pieces.length} piezas · ${moves} movimientos`;try{const pa=puzzleArmado(900);$('#winImg').src=pa.toDataURL('image/jpeg',.88);const pv=$('#pv');pv.width=pa.width;pv.height=pa.height;pv.getContext('2d').drawImage(pa,0,0)}catch(_){}$('#win').classList.remove('hide')},900)}
 
 /* ---------- draw ---------- */
-function drawImg(p,img,ox,oy){ctx.save();ctx.translate(p.x+ox,p.y+oy);ctx.rotate(p.r*Math.PI/2);ctx.drawImage(img,-SIDE/2,-SIDE/2,SIDE,SIDE);ctx.restore()}
+function drawImg(p,img,ox,oy){if(!img||p.x<vis.x0||p.x>vis.x1||p.y<vis.y0||p.y>vis.y1)return;ctx.save();ctx.translate(p.x+ox,p.y+oy);ctx.rotate(p.r*Math.PI/2);ctx.drawImage(img,-SIDE/2,-SIDE/2,SIDE,SIDE);ctx.restore()}
+/* Con muchas piezas, al agarrar una se saca una "foto" de todo lo demás
+   (capa) y mientras se arrastra solo se redibuja la pieza en la mano. */
+let capa=null,excluir=null;
+function armarCapa(g){capa=null;if(pieces.length<150)return;try{const c=document.createElement('canvas');c.width=cv.width;c.height=cv.height;const real=ctx;ctx=c.getContext('2d');excluir=g;draw();ctx=real;excluir=null;capa={c,g,z:cam.z,x:cam.x,y:cam.y}}catch(_){ctx=cv.getContext('2d');excluir=null;capa=null}}
 function draw(){
+  const usaCapa=capa&&drag&&capa.g===drag.g&&capa.z===cam.z&&capa.x===cam.x&&capa.y===cam.y&&!excluir;
+  if(usaCapa){ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(capa.c,0,0);ctx.setTransform(dpr*cam.z,0,0,dpr*cam.z,dpr*cam.x,dpr*cam.y);{const a=toWorld(0,0),b=toWorld(VW,VH),m=SIDE;vis={x0:a.x-m,y0:a.y-m,x1:b.x+m,y1:b.y+m}}
+    const g=drag.g;ctx.save();if(g.anim){ctx.translate(g.px,g.py);ctx.rotate(g.anim);ctx.translate(-g.px,-g.py)}ctx.globalAlpha=.6;for(const p of g.pieces)drawImg(p,p.sh,4,10);ctx.globalAlpha=1;for(const p of g.pieces)drawImg(p,p.cv,0,0);ctx.restore();return}
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle=bgGrad;ctx.fillRect(0,0,VW,VH);
   if(!src)return;
   ctx.setTransform(dpr*cam.z,0,0,dpr*cam.z,dpr*cam.x,dpr*cam.y);
+  {const a=toWorld(0,0),b=toWorld(VW,VH),m=SIDE;vis={x0:a.x-m,y0:a.y-m,x1:b.x+m,y1:b.y+m}}
   ctx.fillStyle='rgba(0,0,0,.28)';ctx.fillRect(0,0,W,H);
   if(ghost){ctx.globalAlpha=.32;ctx.drawImage(src,0,0,W,H);ctx.globalAlpha=1}
   ctx.lineWidth=2/cam.z;ctx.strokeStyle='rgba(255,255,255,.28)';ctx.setLineDash([8/cam.z,6/cam.z]);ctx.strokeRect(0,0,W,H);ctx.setLineDash([]);
-  for(const g of order()){ctx.save();if(g.anim){ctx.translate(g.px,g.py);ctx.rotate(g.anim);ctx.translate(-g.px,-g.py)}
+  for(const g of order()){if(g===excluir)continue;ctx.save();if(g.anim){ctx.translate(g.px,g.py);ctx.rotate(g.anim);ctx.translate(-g.px,-g.py)}
     const lift=drag&&drag.g===g,off=g.locked?1.5:lift?10:3.5;ctx.globalAlpha=g.locked?.3:lift?.6:.5;
     for(const p of g.pieces)drawImg(p,p.sh,off*.4,off);ctx.globalAlpha=1;for(const p of g.pieces)drawImg(p,p.cv,0,0);ctx.restore()}
 }
-let conf=[];
+let conf=[],vis={x0:-1e9,y0:-1e9,x1:1e9,y1:1e9};
 function confetti(){conf=[];const C=['#f5b942','#e63946','#2a9d8f','#a8dadc','#ff6b8a','#b48cff','#ffffff'];
   for(let i=0;i<240;i++)conf.push({x:innerWidth/2+rnd(-120,120),y:innerHeight*.4,vx:rnd(-13,13),vy:rnd(-17,-5),w:rnd(5,10),h:rnd(8,14),c:pick(C),a:rnd(0,6),va:rnd(-.3,.3)})}
 function loop(){
@@ -457,7 +474,7 @@ cv.addEventListener('pointerdown',e=>{
   const w=toWorld(sp.x,sp.y),p=hit(w.x,w.y);
   if(p&&!p.g.locked){front(p.g);startTimer();
     if(e.button===2||e.ctrlKey){if($('#rot').checked){rotateGroup(p.g,-1,p.x,p.y);snap(p.g)}return}
-    drag={g:p.g,p,id:e.pointerId,lw:w,start:sp,t:performance.now(),moved:false};cv.style.cursor='grabbing'}
+    drag={g:p.g,p,id:e.pointerId,lw:w,start:sp,t:performance.now(),moved:false};cv.style.cursor='grabbing';armarCapa(p.g)}
   else pan={id:e.pointerId,last:sp};
   dirty=true});
 cv.addEventListener('pointermove',e=>{const sp=sxy(e);
@@ -470,7 +487,7 @@ function up(e){ptrs.delete(e.pointerId);
   if(pinch){if(ptrs.size<2)pinch=null;pan=null;return}
   if(drag&&e.pointerId===drag.id){const g=drag.g;
     if(!drag.moved&&performance.now()-drag.t<350){if($('#rot').checked)rotateGroup(g,1,drag.p.x,drag.p.y);snap(g)}else{moves++;snap(g)}
-    drag=null;cv.style.cursor='grab';dirty=true;pendientes.splice(0).forEach(f=>f())}
+    drag=null;capa=null;cv.style.cursor='grab';dirty=true;pendientes.splice(0).forEach(f=>f())}
   if(pan&&e.pointerId===pan.id)pan=null}
 cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
 cv.addEventListener('wheel',e=>{e.preventDefault();const sp=sxy(e);zoomAt(Math.exp(-e.deltaY*.0015),sp.x,sp.y)},{passive:false});
@@ -519,8 +536,15 @@ $('#prev').onclick=()=>verPrevia(false);
 $('#mini').onclick=()=>verPrevia(true);
 $('#bTuto').onclick=()=>{$('#tuto').classList.add('hide');try{const d=JSON.parse(localStorage.getItem('gya_puzzle')||'{}');d.tuto=1;localStorage.setItem('gya_puzzle',JSON.stringify(d))}catch(_){}};$('#guide').onclick=toggleGuide;
 $('#count').onchange=nuevoConfirmado;$('#rot').onchange=nuevoConfirmado;
+/* 🔲 Bordes (con 150+ piezas, solo): junta las piezas de borde sueltas
+   alrededor del marco, para arrancar como en un puzzle de verdad. */
+$('#bordes').onclick=()=>{if(coop||won)return;const off=S*1.7,ps=groups.filter(g=>!g.locked&&g.pieces.length===1).map(g=>g.pieces[0]).filter(p=>p.row===0||p.col===0||p.row===rows-1||p.col===cols-1);
+  if(!ps.length){toast('Ya no quedan bordes sueltos');return}
+  const x0=-off,y0=-off,w=W+2*off,h=H+2*off,per=2*(w+h),paso=per/ps.length;
+  ps.sort((a,b)=>Math.random()-.5).forEach((p,k)=>{let d=k*paso;if(d<w){p.x=x0+d;p.y=y0}else if((d-=w)<h){p.x=x0+w;p.y=y0+d}else if((d-=h)<w){p.x=x0+w-d;p.y=y0+h}else{d-=w;p.x=x0;p.y=y0+h-d}});
+  dirty=true;guardarLuego();toast(`🔲 ${ps.length} piezas de borde alrededor del marco`)};
 $('#zin').onclick=()=>zoomAt(1.3,VW/2,VH/2);$('#zout').onclick=()=>zoomAt(1/1.3,VW/2,VH/2);$('#zfit').onclick=fit;
-$('#img').onchange=e=>{if(e.target.value==='propia')$('#file').click();else{if(e.target.value==='aventura'&&+$('#count').value<49)$('#count').value='49';lastImgSel=e.target.value;nuevoConfirmado()}};
+$('#img').onchange=e=>{if(e.target.value==='propia')$('#file').click();else{if(e.target.value==='aventura'&&+$('#count').value<49)$('#count').value='49';if(e.target.value==='gigante'&&+$('#count').value<500)$('#count').value='500';lastImgSel=e.target.value;nuevoConfirmado()}};
 $('#file').onchange=async e=>{const f=e.target.files[0];if(!f){$('#img').value=lastImgSel;return}
   try{userImg=await loadImg(URL.createObjectURL(f));lastImgSel='propia';nuevoConfirmado()}catch(_){toast('No se pudo leer la imagen');$('#img').value=lastImgSel}e.target.value=''};
 function resize(){dpr=Math.min(window.devicePixelRatio||1,2);TOP=$('header').offsetHeight;$('#bar').style.top=(TOP-2)+'px';$('.stats').style.top=(TOP+8)+'px';$('#gente').style.top=(TOP+38)+'px';$('#chatBtn').style.top=(TOP+8)+'px';$('#chatBurbuja').style.top=(TOP+14)+'px';VW=innerWidth;VH=innerHeight-TOP;
@@ -683,17 +707,17 @@ window.salirSalaSilencio=salirSalaSilencio;
    categoría + imagen de referencia, lo mismo en los dos celulares ("elige");
    "Aceptar" ("ok"): si la pareja está en vivo arranca cuando aceptan los dos
    (lo genera el de id menor y lo manda con "nuevo"); si no, arranca al toque. */
-const NOMBRES={'princesa-hielo':'Princesa de hielo','hada-bosque':'Hada del bosque','super-veloz':'Súper veloz',jaguar:'La chica y el jaguar','chica-rayo':'Chica rayo','rey-del-mar':'Rey del mar','hombre-lava':'Héroe de lava','chica-estelar':'Chica estelar','viajero-tiempo':'Viajero del tiempo','gata-nocturna':'Gata nocturna',dragon:'Dragón',granja:'Granja',nieve:'Muñeco de nieve',golosinas:'Golosinas',oceano:'Océano',selva:'Selva',dinosaurios:'Dinosaurios',espacio:'Espacio',playa:'Playa',parque:'Parque',piratas:'Piratas',egipto:'Egipto','torneo-medieval':'Torneo medieval','tren-del-oeste':'Tren del Oeste',vikingos:'Vikingos','ciudad-voladora':'Ciudad voladora',samurai:'Samurái','base-espacial':'Base espacial',futbol:'Fútbol',barcos:'Barcos de guerra'};
+const NOMBRES={'mercado-puerto':'Mercado del puerto','princesa-hielo':'Princesa de hielo','hada-bosque':'Hada del bosque','super-veloz':'Súper veloz',jaguar:'La chica y el jaguar','chica-rayo':'Chica rayo','rey-del-mar':'Rey del mar','hombre-lava':'Héroe de lava','chica-estelar':'Chica estelar','viajero-tiempo':'Viajero del tiempo','gata-nocturna':'Gata nocturna',dragon:'Dragón',granja:'Granja',nieve:'Muñeco de nieve',golosinas:'Golosinas',oceano:'Océano',selva:'Selva',dinosaurios:'Dinosaurios',espacio:'Espacio',playa:'Playa',parque:'Parque',piratas:'Piratas',egipto:'Egipto','torneo-medieval':'Torneo medieval','tren-del-oeste':'Tren del Oeste',vikingos:'Vikingos','ciudad-voladora':'Ciudad voladora',samurai:'Samurái','base-espacial':'Base espacial',futbol:'Fútbol',barcos:'Barcos de guerra'};
 let sel={cat:'dibujo',i:0},selT=0,miOk=false,otroOk=false,tSel=0,tNuevo=0;
-const listaCat=c=>c==='aventura'?AVENTURAS:c==='heroe'?HEROES:c==='ciudad'?CIUDADES:DIBUJOS;
+const listaCat=c=>c==='gigante'?GIGANTES:c==='aventura'?AVENTURAS:c==='heroe'?HEROES:c==='ciudad'?CIUDADES:DIBUJOS;
 const rutaSel=()=>{const id=listaCat(sel.cat)[sel.i];return sel.cat==='ciudad'?'assets/worlds/'+id+'.webp':'assets/puzzle/'+id+'.webp'};
 const nombreSel=()=>{const id=listaCat(sel.cat)[sel.i];return NOMBRES[id]||id.replace(/-/g,' ').replace(/\b\w/g,l=>l.toUpperCase())};
 /* Puzzles ya armados (solo o cooperativo): gya_puzzle.hechos = ["dibujo:dragon", …].
    En "Elegí el puzzle" se ven en gris con el sello "Ya lo armaste". */
 function leerHechos(){try{const h=JSON.parse(localStorage.getItem('gya_puzzle')||'{}').hechos;return new Set(Array.isArray(h)?h:[])}catch(_){return new Set()}}
-function claveFuente(){if(fuente.ciudad)return'ciudad:'+fuente.ciudad;const m=(fuente.archivo||'').match(/assets\/puzzle\/([\w-]+)\.webp/);if(!m)return'';for(const c of['dibujo','aventura','heroe'])if(listaCat(c).includes(m[1]))return c+':'+m[1];return''}
+function claveFuente(){if(fuente.ciudad)return'ciudad:'+fuente.ciudad;const m=(fuente.archivo||'').match(/assets\/puzzle\/([\w-]+)\.webp/);if(!m)return'';for(const c of['dibujo','aventura','heroe','gigante'])if(listaCat(c).includes(m[1]))return c+':'+m[1];return''}
 function anotarHecho(){const k=claveFuente();if(!k)return;try{const d=JSON.parse(localStorage.getItem('gya_puzzle')||'{}');const h=new Set(Array.isArray(d.hechos)?d.hechos:[]);h.add(k);d.hechos=[...h];localStorage.setItem('gya_puzzle',JSON.stringify(d))}catch(_){}}
-function pintarElegir(){const L=listaCat(sel.cat);sel.i=((sel.i%L.length)+L.length)%L.length;$('#elCat').value=sel.cat;$('#elImg').src=rutaSel();
+function pintarElegir(){{const o=$('#elCat').querySelector('[value=gigante]');o.disabled=o.hidden=!!coop;if(coop&&sel.cat==='gigante')sel={cat:'dibujo',i:0}}const L=listaCat(sel.cat);sel.i=((sel.i%L.length)+L.length)%L.length;$('#elCat').value=sel.cat;$('#elImg').src=rutaSel();
   const hechos=leerHechos(),hecho=hechos.has(sel.cat+':'+L[sel.i]),nH=L.filter(id=>hechos.has(sel.cat+':'+id)).length;
   $('#elImg').classList.toggle('hecho',hecho);$('#elSello').hidden=!hecho;
   if(!coop){$('#elegir h2').textContent='🧩 Elegí el puzzle';$('#elNombre').textContent=`${nombreSel()} · ${sel.i+1}/${L.length}`+(nH?` · ✅ ${nH} armado${nH>1?'s':''}`:'');
@@ -744,13 +768,13 @@ async function generarElegido(){
 /* Elegir en modo solo: arranca en el puzzle que estás armando (o el primero
    sin armar de la categoría) y con ‹ › recorrés todos. */
 function abrirElegirSolo(siguiente){
-  if(coop)return;const k=claveFuente();let cat=['dibujo','aventura','heroe','ciudad'].includes($('#img').value)?$('#img').value:'dibujo',i=0;
+  if(coop)return;const k=claveFuente();let cat=['dibujo','aventura','heroe','gigante','ciudad'].includes($('#img').value)?$('#img').value:'dibujo',i=0;
   if(k){const[c,id]=k.split(':');cat=c;i=Math.max(0,listaCat(c).indexOf(id))}
   const L=listaCat(cat),h=leerHechos();if(siguiente||h.has(cat+':'+L[i])){for(let n=1;n<=L.length;n++){const j=(i+n)%L.length;if(!h.has(cat+':'+L[j])){i=j;break}}}
   sel={cat,i};miOk=otroOk=false;pintarElegir();$('#elegir').classList.remove('hide')}
 async function armarElegidoSolo(){
   if(enCurso()&&!won&&!confirm('¿Empezar este puzzle? Se pierde el que estás armando.'))return;
-  cerrarElegir();forzar=rutaSel();$('#img').value=sel.cat;lastImgSel=sel.cat;if(sel.cat==='aventura'&&+$('#count').value<49)$('#count').value='49';
+  cerrarElegir();forzar=rutaSel();$('#img').value=sel.cat;lastImgSel=sel.cat;if(sel.cat==='aventura'&&+$('#count').value<49)$('#count').value='49';if(sel.cat==='gigante'&&+$('#count').value<500)$('#count').value='500';
   busy=false;await newGame()}
 function cargarElegido(m){if(!coop)return;coop.elegido=true;coop.act=m.act||Date.now();coop.creado=(m.d&&m.d.creado)||coop.act;clearInterval(tSel);cerrarElegir();seguir(m.d,true).then(()=>{updateStats();guardarSala()})}
 $('#pjCrear').onclick=crearSala;$('#pjUnir').onclick=()=>unirse($('#pjCodigo').value);$('#pjCodigo').onkeydown=e=>{if(e.key==='Enter')unirse($('#pjCodigo').value)};
