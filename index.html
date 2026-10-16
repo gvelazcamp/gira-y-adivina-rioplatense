@@ -3098,6 +3098,7 @@ function tutorialTick(){
     tutAvanzando=true;
     setTimeout(()=>{
       tutAvanzando=false;
+      if(!S||!enTutorial)return; /* salió del tutorial en esos 900 ms */
       while(tutPasoActual<TUT_PASOS.length&&TUT_PASOS[tutPasoActual].listo())tutPasoActual++;
       pintar();
     },900);
@@ -3264,6 +3265,7 @@ function eventoFindeHorario(ahora=new Date()){
   return {activo,limite};
 }
 function esFinDeSemana(){return eventoFindeHorario().activo;}
+function findeIdLocal(ahora=new Date()){const d=new Date(ahora);d.setHours(0,0,0,0);d.setDate(d.getDate()-(d.getDay()+1)%7);return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
 function eventoFindeTiempoTxt(ahora=new Date()){
   const {activo,limite}=eventoFindeHorario(ahora);
   const minutos=Math.max(0,Math.ceil((limite-ahora)/60000));
@@ -3293,6 +3295,10 @@ function estadoEventoFinde(){
      comparábamos r.dia contra el día exacto de hoy, ganar el sábado
      dejaba "pendiente" de nuevo el domingo y se podía cobrar el premio
      dos veces el mismo fin de semana. */
+  /* r.finde = sábado (hora local) de ese fin de semana. Antes se mezclaba el
+     día UTC con el día de la semana local y en Uruguay, sáb/dom después de
+     las 21 h, el evento ganado volvía a "pendiente" y se cobraba otra vez. */
+  if(r.finde)return r.finde===findeIdLocal()?"ganado":"pendiente";
   const hoyDia=Math.floor(Date.now()/86400000),diaSemana=new Date().getDay();
   const inicioFinde=hoyDia-(diaSemana===6?0:1);
   return(r.dia===inicioFinde||r.dia===inicioFinde+1)?"ganado":"pendiente";
@@ -3306,7 +3312,7 @@ function iniciarEventoFinde(){
   esEventoCiudad=false;eventoCiudadPartida=null;eventoCiudadResultado=false;
   destino=null;pasoActual=null;fSiguientePaso=null;modoVelocidadElegido=false;
   const anterior=leerEventoFinde(),dia=Math.floor(Date.now()/86400000);
-  eventoFindePartida={dia,intentos:anterior&&anterior.dia===dia?(anterior.intentos||0)+1:1};
+  eventoFindePartida={dia,finde:findeIdLocal(),intentos:anterior&&anterior.dia===dia?(anterior.intentos||0)+1:1};
   guardarEventoFinde({...eventoFindePartida,estado:"jugando",premioEntregado:false});
   esEventoFinde=true;eventoFindeResultado=false;
   modo="bot";miJug=0;rondasElegidas=5;arranca=0;
@@ -3619,7 +3625,7 @@ function otorgarPremioConcreto(premio){
   }
   if(premio.tipo==="coleccionable"){
     const cm=coleccionMeta[premio.cual];
-    if(cm&&!cm.coleccionables.includes(premio.id)){cm.coleccionables.push(premio.id);cm.completada=cm.coleccionables.length>=COLECCIONES[premio.cual].items.length;guardarColeccionMeta();colActualizarBloqueDurazno();}
+    if(cm&&!cm.coleccionables.includes(premio.id)){cm.coleccionables.push(premio.id);guardarColeccionMeta();colVerificarCompletada(premio.cual);colActualizarBloqueDurazno();}
     return "el coleccionable "+premio.nombre;
   }
   sumarMonedas(premio.valor||150);
@@ -5077,7 +5083,7 @@ $("rkCrear").onclick=async()=>{
   const anterior=cargarRkPerfil(),supa=obtenerSupa();
   if(!anterior||anterior.apodo!==apodo){
     $("rkCrear").disabled=true;
-    const disponible=await nombrePerfilDisponible(apodo);
+    const disponible=await nombrePerfilDisponible(apodo,apodo.toLowerCase()===String(perfil&&perfil.nombre||"").trim().toLowerCase());
     $("rkCrear").disabled=false;
     if(!disponible){mostrarToast("👤","Ese apodo ya lo usa otro jugador. Probá otro.");$("rkApodo").focus();return;}
   }
@@ -7418,11 +7424,15 @@ function actualizarChipPerfil(){
    pisaría silenciosamente los datos guardados de otro jugador. Si no
    hay conexión a Supabase, no bloqueamos (mismo criterio best-effort
    que el resto de las llamadas a Supabase de este archivo). */
-async function nombrePerfilDisponible(nombre){
+/* soloRanking: para el apodo del Ranking igual al propio nombre de perfil (su
+   fila de "usuarios" es la de uno mismo, no de otro jugador). */
+async function nombrePerfilDisponible(nombre,soloRanking){
   const supa=obtenerSupa();
   if(!supa)return true;
   try{
-    const r=await supa.from("gya_ranking").select("apodo").in("grupo",[USR_GRUPO,RK_GRUPO]).ilike("apodo",nombre).limit(1);
+    const patron=String(nombre).replace(/[\\%_]/g,"\\$&");
+    const q=supa.from("gya_ranking").select("apodo");
+    const r=await (soloRanking?q.eq("grupo",RK_GRUPO):q.in("grupo",[USR_GRUPO,RK_GRUPO])).ilike("apodo",patron).limit(1);
     return !(r.data&&r.data.length);
   }catch(e){return true;}
 }
@@ -8938,13 +8948,14 @@ const BILLETE='<svg viewBox="0 0 28 18" aria-hidden="true"><rect x="1" y="1" wid
 let fxN=0;
 function pararReloj(){if(relojID){clearInterval(relojID);relojID=null;}if(S)S.tFin=0;}
 function arrancarReloj(){
+  if(S)S.resolverRefrescado=false;
   if(escudoTiempoActivoTurno){pararReloj();return;}
   S.tFin=ahoraPartida()+25000;
   if(relojID)clearInterval(relojID);
   relojID=setInterval(()=>{
     if(tiempoPartida.pausa!==null)return;
     if(!S||!S.tFin)return;
-    if(ahoraPartida()>=S.tFin){pararReloj();
+    if(ahoraPartida()>=S.tFin){pararReloj();S.fase="pasando";
       publicar("Se acabó el tiempo de "+S.jug[S.turno].n+". Pasa el turno.","error");
       esperarPartida(tk(cambiarTurno),1600);}
   },250);
@@ -9000,11 +9011,11 @@ function quierePreguntarEscudo(cual){
 }
 function aplicarCastigoRuleta(cual){
   if(cual==="quiebra"){
-    bip(120,.5,"sawtooth",.09);S.jug[S.turno].ronda=0;
+    bip(120,.5,"sawtooth",.09);S.jug[S.turno].ronda=0;S.fase="pasando";
     publicar("<b>QUIEBRA</b> — "+S.jug[S.turno].n+" pierde la plata de la ronda.","quiebra");
     esperarPartida(tk(cambiarTurno),1800);
   }else{
-    bip(200,.35,"triangle",.07);
+    bip(200,.35,"triangle",.07);S.fase="pasando";
     publicar("<b>Pierde turno</b> — pasa al siguiente jugador.","pierde");
     esperarPartida(tk(cambiarTurno),1600);
   }
@@ -9103,12 +9114,12 @@ function hostGirar(){
     }
     if(s.t==="QUIEBRA"){
       if(quierePreguntarEscudo("quiebra")){mostrarConfirmEscudo("quiebra");return;}
-      bip(120,.5,"sawtooth",.09);S.jug[S.turno].ronda=0;
+      bip(120,.5,"sawtooth",.09);S.jug[S.turno].ronda=0;S.fase="pasando";
       publicar("<b>QUIEBRA</b> — "+S.jug[S.turno].n+" pierde la plata de la ronda.","quiebra");
       esperarPartida(tk(cambiarTurno),1800);return;}
     if(s.t==="PIERDE"){
       if(quierePreguntarEscudo("pierde")){mostrarConfirmEscudo("pierde");return;}
-      bip(200,.35,"triangle",.07);
+      bip(200,.35,"triangle",.07);S.fase="pasando";
       publicar("<b>Pierde turno</b> — pasa al siguiente jugador.","pierde");
       esperarPartida(tk(cambiarTurno),1600);return;}
     if(s.t==="COMODIN"){
@@ -9119,7 +9130,7 @@ function hostGirar(){
       S.abiertas.add(l);S.usadas.add(l);
       [0,110,220].forEach((m,k)=>esperarPartida(()=>bip([784,1046,1318][k],.2,"sine",.07),m));
       if(fraseCompleta()){
-        const j=S.jug[S.turno];j.tot+=j.ronda;j.rg++;S.fase="girar";
+        const j=S.jug[S.turno];j.tot+=j.ronda;j.rg++;S.fase="ronda_fin";
         publicar("<b>COMODÍN</b> te regaló la «"+l+"» y completó la frase. "+j.n+" se lleva $"+j.ronda+".","comodin");
         if(S.turno===miJug&&destino!==null)sumarRondaColeccion(MUNDO[destino].id);
         esperarPartida(tk(nuevaRonda),3000);return;}
@@ -9169,7 +9180,7 @@ function aplicarPoderEnHost(jugIdx,id){
     S.pistaPos.add(el.i);
     bip(1318,.14,"sine",.06);
     if(fraseCompleta()){
-      const jj=S.jug[S.turno];const gano=jj.ronda;jj.tot+=gano;jj.rg++;
+      const jj=S.jug[S.turno];const gano=jj.ronda;jj.tot+=gano;jj.rg++;S.fase="ronda_fin";
       publicar(j.n+" usó 💡 Pista. ¡Frase completa! <b>"+jj.n+"</b> se lleva $"+gano+".","resuelto");
       if(S.turno===miJug&&destino!==null)sumarRondaColeccion(MUNDO[destino].id);
       esperarPartida(tk(nuevaRonda),5200);
@@ -9233,9 +9244,12 @@ function avisarResolverAbierto(jugIdx){
      se eligieron las 4 letras se seguía comiendo mientras el jugador
      escribía, y podía perder por quedarse sin tiempo escribiendo en
      vez de por errar la respuesta. */
-  if(S.fase==="bonus_resolver"){S.bonusFin=ahoraPartida()+BONUS_DURACION;publicar(V.aviso||"",null,true);return;}
+  /* Solo UNA renovación: antes, abriendo y cancelando Resolver una y otra
+     vez, el reloj se renovaba siempre y había tiempo infinito. */
+  if(S.fase==="bonus_resolver"){if(S.bonusRefrescado)return;S.bonusRefrescado=true;S.bonusFin=ahoraPartida()+BONUS_DURACION;publicar(V.aviso||"",null,true);return;}
   if(S.fase!=="girar"&&S.fase!=="consonante"&&S.fase!=="vocal")return;
-  publicar(V.aviso||"");
+  if(S.resolverRefrescado)return;
+  publicar(V.aviso||"");S.resolverRefrescado=true;
 }
 /* Los invitados (guest online y tvguest) no tienen copia de S: llevan una sombra local
    de sus propios límites (por turno / por ronda) para deshabilitar botones sin filtrarle
@@ -9415,7 +9429,7 @@ function hostPista(){
   S.usadas.add(l);S.abiertas.add(l);
   bip(1318,.14,"sine",.06);
   if(fraseCompleta()){
-    const j=S.jug[S.turno];j.tot+=j.ronda;j.rg++;
+    const j=S.jug[S.turno];j.tot+=j.ronda;j.rg++;S.fase="ronda_fin";
     publicar("💡 Pista: se reveló la «"+l+"». ¡Frase completa! <b>"+j.n+"</b> se lleva $"+j.ronda+".","resuelto");
     if(S.turno===miJug&&destino!==null)sumarRondaColeccion(MUNDO[destino].id);
     esperarPartida(tk(nuevaRonda),5200);
@@ -9439,7 +9453,7 @@ function hostLetra(l){
     if(!voc){S.jug[S.turno].ronda+=S.valor*veces*(S.doble?2:1);S.doble=false;}
     if(enTutorial&&!voc&&S.jug[S.turno].ronda<250)S.jug[S.turno].ronda=250;
     if(fraseCompleta()){
-      const j=S.jug[S.turno];const gano=j.ronda;j.tot+=gano;j.rg++;
+      const j=S.jug[S.turno];const gano=j.ronda;j.tot+=gano;j.rg++;S.fase="ronda_fin";
       publicar("¡Frase completa! <b>"+j.n+"</b> se lleva $"+gano+".","resuelto");
       if(S.turno===miJug&&destino!==null)sumarRondaColeccion(MUNDO[destino].id);
       esperarPartida(tk(nuevaRonda),5200);return;
@@ -9454,7 +9468,7 @@ function hostLetra(l){
     S.fase="girar";
     publicar("🃏 <b>¡Comodín!</b> "+S.jug[S.turno].n+" no tenía «"+l+"», pero conserva el turno.","comodin");
   }else{
-    bip(160,.3,"square",.06);
+    bip(160,.3,"square",.06);S.fase="pasando";
     publicar("No hay «"+l+"». Pasa el turno.","error");
     esperarPartida(tk(cambiarTurno),1500);
   }
@@ -9463,18 +9477,16 @@ function hostResolver(txt,jugadorToss){
   if(animando)return;
   if(S&&S.fase==="tossup"){hostResolverToss(txt,jugadorToss);return;}
   if(S&&(S.fase==="bonus_resolver"||S.fase==="bonus_elegir")){hostResolverBonus(txt);return;}
-  if(modo==="tvhost"){
-    if(!S||!["girar","consonante","vocal"].includes(S.fase))return;
-    S.fase="tv_resultado";
-  }
+  if(!S||!["girar","consonante","vocal"].includes(S.fase))return;
+  if(modo==="tvhost")S.fase="tv_resultado";
   if(enTutorial||norm(txt)===norm(S.frase)){
     bip(1318,.25,"sine",.08);[...S.frase].forEach(c=>S.abiertas.add(c));
-    const j=S.jug[S.turno];const gano=j.ronda;j.tot+=gano;j.rg++;
+    const j=S.jug[S.turno];const gano=j.ronda;j.tot+=gano;j.rg++;if(modo!=="tvhost")S.fase="ronda_fin";
     publicar("¡Correcto! <b>"+j.n+"</b> resolvió y suma $"+gano+".","resuelto");
     if(S.turno===miJug&&destino!==null)sumarRondaColeccion(MUNDO[destino].id);
     esperarPartida(tk(nuevaRonda),5200);
   }else{
-    bip(140,.35,"square",.07);
+    bip(140,.35,"square",.07);if(modo!=="tvhost")S.fase="pasando";
     publicar("«"+txt.toUpperCase()+"» no era. Pasa el turno.","error");
     esperarPartida(tk(cambiarTurno),1700);
   }
@@ -9560,6 +9572,7 @@ function finDelJuego(){
   if(modo==="bot"){
     const d=destino!==null?MUNDO[destino]:null;
     fSiguientePaso=null;
+    let vidaCobrada=false;
     const bonusJugado=Math.floor((a.tot||0)/35);
     if(bonusJugado>0){sumarMonedas(bonusJugado);mundoActualizarHud();}
     if(g===0){
@@ -9582,7 +9595,7 @@ function finDelJuego(){
       /* Jugar la Partida Diaria es opcional (está el botón "Jugar más
          tarde" para saltearla) — pero si decidís jugarla, perder cuesta
          vida igual que en cualquier otro modo bot. */
-      if(vinoDeJugarOnline){const infinita=vidasInfinitasActivas();gastarVida();extra+=infinita?" ❤️∞ activo: no gastaste vida.":" -1 ❤️.";}
+      if(vinoDeJugarOnline){const infinita=vidasInfinitasActivas();gastarVida();vidaCobrada=true;extra+=infinita?" ❤️∞ activo: no gastaste vida.":" -1 ❤️.";}
     }
     if(bonusJugado>0)extra+=" +"+bonusJugado+" 🪙 por lo jugado.";
     if(esPartidaDiaria){esPartidaDiaria=false;
@@ -9592,8 +9605,9 @@ function finDelJuego(){
            puede reintentar hasta ganar, igual que los demás Eventos:
            perder solo cuesta 1 vida, no bloquea la tarjeta del día. */
         eventoDiarioUI=false;
-        const infinita=vidasInfinitasActivas();gastarVida();
-        extra+=(infinita?" ❤️∞ activo: no gastaste vida.":" -1 ❤️.")+" Podés volver a intentar "+nombre+".";
+        /* el Evento diario arranca con jugarOnlineFalso(): si arriba ya se cobró la vida, no cobrar otra */
+        if(!vidaCobrada){const infinita=vidasInfinitasActivas();gastarVida();extra+=infinita?" ❤️∞ activo: no gastaste vida.":" -1 ❤️.";}
+        extra+=" Podés volver a intentar "+nombre+".";
       }else{
         pdGuardarEstado("jugada");objActualizarBadge();
         extra+=" No ganaste "+nombre+" de hoy — probá mañana.";
@@ -9638,6 +9652,8 @@ function revancha(){
     return;
   }
   matchToken++;botPausado=0;
+  /* la revancha es una partida nueva: los escudos "1 por partida" vuelven a estar disponibles */
+  escudoTiendaUsadoEnPartida=false;escudoTiempoUsadoEnPartida=false;escudoTiempoActivoTurno=false;escudoTossUsadoEnPartida=false;S.bonusRefrescado=false;
   limpiarToss();limpiarBonus();arranca=(arranca+1)%S.jug.length;S.finYa=false;S.finalPendiente=null;
   S.bonusCons=[];S.bonusVocal=null;S.bonusGanador=null;S.bonusFin=0;S.bonusListos=[];S.bonusGanadores=[];
   S.jug.forEach(j=>{j.tot=0;j.ronda=0;j.rg=0;j.escudo=false;j.hielo={};j.lodo=false;j.comodin=false;j.poderesRonda=[];j.poderUsadoTurno=false;});
@@ -10605,7 +10621,7 @@ function pintar(){
   const miBonus=modo==="local"||V.bonusGanador===miJug;
   $("bGirar").disabled=!mio||V.fase!=="girar"||V.cons===0;
   $("bVocal").disabled=!mio||V.fase!=="girar"||!V.hayVoc||V.jug[V.turno].ronda<250;
-  $("bResolver").disabled=esToss?!miToss:((bonusResolver||bonusElegir)?!miBonus:(V.fase==="bonus_fin"?true:!mio));
+  $("bResolver").disabled=esToss?!miToss:((bonusResolver||bonusElegir)?!miBonus:(V.fase==="bonus_fin"?true:(!mio||(V.fase!=="girar"&&V.fase!=="consonante"&&V.fase!=="vocal"))));
   $("bResolver").style.display=(esToss&&modo==="local")?"none":"block";
   document.querySelector(".acciones").classList.toggle("con-pista",modo==="bot");
   if(modo==="bot"){
