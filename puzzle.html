@@ -194,7 +194,7 @@ let lastImgSel='dibujo',userImg=null;
 /* Dibujos para armar (assets/puzzle/): salen en este orden, uno distinto en cada puzzle. */
 /* Aventuras: pinturas con mucho detalle, más difíciles (arrancan en 49 piezas). */
 /* Héroes: personajes con poderes (25 piezas). */
-const HEROES=['princesa-hielo','super-veloz','jaguar','chica-rayo','rey-del-mar','hombre-lava','chica-estelar','viajero-tiempo','gata-nocturna'];
+const HEROES=['princesa-hielo','hada-bosque','super-veloz','jaguar','chica-rayo','rey-del-mar','hombre-lava','chica-estelar','viajero-tiempo','gata-nocturna'];
 const AVENTURAS=['piratas','egipto','torneo-medieval','tren-del-oeste','vikingos','ciudad-voladora','samurai','base-espacial','futbol','barcos'];
 const DIBUJOS=['dragon','granja','nieve','golosinas','oceano','selva','dinosaurios','espacio','playa','parque'];
 /* Fotos de las ciudades de los mapas de Uruguay y Argentina. */
@@ -678,7 +678,7 @@ window.salirSalaSilencio=salirSalaSilencio;
    categoría + imagen de referencia, lo mismo en los dos celulares ("elige");
    "Aceptar" ("ok"): si la pareja está en vivo arranca cuando aceptan los dos
    (lo genera el de id menor y lo manda con "nuevo"); si no, arranca al toque. */
-const NOMBRES={'princesa-hielo':'Princesa de hielo','super-veloz':'Súper veloz',jaguar:'La chica y el jaguar','chica-rayo':'Chica rayo','rey-del-mar':'Rey del mar','hombre-lava':'Héroe de lava','chica-estelar':'Chica estelar','viajero-tiempo':'Viajero del tiempo','gata-nocturna':'Gata nocturna',dragon:'Dragón',granja:'Granja',nieve:'Muñeco de nieve',golosinas:'Golosinas',oceano:'Océano',selva:'Selva',dinosaurios:'Dinosaurios',espacio:'Espacio',playa:'Playa',parque:'Parque',piratas:'Piratas',egipto:'Egipto','torneo-medieval':'Torneo medieval','tren-del-oeste':'Tren del Oeste',vikingos:'Vikingos','ciudad-voladora':'Ciudad voladora',samurai:'Samurái','base-espacial':'Base espacial',futbol:'Fútbol',barcos:'Barcos de guerra'};
+const NOMBRES={'princesa-hielo':'Princesa de hielo','hada-bosque':'Hada del bosque','super-veloz':'Súper veloz',jaguar:'La chica y el jaguar','chica-rayo':'Chica rayo','rey-del-mar':'Rey del mar','hombre-lava':'Héroe de lava','chica-estelar':'Chica estelar','viajero-tiempo':'Viajero del tiempo','gata-nocturna':'Gata nocturna',dragon:'Dragón',granja:'Granja',nieve:'Muñeco de nieve',golosinas:'Golosinas',oceano:'Océano',selva:'Selva',dinosaurios:'Dinosaurios',espacio:'Espacio',playa:'Playa',parque:'Parque',piratas:'Piratas',egipto:'Egipto','torneo-medieval':'Torneo medieval','tren-del-oeste':'Tren del Oeste',vikingos:'Vikingos','ciudad-voladora':'Ciudad voladora',samurai:'Samurái','base-espacial':'Base espacial',futbol:'Fútbol',barcos:'Barcos de guerra'};
 let sel={cat:'dibujo',i:0},miOk=false,otroOk=false;
 const listaCat=c=>c==='aventura'?AVENTURAS:c==='heroe'?HEROES:c==='ciudad'?CIUDADES:DIBUJOS;
 const rutaSel=()=>{const id=listaCat(sel.cat)[sel.i];return sel.cat==='ciudad'?'assets/worlds/'+id+'.webp':'assets/puzzle/'+id+'.webp'};

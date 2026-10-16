@@ -884,3 +884,7 @@ Fecha: 16/10/2026 — Puzzle con MÚSICA de fondo: assets/audio/puzzle-musica.mp
 ```text
 Fecha: 16/10/2026 — Puzzle: categoría nueva "🦸 Héroes" (25 piezas) con 9 imágenes de Gonzalo: princesa-hielo, super-veloz, jaguar, chica-rayo, rey-del-mar, hombre-lava, chica-estelar, viajero-tiempo, gata-nocturna (assets/puzzle/, pasadas de PNG a webp). Está en el desplegable de imagen y en "Elijan el puzzle" del cooperativo. La 10ª (hada del bosque con búho y zorros) vino con los cortes de puzzle ya dibujados (captura de un puzzle terminado): no se agregó; falta que Gonzalo la mande limpia. puzzle.html v22, puzzle.js v22, sw v296.
 ```
+
+```text
+Fecha: 16/10/2026 — Puzzle, Héroes +1: hada-bosque (Gonzalo la mandó limpia, sin cortes). Queda 2ª en el orden de Héroes (10 imágenes). puzzle.html v23, puzzle.js v23, sw v297.
+```
