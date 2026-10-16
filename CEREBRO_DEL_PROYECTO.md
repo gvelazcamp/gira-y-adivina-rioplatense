@@ -936,3 +936,7 @@ Fecha: 16/10/2026 — Puzzle Gigantes (500/1000): +5 imágenes que mandó Gonzal
 ```text
 Fecha: 16/10/2026 — Puzzle Gigantes: llegaron las otras 5 → pueblo-nieve (Pueblo de nieve), ciudad-submarina (Ciudad bajo el mar), casas-arbol (Casas en el árbol), ciudad-vapor (Ciudad a vapor), puerto-medieval (Puerto medieval). Gigantes queda con 11 imágenes (ya no hay pendiente de reenvío). puzzle.html v36, puzzle.js v36, sw v310.
 ```
+
+```text
+Fecha: 16/10/2026 — Puzzle 3D MÁS RÁPIDO (Gonzalo: "gira demasiado lento, no como el puzzle normal"). Causa: cada cuadro dibujaba cada pieza con ctx.filter (oscurecido) + shadowBlur (sombra difuminada): en un celular lento (CPU simulada 6×) iba a 1,7 cuadros por segundo. Ahora la sombra oscura de cada pieza se prepara una sola vez (p.osc) y el giro es más ágil (factor 0,5 y frena exacto). Medido: 1,7 → ~22 cuadros/s con CPU 6× más lenta (en un celular normal, fluido). No volver a usar ctx.filter ni shadowBlur dentro del dibujo de cada cuadro. Además la ayuda del Puzzle menciona los dos estadios 3D y la foto "🔍 Armado". puzzle.html v37, puzzle.js v37, sw v311.
+```

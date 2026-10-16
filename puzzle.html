@@ -903,7 +903,9 @@ const P3D=(()=>{
     const o=document.createElement('canvas');o.width=r.width;o.height=r.height;const og=o.getContext('2d');
     for(let a=0;a<16;a++){const an=a/16*Math.PI*2;og.drawImage(s,Math.cos(an)*3.2,Math.sin(an)*3.2)}og.globalCompositeOperation='destination-out';og.drawImage(s,0,0);
     const hu=s;sg.globalCompositeOperation='source-in';sg.fillStyle='#120820';sg.fillRect(0,0,s.width,s.height);
-    p.cv=r;p.borde=o;p.hueco=hu;p.bx=x0;p.by=y0;p.w=r.width;p.h=r.height}
+    /* sombra oscura ya hecha (ctx.filter y shadowBlur en cada cuadro dejaban el celular a 1-2 cuadros por segundo) */
+    const sd=document.createElement('canvas');sd.width=r.width;sd.height=r.height;const dg=sd.getContext('2d');dg.drawImage(r,0,0);dg.globalCompositeOperation='source-in';dg.fillStyle='rgba(10,4,20,.7)';dg.fillRect(0,0,sd.width,sd.height);
+    p.cv=r;p.osc=sd;p.borde=o;p.hueco=hu;p.bx=x0;p.by=y0;p.w=r.width;p.h=r.height}
   /* Vista: maqueta (zona B) + bandeja (zona T). Apaisado: maqueta a la
      izquierda y bandeja a la derecha; vertical: maqueta arriba, bandeja abajo. */
   function resize(){dpr=Math.min(devicePixelRatio||1,2);VW=innerWidth;VH=innerHeight;cv.width=VW*dpr;cv.height=VH*dpr;cv.style.width=VW+'px';cv.style.height=VH+'px';
@@ -932,15 +934,13 @@ const P3D=(()=>{
     const lat=.75+.25*Math.sin(t/380);
     for(const p of piezas)if(p.capa===capa&&!p.ok){const d=destino(p);ctx.globalAlpha=.55;ctx.drawImage(p.hueco,d.x,d.y,p.w*e,p.h*e);ctx.globalAlpha=lat;ctx.drawImage(p.borde,d.x,d.y,p.w*e,p.h*e);ctx.globalAlpha=1}
     ctx.restore();
-    for(const p of piezas)if(p.capa===capa&&!p.ok)p.ang+=(p.giro*Math.PI/2-p.ang)*.3;
+    for(const p of piezas)if(p.capa===capa&&!p.ok){const ob=p.giro*Math.PI/2;p.ang+=(ob-p.ang)*.5;if(Math.abs(ob-p.ang)<.02)p.ang=ob}
     for(const p of piezas)if(p.capa===capa&&!p.ok&&p.x!=null&&(!drag||drag.p!==p))pz(p,p.x,p.y,p.k,p.ang,false);
     if(drag)pz(drag.p,drag.x,drag.y,1,drag.p.ang,true);
     brillo=brillo.filter(b=>t-b.t<600);for(const b of brillo){const a=1-(t-b.t)/600;ctx.fillStyle=`rgba(255,230,140,${a})`;for(let i=0;i<8;i++){const an=i*.785+b.t,r=10+(t-b.t)/12;ctx.beginPath();ctx.arc(b.x+Math.cos(an)*r,b.y+Math.sin(an)*r,3*a,0,7);ctx.fill()}}
     raf=requestAnimationFrame(dibujar)}
   function pz(p,x,y,k,rot,alz){const w=p.w*E()*k,h=p.h*E()*k;ctx.save();ctx.translate(x+w/2,y+h/2);ctx.rotate(rot);
-    ctx.shadowColor='rgba(0,0,0,.55)';ctx.shadowBlur=alz?22:8;ctx.shadowOffsetY=alz?16:5;
-    ctx.filter='brightness(.45)';ctx.drawImage(p.cv,-w/2,-h/2+(alz?6:3)*k,w,h);ctx.filter='none';ctx.shadowColor='transparent';
-    ctx.drawImage(p.cv,-w/2,-h/2-(alz?5:0),w,h);ctx.restore()}
+    ctx.drawImage(p.osc,-w/2,-h/2+(alz?10:3)*k,w,h);ctx.drawImage(p.cv,-w/2,-h/2-(alz?5:0),w,h);ctx.restore()}
   function enPieza(p,x,y){if(p.x==null)return false;const w=p.w*E()*p.k,h=p.h*E()*p.k,cx=p.x+w/2,cy=p.y+h/2,L=Math.max(w,h)/2;return Math.abs(x-cx)<=L&&Math.abs(y-cy)<=L}
   const enMaqueta=(x,y)=>x>=B.x&&x<=B.x+B.w&&y>=B.y&&y<=B.y+B.h;
   cv.addEventListener('pointerdown',e=>{if(listo||!abierto||!piezas.length)return;initAudio();toques.set(e.pointerId,{x:e.clientX,y:e.clientY});try{cv.setPointerCapture(e.pointerId)}catch(_){}
@@ -969,7 +969,7 @@ const P3D=(()=>{
     if(D.piezas)ps=D.piezas.map(([capa,x,y,w,h,ax,ay],i)=>{const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(IMG,ax,ay,w,h,0,0,w,h);const p={capa,id:i};armar(p,c,x,y);return p});
     else{ps=D.definir();ps.forEach((p,i)=>p.id=i);ps.forEach(recortar);ps=ps.filter(p=>!p.vacia);if(TMP){TMP.width=TMP.height=0;TMP=null}}
     return D._base=ps}
-  function empezar(guardado){try{base()}catch(_){toast('No se pudo armar el estadio');cerrar();return}piezas=base().map(p=>({id:p.id,capa:p.capa,cv:p.cv,borde:p.borde,hueco:p.hueco,bx:p.bx,by:p.by,w:p.w,h:p.h}));NC=D.capas.length;capa=1;listo=false;drag=null;zm=1;panX=panY=0;piezas.forEach(p=>{if(p.capa===0)p.ok=true});
+  function empezar(guardado){try{base()}catch(_){toast('No se pudo armar el estadio');cerrar();return}piezas=base().map(p=>({id:p.id,capa:p.capa,cv:p.cv,osc:p.osc,borde:p.borde,hueco:p.hueco,bx:p.bx,by:p.by,w:p.w,h:p.h}));NC=D.capas.length;capa=1;listo=false;drag=null;zm=1;panX=panY=0;piezas.forEach(p=>{if(p.capa===0)p.ok=true});
     if(guardado&&Array.isArray(guardado.ok)){const ok=new Set(guardado.ok);piezas.forEach(p=>{if(ok.has(p.id))p.ok=true});capa=Math.min(NC,Math.max(1,guardado.capa||1))}
     piezas.sort(()=>Math.random()-.5);resize();acomodar(true);texto();$('#p3Fin').classList.add('hide');
     msg(guardado?'🧊 Seguís con tu estadio':'Las piezas vienen giradas: tocalas para enderezarlas 🔄',3000)}
