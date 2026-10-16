@@ -188,7 +188,7 @@ button:disabled,select:disabled{opacity:.4;cursor:default}
 <script>
 const $=s=>document.querySelector(s);
 const cv=$('#c'),fx=$('#fx'),fctx=fx.getContext('2d');
-let ctx=cv.getContext('2d');
+let ctx=cv.getContext('2d'),fuenteImg=null,mapa=null;
 const hctx=document.createElement('canvas').getContext('2d');
 const S=100,PAD=32,SIDE=S+2*PAD,SNAP=45;
 let dpr=1,VW=0,VH=0,TOP=56,bgGrad=null;
@@ -235,7 +235,9 @@ const rnd=(a,b)=>a+Math.random()*(b-a);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 function toast(t,ms){const el=$('#toast');el.textContent=t;el.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('on'),ms||2200)}
-function loadImg(url){return new Promise((res,rej)=>{const i=new Image();if(/^https?:/.test(url))i.crossOrigin='anonymous';i.onload=()=>res(i);i.onerror=rej;i.src=url})}
+/* decode() descomprime la imagen fuera del hilo principal (con 2500 px trababa la pantalla) */
+function loadImg(url){return new Promise((res,rej)=>{const i=new Image();if(/^https?:/.test(url))i.crossOrigin='anonymous';i.onload=()=>{const d=i.decode?i.decode():null;d?d.then(()=>res(i),()=>res(i)):res(i)};i.onerror=rej;i.src=url})}
+const miniDe=a=>a.replace('assets/puzzle/','assets/puzzle/mini/');
 function cover(g,img,w,h){const s=Math.max(w/img.width,h/img.height),iw=img.width*s,ih=img.height*s;g.drawImage(img,(w-iw)/2,(h-ih)/2,iw,ih)}
 const toWorld=(x,y)=>({x:(x-cam.x)/cam.z,y:(y-cam.y)/cam.z});
 const clampZ=z=>clamp(z,zFit*.5,Math.max(zFit*8,(VW||400)/(S*3.2)));
@@ -310,7 +312,11 @@ const inv=e=>e&&{s:-e.s,d:-e.d,k:e.k};
 function calidad(c,r){const N=c*r;return clamp(Math.min(2000/(Math.max(c,r)*S),Math.sqrt(36e6/(N*SIDE*SIDE*4))),.45,2.5)}
 function renderPiece(p){
   const n=Math.ceil(SIDE*q),c=document.createElement('canvas');c.width=c.height=n;const g=c.getContext('2d');
-  g.scale(q,q);g.translate(PAD,PAD);g.save();g.clip(p.path);g.drawImage(src,-p.col*S,-p.row*S,W,H);
+  g.scale(q,q);g.translate(PAD,PAD);g.save();g.clip(p.path);
+  {/* solo el pedacito de imagen de esta pieza (antes se dibujaba la imagen entera en cada una) */
+   const wx0=Math.max(0,p.col*S-PAD),wy0=Math.max(0,p.row*S-PAD),wx1=Math.min(W,p.col*S-PAD+SIDE),wy1=Math.min(H,p.row*S-PAD+SIDE),k=src.width/W;
+   if(wx1>wx0&&wy1>wy0){if(mapa)g.drawImage(fuenteImg,(wx0*k-mapa.ox)/mapa.sc,(wy0*k-mapa.oy)/mapa.sc,(wx1-wx0)*k/mapa.sc,(wy1-wy0)*k/mapa.sc,wx0-p.col*S,wy0-p.row*S,wx1-wx0,wy1-wy0);
+   else g.drawImage(src,wx0*k,wy0*k,(wx1-wx0)*k,(wy1-wy0)*k,wx0-p.col*S,wy0-p.row*S,wx1-wx0,wy1-wy0)}}
   g.lineWidth=3;g.translate(1.2,1.2);g.strokeStyle='rgba(255,255,255,.42)';g.stroke(p.path);
   g.translate(-2.4,-2.4);g.strokeStyle='rgba(0,0,0,.42)';g.stroke(p.path);g.restore();
   g.lineWidth=.8;g.strokeStyle='rgba(0,0,0,.5)';g.stroke(p.path);p.cv=c;
@@ -322,39 +328,51 @@ function renderPiece(p){
 /* ---------- game ---------- */
 async function getSource(){
   const v=$('#img').value;fuente={};
-  if(forzar){const a=forzar;forzar=null;fuente=/assets\/worlds\//.test(a)?{ciudad:a.replace(/^.*\/|\.webp$/g,'')}:{archivo:a};try{const img=await loadImg(a);return{aspect:clamp(img.width/img.height,.5,2.2),paint:(g,w,h)=>cover(g,img,w,h)}}catch(e){fuente={}}}
+  if(forzar){const a=forzar;forzar=null;fuente=/assets\/worlds\//.test(a)?{ciudad:a.replace(/^.*\/|\.webp$/g,'')}:{archivo:a};try{const img=await loadImg(a);return{aspect:clamp(img.width/img.height,.5,2.2),paint:(g,w,h)=>cover(g,img,w,h),img}}catch(e){fuente={}}}
   if(v==='geo')return{aspect:4/3,paint:paintGeo};
   if(v==='dibujo'||v==='aventura'||v==='heroe'||v==='gigante'){const L=v==='dibujo'?DIBUJOS:v==='heroe'?HEROES:v==='gigante'?GIGANTES:AVENTURAS;let d={};try{d=JSON.parse(localStorage.getItem('gya_puzzle')||'{}')}catch(_){}const i=(d[v]||0)%L.length;d[v]=i+1;try{localStorage.setItem('gya_puzzle',JSON.stringify(d))}catch(_){}
-    const a='assets/puzzle/'+L[i]+'.webp';fuente={archivo:a};try{const img=await loadImg(a);return{aspect:clamp(img.width/img.height,.5,2.2),paint:(g,w,h)=>cover(g,img,w,h)}}catch(e){fuente={};toast('No se pudo cargar el dibujo, uso un paisaje')}}
-  if(v==='ciudad'){let c;do c=pick(CIUDADES);while(c===ultimaCiudad);ultimaCiudad=c;fuente={ciudad:c};try{const img=await loadImg('assets/worlds/'+c+'.webp');return{aspect:clamp(img.width/img.height,.5,2.2),paint:(g,w,h)=>cover(g,img,w,h)}}catch(e){toast('No se pudo cargar la ciudad, uso un paisaje')}}
-  if(v==='propia'&&userImg)return{aspect:clamp(userImg.width/userImg.height,.5,2.2),paint:(g,w,h)=>cover(g,userImg,w,h)};
-  if(v==='foto'){toast('Cargando foto…',8000);try{const img=await loadImg(`https://picsum.photos/seed/pz${Date.now()}/1600/1200`);$('#toast').classList.remove('on');return{aspect:img.width/img.height,paint:(g,w,h)=>cover(g,img,w,h)}}
+    const a='assets/puzzle/'+L[i]+'.webp';fuente={archivo:a};try{const img=await loadImg(a);return{aspect:clamp(img.width/img.height,.5,2.2),paint:(g,w,h)=>cover(g,img,w,h),img}}catch(e){fuente={};toast('No se pudo cargar el dibujo, uso un paisaje')}}
+  if(v==='ciudad'){let c;do c=pick(CIUDADES);while(c===ultimaCiudad);ultimaCiudad=c;fuente={ciudad:c};try{const img=await loadImg('assets/worlds/'+c+'.webp');return{aspect:clamp(img.width/img.height,.5,2.2),paint:(g,w,h)=>cover(g,img,w,h),img}}catch(e){toast('No se pudo cargar la ciudad, uso un paisaje')}}
+  if(v==='propia'&&userImg)return{aspect:clamp(userImg.width/userImg.height,.5,2.2),paint:(g,w,h)=>cover(g,userImg,w,h),img:userImg};
+  if(v==='foto'){toast('Cargando foto…',8000);try{const img=await loadImg(`https://picsum.photos/seed/pz${Date.now()}/1600/1200`);$('#toast').classList.remove('on');return{aspect:img.width/img.height,paint:(g,w,h)=>cover(g,img,w,h),img}}
     catch(e){toast('No se pudo cargar la foto, uso un paisaje')}}
   return{aspect:4/3,paint:paintLandscape};
 }
 function enCurso(){return pieces.length>1&&!won&&groups.length<pieces.length}
 function revertirCfg(){$('#count').value=cfg.n;$('#img').value=cfg.img;$('#rot').checked=cfg.rot}
 async function nuevoConfirmado(){if(enCurso()&&!confirm('¿Empezar otro puzzle? Se pierde el que estás armando.')){revertirCfg();return}newGame()}
-function armarPiezas(rs){
-  pieces=[];groups=[];grid=[];
-  for(let r=0;r<rows;r++){grid.push([]);for(let c=0;c<cols;c++){const hE=edges.h,vE=edges.v;
+/* Con muchas piezas se recortan de una copia "bitmap" de la imagen: el primer
+   recorte desde el lienzo recién pintado trababa más de 1 s. */
+/* Con muchas piezas cada una se recorta directo de la imagen original (ya
+   descomprimida), no del lienzo grande: recortar del lienzo recién pintado trababa
+   más de 1 s. mapa = cómo quedó la imagen "cover" dentro del lienzo. */
+async function prepararFuente(){mapa=null;if(rows*cols<150||!fuenteImg)return;const iw=fuenteImg.naturalWidth||fuenteImg.width,ih=fuenteImg.naturalHeight||fuenteImg.height,w=src.width,h=src.height,sc=Math.max(w/iw,h/ih);mapa={sc,ox:(w-iw*sc)/2,oy:(h-ih*sc)/2}}
+async function armarPiezas(rs){
+  pieces=[];groups=[];grid=[];const N=rows*cols,yo=gen;let t=performance.now();
+  for(let r=0;r<rows;r++){grid.push([]);for(let c=0;c<cols;c++){
+    /* con muchas piezas se arman de a tandas, dejando respirar a la pantalla */
+    if(N>=300&&performance.now()-t>45){const pc=Math.round(pieces.length/N*10)*10;if(pc!==armarPiezas.pc){armarPiezas.pc=pc;toast(`🧩 Armando piezas… ${pc}%`,4000)}await new Promise(f=>setTimeout(f,0));t=performance.now();if(yo!==gen)return false}const hE=edges.h,vE=edges.v;
     const sd=[r?inv(hE[r-1][c]):null,c<cols-1?vE[r][c]:null,r<rows-1?hE[r][c]:null,c?inv(vE[r][c-1]):null];
     const p={i:pieces.length,row:r,col:c,path:piecePath(sd),x:0,y:0,r:rs(pieces.length)};renderPiece(p);pieces.push(p);grid[r].push(p)}}
-}
-function pintarPrevia(){for(const[id,m]of[['#pv',640],['#mv',180]]){const pv=$(id);pv.width=Math.min(m,src.width);pv.height=Math.round(pv.width*src.height/src.width);pv.getContext('2d').drawImage(src,0,0,pv.width,pv.height)}}
+  return true}
+/* Vista previa: para los dibujos propios se usa la versión chica (assets/puzzle/mini/),
+   que es mucho más liviana de dibujar que la imagen grande del puzzle. */
+function pintarPrevia(){const dib=(im,cub)=>{for(const[id,m]of[['#pv',640],['#mv',180]]){const pv=$(id);pv.width=Math.min(m,src.width);pv.height=Math.round(pv.width*src.height/src.width);const g=pv.getContext('2d');cub?cover(g,im,pv.width,pv.height):g.drawImage(im,0,0,pv.width,pv.height)}};
+  if(fuente.archivo){const s0=src;loadImg(miniDe(fuente.archivo)).then(im=>{if(src===s0)dib(im,true)}).catch(()=>{if(src===s0)dib(src)})}else dib(src)}
 function copiaImagen(){const k=Math.min(1,1200/src.width),c=document.createElement('canvas');c.width=Math.round(src.width*k);c.height=Math.round(src.height*k);c.getContext('2d').drawImage(src,0,0,c.width,c.height);try{return c.toDataURL('image/jpeg',.82)}catch(_){return null}}
 async function newGame(){
   if(busy)return;busy=true;$('#seguir').classList.add('hide');const yo=++gen;
   won=false;$('#win').classList.add('hide');elapsed=0;timerOn=false;moves=0;lastSec=-1;drag=pan=pinch=null;
-  const n=+$('#count').value;if(n>=300){toast(`🧩 Armando ${n} piezas…`,5000);await new Promise(r=>setTimeout(r,80))}
-  const so=await getSource();if(yo!==gen)return;
+  const n=+$('#count').value,N0=n;if(n>=300){toast(`🧩 Armando ${n} piezas…`,5000);await new Promise(r=>setTimeout(r,80))}
+  const so=await getSource();if(yo!==gen)return;fuenteImg=so.img||null;
   cols=Math.max(2,Math.round(Math.sqrt(n*so.aspect)));rows=Math.max(2,Math.round(n/cols));W=cols*S;H=rows*S;
   q=calidad(cols,rows);
   src=document.createElement('canvas');src.width=Math.round(W*q);src.height=Math.round(H*q);so.paint(src.getContext('2d'),src.width,src.height);
   pintarPrevia();cfg={n:$('#count').value,img:$('#img').value,rot:$('#rot').checked};imgSave=fuente.ciudad||fuente.archivo?null:copiaImagen();
   const hE=[],vE=[];for(let r=0;r<rows;r++){hE.push([]);vE.push([]);for(let c=0;c<cols;c++){hE[r].push(mkEdge());vE[r].push(mkEdge())}}
   edges={h:hE,v:vE};const rotOn=$('#rot').checked;
-  armarPiezas(()=>rotOn?Math.floor(Math.random()*4):0);
+  await prepararFuente();if(yo!==gen)return;
+  if(!await armarPiezas(()=>rotOn?Math.floor(Math.random()*4):0))return;if(N0>=300)$('#toast').classList.remove('on');
   for(const p of pieces){const g={pieces:[p],locked:false,anim:0,px:0,py:0};p.g=g;groups.push(g)}
   layout();fit();updateStats();dirty=true;busy=false;guardar();$('#bordes').hidden=pieces.length<150||!!coop;sincMusica();
 }
@@ -384,8 +402,8 @@ async function seguir(d,compartido){
     won=false;$('#win').classList.add('hide');timerOn=false;lastSec=-1;drag=pan=pinch=null;
     cols=d.cols;rows=d.rows;W=cols*S;H=rows*S;q=calidad(cols,rows);
     src=document.createElement('canvas');src.width=Math.round(W*q);src.height=Math.round(H*q);const g=src.getContext('2d');
-    if(d.ciudad||d.archivo)cover(g,img,src.width,src.height);else g.drawImage(img,0,0,src.width,src.height);
-    pintarPrevia();edges=d.e;armarPiezas(i=>d.p[i][2]);
+    if(d.ciudad||d.archivo){cover(g,img,src.width,src.height);fuenteImg=img}else{g.drawImage(img,0,0,src.width,src.height);fuenteImg=null}
+    pintarPrevia();edges=d.e;await prepararFuente();if(!await armarPiezas(i=>d.p[i][2]))return;
     groups=d.g.map(l=>({pieces:[],locked:!!l,anim:0,px:0,py:0}));
     pieces.forEach((p,i)=>{const s=d.p[i];p.x=s[0];p.y=s[1];const gr=groups[s[3]];p.g=gr;gr.pieces.push(p)});
     groups=groups.filter(g=>g.pieces.length);
@@ -436,7 +454,16 @@ function drawImg(p,img,ox,oy){if(!img||p.x<vis.x0||p.x>vis.x1||p.y<vis.y0||p.y>v
    (capa) y mientras se arrastra solo se redibuja la pieza en la mano. */
 let capa=null,excluir=null;
 function armarCapa(g){capa=null;if(pieces.length<150)return;try{const c=document.createElement('canvas');c.width=cv.width;c.height=cv.height;const real=ctx;ctx=c.getContext('2d');excluir=g;draw();ctx=real;excluir=null;capa={c,g,z:cam.z,x:cam.x,y:cam.y}}catch(_){ctx=cv.getContext('2d');excluir=null;capa=null}}
+/* Con muchas piezas, al mover o acercar la mesa con el dedo se usa una foto
+   de la pantalla (vista) y se la desplaza/escala; cada 300 ms se renueva. */
+let vista=null;
 function draw(){
+  if(pieces.length>=300&&(pan||pinch)&&!drag&&src){const ahora=performance.now();
+    if(vista&&ahora-vista.t<300){const k=cam.z/vista.z;ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle=bgGrad;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillRect(0,0,VW,VH);
+      ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(vista.c,(cam.x-vista.x*k)*dpr,(cam.y-vista.y*k)*dpr,vista.c.width*k,vista.c.height*k);dirty=true;return}
+    const p0=pan,q0=pinch;pan=pinch=null;draw();pan=p0;pinch=q0;
+    if(!vista){vista={c:document.createElement('canvas')};vista.c.width=cv.width;vista.c.height=cv.height}
+    const vg=vista.c.getContext('2d');vg.clearRect(0,0,cv.width,cv.height);vg.drawImage(cv,0,0);vista.z=cam.z;vista.x=cam.x;vista.y=cam.y;vista.t=ahora;return}
   const usaCapa=capa&&drag&&capa.g===drag.g&&capa.z===cam.z&&capa.x===cam.x&&capa.y===cam.y&&!excluir;
   if(usaCapa){ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(capa.c,0,0);ctx.setTransform(dpr*cam.z,0,0,dpr*cam.z,dpr*cam.x,dpr*cam.y);{const a=toWorld(0,0),b=toWorld(VW,VH),m=SIDE;vis={x0:a.x-m,y0:a.y-m,x1:b.x+m,y1:b.y+m}}
     const g=drag.g;ctx.save();if(g.anim){ctx.translate(g.px,g.py);ctx.rotate(g.anim);ctx.translate(-g.px,-g.py)}ctx.globalAlpha=.6;for(const p of g.pieces)drawImg(p,p.sh,4,10);ctx.globalAlpha=1;for(const p of g.pieces)drawImg(p,p.cv,0,0);ctx.restore();return}
@@ -484,11 +511,11 @@ cv.addEventListener('pointermove',e=>{const sp=sxy(e);
   if(drag&&e.pointerId===drag.id){const w=toWorld(sp.x,sp.y);moveGroup(drag.g,w.x-drag.lw.x,w.y-drag.lw.y);drag.lw=w;enviarMov(drag.g);if(Math.hypot(sp.x-drag.start.x,sp.y-drag.start.y)>6)drag.moved=true;dirty=true}
   else if(pan&&e.pointerId===pan.id){cam.x+=sp.x-pan.last.x;cam.y+=sp.y-pan.last.y;pan.last=sp;dirty=true}});
 function up(e){ptrs.delete(e.pointerId);
-  if(pinch){if(ptrs.size<2)pinch=null;pan=null;return}
+  if(pinch){if(ptrs.size<2){pinch=null;vista=null}pan=null;dirty=true;return}
   if(drag&&e.pointerId===drag.id){const g=drag.g;
     if(!drag.moved&&performance.now()-drag.t<350){if($('#rot').checked)rotateGroup(g,1,drag.p.x,drag.p.y);snap(g)}else{moves++;snap(g)}
     drag=null;capa=null;cv.style.cursor='grab';dirty=true;pendientes.splice(0).forEach(f=>f())}
-  if(pan&&e.pointerId===pan.id)pan=null}
+  if(pan&&e.pointerId===pan.id){pan=null;vista=null;dirty=true}}
 cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
 cv.addEventListener('wheel',e=>{e.preventDefault();const sp=sxy(e);zoomAt(Math.exp(-e.deltaY*.0015),sp.x,sp.y)},{passive:false});
 addEventListener('keydown',e=>{const k=e.key.toLowerCase();
@@ -717,7 +744,7 @@ const nombreSel=()=>{const id=listaCat(sel.cat)[sel.i];return NOMBRES[id]||id.re
 function leerHechos(){try{const h=JSON.parse(localStorage.getItem('gya_puzzle')||'{}').hechos;return new Set(Array.isArray(h)?h:[])}catch(_){return new Set()}}
 function claveFuente(){if(fuente.ciudad)return'ciudad:'+fuente.ciudad;const m=(fuente.archivo||'').match(/assets\/puzzle\/([\w-]+)\.webp/);if(!m)return'';for(const c of['dibujo','aventura','heroe','gigante'])if(listaCat(c).includes(m[1]))return c+':'+m[1];return''}
 function anotarHecho(){const k=claveFuente();if(!k)return;try{const d=JSON.parse(localStorage.getItem('gya_puzzle')||'{}');const h=new Set(Array.isArray(d.hechos)?d.hechos:[]);h.add(k);d.hechos=[...h];localStorage.setItem('gya_puzzle',JSON.stringify(d))}catch(_){}}
-function pintarElegir(){{const o=$('#elCat').querySelector('[value=gigante]');o.disabled=o.hidden=!!coop;if(coop&&sel.cat==='gigante')sel={cat:'dibujo',i:0}}const L=listaCat(sel.cat);sel.i=((sel.i%L.length)+L.length)%L.length;$('#elCat').value=sel.cat;$('#elImg').src=rutaSel();
+function pintarElegir(){{const o=$('#elCat').querySelector('[value=gigante]');o.disabled=o.hidden=!!coop;if(coop&&sel.cat==='gigante')sel={cat:'dibujo',i:0}}const L=listaCat(sel.cat);sel.i=((sel.i%L.length)+L.length)%L.length;$('#elCat').value=sel.cat;{const ru=rutaSel();$('#elImg').src=sel.cat==='ciudad'?ru:miniDe(ru)}
   const hechos=leerHechos(),hecho=hechos.has(sel.cat+':'+L[sel.i]),nH=L.filter(id=>hechos.has(sel.cat+':'+id)).length;
   $('#elImg').classList.toggle('hecho',hecho);$('#elSello').hidden=!hecho;
   if(!coop){$('#elegir h2').textContent='🧩 Elegí el puzzle';$('#elNombre').textContent=`${nombreSel()} · ${sel.i+1}/${L.length}`+(nH?` · ✅ ${nH} armado${nH>1?'s':''}`:'');
