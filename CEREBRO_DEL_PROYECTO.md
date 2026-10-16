@@ -876,3 +876,7 @@ Fecha: 15/10/2026 — Puzzle: la foto final (cartel, vista grande y la de compar
 ```text
 Fecha: 15/10/2026 — Puzzle cooperativo, elegir: cuando uno acepta un puzzle, al otro lo LLEVA a ese puzzle (aunque estuviera mirando otro) y le pregunta "✅ Juan eligió este puzzle. ¿Aceptás el puzzle de Juan?" con "✅ Sí, acepto" / "❌ No, hablemos por el chat". Sí → arrancan los dos. No → a Juan le avisa ("Martina no aceptó. Hablen por el chat 💬"), queda en el chat "❌ Martina no aceptó Piratas" y a Martina se le abre el chat para escribir. Botón "💬 Chat" también en esa ventana (el chat ahora se abre por encima). puzzle.html v20, puzzle.js v20, sw v294.
 ```
+
+```text
+Fecha: 16/10/2026 — Puzzle con MÚSICA de fondo: assets/audio/puzzle-musica.mp3 = "Puzzle & Casual Game Music" (Sounova Music, Pixabay; Gonzalo la eligió y la mandó; pasada a 128 kbps, 89 s en loop). Suena bajita (volumen .32) desde el primer toque, respeta el sonido del juego (parent.sonidoPermitido), se pausa al minimizar, salir con ‹ o terminar el puzzle, y vuelve con el puzzle siguiente. puzzle.html v21, puzzle.js v21, sw v295.
+```
