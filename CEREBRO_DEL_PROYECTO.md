@@ -880,3 +880,7 @@ Fecha: 15/10/2026 — Puzzle cooperativo, elegir: cuando uno acepta un puzzle, a
 ```text
 Fecha: 16/10/2026 — Puzzle con MÚSICA de fondo: assets/audio/puzzle-musica.mp3 = "Puzzle & Casual Game Music" (Sounova Music, Pixabay; Gonzalo la eligió y la mandó; pasada a 128 kbps, 89 s en loop). Suena bajita (volumen .32) desde el primer toque, respeta el sonido del juego (parent.sonidoPermitido), se pausa al minimizar, salir con ‹ o terminar el puzzle, y vuelve con el puzzle siguiente. puzzle.html v21, puzzle.js v21, sw v295.
 ```
+
+```text
+Fecha: 16/10/2026 — Puzzle: categoría nueva "🦸 Héroes" (25 piezas) con 9 imágenes de Gonzalo: princesa-hielo, super-veloz, jaguar, chica-rayo, rey-del-mar, hombre-lava, chica-estelar, viajero-tiempo, gata-nocturna (assets/puzzle/, pasadas de PNG a webp). Está en el desplegable de imagen y en "Elijan el puzzle" del cooperativo. La 10ª (hada del bosque con búho y zorros) vino con los cortes de puzzle ya dibujados (captura de un puzzle terminado): no se agregó; falta que Gonzalo la mande limpia. puzzle.html v22, puzzle.js v22, sw v296.
+```
