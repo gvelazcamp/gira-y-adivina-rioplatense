@@ -932,3 +932,7 @@ Fecha: 16/10/2026 — Puzzle 3D: el césped del Estadio Futurista vuelve a ser d
 ```text
 Fecha: 16/10/2026 — Puzzle Gigantes (500/1000): +5 imágenes que mandó Gonzalo → valle-dragones (Valle de los dragones), estacion-tren (Estación de trenes), islas-cielo (Islas del cielo), biblioteca-magica (Biblioteca mágica), oasis-desierto (Oasis del desierto). assets/puzzle/<id>.webp (1254 px) + mini 600 px en assets/puzzle/mini/. Gigantes queda con 6. Gonzalo mandó 5 más (puerto medieval, pueblo de nieve, ciudad bajo el mar, casas en el árbol, ciudad steampunk) pero no llegaron como archivo: pendiente que las reenvíe. puzzle.html v35, puzzle.js v35, sw v309.
 ```
+
+```text
+Fecha: 16/10/2026 — Puzzle Gigantes: llegaron las otras 5 → pueblo-nieve (Pueblo de nieve), ciudad-submarina (Ciudad bajo el mar), casas-arbol (Casas en el árbol), ciudad-vapor (Ciudad a vapor), puerto-medieval (Puerto medieval). Gigantes queda con 11 imágenes (ya no hay pendiente de reenvío). puzzle.html v36, puzzle.js v36, sw v310.
+```
