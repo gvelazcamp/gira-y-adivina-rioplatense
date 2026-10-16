@@ -863,7 +863,7 @@ async function armarElegidoSolo(){
      alto, x/y en el atlas): recortarlas en el celular (fondo blanco fuera,
      partir pedazos sueltos) se quedaba sin memoria y no cargaba. Para
      regenerarlas: assets/puzzle/3d/generar-piezas.html. Progreso en
-     gya_puzzle3d_futurista3.
+     gya_puzzle3d_futurista4.
    Al terminar: gya_puzzle.hechos += "p3d:<id>". Solo, no cooperativo. */
 const P3D=(()=>{
   const IW=900,IH=900,K=900/1254,sc=p=>p.map(([x,y])=>[x*K,y*K]),TODO=[[0,0],[IW,0],[IW,IH],[0,IH]];
@@ -883,9 +883,9 @@ const P3D=(()=>{
         for(let i=0;i<10;i++){const a0=i/10*Math.PI*2+.15,a1=(i+1)/10*Math.PI*2+.15;ps.push({capa:3,clip:[[cuna(C,a0,a1)],[TODO,PISTA,TORRE,LUZ1,LUZ2]]})}
         ps.push({capa:4,clip:[[TORRE],[[[0,0],[IW,0],[IW,250*K],[0,250*K]]]]});ps.push({capa:4,clip:[[TORRE],[[[0,250*K],[IW,250*K],[IW,IH],[0,IH]]]]});
         ps.push({capa:5,clip:[[LUZ1]]});ps.push({capa:5,clip:[[LUZ2]]});return ps}},
-    futurista:{n:'Estadio Futurista',img:'assets/puzzle/3d/futurista.webp',mini:'assets/puzzle/3d/mini/futurista.webp',clave:'gya_puzzle3d_futurista3',atlas:'assets/puzzle/3d/futurista-piezas.webp',
+    futurista:{n:'Estadio Futurista',img:'assets/puzzle/3d/futurista.webp',mini:'assets/puzzle/3d/mini/futurista.webp',clave:'gya_puzzle3d_futurista4',atlas:'assets/puzzle/3d/futurista-piezas.webp',
       capas:['La cancha','Las tribunas','La fachada','El techo de vidrio','Los arcos','Lo de afuera: la explanada y el estacionamiento'],
-      piezas:[[0,535,292,273,188,608,1094],[0,385,292,176,182,4,1322],[0,220,173,319,236,858,831],[0,254,108,285,188,885,1094],[0,512,112,189,184,1174,1094],[0,535,170,319,240,535,831],[1,435,184,127,77,994,1508],[1,533,198,162,95,828,1508],[2,455,89,175,117,410,1508],[2,571,105,156,132,4,1508],[2,386,94,192,197,412,1094],[2,571,162,210,145,839,1322],[3,234,52,269,311,915,4],[3,379,268,193,163,642,1322],[3,549,198,297,269,1025,517],[4,271,52,242,132,164,1508],[4,303,51,337,259,4,831],[4,625,91,208,139,1053,1322],[4,601,220,235,107,589,1508],[5,354,46,147,171,491,1322],[5,627,128,143,199,265,1094],[6,807,204,82,180,184,1322],[6,1,67,446,509,4,4],[6,313,326,186,250,345,831],[6,443,403,217,173,270,1322],[6,443,340,457,329,454,4],[6,2,436,445,274,576,517],[6,190,572,257,224,4,1094],[6,443,572,331,310,4,517],[6,375,572,233,310,339,517]]}};
+      piezas:[[0,535,292,273,188,608,1094],[0,385,292,176,182,4,1322],[0,220,173,319,236,858,831],[0,254,108,285,188,885,1094],[0,512,112,189,184,1174,1094],[0,535,170,319,240,535,831],[1,435,184,144,59,1100,1508],[1,565,203,130,73,828,1508],[1,435,203,134,67,962,1508],[1,557,238,132,55,1248,1508],[2,455,89,175,117,410,1508],[2,571,105,156,132,4,1508],[2,386,94,192,197,412,1094],[2,571,162,210,145,839,1322],[3,234,52,269,311,915,4],[3,379,268,193,163,642,1322],[3,549,198,297,269,1025,517],[4,271,52,242,132,164,1508],[4,303,51,337,259,4,831],[4,625,91,208,139,1053,1322],[4,601,220,235,107,589,1508],[5,354,46,147,171,491,1322],[5,627,128,143,199,265,1094],[6,807,204,82,180,184,1322],[6,1,67,446,509,4,4],[6,313,326,186,250,345,831],[6,443,403,217,173,270,1322],[6,443,340,457,329,454,4],[6,2,436,445,274,576,517],[6,190,572,257,224,4,1094],[6,443,572,331,310,4,517],[6,375,572,233,310,339,517]]}};
   let est=null,D=null,IMG=null,piezas=[],capa=1,NC=1,drag=null,listo=false,brillo=[],raf=0,dpr=1,VW=0,VH=0,TOP=0,esc=1,trayY=0,abierto=false;
   let zm=1,panX=0,panY=0,OX=0,OY=0,B={x:0,y:0,w:0,h:0},T={x:0,y:0,w:0,h:0},apaisado=false,arrastre=null,pinza=null;const toques=new Map(),IMGS={};
   const E=()=>esc*zm;
@@ -918,7 +918,7 @@ const P3D=(()=>{
   function zoomEn(f,sx,sy){const e0=E(),wx=(sx-OX)/e0,wy=(sy-OY)/e0;zm*=f;limitar();const e1=E();panX+=sx-(OX+wx*e1);panY+=sy-(OY+wy*e1);limitar();acomodar(false)}
   function acomodar(nuevas){const ps=piezas.filter(p=>p.capa===capa&&!p.ok);const n=ps.length;if(!n)return;
     const cols=apaisado?Math.min(n,2):Math.min(n,n>6?4:3),filas=Math.ceil(n/cols),cw=T.w/cols,ch=(T.h-26)/filas;
-    ps.forEach((p,i)=>{const c=i%cols,f=Math.floor(i/cols),L=Math.max(p.w,p.h)*E(),k=Math.min(1,(cw-12)/L,(ch-10)/L);p.k=Math.max(.15,k);
+    ps.forEach((p,i)=>{const c=i%cols,f=Math.floor(i/cols),L=Math.max(p.w,p.h)*E(),k=Math.min(1.8,(cw-12)/L,(ch-10)/L);p.k=Math.max(.15,k);
       p.x=T.x+c*cw+cw/2-p.w*E()*p.k/2;p.y=T.y+f*ch+ch/2-p.h*E()*p.k/2;if(nuevas||p.giro==null){p.giro=1+Math.floor(Math.random()*3);p.ang=p.giro*Math.PI/2}})}
   const destino=p=>({x:OX+p.bx*E(),y:OY+p.by*E()});
   let AC=null;function son(f,d,v){if(!sonidoOk())return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime;o.type='triangle';o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(f*.5,t+d);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g).connect(AC.destination);o.start(t);o.stop(t+d)}catch(_){}}

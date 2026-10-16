@@ -924,3 +924,7 @@ Fecha: 16/10/2026 — Estadio Futurista: ARREGLO "no carga, solo se ve la pantal
 ```text
 Fecha: 16/10/2026 — Estadio Futurista: la BASE GRIS ya viene ARMADA (Gonzalo: "la base gris ya venía armada"). Sus 6 piezas son capa 0, puestas desde el principio; el juego arranca por la cancha. Quedan 24 piezas para armar en 6 capas: cancha (2), tribunas (4), fachada (3), techo de vidrio (4), arcos (2), explanada y estacionamiento (9). Progreso en gya_puzzle3d_futurista3. puzzle.html v33, puzzle.js v33, sw v307.
 ```
+
+```text
+Fecha: 16/10/2026 — Puzzle 3D: el césped del Estadio Futurista vuelve a ser de 4 PIEZAS (Gonzalo: "eran 4 de césped y me pusiste dos"; la cancha está cortada en 4 por sus ejes y esa capa no se junta aunque las piezas sean chicas, igual que los arcos). Y las piezas de la bandeja se ven MÁS GRANDES en el celular (hasta 1,8× el tamaño del hueco; al agarrarlas toman el tamaño real del hueco). Vale para los dos estadios. Futurista: 26 piezas para armar en 6 capas: cancha (4), tribunas (4), fachada (3), techo de vidrio (4), arcos (2), explanada (9). Progreso en gya_puzzle3d_futurista4. puzzle.html v34, puzzle.js v34, sw v308.
+```
