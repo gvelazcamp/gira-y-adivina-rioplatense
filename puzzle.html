@@ -25,7 +25,7 @@ select{padding:7px 8px}
 @media(max-width:430px){.brand{display:none}}
 @media(max-width:350px){#modo{width:82px}#count{width:78px}#img{width:82px}select{padding:6px 5px}select,button{font-size:12px}button{padding:6px 9px}.tg span{display:none}}
 #new{background:var(--acc);color:#2A1300;border-color:var(--acc)}
-#guide.on,#pvBtn.on{background:var(--teal);color:#0B2B27;border-color:var(--teal)}
+#guide.on,#pvBtn.on,#bordes.on{background:var(--teal);color:#0B2B27;border-color:var(--teal)}
 .tg{display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer}
 .tg input{display:none}
 .tg i{width:34px;height:20px;border-radius:10px;background:#4A3366;position:relative;transition:.2s}
@@ -424,7 +424,7 @@ async function newGame(){
   await prepararFuente();if(yo!==gen)return;
   if(!await armarPiezas(()=>rotOn?Math.floor(Math.random()*4):0))return;if(N0>=300)$('#toast').classList.remove('on');
   for(const p of pieces){const g={pieces:[p],locked:false,anim:0,px:0,py:0};p.g=g;groups.push(g)}
-  layout();fit();updateStats();dirty=true;busy=false;guardar();$('#bordes').hidden=pieces.length<150||!!coop;sincMusica();
+  layout();fit();updateStats();dirty=true;busy=false;guardar();$('#bordes').hidden=pieces.length<150||!!coop;bordesReset();sincMusica();
 }
 function guardar(manual){
   if(coop){if(manual)guardarSala().then(ok=>toast(ok?'✅ Sala guardada':'No se pudo guardar la sala (sin internet)'));return}
@@ -457,7 +457,7 @@ async function seguir(d,compartido){
     groups=d.g.map(l=>({pieces:[],locked:!!l,anim:0,px:0,py:0}));
     pieces.forEach((p,i)=>{const s=d.p[i];p.x=s[0];p.y=s[1];const gr=groups[s[3]];p.g=gr;gr.pieces.push(p)});
     groups=groups.filter(g=>g.pieces.length);
-    table=d.tb;elapsed=d.t||0;moves=d.m||0;fit();$('#bordes').hidden=pieces.length<150||!!coop;updateStats();dirty=true;busy=false;toast(compartido?'👥 ¡A armar juntos!':'🧩 Seguís con tu puzzle');sincMusica();
+    table=d.tb;elapsed=d.t||0;moves=d.m||0;fit();$('#bordes').hidden=pieces.length<150||!!coop;bordesReset();updateStats();dirty=true;busy=false;toast(compartido?'👥 ¡A armar juntos!':'🧩 Seguís con tu puzzle');sincMusica();
   }catch(e){busy=false;if(compartido){toast('No se pudo cargar el puzzle de tu compañero');return}toast('No se pudo abrir el guardado, empiezo otro');try{localStorage.removeItem(KEY)}catch(_){}newGame()}
 }
 function layout(){
@@ -506,7 +506,7 @@ let capa=null,excluir=null;
 function armarCapa(g){capa=null;if(pieces.length<150)return;try{const c=document.createElement('canvas');c.width=cv.width;c.height=cv.height;const real=ctx;ctx=c.getContext('2d');excluir=g;draw();ctx=real;excluir=null;capa={c,g,z:cam.z,x:cam.x,y:cam.y}}catch(_){ctx=cv.getContext('2d');excluir=null;capa=null}}
 /* Con muchas piezas, al mover o acercar la mesa con el dedo se usa una foto
    de la pantalla (vista) y se la desplaza/escala; cada 300 ms se renueva. */
-let vista=null;
+let vista=null,bordesAntes=null;
 function draw(){
   if(pieces.length>=300&&(pan||pinch)&&!drag&&src){const ahora=performance.now();
     if(vista&&ahora-vista.t<300){const k=cam.z/vista.z;ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle=bgGrad;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillRect(0,0,VW,VH);
@@ -620,12 +620,19 @@ $('#mini').onclick=()=>verPrevia(true);
 $('#bTuto').onclick=()=>{$('#tuto').classList.add('hide');try{const d=JSON.parse(localStorage.getItem('gya_puzzle')||'{}');d.tuto=1;localStorage.setItem('gya_puzzle',JSON.stringify(d))}catch(_){}};$('#guide').onclick=toggleGuide;
 $('#count').onchange=nuevoConfirmado;$('#rot').onchange=nuevoConfirmado;
 /* 🔲 Bordes (con 150+ piezas, solo): junta las piezas de borde sueltas
-   alrededor del marco, para arrancar como en un puzzle de verdad. */
-$('#bordes').onclick=()=>{if(coop||won)return;const off=S*1.7,ps=groups.filter(g=>!g.locked&&g.pieces.length===1).map(g=>g.pieces[0]).filter(p=>p.row===0||p.col===0||p.row===rows-1||p.col===cols-1);
+   alrededor del marco, para arrancar como en un puzzle de verdad. Tocándolo de
+   nuevo, las que siguen sin tocar vuelven a donde estaban (como la Guía). */
+function bordesReset(){bordesAntes=null;$('#bordes').classList.remove('on')}
+$('#bordes').onclick=()=>{if(coop||won)return;
+  if(bordesAntes){let n=0;for(const[p,o]of bordesAntes)if(p.g&&!p.g.locked&&p.g.pieces.length===1&&Math.abs(p.x-o.px)<1&&Math.abs(p.y-o.py)<1){p.x=o.x;p.y=o.y;n++}
+    bordesReset();dirty=true;guardarLuego();toast(n?`🔲 ${n} piezas de borde volvieron a la mesa`:'🔲 Las piezas de borde ya las estás usando');return}
+  const off=S*1.7,ps=groups.filter(g=>!g.locked&&g.pieces.length===1).map(g=>g.pieces[0]).filter(p=>p.row===0||p.col===0||p.row===rows-1||p.col===cols-1);
   if(!ps.length){toast('Ya no quedan bordes sueltos');return}
+  bordesAntes=new Map(ps.map(p=>[p,{x:p.x,y:p.y}]));
   const x0=-off,y0=-off,w=W+2*off,h=H+2*off,per=2*(w+h),paso=per/ps.length;
   ps.sort((a,b)=>Math.random()-.5).forEach((p,k)=>{let d=k*paso;if(d<w){p.x=x0+d;p.y=y0}else if((d-=w)<h){p.x=x0+w;p.y=y0+d}else if((d-=h)<w){p.x=x0+w-d;p.y=y0+h}else{d-=w;p.x=x0;p.y=y0+h-d}});
-  dirty=true;guardarLuego();toast(`🔲 ${ps.length} piezas de borde alrededor del marco`)};
+  for(const p of ps){const o=bordesAntes.get(p);o.px=p.x;o.py=p.y}$('#bordes').classList.add('on');
+  dirty=true;guardarLuego();toast(`🔲 ${ps.length} piezas de borde alrededor del marco · tocá 🔲 de nuevo para sacarlas`)};
 $('#zin').onclick=()=>zoomAt(1.3,VW/2,VH/2);$('#zout').onclick=()=>zoomAt(1/1.3,VW/2,VH/2);$('#zfit').onclick=fit;
 $('#img').onchange=e=>{if(e.target.value==='p3d'){e.target.value=lastImgSel||'dibujo';P3D.abrir();return}if(e.target.value==='propia')$('#file').click();else{if(e.target.value==='aventura'&&+$('#count').value<49)$('#count').value='49';if(e.target.value==='gigante'&&+$('#count').value<500)$('#count').value='500';lastImgSel=e.target.value;nuevoConfirmado()}};
 $('#file').onchange=async e=>{const f=e.target.files[0];if(!f){$('#img').value=lastImgSel;return}
