@@ -1032,6 +1032,15 @@ const P3D=(()=>{
   $('#p3Mas').onclick=()=>zoomEn(1.35,B.x+B.w/2,B.y+B.h/2);$('#p3Menos').onclick=()=>zoomEn(1/1.35,B.x+B.w/2,B.y+B.h/2);$('#p3Ver').onclick=()=>{zm=1;panX=panY=0;limitar();acomodar(false)};
   addEventListener('resize',()=>{if(abierto)resize()});
   return{abrir,cerrar,menu,_estado:()=>({piezas,capa,NC,est,listo,destino,E})}})();
+/* Botón "atrás" de Android (lo llama el juego principal): cierra lo que esté
+   abierto acá adentro antes de salir del Puzzle. true = cerró algo. */
+window.gyaAtras=()=>{const ab=id=>!$('#'+id).classList.contains('hide'),x=id=>$('#'+id).classList.add('hide');
+  if(ab('p3RefG')){x('p3RefG');return true}
+  if(ab('p3d')){P3D.cerrar();P3D.menu();return true}
+  if(ab('p3Menu')){x('p3Menu');return true}
+  for(const id of['chat','prev','invitar','pareja','tuto'])if(ab(id)){x(id);return true}
+  if(ab('elegir')&&!coop){cerrarElegir();return true}
+  return false};
 function cargarElegido(m){if(!coop)return;$('#invitar').classList.add('hide');coop.elegido=true;coop.act=m.act||Date.now();coop.creado=(m.d&&m.d.creado)||coop.act;clearInterval(tSel);cerrarElegir();seguir(m.d,true).then(()=>{updateStats();guardarSala()})}
 $('#pjCrear').onclick=crearSala;$('#pjUnir').onclick=()=>unirse($('#pjCodigo').value);$('#pjCodigo').onkeydown=e=>{if(e.key==='Enter')unirse($('#pjCodigo').value)};
 $('#pjCerrar').onclick=cerrarPj;

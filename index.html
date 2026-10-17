@@ -714,6 +714,11 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 #cambiarPerfil{font-size:1.05rem;text-decoration:none!important;background:#FFFFFF14!important;
  width:32px;height:32px;border-radius:50%;display:inline-grid;place-items:center;padding:0!important;flex:0 0 auto}
 .setup-stats{display:flex;gap:8px;flex:0 0 auto}
+/* Celulares angostos (o con "Tamaño de pantalla: grande" en Android): la fila de
+   racha/monedas/vidas/🔊/⚙️ se salía y el ⚙️ quedaba cortado. */
+@media(max-width:350px){.setup-stats{gap:4px;flex-wrap:wrap;flex:1 1 auto;justify-content:flex-start}.setup-stats .stat-pill{padding-left:7px;padding-right:7px;font-size:.8rem}}
+/* Android: deslizar hacia abajo arriba de todo recargaba el juego (volvía al splash). */
+html,body{overscroll-behavior-y:none}
 .stat-pill{background:#0B3B52F0;border:1px solid #37D6C055;border-radius:99px;padding:6px 12px;
  font-weight:800;font-size:.85rem;white-space:nowrap}
 .stat-pill b{font-weight:800;margin-left:2px}
@@ -10745,6 +10750,9 @@ $("cancelar").onclick=()=>{
   tossRespondedor=null;
   if(enTutorial)tutorialTick();
 };
+/* Con el teclado de Android abierto, que se vea el botón para confirmar */
+const verConfirmar=()=>{if($("modalResolver").classList.contains("ver"))setTimeout(()=>{try{$("confirmar").scrollIntoView({block:"nearest"})}catch(e){}},120)};
+$("respuesta").addEventListener("focus",verConfirmar);(window.visualViewport||window).addEventListener("resize",verConfirmar);
 $("respuesta").addEventListener("keydown",e=>{if(e.key==="Enter")$("confirmar").click();});
 $("confirmar").onclick=()=>{
   if(tvPruebaBotsActiva)return;
@@ -11334,8 +11342,13 @@ document.addEventListener("error",e=>{const t=e.target;if(!t||t.tagName!=="IMG"|
     for(const c of conf){const no=c.querySelector('[id$="No"]');if(no&&vis(no)){no.click();return true}}
     const capas=[...document.querySelectorAll('[id^="capa"].ver,[id^="modal"].ver')].filter(e=>vis(e)&&e.id!=="capaRueda"&&e.id!=="capaResuelto")
       .sort((a,b)=>(parseInt(getComputedStyle(b).zIndex)||0)-(parseInt(getComputedStyle(a).zIndex)||0));
-    for(const c of capas){const b=botonCerrar(c);if(b){b.click();return true}}
-    if(document.body.classList.contains("ext-abierta")){const a=document.getElementById("extAtras");if(a){a.click();return true}}
+    /* solo la que se ve de verdad arriba de todo (una ventana que quedó abierta
+       detrás de un juego de Extensiones no cuenta: el usuario no la ve) */
+    const arriba=c=>{const k=c.querySelector(".caja")||c,r=k.getBoundingClientRect(),t=document.elementFromPoint(r.left+r.width/2,r.top+Math.min(r.height/2,40));return !!t&&c.contains(t)};
+    for(const c of capas){if(!arriba(c))continue;const b=botonCerrar(c);if(b){b.click();return true}}
+    if(document.body.classList.contains("ext-abierta")){
+      const fr=document.querySelector("#extShell iframe");try{if(fr&&fr.contentWindow.gyaAtras&&fr.contentWindow.gyaAtras())return true}catch(e){}
+      const a=document.getElementById("extAtras");if(a){a.click();return true}}
     for(const[pant,btn]of[["pantPerfil","perfilCerrar"],["pantDurazno","dzSalir"],["mundo","salirMundo"],["eventos","evCerrar"]]){
       if(vis($(pant))){const b=$(btn);if(vis(b)){b.click();return true}}}
     if(vis($("juego"))&&vis($("bAbandonarPartida"))){$("bAbandonarPartida").click();return true}
@@ -11376,7 +11389,7 @@ document.addEventListener("error",e=>{const t=e.target;if(!t||t.tagName!=="IMG"|
 <script src="contra-reloj-rioplatense-online.js?v=12"></script>
 <script src="contra-reloj-rioplatense.js?v=12"></script>
 <script src="moon-tap.js?v=5"></script>
-<script src="puzzle.js?v=42"></script>
+<script src="puzzle.js?v=43"></script>
 <script src="pantalla-fija.js?v=5"></script>
 <script src="que-numero-soy.js?v=6"></script>
 <script src="quien-soy-datos.js?v=1"></script>
