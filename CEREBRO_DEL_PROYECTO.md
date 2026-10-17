@@ -957,3 +957,7 @@ Fecha: 17/10/2026 — Puzzle (iPhone, cooperativo): (1) la ventana "📲 Invitá
 ```text
 Fecha: 17/10/2026 — Puzzle cooperativo: cada sala de "Tus salas sin terminar" tiene una ✕ para quitarla de la lista (Gonzalo: "una cruz en las salas donde pueda eliminar la que no juego más"). Pide confirmar ahí mismo ("¿Quitar la sala X de tu lista? Quitar / No"). Solo la saca de ESTE celular (localStorage gya_puzzle_salas); la sala sigue existiendo para la otra persona y se puede volver a entrar con el código. puzzle.html v39, puzzle.js v39, sw v314.
 ```
+
+```text
+Fecha: 17/10/2026 — Puzzle 500/1000: el botón 🔲 (juntar bordes alrededor del marco) ahora se prende y se apaga como la Guía (Gonzalo: "no se pueden sacar después, sería como guía ponerlo y sacarlo"). Prendido (verde): pone las piezas de borde sueltas alrededor del marco. Tocándolo de nuevo, las que siguen sin tocar vuelven exactamente a donde estaban en la mesa; las que ya moviste o encastraste se quedan. Se apaga solo al empezar o retomar otro puzzle (bordesReset). Probado con 500 piezas: 86 bordes salen y vuelven a su lugar. puzzle.html v40, puzzle.js v40, sw v315.
+```
