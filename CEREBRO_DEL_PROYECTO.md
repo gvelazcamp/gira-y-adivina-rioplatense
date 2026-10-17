@@ -965,3 +965,7 @@ Fecha: 17/10/2026 — Puzzle 500/1000: el botón 🔲 (juntar bordes alrededor d
 ```text
 Fecha: 17/10/2026 — Puzzle 500/1000: más fácil agarrar piezas sin hacer zoom (Gonzalo: "a veces solo acepta moverlas haciendo zoom hasta la pieza"). Sin zoom cada pieza mide ~12 px en el celular y había que tocarla exacto; si el dedo caía al lado, movía la mesa. Ahora hitTocar(): si el toque no cae justo sobre una pieza suelta, agarra la suelta más cercana (hasta ~24 px de pantalla). Medido con 1000 piezas, 300 toques a 6–20 px de una pieza: antes agarraba 61, ahora 300. Para mover la mesa: tocar lejos de las piezas o con dos dedos. puzzle.html v41, puzzle.js v41, sw v316.
 ```
+
+```text
+Fecha: 17/10/2026 — Puzzle: (1) pellizco con dos dedos en 500/1000: el 1er dedo casi siempre agarra una pieza y el 2º dedo la giraba en vez de hacer zoom → ahora si la pieza todavía no se movió, el 2º dedo hace pellizco (zoom) y la pieza vuelve a su lugar; si ya la venías arrastrando, el 2º dedo la gira como antes. (2) Gigantes (500/1000) en COOPERATIVO (antes estaba desactivado a propósito): en "Elijan el puzzle" aparece "500 piezas / 1000 piezas" cuando la categoría es Gigantes (sel.n, viaja en el mensaje 'sel'; los dos tienen que aceptar la misma cantidad). También en solo. Ojo: el estado completo de 1000 piezas pesa ~135 KB por mensaje 'nuevo'/'todo' (500 ≈ 70 KB); si en salas reales no llega a la pareja, achicar ese mensaje (redondear posiciones, mandar sin bordes). El botón 🔲 sigue oculto en cooperativo. puzzle.html v42, puzzle.js v42, sw v317.
+```

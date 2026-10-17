@@ -115,6 +115,9 @@ select{padding:7px 8px}
 .p3m-tx{display:flex;flex-direction:column;gap:3px}.p3m-tx b{color:var(--acc);font-size:16px}.p3m-tx small{color:var(--muted);font-size:12.5px;font-weight:600}
 .p3m-ok{color:var(--teal);font-size:12.5px}.p3m-sig{color:#fff;font-size:12.5px}
 #p3Menu .card>button{display:block;width:100%}
+#elegir .el-n{display:flex;gap:8px;justify-content:center;margin:2px 0 6px}#elegir .el-n[hidden]{display:none}
+#elegir .card .el-n button{width:auto;flex:1;margin-top:0;padding:8px 10px;font-size:13.5px;background:var(--btn);color:var(--text);border:1px solid var(--line)}
+#elegir .card .el-n button.on{background:var(--teal);color:#0B2B27;border-color:var(--teal)}
 #elegir .card #el3d{display:block;width:100%;margin-top:8px;border-color:var(--teal)}
 #elegir .card #el3d[hidden]{display:none}
 #elegir{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);z-index:19;transition:opacity .3s;padding:12px}
@@ -230,7 +233,7 @@ button:disabled,select:disabled{opacity:.4;cursor:default}
 <div id="elegir" class="hide"><div class="card"><h2>🧩 Elijan el puzzle</h2>
 <select id="elCat" aria-label="Categoría"><option value="dibujo">🎨 Dibujos · 25 piezas</option><option value="aventura">🗺️ Aventuras · 49 piezas</option><option value="heroe">🦸 Héroes · 25 piezas</option><option value="gigante">🧠 Gigantes · 500 o 1000 piezas</option><option value="ciudad">🏙️ Ciudades · 25 piezas</option></select>
 <div class="el-foto"><button id="elAnt" aria-label="Anterior">‹</button><img id="elImg" alt=""><span id="elSello" class="el-sello" hidden>✅ Ya lo armaste</span><button id="elSig" aria-label="Siguiente">›</button></div>
-<p class="el-nombre" id="elNombre"></p><p class="el-otro" id="elOtro"></p>
+<p class="el-nombre" id="elNombre"></p><div id="elN" class="el-n" hidden><button id="elN5">500 piezas</button><button id="elN10">1000 piezas</button></div><p class="el-otro" id="elOtro"></p>
 <button id="el3d" class="pj-sec" hidden>🧊 Puzzles 3D: estadios encastrables</button><button id="elOk">✅ Aceptar</button><button id="elNo" class="pj-sec" hidden>❌ No, hablemos por el chat</button><button id="elChat" class="pj-sec">💬 Chat</button><button id="elSalir" class="pj-sec">Salir de la sala</button></div></div>
 <div id="seguir" class="hide"><div class="card"><div class="big">🧩</div><h2>Tenés un puzzle a medio armar</h2><p id="seguirTxt"></p><button id="bSeguir">Seguir armándolo</button><br><button id="bOtro" style="margin-top:10px;background:var(--btn);color:var(--text);border:1px solid var(--line)">Empezar otro</button></div></div>
 <div id="win" class="hide"><div class="card"><h2>🎉 ¡Puzzle completo!</h2><img id="winImg" class="win-img" alt="Puzzle terminado"><p id="winTxt"></p><button id="winShare" class="pj-wpp">📲 Compartir foto</button><button id="again">Jugar otro</button></div></div>
@@ -557,7 +560,9 @@ cv.addEventListener('pointerdown',e=>{
      zoom y movía la mesa solo. */
   if(e.isPrimary&&ptrs.size){ptrs.clear();pinch=null;pan=null;vista=null;if(drag){const g=drag.g;drag=null;capa=null;snap(g)}}
   initAudio();try{cv.setPointerCapture(e.pointerId)}catch(_){}const sp=sxy(e);ptrs.set(e.pointerId,sp);
-  if(ptrs.size===2){if(drag){if($('#rot').checked)rotateGroup(drag.g,1,drag.lw.x,drag.lw.y);drag.moved=true}else{pan=null;startPinch()}return}
+  /* 2º dedo: si el primero agarró una pieza pero todavía no la movió, es un pellizco
+     (zoom): la pieza vuelve a su lugar. Si ya la venía moviendo, el 2º dedo la gira. */
+  if(ptrs.size===2){if(drag&&drag.moved){if($('#rot').checked)rotateGroup(drag.g,1,drag.lw.x,drag.lw.y)}else{if(drag){const w0=toWorld(drag.start.x,drag.start.y);moveGroup(drag.g,w0.x-drag.lw.x,w0.y-drag.lw.y);drag=null;capa=null;cv.style.cursor='grab'}pan=null;startPinch()}return}
   if(ptrs.size>2||won)return;
   const w=toWorld(sp.x,sp.y),p=hitTocar(w.x,w.y);
   if(p&&!p.g.locked){front(p.g);startTimer();
@@ -808,7 +813,7 @@ window.salirSalaSilencio=salirSalaSilencio;
    "Aceptar" ("ok"): si la pareja está en vivo arranca cuando aceptan los dos
    (lo genera el de id menor y lo manda con "nuevo"); si no, arranca al toque. */
 const NOMBRES={'mercado-puerto':'Mercado del puerto','valle-dragones':'Valle de los dragones','estacion-tren':'Estación de trenes','islas-cielo':'Islas del cielo','biblioteca-magica':'Biblioteca mágica','oasis-desierto':'Oasis del desierto','pueblo-nieve':'Pueblo de nieve','ciudad-submarina':'Ciudad bajo el mar','casas-arbol':'Casas en el árbol','ciudad-vapor':'Ciudad a vapor','puerto-medieval':'Puerto medieval','princesa-hielo':'Princesa de hielo','hada-bosque':'Hada del bosque','super-veloz':'Súper veloz',jaguar:'La chica y el jaguar','chica-rayo':'Chica rayo','rey-del-mar':'Rey del mar','hombre-lava':'Héroe de lava','chica-estelar':'Chica estelar','viajero-tiempo':'Viajero del tiempo','gata-nocturna':'Gata nocturna',dragon:'Dragón',granja:'Granja',nieve:'Muñeco de nieve',golosinas:'Golosinas',oceano:'Océano',selva:'Selva',dinosaurios:'Dinosaurios',espacio:'Espacio',playa:'Playa',parque:'Parque',piratas:'Piratas',egipto:'Egipto','torneo-medieval':'Torneo medieval','tren-del-oeste':'Tren del Oeste',vikingos:'Vikingos','ciudad-voladora':'Ciudad voladora',samurai:'Samurái','base-espacial':'Base espacial',futbol:'Fútbol',barcos:'Barcos de guerra'};
-let sel={cat:'dibujo',i:0},selT=0,miOk=false,otroOk=false,tSel=0,tNuevo=0;
+let sel={cat:'dibujo',i:0,n:500},selT=0,miOk=false,otroOk=false,tSel=0,tNuevo=0;
 const listaCat=c=>c==='gigante'?GIGANTES:c==='aventura'?AVENTURAS:c==='heroe'?HEROES:c==='ciudad'?CIUDADES:DIBUJOS;
 const rutaSel=()=>{const id=listaCat(sel.cat)[sel.i];return sel.cat==='ciudad'?'assets/worlds/'+id+'.webp':'assets/puzzle/'+id+'.webp'};
 const nombreSel=()=>{const id=listaCat(sel.cat)[sel.i];return NOMBRES[id]||id.replace(/-/g,' ').replace(/\b\w/g,l=>l.toUpperCase())};
@@ -817,15 +822,15 @@ const nombreSel=()=>{const id=listaCat(sel.cat)[sel.i];return NOMBRES[id]||id.re
 function leerHechos(){try{const h=JSON.parse(localStorage.getItem('gya_puzzle')||'{}').hechos;return new Set(Array.isArray(h)?h:[])}catch(_){return new Set()}}
 function claveFuente(){if(fuente.ciudad)return'ciudad:'+fuente.ciudad;const m=(fuente.archivo||'').match(/assets\/puzzle\/([\w-]+)\.webp/);if(!m)return'';for(const c of['dibujo','aventura','heroe','gigante'])if(listaCat(c).includes(m[1]))return c+':'+m[1];return''}
 function anotarHecho(){const k=claveFuente();if(!k)return;try{const d=JSON.parse(localStorage.getItem('gya_puzzle')||'{}');const h=new Set(Array.isArray(d.hechos)?d.hechos:[]);h.add(k);d.hechos=[...h];localStorage.setItem('gya_puzzle',JSON.stringify(d))}catch(_){}}
-function pintarElegir(){{const o=$('#elCat').querySelector('[value=gigante]');o.disabled=o.hidden=!!coop;if(coop&&sel.cat==='gigante')sel={cat:'dibujo',i:0}}const L=listaCat(sel.cat);sel.i=((sel.i%L.length)+L.length)%L.length;$('#elCat').value=sel.cat;{const ru=rutaSel();$('#elImg').src=sel.cat==='ciudad'?ru:miniDe(ru)}
+function pintarElegir(){if(sel.n!==1000)sel.n=500;$('#elN').hidden=sel.cat!=='gigante';$('#elN5').classList.toggle('on',sel.n===500);$('#elN10').classList.toggle('on',sel.n===1000);const L=listaCat(sel.cat);sel.i=((sel.i%L.length)+L.length)%L.length;$('#elCat').value=sel.cat;{const ru=rutaSel();$('#elImg').src=sel.cat==='ciudad'?ru:miniDe(ru)}
   const hechos=leerHechos(),hecho=hechos.has(sel.cat+':'+L[sel.i]),nH=L.filter(id=>hechos.has(sel.cat+':'+id)).length;
   $('#elImg').classList.toggle('hecho',hecho);$('#elSello').hidden=!hecho;
   $('#el3d').hidden=!!coop;
-  if(!coop){$('#elegir h2').textContent='🧩 Elegí el puzzle';$('#elNombre').textContent=`${nombreSel()} · ${sel.i+1}/${L.length}`+(nH?` · ✅ ${nH} armado${nH>1?'s':''}`:'');
+  if(!coop){$('#elegir h2').textContent='🧩 Elegí el puzzle';$('#elNombre').textContent=`${nombreSel()}${piezasSel()} · ${sel.i+1}/${L.length}`+(nH?` · ✅ ${nH} armado${nH>1?'s':''}`:'');
     $('#elOtro').textContent=hecho?'Ya lo armaste, pero podés volver a armarlo':'';$('#elOtro').classList.remove('pregunta');
     $('#elNo').hidden=true;$('#elChat').hidden=true;$('#elOk').disabled=false;$('#elOk').textContent=hecho?'🔁 Armarlo de nuevo':'▶ Armar este';$('#elSalir').textContent='Cancelar';return}
   $('#elegir h2').textContent='🧩 Elijan el puzzle';$('#elChat').hidden=false;$('#elSalir').textContent='Salir de la sala';
-  $('#elNombre').textContent=`${nombreSel()} · ${sel.i+1}/${L.length}`+(hecho?' · ✅ ya armado':'');
+  $('#elNombre').textContent=`${nombreSel()}${piezasSel()} · ${sel.i+1}/${L.length}`+(hecho?' · ✅ ya armado':'');
   const quien=coop&&(coop.compa||otros());
   const enRed=red&&red.connected,pregunta=coop&&coop.online&&otroOk&&!miOk;$('#elOtro').classList.toggle('pregunta',!!pregunta);$('#elNo').hidden=!pregunta;
   $('#elOtro').textContent=pregunta?`✅ ${quien} eligió este puzzle. ¿Aceptás el puzzle de ${quien}?`:coop&&!enRed?'🔄 Conectando con la sala…':!coop||!coop.online?(quien?`${quien} no está ahora: si aceptás, arrancás vos y después se suma`:'Si aceptás, arrancás y tu compañero se suma cuando entre'):otroOk?`✅ ${quien} aceptó este`:miOk?`⏳ Esperando que ${quien} acepte…`:`👀 ${quien} ve lo mismo que vos`;
@@ -834,13 +839,15 @@ function abrirElegir(){$('#invitar').classList.add('hide');miOk=otroOk=false;pin
   /* Cada 2 s se repite lo elegido: si un mensaje se pierde o la otra persona
      tarda en conectarse, igual quedan sincronizados. */
   clearInterval(tSel);tSel=setInterval(()=>{if(!coop||coop.elegido||$('#elegir').classList.contains('hide')){clearInterval(tSel);return}mandarSel();pintarElegir()},2000)}
-function mandarSel(){if(coop&&!coop.elegido)mandar({k:'sel',cat:sel.cat,i:sel.i,st:selT,ok:miOk?1:0})}
+const piezasSel=()=>sel.cat==='gigante'?' · '+sel.n+' piezas':'';
+function mandarSel(){if(coop&&!coop.elegido)mandar({k:'sel',cat:sel.cat,i:sel.i,n:sel.n,st:selT,ok:miOk?1:0})}
 function recibirSel(m){
   if(!coop)return;
   if(coop.elegido){const t=Date.now();if(t-tNuevo>3000){tNuevo=t;mandar({k:'nuevo',act:coop.act,d:estadoCompleto()})}return}
   if(typeof m.cat!=='string'||!listaCat(m.cat))return;
-  if((m.st||0)>selT){const cambio=m.cat!==sel.cat||m.i!==sel.i;sel={cat:m.cat,i:+m.i||0};selT=m.st;if(cambio)miOk=false}
-  const antes=otroOk;otroOk=!!m.ok&&m.cat===sel.cat&&m.i===sel.i;
+  const mn=m.n===1000?1000:500;
+  if((m.st||0)>selT){const cambio=m.cat!==sel.cat||m.i!==sel.i||mn!==sel.n;sel={cat:m.cat,i:+m.i||0,n:mn};selT=m.st;if(cambio)miOk=false}
+  const antes=otroOk;otroOk=!!m.ok&&m.cat===sel.cat&&m.i===sel.i&&mn===sel.n;
   if(otroOk&&!antes){try{navigator.vibrate&&navigator.vibrate(40)}catch(_){}}
   if($('#elegir').classList.contains('hide')&&!coop.elegido)abrirElegir();else pintarElegir();chequearOk()}
 /* Llega un puzzle ya armado de la pareja. Si yo también había arrancado uno
@@ -852,8 +859,9 @@ function recibirPuzzle(m){
   if((d.creado||0)<(coop.creado||0)||((d.creado||0)===(coop.creado||0)&&(m.de||'')<miId)){coop.creado=d.creado||0;coop.act=m.act||Date.now();seguir(d,true).then(()=>{updateStats();guardarSala()})}
   else mandar({k:'todo',act:coop.act,d:estadoCompleto()})}
 const cerrarElegir=()=>$('#elegir').classList.add('hide');
-function moverSel(c,i){const L=listaCat(c);sel={cat:c,i:((i%L.length)+L.length)%L.length};selT=Math.max(Date.now(),selT+1);miOk=otroOk=false;pintarElegir();mandarSel()}
+function moverSel(c,i,n){const L=listaCat(c);sel={cat:c,i:((i%L.length)+L.length)%L.length,n:n||sel.n||500};selT=Math.max(Date.now(),selT+1);miOk=otroOk=false;pintarElegir();mandarSel()}
 $('#elCat').onchange=e=>moverSel(e.target.value,0);
+$('#elN5').onclick=()=>moverSel(sel.cat,sel.i,500);$('#elN10').onclick=()=>moverSel(sel.cat,sel.i,1000);
 $('#elAnt').onclick=()=>moverSel(sel.cat,sel.i-1);$('#elSig').onclick=()=>moverSel(sel.cat,sel.i+1);
 $('#elNo').onclick=()=>{if(!coop)return;const q=coop.compa||otros();enviarChat('❌ '+miNombre()+' no aceptó '+nombreSel(),true);mandar({k:'no',cat:sel.cat,i:sel.i});otroOk=miOk=false;selT=Math.max(Date.now(),selT+1);mandarSel();pintarElegir();$('#chat').classList.remove('hide');pintarChat();setTimeout(()=>{try{$('#chatTxt').focus()}catch(_){}},200)};
 $('#elChat').onclick=()=>{$('#chat').classList.remove('hide');pintarChat()};
@@ -864,7 +872,7 @@ function chequearOk(){if(!coop||coop.elegido||!miOk)return;if(coop.online&&!otro
   if(coop.online&&coop.otroId&&coop.otroId<miId)return; /* lo arma la pareja y lo manda */
   generarElegido()}
 async function generarElegido(){
-  cerrarElegir();$('#invitar').classList.add('hide');forzar=rutaSel();$('#img').value=sel.cat;lastImgSel=sel.cat;$('#count').value=sel.cat==='aventura'?'49':'25';
+  cerrarElegir();$('#invitar').classList.add('hide');forzar=rutaSel();$('#img').value=sel.cat;lastImgSel=sel.cat;$('#count').value=sel.cat==='gigante'?String(sel.n):sel.cat==='aventura'?'49':'25';
   busy=false;await newGame();if(!coop)return;
   coop.elegido=true;coop.act=Date.now();coop.creado=coop.act;clearInterval(tSel);updateStats();mandar({k:'nuevo',act:coop.act,d:estadoCompleto()});guardarSala();toast('👥 ¡A armar juntos!')}
 /* Elegir en modo solo: arranca en el puzzle que estás armando (o el primero
@@ -873,10 +881,10 @@ function abrirElegirSolo(siguiente){
   if(coop)return;const k=claveFuente();let cat=['dibujo','aventura','heroe','gigante','ciudad'].includes($('#img').value)?$('#img').value:'dibujo',i=0;
   if(k){const[c,id]=k.split(':');cat=c;i=Math.max(0,listaCat(c).indexOf(id))}
   const L=listaCat(cat),h=leerHechos();if(siguiente||h.has(cat+':'+L[i])){for(let n=1;n<=L.length;n++){const j=(i+n)%L.length;if(!h.has(cat+':'+L[j])){i=j;break}}}
-  sel={cat,i};miOk=otroOk=false;pintarElegir();$('#elegir').classList.remove('hide')}
+  sel={cat,i,n:+$('#count').value>=1000?1000:500};miOk=otroOk=false;pintarElegir();$('#elegir').classList.remove('hide')}
 async function armarElegidoSolo(){
   if(enCurso()&&!won&&!confirm('¿Empezar este puzzle? Se pierde el que estás armando.'))return;
-  cerrarElegir();forzar=rutaSel();$('#img').value=sel.cat;lastImgSel=sel.cat;if(sel.cat==='aventura'&&+$('#count').value<49)$('#count').value='49';if(sel.cat==='gigante'&&+$('#count').value<500)$('#count').value='500';
+  cerrarElegir();forzar=rutaSel();$('#img').value=sel.cat;lastImgSel=sel.cat;if(sel.cat==='aventura'&&+$('#count').value<49)$('#count').value='49';if(sel.cat==='gigante')$('#count').value=String(sel.n);
   busy=false;await newGame()}
 /* ================= PUZZLES 3D (encastrables) =================
    Maquetas de estadios (imágenes que Gonzalo generó con ChatGPT) cortadas en
