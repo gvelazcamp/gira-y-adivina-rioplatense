@@ -139,6 +139,13 @@ select{padding:7px 8px}
 .pj-sub{font-size:13.5px!important;line-height:1.45;margin-bottom:10px!important}
 .pj-tit{font-size:12px;color:var(--muted);text-align:left;margin:10px 2px 2px;font-weight:700}
 .card button.pj-sala{background:var(--btn);color:var(--text);border:1px solid var(--line);text-align:left;font-size:13.5px;padding:10px 14px}
+#pareja .pj-fila{display:flex;gap:6px;align-items:center;margin-top:9px}
+#pareja .pj-fila button{margin-top:0}
+#pareja .pj-fila .pj-sala{flex:1;min-width:0}
+#pareja .pj-fila .pj-x{flex:0 0 42px;width:42px;height:42px;padding:0;font-size:16px;background:var(--btn);color:var(--text);border:1px solid var(--line)}
+#pareja .pj-preg{flex:1;text-align:left;font-size:13.5px;font-weight:700}
+#pareja .pj-fila .pj-si{width:auto;flex:0 0 auto;padding:9px 14px;background:#E2445C;color:#fff}
+#pareja .pj-fila .pj-no{width:auto;flex:0 0 auto;padding:9px 14px;background:var(--btn);color:var(--text);border:1px solid var(--line)}
 .card button.pj-sec{background:var(--btn);color:var(--text);border:1px solid var(--line)}
 .card button.pj-wpp{background:#25D366;color:#06301A}
 .pj-unir{display:flex;gap:8px;margin-top:9px}
@@ -742,10 +749,15 @@ function bloquearControles(v){for(const id of['#count','#img','#new','#rot'])$(i
 function menuModo(){const m=$('#modo');m.innerHTML=coop?`<option value="sala">👥 ${coop.sala}</option><option value="invitar">📲 Invitar</option><option value="pausa">⏸️ Pausar y salir</option>`:'<option value="solo">👤 Solo</option><option value="pareja">👥 Cooperativo</option>';m.value=coop?'sala':'solo'}
 const estadoPj=t=>{$('#pjEstado').textContent=t};
 const hace=ms=>{const m=Math.round((Date.now()-ms)/60000);return m<1?'recién':m<60?`hace ${m} min`:m<1440?`hace ${Math.round(m/60)} h`:`hace ${Math.round(m/1440)} días`};
-function abrirPj(){
-  const l=misSalas();$('#pjLista').innerHTML=l.length?'<p class="pj-tit">Tus salas sin terminar</p>'+l.map(x=>`<button class="pj-sala" data-s="${x.s}">▶ Sala ${x.s}${x.con?' · con '+x.con.replace(/[<>&"]/g,''):''} · ${x.pct||0}% · ${hace(x.act||Date.now())}</button>`).join(''):'';
+/* Cada sala guardada tiene una ✕ para quitarla de "Tus salas" (solo de este
+   celular: la sala sigue existiendo para la otra persona). Pide confirmar ahí mismo. */
+function pintarMisSalas(){const l=misSalas();$('#pjLista').innerHTML=l.length?'<p class="pj-tit">Tus salas sin terminar</p>'+l.map(x=>`<div class="pj-fila" data-f="${x.s}"><button class="pj-sala" data-s="${x.s}">▶ Sala ${x.s}${x.con?' · con '+x.con.replace(/[<>&"]/g,''):''} · ${x.pct||0}% · ${hace(x.act||Date.now())}</button><button class="pj-x" data-x="${x.s}" aria-label="Quitar la sala ${x.s}">✕</button></div>`).join(''):'';
   $('#pjLista').querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>unirse(b.dataset.s));
-  estadoPj('');$('#pareja').classList.remove('hide')}
+  $('#pjLista').querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>{const s=b.dataset.x,f=b.parentNode;
+    f.innerHTML=`<span class="pj-preg">¿Quitar la sala ${s} de tu lista?</span><button class="pj-si">Quitar</button><button class="pj-no">No</button>`;
+    f.querySelector('.pj-no').onclick=pintarMisSalas;
+    f.querySelector('.pj-si').onclick=()=>{try{localStorage.setItem(SALAS,JSON.stringify(misSalas().filter(x=>x.s!==s)))}catch(_){}pintarMisSalas();toast('🗑️ Sala '+s+' quitada de tu lista')}})}
+function abrirPj(){pintarMisSalas();estadoPj('');$('#pareja').classList.remove('hide')}
 const cerrarPj=()=>$('#pareja').classList.add('hide');
 async function entrarSala(c,ej,nuevo){
   coop={sala:c,nombres:Array.isArray(ej.nombres)?ej.nombres.filter(n=>n&&n!=='Jugador').slice(0,6):[],act:ej.act||Date.now(),online:false,compa:'',elegido:!!ej.d,creado:(ej.d&&ej.d.creado)||0};

@@ -953,3 +953,7 @@ Fecha: 17/10/2026 — Tutti Frutti pasa de "Juegos de previa" a "🎮 Más juego
 ```text
 Fecha: 17/10/2026 — Puzzle (iPhone, cooperativo): (1) la ventana "📲 Invitá a jugar" quedaba abierta para quien creó la sala aunque ya estaban jugando y había que salir y volver a entrar → se cierra al abrir "Elegí el puzzle" y al cargarse el puzzle elegido (abrirElegir, cargarElegido, generarElegido). (2) "A veces hace zoom al tocar dos veces y mueve el juego": en iPhone a veces se pierde el "soltar" de un dedo; quedaba guardado y el toque siguiente contaba como 2 dedos (pellizco) → zoom y la mesa se movía sola. Ahora un toque nuevo (primer dedo, isPrimary) borra dedos viejos; lo mismo en el Puzzle 3D. Además se bloquea el zoom de página de iPhone (gesturestart/dblclick). Probado simulando el dedo "perdido": antes cambiaba el zoom, ahora no. puzzle.html v38, puzzle.js v38, sw v313.
 ```
+
+```text
+Fecha: 17/10/2026 — Puzzle cooperativo: cada sala de "Tus salas sin terminar" tiene una ✕ para quitarla de la lista (Gonzalo: "una cruz en las salas donde pueda eliminar la que no juego más"). Pide confirmar ahí mismo ("¿Quitar la sala X de tu lista? Quitar / No"). Solo la saca de ESTE celular (localStorage gya_puzzle_salas); la sala sigue existiendo para la otra persona y se puede volver a entrar con el código. puzzle.html v39, puzzle.js v39, sw v314.
+```
