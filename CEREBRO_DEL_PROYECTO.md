@@ -961,3 +961,7 @@ Fecha: 17/10/2026 — Puzzle cooperativo: cada sala de "Tus salas sin terminar" 
 ```text
 Fecha: 17/10/2026 — Puzzle 500/1000: el botón 🔲 (juntar bordes alrededor del marco) ahora se prende y se apaga como la Guía (Gonzalo: "no se pueden sacar después, sería como guía ponerlo y sacarlo"). Prendido (verde): pone las piezas de borde sueltas alrededor del marco. Tocándolo de nuevo, las que siguen sin tocar vuelven exactamente a donde estaban en la mesa; las que ya moviste o encastraste se quedan. Se apaga solo al empezar o retomar otro puzzle (bordesReset). Probado con 500 piezas: 86 bordes salen y vuelven a su lugar. puzzle.html v40, puzzle.js v40, sw v315.
 ```
+
+```text
+Fecha: 17/10/2026 — Puzzle 500/1000: más fácil agarrar piezas sin hacer zoom (Gonzalo: "a veces solo acepta moverlas haciendo zoom hasta la pieza"). Sin zoom cada pieza mide ~12 px en el celular y había que tocarla exacto; si el dedo caía al lado, movía la mesa. Ahora hitTocar(): si el toque no cae justo sobre una pieza suelta, agarra la suelta más cercana (hasta ~24 px de pantalla). Medido con 1000 piezas, 300 toques a 6–20 px de una pieza: antes agarraba 61, ahora 300. Para mover la mesa: tocar lejos de las piezas o con dos dedos. puzzle.html v41, puzzle.js v41, sw v316.
+```

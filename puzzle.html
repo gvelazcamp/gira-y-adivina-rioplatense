@@ -475,6 +475,11 @@ function zoomAt(f,sx,sy){const w=toWorld(sx,sy),z=clampZ(cam.z*f);cam.z=z;cam.x=
 const order=()=>groups.filter(g=>g.locked).concat(groups.filter(g=>!g.locked));
 function hit(x,y){const o=order();for(let i=o.length-1;i>=0;i--){const ps=o[i].pieces;for(let j=ps.length-1;j>=0;j--){const p=ps[j];let dx=x-p.x,dy=y-p.y;
   if(Math.abs(dx)>SIDE/2||Math.abs(dy)>SIDE/2)continue;for(let k=0;k<p.r;k++){const t=dx;dx=dy;dy=-t}if(hctx.isPointInPath(p.path,dx+S/2,dy+S/2))return p}}return null}
+/* Para agarrar con el dedo: si no cae justo sobre una pieza suelta, toma la suelta
+   más cercana (hasta ~24 px de pantalla). Con 500/1000 piezas, sin zoom, cada pieza
+   mide pocos píxeles y antes había que acercarse para poder agarrarla. */
+function hitTocar(x,y){const p=hit(x,y);if(p&&!p.g.locked)return p;const R=Math.max(SIDE*.55,24/cam.z);let best=null,bd=R*R;
+  for(const g of groups){if(g.locked)continue;for(const q of g.pieces){const dx=q.x-x,dy=q.y-y,d=dx*dx+dy*dy;if(d<bd){bd=d;best=q}}}return best||p}
 function front(g){const i=groups.indexOf(g);groups.splice(i,1);groups.push(g)}
 function moveGroup(g,dx,dy){for(const p of g.pieces){p.x+=dx;p.y+=dy}}
 function rotateGroup(g,dir,px,py){if(g.locked)return;for(const p of g.pieces){const dx=p.x-px,dy=p.y-py;if(dir>0){p.x=px-dy;p.y=py+dx}else{p.x=px+dy;p.y=py-dx}p.r=(p.r+dir+4)%4}
@@ -554,7 +559,7 @@ cv.addEventListener('pointerdown',e=>{
   initAudio();try{cv.setPointerCapture(e.pointerId)}catch(_){}const sp=sxy(e);ptrs.set(e.pointerId,sp);
   if(ptrs.size===2){if(drag){if($('#rot').checked)rotateGroup(drag.g,1,drag.lw.x,drag.lw.y);drag.moved=true}else{pan=null;startPinch()}return}
   if(ptrs.size>2||won)return;
-  const w=toWorld(sp.x,sp.y),p=hit(w.x,w.y);
+  const w=toWorld(sp.x,sp.y),p=hitTocar(w.x,w.y);
   if(p&&!p.g.locked){front(p.g);startTimer();
     if(e.button===2||e.ctrlKey){if($('#rot').checked){rotateGroup(p.g,-1,p.x,p.y);snap(p.g)}return}
     drag={g:p.g,p,id:e.pointerId,lw:w,start:sp,t:performance.now(),moved:false};cv.style.cursor='grabbing';armarCapa(p.g)}
