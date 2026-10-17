@@ -2791,7 +2791,7 @@ function programarRankingSync(){
 const guardarMeta=()=>{try{localStorage.setItem(METAK,JSON.stringify(meta));}catch(e){}programarRankingSync();};
 function recursosInfinitosGonzalo(){try{return esGonzalo();}catch(e){return false;}}
 function puedePagarMonedas(precio){return recursosInfinitosGonzalo()||meta.monedas>=precio;}
-function gastarMonedas(precio){if(!recursosInfinitosGonzalo())meta.monedas-=precio;guardarMeta();}
+function gastarMonedas(precio){if(!recursosInfinitosGonzalo())meta.monedas-=precio;guardarMeta();refrescarMonedas();}
 const vidasInfinitasActivas=()=>recursosInfinitosGonzalo()||meta.vidasInfinitasHasta>Date.now();
 const tieneVidas=()=>vidasInfinitasActivas()||meta.vidas>0;
 function textoVidasInfinitas(){
@@ -2813,7 +2813,14 @@ function gastarVida(){regenerarVidas();if(vidasInfinitasActivas())return true;if
 function recuperarVida(){meta.vidas=Math.min(VIDAS_MAX,meta.vidas+1);
   if(meta.vidas>=VIDAS_MAX)meta.proxima=0;guardarMeta();}
 function sumarMonedas(n){meta.monedas+=n;if(n>0)meta.monedasGanadasTotal=(meta.monedasGanadasTotal||0)+n;
-  guardarMeta();if(meta.monedas>=1000)logroDesbloquear("monedas1000");}
+  guardarMeta();if(meta.monedas>=1000)logroDesbloquear("monedas1000");refrescarMonedas();}
+/* Toda suma/gasto de monedas actualiza al instante los contadores visibles
+   (antes algunas pantallas recién lo mostraban al cerrar y abrir el juego). */
+let tRefMonedas=0;
+function refrescarMonedas(){clearTimeout(tRefMonedas);tRefMonedas=setTimeout(()=>{
+  try{mundoActualizarHud()}catch(e){}
+  try{if($("tnMonedas"))$("tnMonedas").textContent=meta.monedas}catch(e){}
+  try{if($("dzMonedasNum"))$("dzMonedasNum").textContent="🪙 "+meta.monedas}catch(e){}},0)}
 function textoProxima(){
   if(vidasInfinitasActivas())return"Vidas infinitas · "+textoVidasInfinitas();
   if(meta.vidas>=VIDAS_MAX||!meta.proxima)return"";
@@ -9500,6 +9507,7 @@ function cambiarTurno(){
   if(enPruebaPunteros){S.turno=miJug;S.fase="girar";S.valor=0;S.doble=false;publicar("<b>Modo Spin</b> — seguí girando sin límite.");return;}
   S.turno=(S.turno+1)%S.jug.length;S.fase="girar";S.valor=0;S.doble=false;
   S.jug[S.turno].poderUsadoTurno=false;
+  if((modo==="bot"||modo==="host")&&S.turno!==miJug&&$("modalResolver").classList.contains("ver"))$("modalResolver").classList.remove("ver");
   if(S.jug[S.turno].lodo){
     S.fase="lodo";
     publicar(S.jug[S.turno].n+" recibió 🟤 <b>Lodo</b>. ¡Limpiá rápido, el reloj ya está corriendo!");
@@ -10743,6 +10751,10 @@ $("confirmar").onclick=()=>{
   const t=$("respuesta").value;
   if(!t.trim()){$("respuesta").focus();return;}
   $("modalResolver").classList.remove("ver");
+  /* Si el turno pasó al rival mientras escribías (se acabó el tiempo), la respuesta
+     ya no cuenta: antes se aceptaba y el premio se lo llevaba el rival. */
+  if((modo==="bot"||modo==="host")&&S&&!["tossup","bonus_resolver","bonus_elegir"].includes(S.fase)&&S.turno!==miJug){
+    $("aviso").innerHTML="<span>⏱️ Se terminó tu turno antes de resolver. Probá en tu próximo turno.</span>";tossRespondedor=null;return;}
   if(modo==="guest")enviar({a:"resolver",txt:t});else hostResolver(t,tossRespondedor);
   tossRespondedor=null;
 };
@@ -11206,10 +11218,13 @@ $("fBoton").onclick=()=>{
   else revancha();
 };
 (function splash(){
-  const MIN_ESPERA=1800,MIN_SPLASH_GRANDE=1200;
+  /* Si se abrió el juego hace menos de 20 min (volvió de otra app, recargó), el
+     splash es corto y no espera las imágenes del mapa (ya están guardadas). */
+  let volvio=false;try{volvio=Date.now()-(+localStorage.getItem("ga_ultima_apertura")||0)<20*60000;localStorage.setItem("ga_ultima_apertura",String(Date.now()));}catch(e){}
+  const MIN_ESPERA=volvio?350:1800,MIN_SPLASH_GRANDE=volvio?0:1200;
   const barra=$("splashBarra").firstElementChild,cap=$("splash");
   const splashPrincipal=matchMedia("(min-width:900px)").matches?"assets/splash-tv.webp?v=1":"assets/splash.webp?v=3";
-  const urls=[splashPrincipal].concat(MUNDO.map(d=>d.bg).filter(Boolean));
+  const urls=volvio?[splashPrincipal]:[splashPrincipal].concat(MUNDO.map(d=>d.bg).filter(Boolean));
   let hechas=0,yaCerrado=false,tSplashGrande=0;const t0=performance.now();
   const paso=u=>{if(u===splashPrincipal){cap.classList.add("img-lista");tSplashGrande=performance.now();}hechas++;if(hechas>=urls.length)cerrar();};
   const cerrar=()=>{
@@ -11242,7 +11257,7 @@ $("fBoton").onclick=()=>{
   barra.style.transitionDuration=MIN_ESPERA+"ms";
   requestAnimationFrame(()=>requestAnimationFrame(()=>{barra.style.width="100%";}));
   urls.forEach(u=>{const im=new Image();im.onload=()=>paso(u);im.onerror=()=>paso(u);im.src=u;});
-  setTimeout(cerrar,7000);
+  setTimeout(cerrar,volvio?1800:7000);
   cap.onclick=cerrar;
 })();
 function pdActualizarTimer(){
@@ -11294,6 +11309,48 @@ document.addEventListener("keydown",e=>{
   if(LETRAS.includes(k)){const b=[...$("teclado").children].find(x=>x.dataset.l===k);if(b&&!b.disabled)b.click();}
   if(e.code==="Space"&&!$("bGirar").disabled){e.preventDefault();$("bGirar").click();}
 });
+/* Fotos de perfil con internet lento/inestable: si un avatar no carga, se
+   reintenta a los 2,5 s y, si vuelve a fallar, se muestra una silueta en vez
+   del cuadrado roto (lo reportó un tester). */
+document.addEventListener("error",e=>{const t=e.target;if(!t||t.tagName!=="IMG"||!/assets\/(avatars|avatares)\//.test(t.src))return;
+  if(!t.dataset.reintento){t.dataset.reintento="1";const u=t.src;setTimeout(()=>{t.src=u+(u.includes("?")?"&":"?")+"r=1";},2500);}
+  else if(t.dataset.reintento==="1"){t.dataset.reintento="2";t.src="data:image/svg+xml,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="32" fill="#3A2552"/><circle cx="32" cy="25" r="11" fill="#CDB8E6"/><path d="M12 54c3-11 11-16 20-16s17 5 20 16" fill="#CDB8E6"/></svg>');}},true);
+/* Botón "atrás" de Android (la app de Play es una TWA = página web): sin esto,
+   "atrás" cerraba la app desde cualquier pantalla (lo reportó una tester). Ahora
+   cierra lo que esté abierto (ventana, pantalla, juego de Extensiones) y vuelve al
+   inicio; en el inicio avisa "tocá atrás de nuevo para salir" y el 2º atrás sale.
+   Los juegos en pantalla fija (PantallaFija) manejan su propio "atrás". */
+(function(){
+  const vis=e=>!!e&&e.getClientRects().length>0&&getComputedStyle(e).visibility!=="hidden";
+  const fija=()=>!!(window.PantallaFija&&PantallaFija.activo());
+  const armar=()=>{if(fija())return;try{if(!history.state||!history.state.gyaAtras)history.pushState({gyaAtras:1},"");}catch(e){}};
+  const TXT=/^(✕|×|‹|←|Cerrar|Volver|Cancelar|No|Más tarde|Ahora no|Seguir jugando)/;
+  function botonCerrar(c){
+    const porId=[...c.querySelectorAll('button[id$="Cerrar"],button[id$="CerrarX"],button[id$="No"],button[id$="Volver"],button[aria-label="Cerrar"],button[aria-label="Volver"]')].find(vis);
+    return porId||[...c.querySelectorAll("button")].find(b=>vis(b)&&TXT.test(b.textContent.trim()));
+  }
+  function cerrarAlgo(){
+    const conf=[...document.querySelectorAll('[id^="confirm"]')].filter(e=>vis(e)&&!e.id.endsWith("Txt")&&!e.id.endsWith("Si")&&!e.id.endsWith("No"));
+    for(const c of conf){const no=c.querySelector('[id$="No"]');if(no&&vis(no)){no.click();return true}}
+    const capas=[...document.querySelectorAll('[id^="capa"].ver,[id^="modal"].ver')].filter(e=>vis(e)&&e.id!=="capaRueda"&&e.id!=="capaResuelto")
+      .sort((a,b)=>(parseInt(getComputedStyle(b).zIndex)||0)-(parseInt(getComputedStyle(a).zIndex)||0));
+    for(const c of capas){const b=botonCerrar(c);if(b){b.click();return true}}
+    if(document.body.classList.contains("ext-abierta")){const a=document.getElementById("extAtras");if(a){a.click();return true}}
+    for(const[pant,btn]of[["pantPerfil","perfilCerrar"],["pantDurazno","dzSalir"],["mundo","salirMundo"],["eventos","evCerrar"]]){
+      if(vis($(pant))){const b=$(btn);if(vis(b)){b.click();return true}}}
+    if(vis($("juego"))&&vis($("bAbandonarPartida"))){$("bAbandonarPartida").click();return true}
+    return false;
+  }
+  addEventListener("popstate",()=>{
+    if(fija())return;
+    if(cerrarAlgo()){armar();return}
+    /* en el inicio: no se vuelve a armar, así el próximo "atrás" sale de la app */
+    try{mostrarToast("👋","Tocá atrás de nuevo para salir");}catch(e){}
+  });
+  /* después de cualquier toque se vuelve a dejar armado el "atrás" */
+  addEventListener("pointerdown",armar,true);
+  armar();
+})();
 </script>
 <script src="duelo-extensiones.js?v=16"></script>
 <script src="sopa-fugaz-datos.js?v=3"></script>
