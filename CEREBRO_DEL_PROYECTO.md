@@ -987,3 +987,7 @@ Fecha: 17/10/2026 — Revisión enfocada en Android (Gonzalo pidió revisar desp
 ```text
 Fecha: 18/10/2026 — 🎉 Google Play APROBÓ el acceso a PRODUCCIÓN ("¡Enhorabuena! Tu juego tiene acceso a producción en Google Play"). Falta que Gonzalo cree la versión de producción en Play Console (Producción → Crear nueva versión → agregar el AAB de la prueba cerrada desde la biblioteca → notas de la versión → países → Enviar a revisión) y que Google la revise. Cuando esté PUBLICADA: (1) se desbloquea el pendiente de la versión para Android TV (ver Pendientes); (2) cambiar las imágenes de LinkedIn de "Muy pronto en Google Play" a "Ya disponible".
 ```
+
+```text
+Fecha: 18/10/2026 — Contra Reloj OCULTO para todos menos Gonzalo (Gonzalo: "dejá el juego Contra Reloj solo para Gonzalo y nadie más hasta tenerlo ok"). En extensiones.js su entrada tiene soloGonzalo:true (extensionVisible) y se sacó el atajo ?contrareloj=1 que lo mostraba a cualquiera con ese link. Los links de invitación (?sala=…, ?ext=contra-reloj-rioplatense) tampoco lo abren para otros. Para volver a mostrarlo: sacar soloGonzalo:true. extensiones.js v44, sw v319.
+```
