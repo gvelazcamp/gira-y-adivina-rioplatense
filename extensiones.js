@@ -68,7 +68,7 @@ const EXTENSIONES=[
   {id:"silabario-rioplatense",nombre:"Silabario Rioplatense",descripcion:"Armá la respuesta con las sílabas del tablero que gira",icono:"logo-silabario-rioplatense.svg",estado:"disponible",abrir:contenedor=>SilabarioRioplatense.abrir(contenedor),record:()=>SilabarioRioplatense.mejorPuntaje()+" puntos"},
   {id:"cien-rioplatenses",nombre:"100 Rioplatenses Dicen",descripcion:"Girá por un tema y descubrí el panel",icono:"logo-cien-rioplatenses.svg",estado:CIEN_HABILITADO?"disponible":"proximamente",abrir:contenedor=>CienRioplatenses.abrir(contenedor),record:()=>CienRioplatenses.mejorPuntaje()+" puntos"},
   {id:"ahorcado-rioplatense",nombre:"Ahorcado Rioplatense",descripcion:"La ruleta elige la categoría, adiviná la palabra",icono:"logo-ahorcado-rioplatense.svg",estado:AHORCADO_HABILITADO?"disponible":"proximamente",abrir:contenedor=>AhorcadoRioplatense.abrir(contenedor),record:()=>AhorcadoRioplatense.mejorPuntaje()+" puntos"},
-  {id:"contra-reloj-rioplatense",grupo:"previa",nombre:"Contra Reloj",descripcion:"Describí 5 palabras antes de que termine el tiempo · 4+ jugadores",icono:"logo-contra-reloj-rioplatense.svg",estado:"disponible",insignia:"👥 4+",abrir:contenedor=>ContraRelojRioplatense.abrir(contenedor),record:()=>ContraRelojRioplatense.mejorPuntaje()+" puntos"},
+  {id:"contra-reloj-rioplatense",grupo:"previa",soloGonzalo:true,/* oculto para todos menos Gonzalo hasta que esté listo (17/10/2026) */nombre:"Contra Reloj",descripcion:"Describí 5 palabras antes de que termine el tiempo · 4+ jugadores",icono:"logo-contra-reloj-rioplatense.svg",estado:"disponible",insignia:"👥 4+",abrir:contenedor=>ContraRelojRioplatense.abrir(contenedor),record:()=>ContraRelojRioplatense.mejorPuntaje()+" puntos"},
   {id:"impostor",grupo:"previa",nombre:"Impostor",descripcion:"Todos tienen la misma palabra… menos uno",icono:"logo-impostor.svg",estado:"disponible",insignia:"👥 3+",abrir:contenedor=>Impostor.abrir(contenedor),record:()=>Impostor.partidasJugadas()+" rondas"},
   {id:"mimica",grupo:"previa",nombre:"Mímica rioplatense",descripcion:"Actuá sin hablar, tu equipo adivina",icono:"logo-mimica.svg",estado:"disponible",insignia:"👥 4+",abrir:contenedor=>Mimica.abrir(contenedor),record:()=>Mimica.partidasJugadas()+" partidas"},
   {id:"canta-la-cancion",grupo:"previa",nombre:"Canta la Canción",descripcion:"Cantá una canción con la palabra antes de que se acabe el tiempo",icono:"logo-canta-la-cancion.svg",estado:"disponible",abrir:contenedor=>CantaLaCancion.abrir(contenedor),record:()=>CantaLaCancion.partidasJugadas()+" partidas"},
@@ -85,7 +85,6 @@ const EXTENSIONES=[
 ];
 function extensionVisible(ext){
   if(!ext.soloGonzalo)return true;
-  try{if(/[?&]contrareloj=1\b/.test(location.search))return true;}catch(e){}
   return typeof esGonzalo==="function"&&esGonzalo();
 }
 window.EXTENSIONES=EXTENSIONES;
