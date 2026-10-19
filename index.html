@@ -717,8 +717,9 @@ p.sub{margin:14px 0 24px;color:#C9B8DE}
 /* Celulares angostos (o con "Tamaño de pantalla: grande" en Android): la fila de
    racha/monedas/vidas/🔊/⚙️ se salía y el ⚙️ quedaba cortado. */
 @media(max-width:350px){.setup-stats{gap:4px;flex-wrap:wrap;flex:1 1 auto;justify-content:flex-start}.setup-stats .stat-pill{padding-left:7px;padding-right:7px;font-size:.8rem}}
-/* Android: deslizar hacia abajo arriba de todo recargaba el juego (volvía al splash). */
-html,body{overscroll-behavior-y:none}
+/* (19/10/2026) Se sacó html,body{overscroll-behavior-y:none} (puesto el 17/10 para que
+   deslizar hacia abajo arriba de todo no recargue): desde ahí a Gonzalo el inicio
+   le quedaba trabado unos segundos al deslizar. */
 .stat-pill{background:#0B3B52F0;border:1px solid #37D6C055;border-radius:99px;padding:6px 12px;
  font-weight:800;font-size:.85rem;white-space:nowrap}
 .stat-pill b{font-weight:800;margin-left:2px}
