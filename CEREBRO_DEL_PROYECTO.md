@@ -1027,3 +1027,7 @@ Fecha: 19/10/2026 — Tirame una Birra: música de la banda en el nivel 1 (asset
 ```text
 Fecha: 19/10/2026 — Tirame una Birra: música del nivel 2 (assets/cerveceria/musica-nivel2.mp3, "Friday in Montevideo", trompeta, hecha por Gonzalo con Gemini). cerveceria.html v3, sw v326.
 ```
+
+```text
+Fecha: 19/10/2026 — Tirame una Birra: música del nivel 3 (assets/cerveceria/musica-nivel3.mp3, "Viernes en la Esquina", batería/candombe, Gemini). La música va con el músico que toca (nivelIdx%3): niveles 4 y 5 repiten la de guitarra y trompeta. cerveceria.html v4, sw v327.
+```
