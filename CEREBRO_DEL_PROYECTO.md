@@ -1023,3 +1023,7 @@ Fecha: 19/10/2026 — Se sacó el aviso de "Diagnóstico" de trabas (solo Gonzal
 ```text
 Fecha: 19/10/2026 — Tirame una Birra: música de la banda en el nivel 1 (assets/cerveceria/musica-nivel1.mp3, "Copper Taps and Trumpets", hecha por Gonzalo con Gemini, 63 s en loop). Volumen 0,3 (+0,08 por nivel de la mejora Banda en vivo), se pausa con la pausa/al minimizar, se corta al terminar o salir y respeta el sonido de Girá y Adiviná. Otros niveles: agregar en MUSICA {nivelIdx: archivo}. cerveceria.html v2, sw v325.
 ```
+
+```text
+Fecha: 19/10/2026 — Tirame una Birra: música del nivel 2 (assets/cerveceria/musica-nivel2.mp3, "Friday in Montevideo", trompeta, hecha por Gonzalo con Gemini). cerveceria.html v3, sw v326.
+```
