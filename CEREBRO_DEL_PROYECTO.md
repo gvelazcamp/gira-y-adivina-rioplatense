@@ -1019,3 +1019,7 @@ Fecha: 19/10/2026 — Nueva extensión "Tirame una Birra" (Cervecería Durazno),
 ```text
 Fecha: 19/10/2026 — Se sacó el aviso de "Diagnóstico" de trabas (solo Gonzalo): ya no hace falta (el deslizado se arregló sacando overscroll-behavior). Lo último que marcó fue 1,6 s al abrir la lista de Usuarios (se dibujan ~17 jugadores con datos del servidor). sw v324.
 ```
+
+```text
+Fecha: 19/10/2026 — Tirame una Birra: música de la banda en el nivel 1 (assets/cerveceria/musica-nivel1.mp3, "Copper Taps and Trumpets", hecha por Gonzalo con Gemini, 63 s en loop). Volumen 0,3 (+0,08 por nivel de la mejora Banda en vivo), se pausa con la pausa/al minimizar, se corta al terminar o salir y respeta el sonido de Girá y Adiviná. Otros niveles: agregar en MUSICA {nivelIdx: archivo}. cerveceria.html v2, sw v325.
+```
