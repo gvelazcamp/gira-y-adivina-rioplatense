@@ -89,6 +89,7 @@ Los 18 juegos siguientes aparecen en `EXTENSIONES`. En esta revisión los flags 
 | Bomba | `bomba.js` | Previa; decir una palabra y pasar el celular antes de la explosión. |
 | ¿Qué número soy? | `que-numero-soy.js` | Previa; número grande con pantalla fija. |
 | Moon Tap | `moon-tap.js` | Acierto por timing sobre un aro; está integrado al lobby. |
+| Tirame una Birra (Cervecería Durazno) | `cerveceria.js` → `cerveceria.html` (iframe), arte en `assets/cerveceria/` | **Solo Gonzalo y Vale** (`soloUsuarios:["gonzalo","vale"]`). Tipo Cooking Madness: canillas (toque = se llena sola; mantener apretado = espuma justa con premio/castigo), freidora, plancha, maní, picada; 5 niveles, clientes con paciencia propia (10 personajes), mejoras con monedas (`gya_birra_*`), banda en vivo, mesas que se llenan, tele con partido. Con el celular parado la escena se gira 90°. |
 
 **Mahjong:** `mahjong-rioplatense.html` es una página independiente. El catálogo explica que está oculto del lobby porque su inicio necesita arreglos. Sus reglas se consultan en `mahjong-rioplatense.md`: pares por asociación, fichas apiladas y modos Espejo/Memoria/Hielo/Reloj. No extender su regla de interfaz sin texto a los demás juegos.
 
@@ -1009,4 +1010,8 @@ Fecha: 19/10/2026 — Deslizar trabado en el inicio: Gonzalo dice que nunca le p
 
 ```text
 Fecha: 19/10/2026 — Regla nueva de Gonzalo: "el deslizado nunca se toca". Anotada en "Reglas de contenido y visuales" y en CLAUDE.md.
+```
+
+```text
+Fecha: 19/10/2026 — Nueva extensión "Tirame una Birra" (Cervecería Durazno), hecha con imágenes de ChatGPT de Gonzalo y probada antes como artifact. Visible solo para los perfiles Gonzalo y Vale (nuevo campo soloUsuarios en extensiones.js / extensionVisible). cerveceria.js abre cerveceria.html en iframe como el Puzzle; "‹" y el atrás de Android (gyaAtras) vuelven al lobby. Colores y letras de Girá y Adiviná (noche/oro/magenta/agua, Archivo Black + Outfit) y logo-cerveceria.svg. Guarda en localStorage gya_birra_estrellas/banco/mejoras (viajan en el respaldo). Para abrirla a todos: sacar soloUsuarios. extensiones.js v45, sw v323.
 ```
