@@ -1001,3 +1001,7 @@ Fecha: 19/10/2026 — Social ✕ (otra vez): Gonzalo sacaba jugadores (testers c
 ```text
 Fecha: 19/10/2026 — Diagnóstico de traba (solo Gonzalo): en su celular el inicio a veces no deja deslizar ~6 s (video 19/10 11:10) y en la compu no se reproduce (deslizar anda desde el segundo 2,5, con o sin overscroll-behavior). Se agregó un aviso fijo arriba, solo para el perfil Gonzalo, que lista cada traba de más de 1 s con la función y la posición en el código (API long-animation-frame). Tocándolo se cierra. Con la captura se busca el culpable; SACARLO cuando se resuelva. sw v321.
 ```
+
+```text
+Fecha: 19/10/2026 — Deslizar trabado en el inicio: Gonzalo dice que nunca le pasó antes de los cambios del 17/10. Se sacó la regla html,body{overscroll-behavior-y:none} (PR #978), el único cambio de esos días que tocaba el deslizado. Vuelve a pasar lo de antes: deslizar hacia abajo estando arriba de todo puede recargar el juego. Si con esto se arregla, NO volver a ponerla en body (si hace falta frenar la recarga, probar solo en html y probarlo en el celular de Gonzalo). El diagnóstico de trabas (solo Gonzalo) sigue puesto. sw v322.
+```
