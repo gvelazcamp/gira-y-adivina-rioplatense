@@ -89,7 +89,7 @@ Los 18 juegos siguientes aparecen en `EXTENSIONES`. En esta revisión los flags 
 | Bomba | `bomba.js` | Previa; decir una palabra y pasar el celular antes de la explosión. |
 | ¿Qué número soy? | `que-numero-soy.js` | Previa; número grande con pantalla fija. |
 | Moon Tap | `moon-tap.js` | Acierto por timing sobre un aro; está integrado al lobby. |
-| Tirame una Birra (Cervecería Durazno) | `cerveceria.js` → `cerveceria.html` (iframe), arte en `assets/cerveceria/` | **Solo Gonzalo y Vale** (`soloUsuarios:["gonzalo","vale"]`). Tipo Cooking Madness: canillas (toque = se llena sola; mantener apretado = espuma justa con premio/castigo), freidora, plancha, maní, picada; 5 niveles, clientes con paciencia propia (10 personajes), mejoras con monedas (`gya_birra_*`), banda en vivo, mesas que se llenan, tele con partido. Con el celular parado la escena se gira 90°. |
+| Tirame una Birra (Cervecería Durazno) | `cerveceria.js` → `cerveceria.html` (iframe), arte en `assets/cerveceria/` | **Solo Gonzalo y Vale** (`soloUsuarios:["gonzalo","vale"]`). Tipo Cooking Madness: canillas (toque = se llena sola; mantener apretado = espuma justa con premio/castigo), freidora, plancha, maní, picada, horno de pizza; 6 niveles, clientes con paciencia propia (10 personajes), mejoras con monedas (`gya_birra_*`), banda en vivo, mesas que se llenan, tele con partido. Con el celular parado la escena se gira 90°. |
 
 **Mahjong:** `mahjong-rioplatense.html` es una página independiente. El catálogo explica que está oculto del lobby porque su inicio necesita arreglos. Sus reglas se consultan en `mahjong-rioplatense.md`: pares por asociación, fichas apiladas y modos Espejo/Memoria/Hielo/Reloj. No extender su regla de interfaz sin texto a los demás juegos.
 
@@ -1046,4 +1046,8 @@ Fecha: 19/10/2026 — Tirame una Birra: mejora "Segunda chopera" (250 monedas, u
 
 ```text
 Fecha: 19/10/2026 — Tirame una Birra: en iPhone ya carga (Vale jugó el nivel 1). Arreglado el menú: el título en dos renglones empujaba la frase de abajo encima de los niveles; ahora el título va en un renglón más chico y el bloque título+frase tiene alto fijo arriba de los niveles. cerveceria.html v8, sw v331.
+```
+
+```text
+Fecha: 19/10/2026 — Tirame una Birra: pizza. Nuevo nivel 6 "Noche de pizza" (16 clientes, todo lo anterior + pizza, $14). Horno de leña arriba a la izquierda sobre la barra: tocar = hornear (4,5 s, la mejora Cocina a punto lo acelera), tocar lista = servir, se quema como papas/burger (a la basura). Tecla Z. Arte dibujado por Claude en SVG (assets/cerveceria/horno.webp, pizza.webp, pizza_q.webp). En los niveles 1-5 el horno se ve apagado con candado. Probado en Samsung/Redmi emulados (sin errores). cerveceria.html v9, cerveceria.js v4, sw v332.
 ```
