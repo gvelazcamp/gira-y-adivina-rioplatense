@@ -77,6 +77,7 @@ const EXTENSIONES=[
   {id:"bomba",grupo:"previa",nombre:"Bomba",descripcion:"Decí una palabra y pasala antes de que explote",icono:"logo-bomba.svg",estado:"disponible",abrir:contenedor=>Bomba.abrir(contenedor),record:()=>Bomba.rondasJugadas()+" rondas"},
   {id:"que-numero-soy",grupo:"previa",nombre:"¿Qué número soy?",descripcion:"Número gigante en pantalla completa, sin que se apague",icono:"logo-que-numero-soy.svg",estado:"disponible",abrir:contenedor=>QueNumeroSoy.abrir(contenedor),record:()=>QueNumeroSoy.rondasJugadas()+" rondas"},
   {id:"puzzle",nombre:"Puzzle",descripcion:"Armá rompecabezas de dibujos y ciudades",icono:"logo-puzzle.svg",estado:"disponible",abrir:contenedor=>Puzzle.abrir(contenedor),record:()=>Puzzle.armados()+" armados"},
+  {id:"cerveceria",soloUsuarios:["gonzalo","vale"],/* en prueba: solo Gonzalo y Vale (19/10/2026) */nombre:"Tirame una Birra",descripcion:"Atendé la Cervecería Durazno: tirá pintas y que nadie se vaya enojado",icono:"logo-cerveceria.svg",estado:"disponible",abrir:contenedor=>Cerveceria.abrir(contenedor),record:()=>Cerveceria.estrellas()+" ⭐"},
   {id:"moon-tap",nombre:"Moon Tap",descripcion:"Tocá justo a tiempo y pegale al punto del aro",icono:"logo-moon-tap.webp",estado:"disponible",abrir:contenedor=>MoonTap.abrir(contenedor),record:()=>MoonTap.mejorPuntaje()+" puntos"},
   /* Mahjong Rioplatense (mahjong-rioplatense.html) a propósito oculto del lobby:
      la pantalla de inicio no estaba lista para mostrarse a los jugadores.
@@ -84,6 +85,7 @@ const EXTENSIONES=[
      sumar de nuevo esta entrada cuando el inicio esté arreglado. */
 ];
 function extensionVisible(ext){
+  if(ext.soloUsuarios){let n="";try{n=(perfil&&perfil.nombre||"").trim().toLowerCase();}catch(e){}return ext.soloUsuarios.includes(n);}
   if(!ext.soloGonzalo)return true;
   return typeof esGonzalo==="function"&&esGonzalo();
 }
@@ -157,7 +159,7 @@ const Extensiones=(()=>{
     if(typeof window.anotarUltimoJuego==="function")window.anotarUltimoJuego(ext.nombre);
     ext.abrir(contenido);shell.scrollTop=0;
   }
-  function salirJuego(){for(const juego of [window.SopaFugaz,window.RuedaDeLetras,window.PalabraSecreta,window.FrasesEnGiro,window.MemoriaEnGiro,window.RoscoRioplatense,window.SilabarioRioplatense,window.CienRioplatenses,window.AhorcadoRioplatense,window.ContraRelojRioplatense,window.MoonTap,window.Puzzle,window.QueNumeroSoy,window.QuienSoy,window.Bomba,window.Impostor,window.Mimica,window.CantaLaCancion,window.TuttiFrutti])if(juego)juego.salir();}
+  function salirJuego(){for(const juego of [window.SopaFugaz,window.RuedaDeLetras,window.PalabraSecreta,window.FrasesEnGiro,window.MemoriaEnGiro,window.RoscoRioplatense,window.SilabarioRioplatense,window.CienRioplatenses,window.AhorcadoRioplatense,window.ContraRelojRioplatense,window.MoonTap,window.Puzzle,window.QueNumeroSoy,window.QuienSoy,window.Bomba,window.Impostor,window.Mimica,window.CantaLaCancion,window.TuttiFrutti,window.Cerveceria])if(juego)juego.salir();}
   function cerrar(){if(!shell)return;salirJuego();shell.hidden=true;document.body.classList.remove("ext-abierta");vista="";if(typeof sincronizarMusica==="function")sincronizarMusica();}
   return{abrirLobby,abrirJuego,cerrar};
 })();
