@@ -300,7 +300,8 @@ const P={
   mani:{img:"mani",precio:2,nombre:"Maní"},
   papas:{img:"papas",precio:5,nombre:"Papas fritas",corto:"Papas"},
   burger:{img:"burger",precio:9,nombre:"Hamburguesa",corto:"Burger"},
-  picada:{img:"picada",precio:12,nombre:"Picada"}
+  picada:{img:"picada",precio:12,nombre:"Picada"},
+  pizza:{img:"pizza",precio:14,nombre:"Pizza"}
 };
 const CANILLAS=["golden","roja","ipa","stout"];
 const PERSONAS=["jean","barba","rocker","turista","boina","pelado","rulos","rubio","senora","trenzas"];
@@ -316,9 +317,11 @@ const NIVELES=[
   {clientes:14,birras:CANILLAS,extras:["mani","papas","burger","picada"],llegada:[2.6,4],pac:25,max:3,
    texto:"Se suma la picada: tarda en armarse pero no se arruina.",nuevos:["picada"]},
   {clientes:18,birras:CANILLAS,extras:["mani","papas","burger","picada"],llegada:[1.8,3],pac:22,max:3,
-   texto:"¡HAPPY HOUR! Entra gente sin parar. Aguantá a 18 clientes.",nuevos:[]}
+   texto:"¡HAPPY HOUR! Entra gente sin parar. Aguantá a 18 clientes.",nuevos:[]},
+  {clientes:16,birras:CANILLAS,extras:["mani","papas","burger","picada","pizza"],llegada:[2.4,3.8],pac:25,max:3,etiqueta:"Noche de pizza",
+   texto:"¡Prendimos el horno! Tocá el horno para meter una pizza y tocala cuando esté lista. Es lo que más tarda y lo que más paga… ¡ojo que se quema!",nuevos:["pizza"]}
 ];
-const T={pinta:1.8,rebalsa:4.5,papas:2.8,burger:3.6,quema:5,picada:2.2,tira:0};
+const T={pinta:1.8,rebalsa:4.5,papas:2.8,burger:3.6,quema:5,picada:2.2,pizza:4.5,tira:0};
 
 /* ---------- guardado (solo en este celular) ---------- */
 let estrellasGuardadas={};
@@ -329,7 +332,7 @@ function guardarEstrellas(){try{localStorage.setItem("gya_birra_estrellas",JSON.
 const CIUDAD="Durazno";
 const MEJORAS=[
   {id:"canillas",nombre:"Canillas rápidas",desc:"La pinta se llena más rápido",img:"chopera",costos:[60,150,300]},
-  {id:"cocina",nombre:"Cocina a punto",desc:"Papas y burgers salen antes y tardan más en quemarse",img:"freidora",costos:[80,180,340]},
+  {id:"cocina",nombre:"Cocina a punto",desc:"Papas, burgers y pizzas salen antes y tardan más en quemarse",img:"freidora",costos:[80,180,340]},
   {id:"banquetas",nombre:"Banquetas cómodas",desc:"Los clientes esperan más tiempo",emoji:"🪑",costos:[70,170,320]},
   {id:"musica",nombre:"Banda en vivo",desc:"La banda toca más fuerte: los clientes dejan más propina",img:"banda_ico",costos:[90,200,380]},
   {id:"freidora2",nombre:"Segunda freidora",desc:"Dos canastos: freís dos papas a la vez",img:"papas",costos:[150]},
@@ -341,7 +344,7 @@ function guardarBanco(){try{localStorage.setItem("gya_birra_banco",String(banco)
 /* aplica las mejoras compradas a los tiempos del juego */
 function aplicarMejoras(){
   T.pinta=1.8*(1-.15*mej.canillas);
-  T.papas=2.8*(1-.15*mej.cocina);T.burger=3.6*(1-.15*mej.cocina);T.quema=5+1.5*mej.cocina;
+  T.papas=2.8*(1-.15*mej.cocina);T.burger=3.6*(1-.15*mej.cocina);T.pizza=4.5*(1-.15*mej.cocina);T.quema=5+1.5*mej.cocina;
 }
 const extraPaciencia=()=>1+.12*mej.banquetas, extraPropina=()=>1+.35*mej.musica;
 function pintarMejoras(){
@@ -368,15 +371,16 @@ function sacudir(el){el.animate([{transform:"translateX(0)"},{transform:"transla
 /* ---------- estado ---------- */
 let N=null,nivelIdx=0,jugando=false,pausado=false;
 let monedas=0,vidas=3,atendidos=0,perdidos=0,generados=0,baseTotal=0,proxLlegada=0,ultimoPago=-9,combo=0,reloj=0;
-let clientes=[],canillas=[],freidora,freidoras=[],plancha=[],picadaE,maniE,tachoEl;
+let clientes=[],canillas=[],freidora,freidoras=[],plancha=[],picadaE,maniE,hornoE,tachoEl;
 const SLOTS=[330,650,970,1290];
 
 /* ---------- puestos de trabajo ---------- */
 /* Ubicación de las máquinas en la barra. Con la mejora "Segunda chopera" entran 2 choperas (8 canillas)
    y todo lo demás se achica un poco. Las medidas internas se escalan desde las originales. */
 function disposicion(){
-  return mej.chopera2?{tacho:[14,770,90],choperas:[[112,410],[530,410]],fr:[950,690,170],pl:[1130,775,235],mani:[1372,800,100],pic:[1475,823,122]}
-                     :{tacho:[28,733,110],choperas:[[170,560]],fr:[760,647,210],pl:[990,731,290],mani:[1300,785,120],pic:[1428,806,165]};
+  const horno=[4,455,146];
+  return mej.chopera2?{horno,tacho:[14,770,90],choperas:[[112,410],[530,410]],fr:[950,690,170],pl:[1130,775,235],mani:[1372,800,100],pic:[1475,823,122]}
+                     :{horno,tacho:[28,733,110],choperas:[[170,560]],fr:[760,647,210],pl:[990,731,290],mani:[1300,785,120],pic:[1428,806,165]};
 }
 function armarPuestos(){
   const p=$("puestos");p.innerHTML="";const D=disposicion();
@@ -438,6 +442,16 @@ function armarPuestos(){
   picadaE.hit=div("hit",`left:${cx}px;top:${cy-106*ck}px;width:${168*ck}px;height:${890-(cy-106*ck)}px`,p);
   picadaE.hit.addEventListener("pointerdown",e=>{e.preventDefault();tocarPicada();});
   if(!pcHab)div("candado",`left:${cx+66*ck}px;top:${cy-16*ck}px`,p).textContent="🔒";
+  // horno de pizza (sobre la barra, a la izquierda)
+  const [hx,hy,hw]=D.horno,hzHab=N.extras.includes("pizza");
+  const hImg=img("horno",hx,hy,hw,p);if(!hzHab)hImg.classList.add("apagado");hImg.classList.add("maq-cocina");
+  hornoE={estado:"vacia",t:0,habil:hzHab,cx:hx+hw/2};
+  hornoE.comida=img("pizza",hx+hw*.1,hy+hw*.66,hw*.8,p,"display:none");
+  hornoE.anillo=div("anillo",`left:${hx+hw/2-32}px;top:${hy+hw*.38}px;display:none`,p);
+  hornoE.hit=div("hit",`left:${hx}px;top:${hy}px;width:${hw}px;height:${hw+40}px`,p);
+  hornoE.hit.addEventListener("pointerdown",e=>{e.preventDefault();tocarHorno();});
+  if(!hzHab)div("candado",`left:${hx+hw/2-17}px;top:${hy+hw*.45}px`,p).textContent="🔒";
+  D.hx=hx+hw/2-17;D.hy=hy-10;
   D.fx=fx+88*fk;D.fy=fy+8;D.py=py+11;D.mx=mx+43*mk;D.my=my-43;D.cx=cx+66*ck;D.cy=cy-46;armarPuestos.D=D;
   etiquetas();verMejoras();
 }
@@ -466,7 +480,7 @@ function verMejoras(){
 }
 function jugar(){return jugando&&!pausado;}
 function etiquetas(){const p=$("puestos"),t=(txt,x,y)=>{if(matchMedia("(pointer:fine)").matches)div("tecla",`left:${x}px;top:${y}px`,p).textContent=txt;};
-  const D=armarPuestos.D;canillas.forEach((c,i)=>t(String(i+1),c.sx-17,c.top+5));t("F",D.fx,D.fy);plancha.forEach((s,i)=>t(i?"J":"H",s.cx-17,D.py));t("M",D.mx,D.my);t("P",D.cx,D.cy);}
+  const D=armarPuestos.D;canillas.forEach((c,i)=>t(String(i+1),c.sx-17,c.top+5));t("F",D.fx,D.fy);plancha.forEach((s,i)=>t(i?"J":"H",s.cx-17,D.py));t("M",D.mx,D.my);t("P",D.cx,D.cy);if(hornoE.habil)t("Z",D.hx,D.hy);}
 
 /* Canilla: UN TOQUE corto = se llena sola y después la tocás para servirla (sin premio ni castigo).
    MANTENERLA APRETADA = modo experto: La birra sube mientras apretás y al soltar se la lleva el cliente.
@@ -508,6 +522,12 @@ function tocarPicada(){
   if(!jugar())return;const pc=picadaE;if(!pc.habil){sacudir(pc.hit);sonError();return;}
   if(pc.estado==="vacia"){pc.estado="armando";pc.t=0;}
   else if(pc.estado==="lista"){if(servir("picada",1510,800)){pc.estado="vacia";}else sacudir(pc.comida);}
+}
+function tocarHorno(){
+  if(!jugar())return;const h=hornoE;if(!h.habil){sacudir(h.hit);sonError();return;}
+  if(h.estado==="vacia"){h.estado="horneando";h.t=0;bip(150,.35,"sawtooth",.03,90);}
+  else if(h.estado==="lista"){if(servir("pizza",h.cx,560)){h.estado="vacia";}else sacudir(h.comida);}
+  else if(h.estado==="quemada"){tirar(h.cx,560,"pizza_q");h.estado="vacia";}
 }
 function tirar(x,y,src){volar(src,x-40,y-60,80,83,760);sonError();tachoEl.animate([{transform:"rotate(0)"},{transform:"rotate(-8deg)"},{transform:"rotate(6deg)"},{transform:"rotate(0)"}],{duration:300});}
 
@@ -642,6 +662,10 @@ function actualizar(dt){
     if(s.estado==="cocinando"&&s.t>=T.burger){s.estado="lista";s.t=0;sonListo();}
     else if(s.estado==="lista"&&s.t>=T.quema){s.estado="quemada";s.t=0;sonError();}
     pintarCocina(s,T.burger,"burger","burger_q","cocinando");});
+  const h=hornoE;if(h.habil){h.t+=dt;
+    if(h.estado==="horneando"&&h.t>=T.pizza){h.estado="lista";h.t=0;sonListo();}
+    else if(h.estado==="lista"&&h.t>=T.quema){h.estado="quemada";h.t=0;sonError();}
+    pintarCocina(h,T.pizza,"pizza","pizza_q","horneando");}
   const pc=picadaE;if(pc.habil){pc.t+=dt;if(pc.estado==="armando"&&pc.t>=T.picada){pc.estado="lista";sonListo();}
     pc.comida.style.opacity=pc.estado==="vacia"?.35:pc.estado==="armando"?.35+.65*Math.min(1,pc.t/T.picada):1;
     pc.comida.style.filter=pc.estado==="lista"?"":"grayscale(1)";pc.comida.classList.toggle("listo",pc.estado==="lista");
@@ -696,7 +720,7 @@ function pintarMenu(){
   const c=$("niveles");c.innerHTML="";
   NIVELES.forEach((n,i)=>{const b=document.createElement("button");b.className="nivel";const abierto=i===0||(estrellasGuardadas[i-1]||0)>0;b.disabled=!abierto;
     const est=estrellasGuardadas[i]||0;
-    b.innerHTML=`<b>${abierto?i+1:"🔒"}</b><small>${i===4?"Happy hour":n.clientes+" clientes"}</small><div class="mini">${[0,1,2].map(k=>`<img src="assets/cerveceria/estrella.webp" alt="" class="${k<est?"":"no"}">`).join("")}</div>`;
+    b.innerHTML=`<b>${abierto?i+1:"🔒"}</b><small>${i===4?"Happy hour":n.etiqueta||n.clientes+" clientes"}</small><div class="mini">${[0,1,2].map(k=>`<img src="assets/cerveceria/estrella.webp" alt="" class="${k<est?"":"no"}">`).join("")}</div>`;
     b.onclick=()=>abrirIntro(i);c.appendChild(b);});
 }
 function abrirIntro(i){armarMesas();
@@ -735,11 +759,11 @@ $("cerrarMejoras").onclick=()=>{$("pantMejoras").hidden=true;$("bancoMenu").text
 $("finSeguir").onclick=()=>{despuesMejoras=nivelIdx+1;$("fin").hidden=true;pintarMejoras();$("pantMejoras").hidden=false;};
 $("finOtra").onclick=()=>abrirIntro(nivelIdx);
 $("finMenu").onclick=()=>{$("fin").hidden=true;pintarMenu();$("menu").hidden=false;};
-/* teclas: 1-4 canillas, F freidora, H/J plancha, M maní, P picada */
+/* teclas: 1-8 canillas, F freidora, H/J plancha, M maní, P picada, Z pizza */
 addEventListener("keydown",e=>{if(!jugar())return;const k=e.key.toLowerCase();
   if("12345678".includes(k)&&k.length===1&&canillas[+k-1]){if(!e.repeat)apretarCanilla(canillas[+k-1]);}
   else if(k==="f")tocarFreidora();else if(k==="h")tocarPlancha(plancha[0]);else if(k==="j")tocarPlancha(plancha[1]);
-  else if(k==="m")maniE.hit.dispatchEvent(new Event("pointerdown"));else if(k==="p")tocarPicada();else if(k===" "||k==="escape")$("pausa").click();});
+  else if(k==="m")maniE.hit.dispatchEvent(new Event("pointerdown"));else if(k==="p")tocarPicada();else if(k==="z")tocarHorno();else if(k===" "||k==="escape")$("pausa").click();});
 addEventListener("keyup",e=>{if("12345678".includes(e.key)&&e.key.length===1&&canillas[+e.key-1])soltarCanilla(canillas[+e.key-1]);});
 $("pausa").onclick=()=>{if(!jugando)return;pausado=true;musicaPausa();$("pantPausa").hidden=false;};
 $("pSeguir").onclick=()=>{pausado=false;musicaPlay();$("pantPausa").hidden=true;};
