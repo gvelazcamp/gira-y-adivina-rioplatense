@@ -14,10 +14,13 @@
   --display:"Archivo Black","Arial Black",system-ui,sans-serif; --texto:"Outfit",system-ui,sans-serif;
   color-scheme:dark;
 }
-html,body{height:100%}
+/* iPhone: dentro de un iframe Safari agranda la página al tamaño de lo que tiene adentro (la escena mide 1600 px)
+   y la escena quedaba fuera de lo visible (pantalla violeta). Por eso html/body toman el tamaño exacto del iframe
+   (lo fija ajustar() en px) y la escena se ubica en absoluto dentro del body, no "fixed" al centro. */
+html,body{height:100%;margin:0;padding:0!important;overflow:hidden}
 body{background:var(--noche);color:var(--crema);font-family:var(--texto);overflow:hidden;user-select:none;-webkit-user-select:none;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-#escena{position:fixed;left:50%;top:50%;width:1600px;height:900px;transform-origin:center;overflow:hidden;background:#000;touch-action:none}
+#escena{position:absolute;left:50%;top:50%;width:1600px;height:900px;transform-origin:center;overflow:hidden;background:#000;touch-action:none}
 #escena img{position:absolute;pointer-events:none;-webkit-user-drag:none}
 .capa{position:absolute;inset:0}
 #clientes,#efectos,#deco{pointer-events:none}
@@ -243,10 +246,15 @@ const esc=$("escena");
 /* La app de Play va siempre parada: con el celular parado la escena se gira 90° (se juega con el celular acostado). */
 let ESC_S=1,ROT=false;
 function ajustar(){
+  /* tamaño real visible: el del iframe en el juego (frameElement), si no la ventana */
+  let w=innerWidth,h=innerHeight;
+  try{const f=window.frameElement;if(f&&f.clientWidth>20&&f.clientHeight>20){w=f.clientWidth;h=f.clientHeight;}}catch(e){}
   /* dentro del iframe a veces el tamaño todavía es 0 al cargar: reintentar hasta que tenga tamaño */
-  if(innerWidth<20||innerHeight<20){setTimeout(ajustar,120);return;}
-  ROT=innerHeight>innerWidth;
-  ESC_S=ROT?Math.min(innerWidth/900,innerHeight/1600):Math.min(innerWidth/1600,innerHeight/900);
+  if(w<20||h<20){setTimeout(ajustar,120);return;}
+  for(const el of [document.documentElement,document.body]){el.style.width=w+"px";el.style.height=h+"px";}
+  document.body.style.position="relative";
+  ROT=h>w;
+  ESC_S=ROT?Math.min(w/900,h/1600):Math.min(w/1600,h/900);
   esc.style.transform=`translate(-50%,-50%)${ROT?" rotate(90deg)":""} scale(${ESC_S})`;}
 addEventListener("resize",ajustar);addEventListener("orientationchange",()=>setTimeout(ajustar,200));addEventListener("load",ajustar);ajustar();
 try{new ResizeObserver(()=>ajustar()).observe(document.documentElement);}catch(e){}
