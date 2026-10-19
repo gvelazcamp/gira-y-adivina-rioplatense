@@ -1031,3 +1031,7 @@ Fecha: 19/10/2026 — Tirame una Birra: música del nivel 2 (assets/cerveceria/m
 ```text
 Fecha: 19/10/2026 — Tirame una Birra: música del nivel 3 (assets/cerveceria/musica-nivel3.mp3, "Viernes en la Esquina", batería/candombe, Gemini). La música va con el músico que toca (nivelIdx%3): niveles 4 y 5 repiten la de guitarra y trompeta. cerveceria.html v4, sw v327.
 ```
+
+```text
+Fecha: 19/10/2026 — Tirame una Birra: Vale reportó "pantalla azul" al entrar (no reproducido en la compu con perfil Vale). Se blindó el arranque: si el iframe todavía mide 0 al cargar, reintenta acomodar la escena (también con ResizeObserver, load y orientationchange), y si hay un error de JavaScript se muestra en pantalla con el mensaje para que manden captura. cerveceria.html v5, sw v328.
+```
