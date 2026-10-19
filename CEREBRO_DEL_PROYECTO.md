@@ -1055,3 +1055,7 @@ Fecha: 19/10/2026 — Tirame una Birra: pizza. Nuevo nivel 6 "Noche de pizza" (1
 ```text
 Fecha: 19/10/2026 — Tirame una Birra: pantalla de inicio = mapa "Ruta Durazno" (idea de la Ruta Montevideo, primera ciudad Durazno). Mapa dibujado en SVG dentro de cerveceria.html (río Yí, Santa Bernardina, Ruta 5 con puente, plaza, costanera) con 7 bares inventados (BARES): Cervecería Durazno abierta (entra al menú de niveles o a mejoras) y Rockería del Centro, Pizzería La Plaza, Parrillada Ruta 5, Bar El Yí, Cantina del Puente y Parador Santa Bernardina en "Próximamente", más el pin "¿Tu bar acá?" para la presentación a bares. "‹"/atrás en el menú de niveles vuelve al mapa; en el mapa sale a Extensiones. Para abrir otro bar: abierto:true en BARES (y hacerle su juego). cerveceria.html v10, cerveceria.js v5, sw v333.
 ```
+
+```text
+Fecha: 19/10/2026 — Tirame una Birra: "Entrar al bar" no hacía nada. Causa: #mapa{display:block} le ganaba a .pantalla[hidden]{display:none} y el mapa quedaba tapando el menú. Arreglo: #mapa[hidden]{display:none}. Ojo: si a una .pantalla se le pone display por id, agregarle su regla [hidden]. cerveceria.html v11, sw v334.
+```
