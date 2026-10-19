@@ -89,7 +89,7 @@ Los 18 juegos siguientes aparecen en `EXTENSIONES`. En esta revisión los flags 
 | Bomba | `bomba.js` | Previa; decir una palabra y pasar el celular antes de la explosión. |
 | ¿Qué número soy? | `que-numero-soy.js` | Previa; número grande con pantalla fija. |
 | Moon Tap | `moon-tap.js` | Acierto por timing sobre un aro; está integrado al lobby. |
-| Tirame una Birra (Cervecería Durazno) | `cerveceria.js` → `cerveceria.html` (iframe), arte en `assets/cerveceria/` | **Solo Gonzalo y Vale** (`soloUsuarios:["gonzalo","vale"]`). Tipo Cooking Madness: canillas (toque = se llena sola; mantener apretado = espuma justa con premio/castigo), freidora, plancha, maní, picada, horno de pizza; 6 niveles, clientes con paciencia propia (10 personajes), mejoras con monedas (`gya_birra_*`), banda en vivo, mesas que se llenan, tele con partido. Con el celular parado la escena se gira 90°. |
+| Tirame una Birra (Cervecería Durazno) | `cerveceria.js` → `cerveceria.html` (iframe), arte en `assets/cerveceria/` | **Solo Gonzalo y Vale** (`soloUsuarios:["gonzalo","vale"]`). Tipo Cooking Madness: canillas (toque = se llena sola; mantener apretado = espuma justa con premio/castigo), freidora, plancha, maní, picada, horno de pizza; 6 niveles, clientes con paciencia propia (10 personajes), mejoras con monedas (`gya_birra_*`), banda en vivo, mesas que se llenan, tele con partido. Arranca en el mapa "Ruta Durazno" (bares inventados; solo la Cervecería Durazno se juega, el resto "Próximamente" + "¿Tu bar acá?"). Con el celular parado la escena se gira 90°. |
 
 **Mahjong:** `mahjong-rioplatense.html` es una página independiente. El catálogo explica que está oculto del lobby porque su inicio necesita arreglos. Sus reglas se consultan en `mahjong-rioplatense.md`: pares por asociación, fichas apiladas y modos Espejo/Memoria/Hielo/Reloj. No extender su regla de interfaz sin texto a los demás juegos.
 
@@ -1050,4 +1050,8 @@ Fecha: 19/10/2026 — Tirame una Birra: en iPhone ya carga (Vale jugó el nivel 
 
 ```text
 Fecha: 19/10/2026 — Tirame una Birra: pizza. Nuevo nivel 6 "Noche de pizza" (16 clientes, todo lo anterior + pizza, $14). Horno de leña arriba a la izquierda sobre la barra: tocar = hornear (4,5 s, la mejora Cocina a punto lo acelera), tocar lista = servir, se quema como papas/burger (a la basura). Tecla Z. Arte dibujado por Claude en SVG (assets/cerveceria/horno.webp, pizza.webp, pizza_q.webp). En los niveles 1-5 el horno se ve apagado con candado. Probado en Samsung/Redmi emulados (sin errores). cerveceria.html v9, cerveceria.js v4, sw v332.
+```
+
+```text
+Fecha: 19/10/2026 — Tirame una Birra: pantalla de inicio = mapa "Ruta Durazno" (idea de la Ruta Montevideo, primera ciudad Durazno). Mapa dibujado en SVG dentro de cerveceria.html (río Yí, Santa Bernardina, Ruta 5 con puente, plaza, costanera) con 7 bares inventados (BARES): Cervecería Durazno abierta (entra al menú de niveles o a mejoras) y Rockería del Centro, Pizzería La Plaza, Parrillada Ruta 5, Bar El Yí, Cantina del Puente y Parador Santa Bernardina en "Próximamente", más el pin "¿Tu bar acá?" para la presentación a bares. "‹"/atrás en el menú de niveles vuelve al mapa; en el mapa sale a Extensiones. Para abrir otro bar: abierto:true en BARES (y hacerle su juego). cerveceria.html v10, cerveceria.js v5, sw v333.
 ```

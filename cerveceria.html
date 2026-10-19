@@ -149,6 +149,49 @@ body{background:var(--noche);color:var(--crema);font-family:var(--texto);overflo
 .nuevos{display:flex;justify-content:center;gap:22px;margin:4px 0 20px;flex-wrap:wrap}
 .nuevos div{display:flex;flex-direction:column;align-items:center;font:24px var(--display);gap:4px}
 .nuevos img{position:static!important;height:96px}
+/* mapa "Ruta Durazno": pantalla de inicio con los bares de la ciudad (solo la Cervecería Durazno se puede jugar) */
+#mapa{background:#2a1645;display:block;z-index:31}
+#mapa svg{position:absolute;left:0;top:0}
+.rm-hud{position:absolute;left:0;right:0;top:0;height:120px;padding:12px 30px 0 100px;display:flex;align-items:center;gap:20px;background:linear-gradient(#160B24 55%,#160B2400);z-index:4}
+.rm-hud h1{flex:1;margin:0;font:400 54px/1 var(--display);color:var(--ambar);text-shadow:0 5px 0 #7a1446}
+.rm-hud h1 small{display:block;font:800 22px var(--texto);letter-spacing:5px;color:var(--crema);text-shadow:none;margin-bottom:4px}
+.rm-chip{border:4px solid var(--madera-cl);border-radius:20px;background:#1B0D2E;color:var(--ambar);font:400 30px var(--display);padding:8px 18px;display:flex;gap:10px;align-items:center;white-space:nowrap}
+.rm-chip img{position:static!important;width:36px}
+.rm-chip.agua{border-color:var(--agua);color:var(--crema);font:800 24px var(--texto)}
+.rm-barrio{position:absolute;z-index:1;font:800 22px var(--texto);letter-spacing:5px;color:#ffffff66;text-transform:uppercase;transform:translate(-50%,-50%);white-space:nowrap;pointer-events:none}
+.rm-rio{position:absolute;z-index:1;font:italic 800 28px var(--texto);letter-spacing:10px;color:#ffffff70;white-space:nowrap;pointer-events:none}
+.rm-pin{position:absolute;z-index:2;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;background:none;border:0;padding:0;cursor:pointer;color:var(--crema);font-family:var(--texto)}
+.rm-bola{position:relative;width:96px;height:96px;border-radius:50%;border:6px solid #8a7f99;background:radial-gradient(circle at 35% 30%,#5b2d8a,#24113a);display:grid;place-items:center;font-size:48px;box-shadow:0 7px 0 #0006}
+.rm-bola .ico{filter:grayscale(.7);opacity:.75}
+.rm-punta{width:0;height:0;border-left:18px solid transparent;border-right:18px solid transparent;border-top:24px solid #8a7f99;margin-top:-3px}
+.rm-nom{margin-top:4px;background:var(--noche);border:3px solid #8a7f99;border-radius:12px;padding:2px 10px;font:800 20px var(--texto);white-space:nowrap;color:#cfc6dc;box-shadow:0 4px 0 #0006}
+.rm-candado{position:absolute;right:-10px;top:-10px;width:40px;height:40px;border-radius:50%;background:#2a1d3a;border:3px solid #8a7f99;display:grid;place-items:center;font-size:20px}
+.rm-pin.abierto .rm-bola{border-color:var(--agua)}.rm-pin.abierto .rm-bola .ico{filter:none}.rm-pin.abierto .rm-punta{border-top-color:var(--agua)}.rm-pin.abierto .rm-nom{border-color:var(--agua);color:var(--crema)}
+.rm-pin.nuevo .rm-bola{border:5px dashed var(--crema);background:#ffffff14}.rm-pin.nuevo .rm-bola .ico{filter:none}.rm-pin.nuevo .rm-punta{border-top-color:var(--crema)}.rm-pin.nuevo .rm-nom{border-style:dashed;border-color:var(--crema);color:var(--ambar)}
+.rm-pin.sel .rm-bola{border-color:var(--madera-cl);box-shadow:0 7px 0 #0006,0 0 0 9px #E5197C55,0 0 36px 8px #E5197C99}.rm-pin.sel .rm-punta{border-top-color:var(--madera-cl)}.rm-pin.sel .rm-nom{border-color:var(--madera-cl)}
+.rm-pin.abierto .rm-bola{animation:rmLate 1.6s ease-in-out infinite}
+@keyframes rmLate{50%{transform:scale(1.08)}}
+.rm-tag{position:absolute;top:-30px;background:var(--verde);color:#fff;font:400 17px var(--display);padding:3px 10px;border-radius:10px;white-space:nowrap;box-shadow:0 3px 0 #0E5A4F}
+.rm-card{position:absolute;right:26px;top:128px;width:470px;bottom:22px;z-index:5;border-radius:34px;border:5px solid var(--madera-cl);background:linear-gradient(#3A1D5C,#1B0D2E);padding:24px 26px;box-shadow:0 12px 0 #0008,0 0 50px #E5197C44;display:flex;flex-direction:column}
+.rm-top{display:flex;gap:18px;align-items:center}
+.rm-logo{width:118px;height:118px;flex:none;border-radius:26px;background:radial-gradient(circle at 40% 30%,#F5B301,#c46a00);display:grid;place-items:center;font-size:66px;border:4px solid var(--crema)}
+.rm-logo.gris{background:radial-gradient(circle at 40% 30%,#6d5f80,#3a2f48)}
+.rm-card h2{margin:0;font:400 38px/1.05 var(--display);color:var(--crema)}
+.rm-dir{font:600 22px var(--texto);color:#cfc3e0;margin-top:6px}
+.rm-tags{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.rm-tags b{font:800 20px var(--texto);padding:5px 12px;border-radius:11px;background:#ffffff18;color:var(--ambar)}
+.rm-evento{margin-top:18px;border-radius:24px;background:var(--madera-cl);color:#fff;padding:16px 18px;display:flex;gap:14px;align-items:center}
+.rm-evento.gris{background:#ffffff14;color:#e6ddf0}
+.rm-evento .ico{font-size:50px}
+.rm-evento h3{margin:0;font:400 27px/1.15 var(--display)}
+.rm-evento p{margin:4px 0 0;font:600 21px/1.3 var(--texto)}
+.rm-desc{margin:20px 4px 0;font:600 23px/1.35 var(--texto);color:#d9cfe6}
+.rm-btns{margin-top:auto;display:flex;flex-direction:column;gap:14px}
+.rm-btns button{border:0;border-radius:22px;padding:16px 0;font:400 30px var(--display);cursor:pointer}
+.rm-jugar{background:var(--ambar);color:var(--noche);box-shadow:0 7px 0 #9c6b00}
+.rm-mej{background:var(--agua);color:var(--noche);box-shadow:0 7px 0 #1E9C8A}
+.rm-btns button:disabled{background:#4a3d5c;color:#b9b0c6;box-shadow:0 7px 0 #2a2236;cursor:default}
+.rm-btns button:focus-visible,.rm-pin:focus-visible{outline:4px solid #fff}
 /* menú */
 #menu{background:none}
 #menu .fondo{left:0;top:0;width:1600px;height:900px;filter:blur(3px) brightness(.55)}
@@ -201,7 +244,55 @@ window.addEventListener("error",e=>{try{let d=document.getElementById("errorCarg
     <div class="ayuda" id="ayuda" hidden></div>
   </div>
 
-  <div class="pantalla" id="menu">
+  <div class="pantalla" id="mapa">
+    <svg width="1600" height="900" viewBox="0 0 1600 900" aria-hidden="true">
+      <defs>
+        <pattern id="rmCalles" width="64" height="64" patternUnits="userSpaceOnUse" patternTransform="rotate(-10)"><path d="M0 0H64M0 0V64" stroke="#ffffff12" stroke-width="5"/></pattern>
+        <pattern id="rmCampo" width="46" height="46" patternUnits="userSpaceOnUse" patternTransform="rotate(30)"><path d="M0 0H46" stroke="#ffffff10" stroke-width="10"/></pattern>
+        <pattern id="rmOlas" width="80" height="34" patternUnits="userSpaceOnUse"><path d="M8 17 q10-8 20 0 t20 0" stroke="#ffffff30" stroke-width="3" fill="none"/></pattern>
+        <linearGradient id="rmAgua" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2a7f9a"/><stop offset="1" stop-color="#1b4f7a"/></linearGradient>
+      </defs>
+      <rect width="1600" height="900" fill="#43255f"/>
+      <rect width="1600" height="900" fill="url(#rmCalles)"/>
+      <!-- Santa Bernardina: campo del otro lado del río -->
+      <path d="M-20 -20 H760 Q700 120 600 190 Q480 290 330 400 Q170 520 -20 640Z" fill="#3b4f4a"/>
+      <path d="M-20 -20 H760 Q700 120 600 190 Q480 290 330 400 Q170 520 -20 640Z" fill="url(#rmCampo)"/>
+      <!-- parques y plaza -->
+      <g fill="#1E9C8A" opacity=".75"><ellipse cx="380" cy="560" rx="90" ry="46"/><ellipse cx="1040" cy="820" rx="80" ry="44"/><ellipse cx="190" cy="250" rx="80" ry="50"/></g>
+      <rect x="720" y="540" width="120" height="96" rx="10" fill="#1E9C8A" transform="rotate(-10 780 588)"/>
+      <g fill="#2fd1a5" opacity=".6"><circle cx="745" cy="560" r="10"/><circle cx="815" cy="555" r="10"/><circle cx="752" cy="618" r="10"/><circle cx="818" cy="612" r="10"/><circle cx="360" cy="550" r="12"/><circle cx="405" cy="570" r="10"/></g>
+      <circle cx="780" cy="588" r="12" fill="#F6EFE2"/>
+      <!-- avenidas -->
+      <g stroke="#ffffff2e" stroke-width="12" fill="none" stroke-linecap="round">
+        <path d="M480 420 Q700 470 1100 400"/><path d="M420 740 Q760 680 1100 640"/><path d="M640 330 Q700 600 760 900"/><path d="M900 300 Q960 600 1000 900"/>
+      </g>
+      <!-- Ruta 5 y su puente sobre el río -->
+      <path d="M345 165 L440 375" stroke="#F6EFE2" stroke-width="40" stroke-linecap="round" opacity=".9"/>
+      <path d="M345 165 L440 375" stroke="#8a8580" stroke-width="30" stroke-linecap="round"/>
+      <path d="M260 -20 L420 330 Q520 540 700 920" stroke="#F5B301" stroke-width="16" fill="none" opacity=".75"/>
+      <path d="M260 -20 L420 330 Q520 540 700 920" stroke="#160B24" stroke-width="3" stroke-dasharray="18 16" fill="none" opacity=".7"/>
+      <!-- río Yí -->
+      <path d="M800 -20 Q700 120 600 190 Q480 290 330 400 Q170 520 -20 640 L-20 760 Q180 620 360 480 Q520 360 650 250 Q760 150 870 -20Z" fill="url(#rmAgua)"/>
+      <path d="M800 -20 Q700 120 600 190 Q480 290 330 400 Q170 520 -20 640 L-20 760 Q180 620 360 480 Q520 360 650 250 Q760 150 870 -20Z" fill="url(#rmOlas)"/>
+      <path d="M870 -20 Q760 150 650 250 Q520 360 360 480 Q180 620 -20 760" stroke="#F6EFE2" stroke-width="7" fill="none" opacity=".45"/>
+      <!-- puente de la ruta -->
+      <!-- camino de la ruta de bares -->
+      <path d="M720 370 Q820 300 920 200 Q990 360 900 510 Q800 640 700 730 Q560 640 420 510 Q500 380 600 290 Q440 220 260 200" stroke="#F5B301" stroke-width="9" stroke-dasharray="3 24" stroke-linecap="round" fill="none"/>
+    </svg>
+    <div class="rm-rio" style="left:40px;top:690px;transform:rotate(-36deg)">RÍO YÍ</div>
+    <div class="rm-barrio" style="left:150px;top:410px">Santa Bernardina</div>
+    <div class="rm-barrio" style="left:880px;top:770px">Centro</div>
+    <div class="rm-barrio" style="left:780px;top:668px;font-size:17px;letter-spacing:3px">Plaza</div>
+    <div class="rm-barrio" style="left:300px;top:640px;font-size:18px">Costanera</div>
+    <div class="rm-barrio" style="left:560px;top:850px;font-size:18px;color:#F5B301aa">Ruta 5</div>
+    <div id="rmPines"></div>
+    <div class="rm-hud"><h1><small>TIRAME UNA BIRRA</small>Ruta Durazno</h1>
+      <div class="rm-chip agua" id="rmAbiertos">🍺 1 de 7 bares abiertos</div>
+      <div class="rm-chip"><img src="assets/cerveceria/moneda.webp" alt=""><span id="rmBanco">0</span></div></div>
+    <div class="rm-card" id="rmCard"></div>
+  </div>
+
+  <div class="pantalla" id="menu" hidden>
     <img class="fondo" src="assets/cerveceria/fondo.webp" alt="">
     <img class="barman" src="assets/cerveceria/barman.webp" alt="">
     <div class="titulo"><h1>¡Tirame una Birra!</h1><p>Abrí la <b style="color:var(--ambar)">Cervecería Durazno</b>: tirá pintas, freí papas y que nadie se vaya enojado.</p></div>
@@ -271,13 +362,15 @@ function musicaPlay(){
 function musicaPausa(){if(musica)musica.pause();}
 function musicaStop(){if(musica){musica.pause();musica.currentTime=0;}}
 function salirJuego(){jugando=false;musicaStop();try{if(parent!==window&&parent.Extensiones){parent.Extensiones.abrirLobby();return;}}catch(e){}location.href="index.html";}
-$("volver").onclick=salirJuego;
+/* "‹": en el menú de niveles vuelve al mapa; en el mapa (o jugando) sale a Extensiones */
+$("volver").onclick=()=>{if(!$("menu").hidden&&$("pantMejoras").hidden){irMapa();return;}salirJuego();};
 /* botón atrás de Android (index.html llama a gyaAtras): cierra lo abierto; en el menú devuelve false y sale */
 window.gyaAtras=()=>{
-  if(!$("pantMejoras").hidden){$("pantMejoras").hidden=true;despuesMejoras=null;$("menu").hidden=false;pintarMenu();return true;}
+  if(!$("pantMejoras").hidden){$("pantMejoras").hidden=true;despuesMejoras=null;if($("mapa").hidden){$("menu").hidden=false;pintarMenu();}else pintarMapa();return true;}
   if(!$("pantPausa").hidden){$("pSeguir").click();return true;}
   if(jugando){$("pausa").click();return true;}
   if(!$("intro").hidden||!$("fin").hidden){$("intro").hidden=true;$("fin").hidden=true;pintarMenu();$("menu").hidden=false;return true;}
+  if(!$("menu").hidden){irMapa();return true;}
   return false;
 };
 
@@ -725,7 +818,7 @@ function pintarMenu(){
 }
 function abrirIntro(i){armarMesas();
   nivelIdx=i;N=NIVELES[i];$("menu").hidden=true;$("fin").hidden=true;
-  $("introTitulo").textContent=i===4?"Nivel 5: Happy hour":"Nivel "+(i+1);$("introTexto").textContent=N.texto;
+  $("introTitulo").textContent=i===4?"Nivel 5: Happy hour":"Nivel "+(i+1)+(N.etiqueta?": "+N.etiqueta:"");$("introTexto").textContent=N.texto;
   const nv=$("introNuevos");nv.innerHTML="";N.nuevos.forEach(k=>{const d=document.createElement("div");d.innerHTML=`<img src="assets/cerveceria/${P[k].img}.webp" alt="">${P[k].nombre}`;nv.appendChild(d);});
   armarPuestos();$("clientes").innerHTML="";$("efectos").innerHTML="";$("ayuda").hidden=true;
   monedas=0;vidas=3;atendidos=perdidos=generados=0;baseTotal=0;clientes=[];pintarHud();
@@ -738,7 +831,7 @@ $("introJugar").onclick=()=>{setTimeout(musicaPlay);
 $("abrirMejoras").onclick=()=>{despuesMejoras=null;pintarMejoras();$("pantMejoras").hidden=false;};
 let despuesMejoras=null;
 $("finMejoras").onclick=()=>{despuesMejoras=nivelIdx;$("fin").hidden=true;pintarMejoras();$("pantMejoras").hidden=false;};
-$("cerrarMejoras").onclick=()=>{$("pantMejoras").hidden=true;$("bancoMenu").textContent=banco;
+$("cerrarMejoras").onclick=()=>{$("pantMejoras").hidden=true;$("bancoMenu").textContent=banco;if(!$("mapa").hidden)pintarMapa();
   if(despuesMejoras!==null){const n=despuesMejoras;despuesMejoras=null;abrirIntro(n);}};
 /* al pasar de nivel, primero la tienda de mejoras y después el nivel nuevo */
 /* el cartel de fin se puede arrastrar para ver cómo quedó el bar */
@@ -772,7 +865,53 @@ document.addEventListener("visibilitychange",()=>{if(document.hidden){musicaPaus
 addEventListener("pagehide",musicaStop);
 /* la ayuda del nivel 1 se va sola después del primer cliente atendido */
 setInterval(()=>{if(nivelIdx===0&&atendidos>=1&&pasoAyuda<3)ocultarAyuda(2);},500);
-N=NIVELES[0];armarPuestos();pintarHud();pintarMenu();$("bancoMenu").textContent=banco;
+
+/* ---------- mapa "Ruta Durazno" (inicio) ---------- */
+/* Bares inventados de Durazno. Solo la Cervecería Durazno se juega; el resto aparece como "Próximamente". */
+const BARES=[
+  {id:"cerveceria",nombre:"Cervecería Durazno",ico:"🍺",x:720,y:500,barrio:"Centro",abierto:true},
+  {id:"rockeria",nombre:"Rockería del Centro",ico:"🎸",x:920,y:330,barrio:"Centro",tipo:"Rock y birra tirada"},
+  {id:"pizzeria",nombre:"Pizzería La Plaza",ico:"🍕",x:900,y:640,barrio:"Frente a la plaza",tipo:"Pizza a la leña"},
+  {id:"parrilla",nombre:"Parrillada Ruta 5",ico:"🥩",x:700,y:860,barrio:"Sobre la Ruta 5",tipo:"Asado y chivitos"},
+  {id:"bareyi",nombre:"Bar El Yí",ico:"🎣",x:420,y:640,barrio:"Costanera",tipo:"Birra mirando el río"},
+  {id:"cantina",nombre:"Cantina del Puente",ico:"🌉",x:550,y:420,barrio:"Junto al puente",tipo:"Minutas y cerveza"},
+  {id:"parador",nombre:"Parador Santa Bernardina",ico:"🎪",x:260,y:330,barrio:"Santa Bernardina",tipo:"Festival y música"},
+  {id:"nuevo",nombre:"¿Tu bar acá?",ico:"➕",x:180,y:860,barrio:"Durazno",nuevo:true}
+];
+let barSel="cerveceria";
+function irMapa(){$("menu").hidden=true;$("intro").hidden=true;$("fin").hidden=true;pintarMapa();$("mapa").hidden=false;}
+function pintarMapa(){
+  const cont=$("rmPines");cont.innerHTML="";
+  BARES.forEach(b=>{const el=document.createElement("button");el.className="rm-pin"+(b.abierto?" abierto":"")+(b.nuevo?" nuevo":"")+(b.id===barSel?" sel":"");
+    el.style.left=b.x+"px";el.style.top=b.y+"px";el.setAttribute("aria-label",b.nombre);
+    el.innerHTML=(b.abierto?'<span class="rm-tag">ABIERTO</span>':"")+`<span class="rm-bola"><span class="ico">${b.ico}</span>${b.abierto||b.nuevo?"":'<span class="rm-candado">🔒</span>'}</span><span class="rm-punta"></span><span class="rm-nom">${b.nombre}</span>`;
+    el.onclick=()=>{barSel=b.id;bip(660,.06,"triangle",.06);pintarMapa();};cont.appendChild(el);});
+  const abiertos=BARES.filter(b=>b.abierto).length,total=BARES.filter(b=>!b.nuevo).length;
+  $("rmAbiertos").textContent=`🍺 ${abiertos} de ${total} bares abiertos`;$("rmBanco").textContent=banco;
+  const b=BARES.find(x=>x.id===barSel),c=$("rmCard");
+  if(b.abierto){
+    const est=NIVELES.reduce((a,_,i)=>a+(estrellasGuardadas[i]||0),0);
+    let sig=NIVELES.findIndex((_,i)=>(i===0||(estrellasGuardadas[i-1]||0)>0)&&!(estrellasGuardadas[i]||0));
+    const n=sig<0?null:NIVELES[sig],nom=n?(sig===4?"Happy hour":n.etiqueta||n.clientes+" clientes"):"";
+    c.innerHTML=`<div class="rm-top"><div class="rm-logo">🍺</div><div><h2>${b.nombre}</h2><div class="rm-dir">📍 ${b.barrio} · Durazno</div></div></div>
+      <div class="rm-tags"><b>⭐ ${est}/${NIVELES.length*3}</b><b>Golden · Roja · IPA · Stout</b><b>🍟 🍔 🍕</b></div>
+      <div class="rm-evento"><div class="ico">${n&&n.extras.includes("pizza")?"🍕":"🎸"}</div><div>${n?`<h3>Te espera el nivel ${sig+1}</h3><p>${nom} · banda en vivo</p>`:`<h3>¡Pasaste todos los niveles!</h3><p>Buscá las 3 estrellas en cada uno</p>`}</div></div>
+      <p class="rm-desc">Tu bar: tirá pintas, freí papas, hacé pizzas y que nadie se vaya enojado. Con lo que ganás lo vas mejorando.</p>
+      <div class="rm-btns"><button class="rm-jugar" id="rmJugar">▶ Entrar al bar</button><button class="rm-mej" id="rmMejorar">⬆ Mejorar · ${banco} 🪙</button></div>`;
+    $("rmJugar").onclick=()=>{$("mapa").hidden=true;pintarMenu();$("menu").hidden=false;};
+    $("rmMejorar").onclick=()=>{despuesMejoras=null;pintarMejoras();$("pantMejoras").hidden=false;};
+  }else if(b.nuevo){
+    c.innerHTML=`<div class="rm-top"><div class="rm-logo gris">➕</div><div><h2>¿Tenés un bar en Durazno?</h2></div></div>
+      <div class="rm-evento"><div class="ico">📣</div><div><h3>Sumalo a la Ruta</h3><p>Tu bar en el mapa, con sus birras, su comida y sus eventos de verdad.</p></div></div>
+      <div class="rm-btns"><button disabled>Muy pronto</button></div>`;
+  }else{
+    c.innerHTML=`<div class="rm-top"><div class="rm-logo gris">${b.ico}</div><div><h2>${b.nombre}</h2><div class="rm-dir">📍 ${b.barrio} · Durazno</div></div></div>
+      <div class="rm-tags"><b>🔒 Próximamente</b><b>${b.tipo}</b></div>
+      <div class="rm-evento gris"><div class="ico">🚧</div><div><h3>Todavía no abrió</h3><p>Muy pronto vas a poder atender este bar.</p></div></div>
+      <div class="rm-btns"><button disabled>🔒 Próximamente</button></div>`;
+  }
+}
+N=NIVELES[0];armarPuestos();pintarHud();pintarMenu();pintarMapa();$("bancoMenu").textContent=banco;
 </script>
 </body>
 </html>
