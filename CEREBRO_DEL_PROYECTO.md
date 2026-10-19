@@ -1043,3 +1043,7 @@ Fecha: 19/10/2026 — Tirame una Birra en iPhone (Vale): pantalla violeta vacía
 ```text
 Fecha: 19/10/2026 — Tirame una Birra: mejora "Segunda chopera" (250 monedas, una compra): 2 choperas = 8 canillas para tirar dos pintas iguales a la vez; con ella la barra se reacomoda y las máquinas se achican (disposicion() en cerveceria.html; medidas internas escaladas). Teclas 1-8 en la compu. La tienda de mejoras pasó a 3 columnas para que entren las 6. cerveceria.html v7, sw v330.
 ```
+
+```text
+Fecha: 19/10/2026 — Tirame una Birra: en iPhone ya carga (Vale jugó el nivel 1). Arreglado el menú: el título en dos renglones empujaba la frase de abajo encima de los niveles; ahora el título va en un renglón más chico y el bloque título+frase tiene alto fijo arriba de los niveles. cerveceria.html v8, sw v331.
+```
