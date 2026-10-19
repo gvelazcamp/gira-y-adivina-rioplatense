@@ -239,7 +239,18 @@ function ajustar(){ROT=innerHeight>innerWidth;
   ESC_S=ROT?Math.min(innerWidth/900,innerHeight/1600):Math.min(innerWidth/1600,innerHeight/900);
   esc.style.transform=`translate(-50%,-50%)${ROT?" rotate(90deg)":""} scale(${ESC_S})`;}
 addEventListener("resize",ajustar);ajustar();
-function salirJuego(){jugando=false;try{if(parent!==window&&parent.Extensiones){parent.Extensiones.abrirLobby();return;}}catch(e){}location.href="index.html";}
+/* Música de la banda: suena en loop de fondo en el nivel 1 (respeta el sonido del juego principal) */
+const MUSICA={0:"assets/cerveceria/musica-nivel1.mp3"};
+let musica=null;
+function musicaPlay(){
+  const src=MUSICA[nivelIdx];if(!src||!sonidoOk()){musicaStop();return;}
+  if(!musica||!musica.src.endsWith(src)){musicaStop();musica=new Audio(src);musica.loop=true;}
+  musica.volume=Math.min(.6,.3+.08*(mej.musica||0));   /* la mejora "Banda en vivo" la hace sonar un poco más fuerte */
+  const pr=musica.play();if(pr&&pr.catch)pr.catch(()=>{});
+}
+function musicaPausa(){if(musica)musica.pause();}
+function musicaStop(){if(musica){musica.pause();musica.currentTime=0;}}
+function salirJuego(){jugando=false;musicaStop();try{if(parent!==window&&parent.Extensiones){parent.Extensiones.abrirLobby();return;}}catch(e){}location.href="index.html";}
 $("volver").onclick=salirJuego;
 /* botón atrás de Android (index.html llama a gyaAtras): cierra lo abierto; en el menú devuelve false y sale */
 window.gyaAtras=()=>{
@@ -639,7 +650,7 @@ function ocultarAyuda(paso){if(nivelIdx!==0||paso<pasoAyuda)return;pasoAyuda=pas
 function revisarFin(){if(jugando&&vidas>0&&generados>=N.clientes&&!clientes.length)terminar(true);}
 function calcEstrellas(){return monedas>=baseTotal*1.38?3:monedas>=baseTotal*1.18?2:1;}
 function terminar(gano){
-  if(!jugando)return;jugando=false;banco+=monedas;guardarBanco();
+  if(!jugando)return;jugando=false;musicaStop();banco+=monedas;guardarBanco();
   const f=$("fin");f.hidden=false;const e=$("finEstrellas");e.innerHTML="";
   if(gano){const n=calcEstrellas();estrellasGuardadas[nivelIdx]=Math.max(estrellasGuardadas[nivelIdx]||0,n);guardarEstrellas();
     $("finTitulo").textContent=n===3?"¡Crack de la barra!":n===2?"¡Bien ahí!":"¡Lo lograste!";
@@ -663,7 +674,7 @@ function abrirIntro(i){armarMesas();
   monedas=0;vidas=3;atendidos=perdidos=generados=0;baseTotal=0;clientes=[];pintarHud();
   $("intro").hidden=false;
 }
-$("introJugar").onclick=()=>{
+$("introJugar").onclick=()=>{setTimeout(musicaPlay);
   $("intro").hidden=true;aplicarMejoras();jugando=true;pausado=false;reloj=0;proxLlegada=.15;ultimoPago=-9;combo=0;pasoAyuda=0;
   if(nivelIdx===0)mostrarAyuda("Mirá el globito del cliente y TOCÁ la canilla de esa birra.");
 };
@@ -697,10 +708,11 @@ addEventListener("keydown",e=>{if(!jugar())return;const k=e.key.toLowerCase();
   else if(k==="f")tocarFreidora();else if(k==="h")tocarPlancha(plancha[0]);else if(k==="j")tocarPlancha(plancha[1]);
   else if(k==="m")maniE.hit.dispatchEvent(new Event("pointerdown"));else if(k==="p")tocarPicada();else if(k===" "||k==="escape")$("pausa").click();});
 addEventListener("keyup",e=>{if("1234".includes(e.key)&&e.key.length===1&&canillas[+e.key-1])soltarCanilla(canillas[+e.key-1]);});
-$("pausa").onclick=()=>{if(!jugando)return;pausado=true;$("pantPausa").hidden=false;};
-$("pSeguir").onclick=()=>{pausado=false;$("pantPausa").hidden=true;};
-$("pMenu").onclick=()=>{pausado=false;jugando=false;$("pantPausa").hidden=true;pintarMenu();$("menu").hidden=false;};
-document.addEventListener("visibilitychange",()=>{if(document.hidden&&jugando&&!pausado){pausado=true;$("pantPausa").hidden=false;}});
+$("pausa").onclick=()=>{if(!jugando)return;pausado=true;musicaPausa();$("pantPausa").hidden=false;};
+$("pSeguir").onclick=()=>{pausado=false;musicaPlay();$("pantPausa").hidden=true;};
+$("pMenu").onclick=()=>{pausado=false;jugando=false;musicaStop();$("pantPausa").hidden=true;pintarMenu();$("menu").hidden=false;};
+document.addEventListener("visibilitychange",()=>{if(document.hidden){musicaPausa();if(jugando&&!pausado){pausado=true;$("pantPausa").hidden=false;}}});
+addEventListener("pagehide",musicaStop);
 /* la ayuda del nivel 1 se va sola después del primer cliente atendido */
 setInterval(()=>{if(nivelIdx===0&&atendidos>=1&&pasoAyuda<3)ocultarAyuda(2);},500);
 N=NIVELES[0];armarPuestos();pintarHud();pintarMenu();$("bancoMenu").textContent=banco;
