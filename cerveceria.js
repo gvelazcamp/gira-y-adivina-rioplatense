@@ -6,7 +6,7 @@ const Cerveceria=(()=>{
   let marco=null;
   function abrir(contenedor){
     salir();
-    marco=document.createElement("iframe");marco.src="cerveceria.html?v=4";marco.title="Tirame una Birra";
+    marco=document.createElement("iframe");marco.src="cerveceria.html?v=5";marco.title="Tirame una Birra";
     marco.style.cssText="position:fixed;left:0;right:0;bottom:0;top:env(safe-area-inset-top,0px);width:100%;height:calc(100% - env(safe-area-inset-top,0px));border:0;z-index:60;background:#160B24";
     contenedor.appendChild(marco);
   }

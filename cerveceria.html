@@ -169,6 +169,13 @@ body{background:var(--noche);color:var(--crema);font-family:var(--texto);overflo
 
 </head>
 <body>
+<script>
+/* Si algo falla al cargar, se muestra en pantalla (en vez de quedar la pantalla vacía) para poder mandar captura. */
+window.addEventListener("error",e=>{try{let d=document.getElementById("errorCarga");if(!d){d=document.createElement("div");d.id="errorCarga";
+  d.style.cssText="position:fixed;left:10px;right:10px;top:10px;z-index:999;background:#000d;color:#F5B301;font:600 14px/1.4 system-ui;padding:10px;border-radius:10px;white-space:pre-wrap";
+  document.body.appendChild(d);d.textContent="⚠️ Tirame una Birra no cargó bien. Mandale captura a Gonzalo:";}
+  d.textContent+="\n• "+(e.message||"error")+" ("+String(e.filename||"").split("/").pop()+":"+(e.lineno||"")+")";}catch(_){}});
+</script>
 <div id="escena">
   <div class="capa" id="juego">
     <img src="assets/cerveceria/fondo.webp" alt="" style="left:0;top:0;width:1600px;height:900px">
@@ -235,10 +242,14 @@ const $=id=>document.getElementById(id);
 const esc=$("escena");
 /* La app de Play va siempre parada: con el celular parado la escena se gira 90° (se juega con el celular acostado). */
 let ESC_S=1,ROT=false;
-function ajustar(){ROT=innerHeight>innerWidth;
+function ajustar(){
+  /* dentro del iframe a veces el tamaño todavía es 0 al cargar: reintentar hasta que tenga tamaño */
+  if(innerWidth<20||innerHeight<20){setTimeout(ajustar,120);return;}
+  ROT=innerHeight>innerWidth;
   ESC_S=ROT?Math.min(innerWidth/900,innerHeight/1600):Math.min(innerWidth/1600,innerHeight/900);
   esc.style.transform=`translate(-50%,-50%)${ROT?" rotate(90deg)":""} scale(${ESC_S})`;}
-addEventListener("resize",ajustar);ajustar();
+addEventListener("resize",ajustar);addEventListener("orientationchange",()=>setTimeout(ajustar,200));addEventListener("load",ajustar);ajustar();
+try{new ResizeObserver(()=>ajustar()).observe(document.documentElement);}catch(e){}
 /* Música de la banda: suena en loop de fondo (guitarra, trompeta o batería según el músico del nivel) (respeta el sonido del juego principal) */
 /* una canción por músico: va con el que toca (nivelIdx%3), así el 4 y el 5 repiten guitarra y trompeta */
 const MUSICA={0:"assets/cerveceria/musica-nivel1.mp3",1:"assets/cerveceria/musica-nivel2.mp3",2:"assets/cerveceria/musica-nivel3.mp3"};
