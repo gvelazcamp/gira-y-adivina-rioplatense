@@ -239,11 +239,12 @@ function ajustar(){ROT=innerHeight>innerWidth;
   ESC_S=ROT?Math.min(innerWidth/900,innerHeight/1600):Math.min(innerWidth/1600,innerHeight/900);
   esc.style.transform=`translate(-50%,-50%)${ROT?" rotate(90deg)":""} scale(${ESC_S})`;}
 addEventListener("resize",ajustar);ajustar();
-/* Música de la banda: suena en loop de fondo (nivel 1 guitarra, nivel 2 trompeta) (respeta el sonido del juego principal) */
-const MUSICA={0:"assets/cerveceria/musica-nivel1.mp3",1:"assets/cerveceria/musica-nivel2.mp3"};
+/* Música de la banda: suena en loop de fondo (guitarra, trompeta o batería según el músico del nivel) (respeta el sonido del juego principal) */
+/* una canción por músico: va con el que toca (nivelIdx%3), así el 4 y el 5 repiten guitarra y trompeta */
+const MUSICA={0:"assets/cerveceria/musica-nivel1.mp3",1:"assets/cerveceria/musica-nivel2.mp3",2:"assets/cerveceria/musica-nivel3.mp3"};
 let musica=null;
 function musicaPlay(){
-  const src=MUSICA[nivelIdx];if(!src||!sonidoOk()){musicaStop();return;}
+  const src=MUSICA[nivelIdx%3];if(!src||!sonidoOk()){musicaStop();return;}
   if(!musica||!musica.src.endsWith(src)){musicaStop();musica=new Audio(src);musica.loop=true;}
   musica.volume=Math.min(.6,.3+.08*(mej.musica||0));   /* la mejora "Banda en vivo" la hace sonar un poco más fuerte */
   const pr=musica.play();if(pr&&pr.catch)pr.catch(()=>{});
