@@ -997,3 +997,7 @@ Fecha: 18/10/2026 — Contra Reloj OCULTO para todos menos Gonzalo (Gonzalo: "de
 ```text
 Fecha: 19/10/2026 — Social ✕ (otra vez): Gonzalo sacaba jugadores (testers con número de teléfono como nombre) y al volver a entrar reaparecían. Ahora la ✕ los guarda también en su celular (localStorage gya_social_ocultos, viaja en el respaldo) y los saca de la lista al instante aunque el servidor no responda o no devuelva la fila; la comparación es por nombre normalizado (mayúsculas/espacios/tildes), no exacta. Si el servidor falla, avisa "Sacado solo en tu celular". No se pudo ver la tabla de Supabase desde esta sesión para saber la causa exacta del lado del servidor. sw v320.
 ```
+
+```text
+Fecha: 19/10/2026 — Diagnóstico de traba (solo Gonzalo): en su celular el inicio a veces no deja deslizar ~6 s (video 19/10 11:10) y en la compu no se reproduce (deslizar anda desde el segundo 2,5, con o sin overscroll-behavior). Se agregó un aviso fijo arriba, solo para el perfil Gonzalo, que lista cada traba de más de 1 s con la función y la posición en el código (API long-animation-frame). Tocándolo se cierra. Con la captura se busca el culpable; SACARLO cuando se resuelva. sw v321.
+```
