@@ -992,3 +992,7 @@ Fecha: 18/10/2026 — 🎉 Google Play APROBÓ el acceso a PRODUCCIÓN ("¡Enhor
 ```text
 Fecha: 18/10/2026 — Contra Reloj OCULTO para todos menos Gonzalo (Gonzalo: "dejá el juego Contra Reloj solo para Gonzalo y nadie más hasta tenerlo ok"). En extensiones.js su entrada tiene soloGonzalo:true (extensionVisible) y se sacó el atajo ?contrareloj=1 que lo mostraba a cualquiera con ese link. Los links de invitación (?sala=…, ?ext=contra-reloj-rioplatense) tampoco lo abren para otros. Para volver a mostrarlo: sacar soloGonzalo:true. extensiones.js v44, sw v319.
 ```
+
+```text
+Fecha: 19/10/2026 — Social ✕ (otra vez): Gonzalo sacaba jugadores (testers con número de teléfono como nombre) y al volver a entrar reaparecían. Ahora la ✕ los guarda también en su celular (localStorage gya_social_ocultos, viaja en el respaldo) y los saca de la lista al instante aunque el servidor no responda o no devuelva la fila; la comparación es por nombre normalizado (mayúsculas/espacios/tildes), no exacta. Si el servidor falla, avisa "Sacado solo en tu celular". No se pudo ver la tabla de Supabase desde esta sesión para saber la causa exacta del lado del servidor. sw v320.
+```
