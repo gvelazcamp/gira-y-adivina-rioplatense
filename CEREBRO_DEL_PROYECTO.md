@@ -1039,3 +1039,7 @@ Fecha: 19/10/2026 — Tirame una Birra: Vale reportó "pantalla azul" al entrar 
 ```text
 Fecha: 19/10/2026 — Tirame una Birra en iPhone (Vale): pantalla violeta vacía. Causa probable: Safari de iPhone agranda el iframe al tamaño del contenido (escena de 1600 px fija al centro) y la escena queda fuera de lo visible. Arreglo: el iframe usa width:1px;min-width:100% (y alto igual) + scrolling="no"; adentro ajustar() mide el tamaño real con frameElement, fija html/body en px y la escena va en position:absolute. No se pudo probar en iPhone real (solo Chromium). cerveceria.js v3, cerveceria.html v6, sw v329.
 ```
+
+```text
+Fecha: 19/10/2026 — Tirame una Birra: mejora "Segunda chopera" (250 monedas, una compra): 2 choperas = 8 canillas para tirar dos pintas iguales a la vez; con ella la barra se reacomoda y las máquinas se achican (disposicion() en cerveceria.html; medidas internas escaladas). Teclas 1-8 en la compu. La tienda de mejoras pasó a 3 columnas para que entren las 6. cerveceria.html v7, sw v330.
+```
