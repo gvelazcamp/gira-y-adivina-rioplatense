@@ -6,8 +6,10 @@ const Cerveceria=(()=>{
   let marco=null;
   function abrir(contenedor){
     salir();
-    marco=document.createElement("iframe");marco.src="cerveceria.html?v=5";marco.title="Tirame una Birra";
-    marco.style.cssText="position:fixed;left:0;right:0;bottom:0;top:env(safe-area-inset-top,0px);width:100%;height:calc(100% - env(safe-area-inset-top,0px));border:0;z-index:60;background:#160B24";
+    marco=document.createElement("iframe");marco.src="cerveceria.html?v=6";marco.title="Tirame una Birra";
+    /* width:1px + min-width:100% (y lo mismo en alto): truco para que el iPhone no agrande el iframe al tamaño de la escena */
+    marco.setAttribute("scrolling","no");
+    marco.style.cssText="position:fixed;left:0;top:env(safe-area-inset-top,0px);width:1px;min-width:100%;height:1px;min-height:calc(100% - env(safe-area-inset-top,0px));border:0;z-index:60;background:#160B24";
     contenedor.appendChild(marco);
   }
   function salir(){if(marco){marco.remove();marco=null;}}

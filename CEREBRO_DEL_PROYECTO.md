@@ -1035,3 +1035,7 @@ Fecha: 19/10/2026 — Tirame una Birra: música del nivel 3 (assets/cerveceria/m
 ```text
 Fecha: 19/10/2026 — Tirame una Birra: Vale reportó "pantalla azul" al entrar (no reproducido en la compu con perfil Vale). Se blindó el arranque: si el iframe todavía mide 0 al cargar, reintenta acomodar la escena (también con ResizeObserver, load y orientationchange), y si hay un error de JavaScript se muestra en pantalla con el mensaje para que manden captura. cerveceria.html v5, sw v328.
 ```
+
+```text
+Fecha: 19/10/2026 — Tirame una Birra en iPhone (Vale): pantalla violeta vacía. Causa probable: Safari de iPhone agranda el iframe al tamaño del contenido (escena de 1600 px fija al centro) y la escena queda fuera de lo visible. Arreglo: el iframe usa width:1px;min-width:100% (y alto igual) + scrolling="no"; adentro ajustar() mide el tamaño real con frameElement, fija html/body en px y la escena va en position:absolute. No se pudo probar en iPhone real (solo Chromium). cerveceria.js v3, cerveceria.html v6, sw v329.
+```
