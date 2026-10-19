@@ -89,7 +89,7 @@ Los 18 juegos siguientes aparecen en `EXTENSIONES`. En esta revisión los flags 
 | Bomba | `bomba.js` | Previa; decir una palabra y pasar el celular antes de la explosión. |
 | ¿Qué número soy? | `que-numero-soy.js` | Previa; número grande con pantalla fija. |
 | Moon Tap | `moon-tap.js` | Acierto por timing sobre un aro; está integrado al lobby. |
-| Tirame una Birra (Cervecería Durazno) | `cerveceria.js` → `cerveceria.html` (iframe), arte en `assets/cerveceria/` | **Solo Gonzalo y Vale** (`soloUsuarios:["gonzalo","vale"]`). Tipo Cooking Madness: canillas (toque = se llena sola; mantener apretado = espuma justa con premio/castigo), freidora, plancha, maní, picada, horno de pizza; 6 niveles, clientes con paciencia propia (10 personajes), mejoras con monedas (`gya_birra_*`), banda en vivo, mesas que se llenan, tele con partido. Arranca en el mapa "Ruta Durazno" (bares inventados; solo la Cervecería Durazno se juega, el resto "Próximamente" + "¿Tu bar acá?"). Con el celular parado la escena se gira 90°. |
+| Tirame una Birra (Cervecería Durazno) | `cerveceria.js` → `cerveceria.html` (iframe), arte en `assets/cerveceria/` | **Ya NO está en Girá y Adiviná (sacado el 19/10/2026): va a ser una app aparte.** Los archivos quedan en el repo sin enlazar (se abre directo en /cerveceria.html). Tipo Cooking Madness: canillas (toque = se llena sola; mantener apretado = espuma justa con premio/castigo), freidora, plancha, maní, picada, horno de pizza; 6 niveles, clientes con paciencia propia (10 personajes), mejoras con monedas (`gya_birra_*`), banda en vivo, mesas que se llenan, tele con partido. Arranca en el mapa "Ruta Durazno" (bares inventados; solo la Cervecería Durazno se juega, el resto "Próximamente" + "¿Tu bar acá?"). Con el celular parado la escena se gira 90°. |
 
 **Mahjong:** `mahjong-rioplatense.html` es una página independiente. El catálogo explica que está oculto del lobby porque su inicio necesita arreglos. Sus reglas se consultan en `mahjong-rioplatense.md`: pares por asociación, fichas apiladas y modos Espejo/Memoria/Hielo/Reloj. No extender su regla de interfaz sin texto a los demás juegos.
 
@@ -1058,4 +1058,8 @@ Fecha: 19/10/2026 — Tirame una Birra: pantalla de inicio = mapa "Ruta Durazno"
 
 ```text
 Fecha: 19/10/2026 — Tirame una Birra: "Entrar al bar" no hacía nada. Causa: #mapa{display:block} le ganaba a .pantalla[hidden]{display:none} y el mapa quedaba tapando el menú. Arreglo: #mapa[hidden]{display:none}. Ojo: si a una .pantalla se le pone display por id, agregarle su regla [hidden]. cerveceria.html v11, sw v334.
+```
+
+```text
+Fecha: 19/10/2026 — Tirame una Birra sale de Girá y Adiviná (pedido de Gonzalo: "fue para probar, lo dejamos aparte"). Motivo: un juego que promociona cerveza obliga a calificación +18 / control de edad en Play Store, y no tiene que arrastrar a Girá y Adiviná. Se sacó la entrada de extensiones.js (v46), el script cerveceria.js de index.html y los 3 archivos del APP_SHELL del sw (v335). Quedan en el repo, sin enlazar desde el juego: cerveceria.html, cerveceria.js, logo-cerveceria.svg y assets/cerveceria/ (para la futura app aparte; se juega en https://gvelazcamp.github.io/gira-y-adivina-rioplatense/cerveceria.html). El campo soloUsuarios/extensionVisible queda en extensiones.js por si se usa para otra prueba. No volver a meterlo en Girá y Adiviná sin que Gonzalo lo pida.
 ```
