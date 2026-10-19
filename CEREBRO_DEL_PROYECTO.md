@@ -169,6 +169,7 @@ Este archivo orienta; el código conserva la implementación, los datos conserva
 - `Vistas` conserva el historial de contenido mostrado hasta agotar cada banco; no quitarlo al agregar niveles.
 - Para arte, leer el PROMPT del tipo correspondiente. Preservar el exterior oscuro de los marcos de letra. Una imagen por objeto cuando Gonzalo pida assets separados. Distinguir marcos, fondos, sellos y coleccionables.
 - No inventar lugares o elementos de una ciudad como si fueran reales; verificar referencias cuando se cree arte geográfico.
+- **REGLA DE GONZALO (19/10/2026): el deslizado (scroll) NUNCA se toca.** Nada de `overscroll-behavior`, `touch-action`, `scroll-snap`, `scroll-behavior`, `overflow` en html/body ni listeners de touch/wheel que frenen el deslizar en las pantallas del juego. Si algo parece pedirlo (p. ej. la recarga al deslizar hacia abajo), preguntarle antes a Gonzalo. Los juegos con PantallaFija/canvas propios (Puzzle, Bomba, etc.) manejan su propio toque y no cuentan.
 - Para audio, revisar referencias existentes antes de sustituir una pista. No borrar música o sonidos de otras extensiones por cambiar una sola.
 
 ## 5. Recuperación: encontrar y reactivar el contexto necesario
@@ -1004,4 +1005,8 @@ Fecha: 19/10/2026 — Diagnóstico de traba (solo Gonzalo): en su celular el ini
 
 ```text
 Fecha: 19/10/2026 — Deslizar trabado en el inicio: Gonzalo dice que nunca le pasó antes de los cambios del 17/10. Se sacó la regla html,body{overscroll-behavior-y:none} (PR #978), el único cambio de esos días que tocaba el deslizado. Vuelve a pasar lo de antes: deslizar hacia abajo estando arriba de todo puede recargar el juego. Si con esto se arregla, NO volver a ponerla en body (si hace falta frenar la recarga, probar solo en html y probarlo en el celular de Gonzalo). El diagnóstico de trabas (solo Gonzalo) sigue puesto. sw v322.
+```
+
+```text
+Fecha: 19/10/2026 — Regla nueva de Gonzalo: "el deslizado nunca se toca". Anotada en "Reglas de contenido y visuales" y en CLAUDE.md.
 ```
