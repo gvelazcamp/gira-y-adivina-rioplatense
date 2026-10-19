@@ -11330,25 +11330,6 @@ document.addEventListener("keydown",e=>{
 document.addEventListener("error",e=>{const t=e.target;if(!t||t.tagName!=="IMG"||!/assets\/(avatars|avatares)\//.test(t.src))return;
   if(!t.dataset.reintento){t.dataset.reintento="1";const u=t.src;setTimeout(()=>{t.src=u+(u.includes("?")?"&":"?")+"r=1";},2500);}
   else if(t.dataset.reintento==="1"){t.dataset.reintento="2";t.src="data:image/svg+xml,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="32" fill="#3A2552"/><circle cx="32" cy="25" r="11" fill="#CDB8E6"/><path d="M12 54c3-11 11-16 20-16s17 5 20 16" fill="#CDB8E6"/></svg>');}},true);
-/* Diagnóstico solo para Gonzalo (19/10/2026): en su celular el inicio a veces
-   no deja deslizar unos segundos y en la compu no se reproduce. Si el juego se
-   traba más de 1 s, avisa cuánto y qué código lo trabó. Sacar cuando se resuelva. */
-(function(){
-  if(!esGonzaloGuardado())return;
-  const avisar=(ms,quien)=>{if(document.getElementById("splash")){setTimeout(()=>avisar(ms,quien),1500);return;}
-    let d=document.getElementById("gyaDiag");
-    if(!d){d=document.createElement("div");d.id="gyaDiag";d.style.cssText="position:fixed;left:8px;right:8px;top:8px;z-index:99999;background:#000D;color:#FFC93C;font:600 12px/1.35 system-ui;padding:8px 10px;border-radius:10px;white-space:pre-wrap";
-      d.onclick=()=>d.remove();document.body.appendChild(d);d.textContent="⏱ Diagnóstico (tocá para cerrar y mandale captura a Claude)";}
-    d.textContent+="\n• "+new Date().toLocaleTimeString()+" trabado "+(ms/1000).toFixed(1)+" s"+(quien?" · "+quien:"");};
-  try{
-    if((PerformanceObserver.supportedEntryTypes||[]).includes("long-animation-frame")){
-      new PerformanceObserver(l=>l.getEntries().forEach(e=>{if(e.duration<1000)return;
-        const sc=[...(e.scripts||[])].sort((x,y)=>y.duration-x.duration)[0];
-        avisar(e.duration,sc?(sc.sourceFunctionName||sc.invoker||"?")+" ("+String(sc.sourceURL||"").split("/").pop().split("?")[0]+":"+sc.sourceCharPosition+") "+Math.round(sc.duration)+" ms":"");
-      })).observe({type:"long-animation-frame",buffered:true});
-    }else new PerformanceObserver(l=>l.getEntries().forEach(e=>{if(e.duration>=1000)avisar(e.duration,"");})).observe({type:"longtask",buffered:true});
-  }catch(e){}
-})();
 /* Botón "atrás" de Android (la app de Play es una TWA = página web): sin esto,
    "atrás" cerraba la app desde cualquier pantalla (lo reportó una tester). Ahora
    cierra lo que esté abierto (ventana, pantalla, juego de Extensiones) y vuelve al

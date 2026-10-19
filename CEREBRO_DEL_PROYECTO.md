@@ -1015,3 +1015,7 @@ Fecha: 19/10/2026 — Regla nueva de Gonzalo: "el deslizado nunca se toca". Anot
 ```text
 Fecha: 19/10/2026 — Nueva extensión "Tirame una Birra" (Cervecería Durazno), hecha con imágenes de ChatGPT de Gonzalo y probada antes como artifact. Visible solo para los perfiles Gonzalo y Vale (nuevo campo soloUsuarios en extensiones.js / extensionVisible). cerveceria.js abre cerveceria.html en iframe como el Puzzle; "‹" y el atrás de Android (gyaAtras) vuelven al lobby. Colores y letras de Girá y Adiviná (noche/oro/magenta/agua, Archivo Black + Outfit) y logo-cerveceria.svg. Guarda en localStorage gya_birra_estrellas/banco/mejoras (viajan en el respaldo). Para abrirla a todos: sacar soloUsuarios. extensiones.js v45, sw v323.
 ```
+
+```text
+Fecha: 19/10/2026 — Se sacó el aviso de "Diagnóstico" de trabas (solo Gonzalo): ya no hace falta (el deslizado se arregló sacando overscroll-behavior). Lo último que marcó fue 1,6 s al abrir la lista de Usuarios (se dibujan ~17 jugadores con datos del servidor). sw v324.
+```
