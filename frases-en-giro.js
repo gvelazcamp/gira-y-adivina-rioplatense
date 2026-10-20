@@ -51,6 +51,8 @@ const FrasesEnGiro=(()=>{
     const elegida=(libres.length?libres:posibles)[azar((libres.length?libres:posibles).length)];
     Vistas.marcar("frases",elegida.texto);return elegida;
   }
+  /* Dibujos en assets/frases-giro/ (hoja de ChatGPT recortada). */
+  const ARTE=n=>"assets/frases-giro/"+n+".webp",ico=n=>'<img class="fg-ico" src="'+ARTE(n)+'" alt="" draggable="false">';
   function sonido(f=750){if(typeof bip==="function")bip(f,.075,"sine",.05);}
   function sonidoAcierto(){
     if(typeof bip==="function"){
@@ -70,7 +72,8 @@ const FrasesEnGiro=(()=>{
     raiz.querySelector("#fgTiempoBarra").style.width=Math.max(0,tiempoMs/duracionMs*100)+"%";
     raiz.querySelector("#fgGiroBarra").style.width=girando?"0%":Math.max(0,(proximoGiro-performance.now())/giroMs*100)+"%";
     raiz.querySelector("#fgGiroTexto").textContent=girando?"¡Las palabras giran!":"Próximo giro en "+Math.max(0,Math.ceil((proximoGiro-performance.now())/1000))+" s";
-    raiz.querySelector("#fgRacha").textContent=racha>1?"🔥 Racha de "+racha+" frases":"Armá la frase antes de que se acabe el tiempo";
+    {const el=raiz.querySelector("#fgRacha");if(el.dataset.r!==String(racha)){el.dataset.r=racha;/* hud corre 20 veces por segundo: solo se redibuja si cambió */
+      if(racha>1)el.innerHTML=ico("racha")+"Racha de "+racha+" frases";else el.textContent="Armá la frase antes de que se acabe el tiempo";}}
   }
   function avisar(texto,fallo=false){
     if(!raiz)return;
@@ -110,9 +113,10 @@ const FrasesEnGiro=(()=>{
     raiz.querySelector("#fgVaciar").disabled=!jugando||girando||espacios.every(id=>id===null);
     hud();
   }
-  function panel(titulo,detalle,principal,accion,secundarios){
+  function panel(titulo,detalle,principal,accion,secundarios,dibujo){
     const capa=raiz.querySelector("#fgPanel");capa.replaceChildren();capa.hidden=false;
     const tarjeta=document.createElement("div");tarjeta.className="fg-panel";
+    if(dibujo){const im=document.createElement("img");im.className="fg-panel-dibujo";im.src=ARTE(dibujo);im.alt="";im.draggable=false;tarjeta.appendChild(im);}
     const h=document.createElement("h3");h.textContent=titulo;
     const p=document.createElement("p");p.textContent=detalle;
     const acciones=document.createElement("div");acciones.className="fg-panel-acciones";
@@ -137,7 +141,7 @@ const FrasesEnGiro=(()=>{
     const c=configNivel(nivel);
     prepararFichas(c);errores=0;girando=false;duracionMs=c.segundos*1000;tiempoMs=duracionMs;giroMs=c.giro*1000;
     ultimoTic=performance.now();proximoGiro=ultimoTic+giroMs;ocultoDesde=0;jugando=true;
-    raiz.querySelector("#fgPista").textContent="Escena: "+frase.pista;
+    raiz.querySelector("#fgPista").innerHTML=ico("pista")+"Escena: ";raiz.querySelector("#fgPista").append(frase.pista);
     raiz.querySelector("#fgPanel").hidden=true;
     raiz.querySelector("#fgBanco").classList.remove("gira");
     raiz.closest(".ext-shell")?.scrollTo(0,0);
@@ -168,8 +172,8 @@ const FrasesEnGiro=(()=>{
       Duelo.mostrarResultado({valor:puntos},{etiqueta:gano?"puntos · ganó la frase":"puntos · no llegó a armarla",onVolver:()=>{duelo=false;abrir(raiz.parentElement);}});
       return;
     }
-    if(gano){nivel++;panel("¡Frase armada!","“"+frase.texto+"” · "+puntos+" puntos · mejor: "+datos.mejor,"Siguiente nivel",comenzar);}
-    else panel("Perdiste esta frase",(motivo==="intentos"?"Agotaste los 3 intentos.":"Se terminó el tiempo.")+" La frase era: “"+frase.texto+"”. Se cortó tu racha"+(puntosPerdidos?" y perdiste "+puntosPerdidos+" puntos de esta partida":"")+". Mejor marca: "+datos.mejor+".","Otra frase del nivel "+nivel,comenzar);
+    if(gano){nivel++;panel("¡Frase armada!","“"+frase.texto+"” · "+puntos+" puntos · mejor: "+datos.mejor,"Siguiente nivel",comenzar,null,"armada");}
+    else panel("Perdiste esta frase",(motivo==="intentos"?"Agotaste los 3 intentos.":"Se terminó el tiempo.")+" La frase era: “"+frase.texto+"”. Se cortó tu racha"+(puntosPerdidos?" y perdiste "+puntosPerdidos+" puntos de esta partida":"")+". Mejor marca: "+datos.mejor+".","Otra frase del nivel "+nivel,comenzar,null,"perdio");
   }
   function comprobar(){
     if(!jugando||girando||espacios.includes(null))return;
@@ -219,14 +223,14 @@ const FrasesEnGiro=(()=>{
   function abrir(contenedor){
     salir();datos=cargar();nivel=datos.nivelMax;puntos=0;racha=0;
     raiz=document.createElement("div");raiz.className="fg-game";
-    raiz.innerHTML='<button type="button" class="ext-volver" id="fgVolver">⟵ Extensiones</button><h2>🌀 Frases en Giro</h2><p class="fg-sub">Ordená palabras, esquivá señuelos y ganale al reloj.</p><div class="fg-hud"><div><small>Nivel</small><b id="fgNivel">1</b></div><div><small>Puntos</small><b id="fgPuntos">0</b></div><div><small>Intentos</small><b id="fgIntentos">3</b></div><div><small>Tiempo</small><b id="fgTiempo">0</b></div></div><div class="fg-bar"><i id="fgTiempoBarra"></i></div><div class="fg-escena" id="fgPista"></div><p class="fg-racha" id="fgRacha"></p><div class="fg-espacios" id="fgEspacios" aria-label="Frase en construcción"></div><p class="fg-etiqueta">Palabras disponibles</p><div class="fg-banco" id="fgBanco" aria-label="Palabras para elegir"></div><p class="fg-mensaje" id="fgMensaje" role="status" aria-live="polite"></p><div class="fg-acciones"><button type="button" id="fgComprobar">Comprobar frase</button><button type="button" id="fgVaciar">Vaciar</button></div><p class="fg-giro-texto" id="fgGiroTexto"></p><div class="fg-bar giro"><i id="fgGiroBarra"></i></div><div class="fg-panel-capa" id="fgPanel"></div>';
+    raiz.innerHTML='<button type="button" class="ext-volver" id="fgVolver">⟵ Extensiones</button><h2 class="fg-logo-h"><img class="fg-logo" src="'+ARTE("logo")+'" alt="Frases en Giro" draggable="false"></h2><p class="fg-sub">Ordená palabras, esquivá señuelos y ganale al reloj.</p><div class="fg-hud"><div><small>Nivel</small><b id="fgNivel">1</b></div><div><small>Puntos</small><b id="fgPuntos">0</b></div><div><small>'+ico("intentos")+'Intentos</small><b id="fgIntentos">3</b></div><div><small>'+ico("reloj")+'Tiempo</small><b id="fgTiempo">0</b></div></div><div class="fg-bar"><i id="fgTiempoBarra"></i></div><div class="fg-escena" id="fgPista"></div><p class="fg-racha" id="fgRacha"></p><div class="fg-espacios" id="fgEspacios" aria-label="Frase en construcción"></div><p class="fg-etiqueta">Palabras disponibles</p><div class="fg-banco-caja"><div class="fg-banco" id="fgBanco" aria-label="Palabras para elegir"></div><img class="fg-remolino" src="'+ARTE("giro")+'" alt="" draggable="false"></div><p class="fg-mensaje" id="fgMensaje" role="status" aria-live="polite"></p><div class="fg-acciones"><button type="button" id="fgComprobar">'+ico("comprobar")+'Comprobar frase</button><button type="button" id="fgVaciar">Vaciar</button></div><p class="fg-giro-texto" id="fgGiroTexto"></p><div class="fg-bar giro"><i id="fgGiroBarra"></i></div><div class="fg-panel-capa" id="fgPanel"></div>';
     contenedor.appendChild(raiz);
     raiz.querySelector("#fgVolver").onclick=()=>Extensiones.abrirLobby();
     raiz.querySelector("#fgComprobar").onclick=comprobar;
     raiz.querySelector("#fgVaciar").onclick=()=>{espacios.fill(null);avisar("Empezá de nuevo: tocá las palabras en orden.");dibujar();};
     intervalo=setInterval(tic,FRASES_GIRO_CONFIG.ticMs);document.addEventListener("visibilitychange",visibilidad);iniciarMusicaJuego();
     panel("Frases en Giro","Armá frases disparatadas tocando las palabras en orden. Cada giro mezcla las fichas libres; lo que ya colocaste queda seguro. Desde el nivel 2 aparecen palabras señuelo. Tenés 3 intentos: cada error te quita 10 segundos y te obliga a rearmar la frase. Si perdés, se corta la racha y los puntos de esta partida.","Jugar nivel "+nivel,comenzar,
-      [nivel>1?{texto:"Empezar desde el nivel 1",accion:()=>{nivel=1;puntos=0;comenzar();}}:null,{texto:"Jugar con un amigo 👥",accion:iniciarDuelo}]);
+      [nivel>1?{texto:"Empezar desde el nivel 1",accion:()=>{nivel=1;puntos=0;comenzar();}}:null,{texto:"Jugar con un amigo 👥",accion:iniciarDuelo}],"personaje");
   }
   function salir(){
     jugando=false;girando=false;token++;clearInterval(intervalo);clearTimeout(giroTimer);intervalo=null;giroTimer=null;

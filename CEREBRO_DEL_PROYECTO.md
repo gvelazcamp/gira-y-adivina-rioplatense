@@ -1095,3 +1095,7 @@ Fecha: 20/10/2026 — Palabra Secreta con dibujos. Hoja 4x3 (mismo estilo aproba
 ```text
 Fecha: 20/10/2026 — Palabra Secreta: el final ("¡La encontraste…!" / "La palabra era…") sale como popup en el medio, adelante del tablero (Gonzalo: abajo quedaba mal). ✕ o tocar afuera lo cierra para ver el tablero, y queda el botón "🏁 Ver resultado" para reabrirlo (compartir, jugar otra). En duelo no se cierra (después sale el resultado del duelo). palabra-secreta.js v17, extensiones.css v91, sw v343.
 ```
+
+```text
+Fecha: 20/10/2026 — Frases en Giro con dibujos. Hoja 4x3 (mismo estilo; personaje: chica rubia de trenza con mate y campera de jean) recortada en assets/frases-giro/: logo, personaje, ficha, espacio, giro, reloj, intentos, racha, pista, comprobar, armada, perdio. Logo arriba; íconos en Intentos/Tiempo del HUD, en "Escena", en la racha y en "Comprobar frase"; fichas y espacios con border-image (9 partes) para que el borde no se deforme con palabras largas; remolino sobre las palabras disponibles mientras giran; paneles: inicio = personaje, frase armada = armada, perdiste = perdio. La racha solo se redibuja si cambia (hud corre 20 veces por segundo). Estilos bajo .fg-game. frases-en-giro.js v9, extensiones.css v92, sw v344.
+```
