@@ -414,6 +414,14 @@ body.pf-activo #extAtras,body.pf-activo #extCerrar,body.pf-activo .ext-volver{vi
 .fg-game .fg-acciones button{display:flex;align-items:center;justify-content:center}
 .fg-game .fg-panel-dibujo{display:block;width:auto;height:auto;max-width:min(60vw,230px);max-height:28vh;margin:-6px auto 8px;filter:drop-shadow(0 8px 14px #0009)}
 @media(prefers-reduced-motion:reduce){.fg-game .fg-banco.gira+.fg-remolino{transform:translate(-50%,-50%)}}
+/* Memoria en Giro con dibujos (assets/memoria-giro/), todo bajo .mg-game (las clases mg-panel las comparten otros juegos) */
+.mg-game .mgx-titulo{flex-direction:column;gap:2px;text-align:center;margin-bottom:8px}.mg-game .mgx-logo-h{margin:0;line-height:0}.mg-game .mgx-logo{height:clamp(56px,10vh,88px);width:auto;border-radius:0;filter:drop-shadow(0 5px 8px #0009)}
+.mg-game .mgx-ico{width:1.4em;height:1.4em;object-fit:contain;vertical-align:-.38em;margin:0 3px 0 1px}.mg-game .mg-hud small .mgx-ico{width:14px;height:14px;vertical-align:-3px}
+.mg-game .mg-carta{aspect-ratio:.75}.mg-game .mg-tablero{max-width:min(440px,42vh)}
+.mg-game .mg-carta-dorso{background:url(assets/memoria-giro/dorso.webp) center/100% 100% no-repeat;border:0;border-radius:10px;box-shadow:0 6px 10px #0006}
+.mg-game .mg-carta-cara{background:url(assets/memoria-giro/frente.webp) center/100% 100% no-repeat;border:0;border-radius:10px;box-shadow:0 6px 10px #0006}
+.mg-game .mg-carta.encontrada .mg-carta-cara{background:url(assets/memoria-giro/encontrada.webp) center/100% 100% no-repeat;box-shadow:0 0 16px #37D6C088}
+.mg-game .mgx-panel-dibujo{display:block;width:auto;height:auto;max-width:min(60vw,230px);max-height:28vh;margin:-6px auto 8px;filter:drop-shadow(0 8px 14px #0009)}
 .tf .tf-campo input{padding:10px 12px;margin:2px 0}.tf .tf-campo .imp-ayuda:empty{display:none}.tf .tf-campo .mim-btns .bb-pasar{min-height:52px}
 .tf .tf-basta-img{display:block;width:min(78vw,330px);height:auto;margin:0 auto;filter:drop-shadow(0 10px 16px #000a);animation:bbNueva .35s}
 .tf .tf-trofeo{display:block;width:min(40vw,170px);height:auto;margin:0 auto 4px;filter:drop-shadow(0 8px 14px #0009)}
