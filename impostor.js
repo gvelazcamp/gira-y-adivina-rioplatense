@@ -17,15 +17,20 @@ const Impostor=(()=>{
   const cats=()=>window.IMPOSTOR_CATEGORIAS||[];
   const nombre=i=>(nombres[i]||"").trim()||"Jugador "+(i+1);
   function sonar(f,d,t,v){if(typeof bip==="function")bip(f,d,t,v);}
+  /* Dibujos en assets/impostor/ (hoja hecha con ChatGPT, recortada en 9). */
+  const ARTE=["logo","pasar","carta_dorso","carta_palabra","carta_impostor","ronda","votar","atrapado","gano_impostor"];
+  const src=n=>"assets/impostor/"+n+".webp";
+  const img=n=>`<img class="imp-arte imp-a-${n}" src="${src(n)}" alt="" draggable="false">`;
 
   function abrir(contenedor){
     salir();cargar();puntos={};
+    ARTE.forEach(n=>{const i=new Image();i.src=src(n);});   /* precarga: las dos cartas aparecen igual de rápido y nadie sospecha */
     raiz=document.createElement("section");raiz.className="imp";
     contenedor.appendChild(raiz);PantallaFija.entrar();configurar();
   }
   function configurar(){
     PantallaFija.desactivar();ronda=null;
-    raiz.innerHTML=`<div class="mg-panel imp-panel"><h3>🕵️ Impostor</h3>
+    raiz.innerHTML=`<div class="mg-panel imp-panel"><h3 class="imp-logo-h"><img class="imp-logo" src="${src("logo")}" alt="Impostor" draggable="false"></h3>
       <p>Todos ven la misma palabra menos el impostor. Cada uno dice una palabra relacionada y votan quién es.</p>
       <div class="qs-sub">👥 Jugadores</div>
       <div class="imp-cant"><button type="button" id="impMenos">−</button><b id="impCant">${cant}</b><button type="button" id="impMas">+</button></div>
@@ -74,28 +79,33 @@ const Impostor=(()=>{
   /* Reparto: "Pasale el celular a X" → ver palabra → ocultar y pasar. */
   function pase(){
     const i=ronda.turno;
-    pantallaJuego(`<div class="imp-centro"><small>${i+1} de ${cant}</small><div class="imp-quien">📱 Pasale el celular a</div><div class="imp-nombre">${esc(nombre(i))}</div>
+    pantallaJuego(`<div class="imp-centro">${img("pasar")}<small>${i+1} de ${cant}</small><div class="imp-quien">📱 Pasale el celular a</div><div class="imp-nombre">${esc(nombre(i))}</div>
       <p class="imp-ayuda">Que nadie más mire la pantalla</p><button type="button" class="bb-pasar" id="impVer">👁 Ver mi palabra</button></div>`);
     q("impVer").onclick=ver;
   }
   function ver(){
     const i=ronda.turno,esImp=ronda.impostores.includes(i),ultimo=i===cant-1;
-    pantallaJuego(`<div class="imp-centro">${esImp
-      ?`<div class="imp-carta imp-mala"><div class="imp-rol">🕵️ SOS EL IMPOSTOR</div><div class="imp-pista">Categoría: ${ronda.cat.emoji} ${esc(ronda.cat.nombre)}</div><p>Disimulá: escuchá a los demás y decí algo que encaje.</p></div>`
-      :`<div class="imp-carta"><small>Tu palabra es</small><div class="imp-palabra">${esc(ronda.palabra)}</div><p>No la digas: decí algo relacionado.</p></div>`}
+    /* La carta se da vuelta igual para todos (misma animación y tiempo): solo cambia el frente. */
+    pantallaJuego(`<div class="imp-centro"><div class="imp-flip"><div class="imp-flip-in">
+      <div class="imp-cara imp-dorso"><img src="${src("carta_dorso")}" alt="" draggable="false"></div>
+      ${esImp
+      ?`<div class="imp-cara imp-fr-imp"><img src="${src("carta_impostor")}" alt="" draggable="false"><div class="imp-en-carta"><div class="imp-rol">SOS EL IMPOSTOR</div><div class="imp-pista">Categoría: ${ronda.cat.emoji} ${esc(ronda.cat.nombre)}</div></div></div></div></div>
+      <p class="imp-ayuda">Disimulá: escuchá a los demás y decí algo que encaje.</p>`
+      :`<div class="imp-cara imp-fr-civil"><img src="${src("carta_palabra")}" alt="" draggable="false"><div class="imp-en-carta"><small>Tu palabra es</small><div class="imp-palabra">${esc(ronda.palabra)}</div></div></div></div></div>
+      <p class="imp-ayuda">No la digas: decí algo relacionado.</p>`}
       <button type="button" class="bb-pasar" id="impListo">${ultimo?"Ya la vi · Empezar ➜":"Ya la vi · Ocultar y pasar ➜"}</button></div>`);
     /* Igual para todos (sin sonido): que nadie se dé cuenta de quién es el impostor. */
     if(typeof vibrar==="function")vibrar(20);
     q("impListo").onclick=()=>{ronda.turno++;if(ronda.turno<cant)pase();else charla();};
   }
   function charla(){
-    pantallaJuego(`<div class="imp-centro"><div class="imp-quien">🗣️ Empieza</div><div class="imp-nombre">${esc(nombre(ronda.empieza))}</div>
+    pantallaJuego(`<div class="imp-centro">${img("ronda")}<div class="imp-quien">🗣️ Empieza</div><div class="imp-nombre">${esc(nombre(ronda.empieza))}</div>
       <p class="imp-ayuda">En ronda, cada uno dice <b>una palabra</b> relacionada con la suya. Pueden dar 2 o 3 vueltas.<br>${cantImp===2?"Hay <b>2 impostores</b>":"Hay <b>1 impostor</b>"} entre ustedes 👀</p>
       <button type="button" class="bb-pasar" id="impVotar">🗳️ Ir a votar</button></div>`);
     q("impVotar").onclick=votar;
   }
   function votar(){
-    pantallaJuego(`<div class="imp-centro"><div class="imp-quien">🗳️ ¿Quién es el impostor?</div><p class="imp-ayuda">Pónganse de acuerdo y toquen al más votado</p>
+    pantallaJuego(`<div class="imp-centro">${img("votar")}<div class="imp-quien">🗳️ ¿Quién es el impostor?</div><p class="imp-ayuda">Pónganse de acuerdo y toquen al más votado</p>
       <div class="imp-votos">${[...Array(cant).keys()].map(i=>`<button type="button" data-i="${i}">${esc(nombre(i))}</button>`).join("")}</div></div>`);
     raiz.querySelector(".imp-votos").onclick=e=>{const b=e.target.closest("button[data-i]");if(b)resultadoVoto(Number(b.dataset.i));};
   }
@@ -103,7 +113,7 @@ const Impostor=(()=>{
     const atrapado=ronda.impostores.includes(i);
     if(!atrapado){fin(false,i);return;}
     sonar(660,.15,"sine",.06);sonar(990,.25,"triangle",.04);
-    pantallaJuego(`<div class="imp-centro"><div class="imp-carta"><div class="imp-rol imp-ok">🎯 ¡Atraparon a ${esc(nombre(i))}!</div>
+    pantallaJuego(`<div class="imp-centro">${img("atrapado")}<div class="imp-carta"><div class="imp-rol imp-ok">🎯 ¡Atraparon a ${esc(nombre(i))}!</div>
       <p>Última chance: el impostor dice en voz alta cuál cree que es la palabra.</p></div>
       <div class="imp-dos-btn"><button type="button" class="bb-pasar" id="impNo">❌ No adivinó</button><button type="button" class="bb-pasar imp-gris" id="impSi">✔ Adivinó</button></div></div>`);
     q("impNo").onclick=()=>fin(true,i);q("impSi").onclick=()=>fin(false,i,true);
@@ -117,7 +127,7 @@ const Impostor=(()=>{
     else{sonar(330,.2,"sawtooth",.04);setTimeout(()=>sonar(220,.35,"sawtooth",.04),180);}
     const titulo=ganaronCiviles?"🎉 ¡Ganaron los jugadores!":adivino?"😈 ¡El impostor adivinó la palabra!":"😈 ¡Ganó el impostor!";
     const tabla=Object.entries(puntos).sort((a,b)=>b[1]-a[1]).map(([n,p])=>`<li><span>${esc(n)}</span><b>${p}</b></li>`).join("");
-    pantallaJuego(`<div class="mg-panel imp-panel imp-fin"><h3>${titulo}</h3>
+    pantallaJuego(`<div class="mg-panel imp-panel imp-fin">${img(ganaronCiviles?"atrapado":"gano_impostor")}<h3>${titulo}</h3>
       <p>${imps.length>1?"Los impostores eran":"El impostor era"} <b>${esc(imps.join(" y "))}</b>.<br>La palabra era <b>${esc(ronda.palabra)}</b>.${!ganaronCiviles&&!adivino?`<br>Votaron a ${esc(nombre(votado))}.`:""}</p>
       <div class="qs-sub">🏆 Puntos</div><ul class="imp-tabla">${tabla}</ul>
       <button type="button" class="mg-principal" id="impOtra">🔄 Otra ronda</button>
