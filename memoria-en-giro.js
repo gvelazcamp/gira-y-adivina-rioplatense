@@ -10,6 +10,9 @@ const MEMORIA_GIRO_GIROS=3;
 const MemoriaEnGiro=(()=>{
   const CLAVE="gya_memoria_en_giro";
   const azar=n=>Math.floor(Math.random()*n);
+  /* Dibujos en assets/memoria-giro/ (hoja de ChatGPT recortada). */
+  const ARTE=n=>"assets/memoria-giro/"+n+".webp",ico=n=>'<img class="mgx-ico" src="'+ARTE(n)+'" alt="" draggable="false">';
+  const ponerHtml=(el,html)=>{if(el.dataset.h!==html){el.dataset.h=html;el.innerHTML=html;}};   /* el HUD corre 20 veces por segundo: solo se redibuja si cambió */
   let datos=cargar(),raiz=null,cartas=[],config=null,nivel=1,puntos=0,pares=0,racha=0,fallos=0,girosRestantes=MEMORIA_GIRO_GIROS;
   let fase="inicio",primera=null,segunda=null,tiempoMs=0,vistaMs=0,falloMs=0,giroMs=0,animacionMs=0,recuerdoMs=0;
   let intervalo=null,ultimoTic=0,mensaje="",duelo=false;
@@ -57,13 +60,13 @@ const MemoriaEnGiro=(()=>{
     raiz.querySelector("#mgPuntos").textContent=puntos;
     raiz.querySelector("#mgTiempo").textContent=Math.max(0,Math.ceil(tiempoMs/1000));
     raiz.querySelector("#mgTiempoBarra").style.width=Math.max(0,tiempoMs/(config.segundos*1000)*100)+"%";
-    raiz.querySelector("#mgFallas").textContent="Fallos: "+fallos+" · ❤️ "+girosRestantes+" giros con pista"+(racha>1?" · 🔥 "+racha+" pares seguidos":"");
+    ponerHtml(raiz.querySelector("#mgFallas"),"Fallos: "+fallos+" · "+ico("giro")+girosRestantes+" giros con pista"+(racha>1?" · "+ico("racha")+racha+" pares seguidos":""));
     const giroTexto=raiz.querySelector("#mgGiroTexto");
-    if(fase==="vista")giroTexto.textContent="Memorizá: las cartas se tapan en "+Math.max(1,Math.ceil(vistaMs/1000))+" s";
-    else if(fase==="giro")giroTexto.textContent="¡Giran solo las cartas pendientes!";
-    else if(fase==="recuerdo")giroTexto.textContent="Nueva oportunidad: memorizá en "+Math.max(1,Math.ceil(recuerdoMs/1000))+" s";
-    else if(fase==="juego"||fase==="fallo")giroTexto.textContent=puedeGirar()?"Próximo giro en "+Math.max(0,Math.ceil(giroMs/1000))+" s":girosRestantes?"Queda un par: el tablero ya no gira":"Sin más giros: el tablero queda quieto";
-    else giroTexto.textContent="Encontrá todos los pares";
+    if(fase==="vista")ponerHtml(giroTexto,ico("ojo")+"Memorizá: las cartas se tapan en "+Math.max(1,Math.ceil(vistaMs/1000))+" s");
+    else if(fase==="giro")ponerHtml(giroTexto,ico("giro")+"¡Giran solo las cartas pendientes!");
+    else if(fase==="recuerdo")ponerHtml(giroTexto,ico("ojo")+"Nueva oportunidad: memorizá en "+Math.max(1,Math.ceil(recuerdoMs/1000))+" s");
+    else if(fase==="juego"||fase==="fallo")ponerHtml(giroTexto,puedeGirar()?"Próximo giro en "+Math.max(0,Math.ceil(giroMs/1000))+" s":girosRestantes?"Queda un par: el tablero ya no gira":"Sin más giros: el tablero queda quieto");
+    else ponerHtml(giroTexto,"Encontrá todos los pares");
     raiz.querySelector("#mgGiroBarra").style.width=(fase==="juego"||fase==="fallo"?puedeGirar()?Math.max(0,giroMs/(config.giro*1000)*100):0:100)+"%";
   }
   function pintarCartas(){
@@ -85,15 +88,16 @@ const MemoriaEnGiro=(()=>{
       const boton=document.createElement("button");boton.type="button";boton.className="mg-carta";
       boton.dataset.id=String(carta.id);
       const interior=document.createElement("span");interior.className="mg-carta-interior";
-      const dorso=document.createElement("span");dorso.className="mg-carta-dorso";dorso.textContent="✦";dorso.setAttribute("aria-hidden","true");
+      const dorso=document.createElement("span");dorso.className="mg-carta-dorso";dorso.setAttribute("aria-hidden","true");
       const cara=document.createElement("span");cara.className="mg-carta-cara";cara.textContent=carta.simbolo;cara.setAttribute("aria-hidden","true");
       interior.append(dorso,cara);boton.appendChild(interior);boton.onclick=()=>elegir(i);tablero.appendChild(boton);
     });
     pintarCartas();
   }
-  function panel(titulo,detalle,botonTexto,accion,alternativas){
+  function panel(titulo,detalle,botonTexto,accion,alternativas,dibujo){
     const capa=raiz.querySelector("#mgPanel");capa.replaceChildren();capa.hidden=false;
     const tarjeta=document.createElement("div");tarjeta.className="mg-panel";
+    if(dibujo){const im=document.createElement("img");im.className="mgx-panel-dibujo";im.src=ARTE(dibujo);im.alt="";im.draggable=false;tarjeta.appendChild(im);}
     const h=document.createElement("h3");h.textContent=titulo;
     const p=document.createElement("p");p.textContent=detalle;
     const b=document.createElement("button");b.type="button";b.className="mg-principal";b.textContent=botonTexto;b.onclick=accion;
@@ -134,12 +138,12 @@ const MemoriaEnGiro=(()=>{
       pintarCartas();
       if(duelo){Duelo.enviarFinal({valor:puntos});Duelo.mostrarResultado({valor:puntos},{etiqueta:"puntos · encontró todos los pares",onVolver:()=>{duelo=false;abrir(raiz.parentElement);}});return;}
       nivel++;
-      panel("¡Todos los pares!","+"+bonus+" puntos por el tiempo que sobró. Total: "+puntos+" · mejor marca: "+datos.mejor+". Las cartas que encontraste quedaron a salvo en los giros.","Siguiente nivel",comenzar);
+      panel("¡Todos los pares!","+"+bonus+" puntos por el tiempo que sobró. Total: "+puntos+" · mejor marca: "+datos.mejor+". Las cartas que encontraste quedaron a salvo en los giros.","Siguiente nivel",comenzar,null,"pares");
     }else{
       puntos=0;racha=0;if(typeof vibrar==="function")vibrar(85);
       pintarCartas();
       if(duelo){Duelo.enviarFinal({valor:puntos});Duelo.mostrarResultado({valor:puntos},{etiqueta:"puntos · "+pares+" de "+config.pares+" pares",onVolver:()=>{duelo=false;abrir(raiz.parentElement);}});return;}
-      panel("Se terminó el tiempo","Encontraste "+pares+" de "+config.pares+" pares. Se cortó la racha"+(puntosPrevios?" y perdiste "+puntosPrevios+" puntos de esta partida":"")+". Mejor marca: "+datos.mejor+".","Otra ronda del nivel "+nivel,comenzar);
+      panel("Se terminó el tiempo","Encontraste "+pares+" de "+config.pares+" pares. Se cortó la racha"+(puntosPrevios?" y perdiste "+puntosPrevios+" puntos de esta partida":"")+". Mejor marca: "+datos.mejor+".","Otra ronda del nivel "+nivel,comenzar,null,"tiempo");
     }
   }
   function elegir(i){
@@ -202,10 +206,10 @@ const MemoriaEnGiro=(()=>{
   function abrir(contenedor){
     salir();datos=cargar();nivel=datos.nivelMax;puntos=0;
     raiz=document.createElement("div");raiz.className="mg-game";
-    raiz.innerHTML='<button type="button" class="ext-volver" id="mgVolver">⟵ Extensiones</button><div class="mg-titulo"><img src="logo-memoria-en-giro.svg" alt=""><div><h2>Memoria en Giro</h2><p>Recordá los símbolos y encontrá sus parejas.</p></div></div><div class="mg-hud"><div><small>Nivel</small><b id="mgNivel">1</b></div><div><small>Pares</small><b id="mgPares">0/3</b></div><div><small>Puntos</small><b id="mgPuntos">0</b></div><div><small>Tiempo</small><b id="mgTiempo">45</b></div></div><div class="mg-bar"><i id="mgTiempoBarra"></i></div><p class="mg-fallas" id="mgFallas"></p><div class="mg-tablero" id="mgTablero" aria-label="Tablero de cartas"></div><p class="mg-mensaje" id="mgMensaje" role="status" aria-live="polite"></p><p class="mg-giro-texto" id="mgGiroTexto"></p><div class="mg-bar giro"><i id="mgGiroBarra"></i></div><div class="mg-panel-capa" id="mgPanel"></div>';
+    raiz.innerHTML='<button type="button" class="ext-volver" id="mgVolver">⟵ Extensiones</button><div class="mg-titulo mgx-titulo"><h2 class="mgx-logo-h"><img class="mgx-logo" src="'+ARTE("logo")+'" alt="Memoria en Giro" draggable="false"></h2><p>Recordá los símbolos y encontrá sus parejas.</p></div><div class="mg-hud"><div><small>Nivel</small><b id="mgNivel">1</b></div><div><small>Pares</small><b id="mgPares">0/3</b></div><div><small>Puntos</small><b id="mgPuntos">0</b></div><div><small>'+ico("reloj")+'Tiempo</small><b id="mgTiempo">45</b></div></div><div class="mg-bar"><i id="mgTiempoBarra"></i></div><p class="mg-fallas" id="mgFallas"></p><div class="mg-tablero" id="mgTablero" aria-label="Tablero de cartas"></div><p class="mg-mensaje" id="mgMensaje" role="status" aria-live="polite"></p><p class="mg-giro-texto" id="mgGiroTexto"></p><div class="mg-bar giro"><i id="mgGiroBarra"></i></div><div class="mg-panel-capa" id="mgPanel"></div>';
     contenedor.appendChild(raiz);raiz.querySelector("#mgVolver").onclick=()=>Extensiones.abrirLobby();ultimoTic=performance.now();intervalo=setInterval(tic,50);document.addEventListener("visibilitychange",visibilidad);iniciarMusicaJuego();
     panel("Memoria en Giro","Primero ves todas las cartas. Cuando se tapen, encontrá los pares antes de que termine el tiempo. Tenés 3 giros con pista: solo giran las cartas pendientes y luego podés verlas unos segundos más. Después el tablero queda quieto. Una pareja equivocada te quita 3 segundos. Estos corazones no gastan vidas del juego principal.","Jugar nivel "+nivel,comenzar,
-      [nivel>1?{texto:"Empezar desde el nivel 1",accion:()=>{nivel=1;puntos=0;comenzar();}}:null,{texto:"Jugar con un amigo 👥",accion:iniciarDuelo}]);
+      [nivel>1?{texto:"Empezar desde el nivel 1",accion:()=>{nivel=1;puntos=0;comenzar();}}:null,{texto:"Jugar con un amigo 👥",accion:iniciarDuelo}],"personaje");
   }
   function salir(){
     clearInterval(intervalo);intervalo=null;document.removeEventListener("visibilitychange",visibilidad);
