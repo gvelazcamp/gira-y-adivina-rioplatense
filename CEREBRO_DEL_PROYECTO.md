@@ -1103,3 +1103,7 @@ Fecha: 20/10/2026 — Frases en Giro con dibujos. Hoja 4x3 (mismo estilo; person
 ```text
 Fecha: 20/10/2026 — Memoria en Giro con dibujos. Hoja 4x3 (mismo estilo; personaje: chico morocho de anteojos redondos y buzo verde agua) recortada en assets/memoria-giro/: logo, dorso, frente, encontrada (recortada a la carta), giro, reloj, racha, ojo, personaje, pares, tiempo, record. Logo arriba; cartas con dorso/frente/encontrada en imagen (proporción .75; tablero limitado a 42vh para que entren 4 filas); íconos de reloj, giro, racha y ojo (fase de memorizar) en el HUD y textos (ponerHtml solo redibuja si cambió); paneles: inicio = personaje, todos los pares = pares, se terminó el tiempo = tiempo. Los símbolos siguen siendo emojis (hoja de 20 símbolos rioplatenses: opcional, pendiente). Recorte: el script corta la línea más vacía entre filas/columnas para separar dibujos que se tocan. memoria-en-giro.js v8, extensiones.css v93, sw v345.
 ```
+
+```text
+Fecha: 20/10/2026 — El Rosco con dibujos. Hoja 4x4 (mismo estilo; personaje: conductor de camisa celeste y moño dorado) recortada en assets/rosco/. Se usan: logo, aciertos, errores, reloj (HUD), pista y escuchar (cuadro de la pista), pasapalabra (botón), personaje (inicio), perfecto / terminado / tiempo (paneles finales). La ruleta y las burbujas de letras con imagen (aro, azul, verde, roja, actual) se probaron y Gonzalo dijo que quedaban mal: el rosco y sus letras quedan como antes (CSS original) y esas imágenes no se subieron. Estilos bajo .rr-game. rosco-rioplatense.js v12, extensiones.css v94, sw v346.
+```
