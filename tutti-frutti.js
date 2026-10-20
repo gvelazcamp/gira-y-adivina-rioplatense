@@ -13,6 +13,10 @@ const TuttiFrutti=(()=>{
      "Animal" y "Famoso", así no se rompen partidas con celulares viejos). */
   const ETIQ={"Animal":"Animal / especie","Famoso":"Famoso / banda"};
   const etiq=c=>ETIQ[c]||c;
+  /* Dibujos en assets/tutti/ (hoja de ChatGPT recortada): logo, ficha de la letra, ¡BASTA!, trofeo y un ícono por categoría. */
+  const ARTE=n=>"assets/tutti/"+n+".webp";
+  const ICONO={"Nombre":"c_nombre","Apellido":"c_apellido","País o ciudad":"c_pais","Comida":"c_comida","Animal":"c_animal","Color":"c_color","Marca":"c_marca","Fruta o verdura":"c_fruta","Cosa":"c_cosa","Profesión":"c_profesion","Famoso":"c_famoso","Película o serie":"c_pelicula"};
+  const icono=c=>ICONO[c]?`<img class="tf-ico" src="${ARTE(ICONO[c])}" alt="" draggable="false">`:"";
   const CATEGORIAS=["Nombre","Apellido","País o ciudad","Comida","Animal","Color","Marca","Fruta o verdura","Cosa","Profesión","Famoso","Película o serie"];
   const LETRAS="ABCDEFGHIJLMNOPRSTUV".split("");
   let raiz=null,est={cant:3,nombres:[]},tiempo=90,cats=["Nombre","Apellido","País o ciudad","Comida","Animal","Cosa"],partidas=0;
@@ -23,9 +27,9 @@ const TuttiFrutti=(()=>{
   const q=id=>raiz.querySelector("#"+id);
   const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
   const nom=i=>PantallaFija.nombreJugador(est,i);
-  function abrir(contenedor){salir();cargar();cargarAprobadas();raiz=document.createElement("section");raiz.className="tf";contenedor.appendChild(raiz);PantallaFija.entrar();configurar();}
+  function abrir(contenedor){salir();cargar();cargarAprobadas();["ficha","basta","trofeo"].forEach(n=>{const i=new Image();i.src=ARTE(n);});raiz=document.createElement("section");raiz.className="tf";contenedor.appendChild(raiz);PantallaFija.entrar();configurar();}
   const ajustesHtml=()=>`<div class="qs-sub">🗂️ Categorías: las verdes ✓ se juegan (tocá para elegir)</div>
-      <div class="qs-cats imp-cats tf-catsel" id="tfCats">${CATEGORIAS.map(c=>`<button type="button" data-c="${esc(c)}">${esc(etiq(c))}</button>`).join("")}</div>
+      <div class="qs-cats imp-cats tf-catsel" id="tfCats">${CATEGORIAS.map(c=>`<button type="button" data-c="${esc(c)}">${icono(c)}${esc(etiq(c))}</button>`).join("")}</div>
       <div class="qs-sub">⏱️ Tiempo máximo por letra</div>
       <div class="qns-rangos" id="tfT">${TIEMPOS.map(t=>`<button type="button" data-v="${t}">${t} s</button>`).join("")}</div>`;
   function ajustesEventos(){
@@ -45,7 +49,7 @@ const TuttiFrutti=(()=>{
   document.addEventListener("visibilitychange",()=>{if(document.hidden)detenerMusica();else if(raiz&&on&&on.fase==="jugando"&&on.fin)iniciarMusica();});
   function configurar(){
     detenerMusica();parar();cerrarSala();PantallaFija.desactivar();
-    raiz.innerHTML=`<div class="mg-panel imp-panel"><h3>🍓 Tutti Frutti</h3>
+    raiz.innerHTML=`<div class="mg-panel imp-panel"><h3 class="tf-logo-h"><img class="tf-logo" src="${ARTE("logo")}" alt="Tutti Frutti" draggable="false"></h3>
       <p>Se juegan <b>3 rondas</b> y gana el mejor de 3. El primero que completa todo canta <b>BASTA</b>. Puntos: <b>10</b> única, <b>5</b> repetida, <b>20</b> si sos el único.</p>
       ${ajustesHtml()}
       <div id="tfZona"><button type="button" class="mg-principal" id="tfBots">🌐 Jugar online</button>
@@ -518,7 +522,7 @@ const TuttiFrutti=(()=>{
   function jugarOnline(){
     cerrarObjeciones();
     PantallaFija.activar();
-    pantalla(`<div class="imp-centro"><div class="imp-quien">🎲 Ronda ${on.rj||1} de ${on.tot||RONDAS} · sorteando la letra…</div><div class="tf-letra" id="tfLetra">?</div></div>`);
+    pantalla(`<div class="imp-centro"><div class="imp-quien">🎲 Ronda ${on.rj||1} de ${on.tot||RONDAS} · sorteando la letra…</div><div class="tf-ficha"><img src="${ARTE("ficha")}" alt="" draggable="false"><div class="tf-letra" id="tfLetra">?</div></div></div>`);
     let k=0;const giro=()=>{if(!raiz||!on)return;const el=q("tfLetra");if(!el)return;
       if(k<12){el.textContent=LETRAS[Math.floor(Math.random()*LETRAS.length)];if(typeof bip==="function")bip(600+k*25,.04,"square",.03);k++;setTimeout(giro,60+k*8);return;}
       el.textContent=on.letra;el.classList.add("tf-final");if(typeof bip==="function"){bip(784,.15);setTimeout(()=>bip(1047,.25),120);}setTimeout(campos,800);};
@@ -530,7 +534,7 @@ const TuttiFrutti=(()=>{
     if(audioMusica)try{audioMusica.currentTime=0;}catch(e){}
     iniciarMusica();
     pantalla(`<div class="qs-tope"><span>🍓 Letra ${on.letra}</span><b id="tfReloj">${on.tiempo}</b><span></span></div>
-      <div class="imp-centro tf-campo"><div class="tf-letra tf-final tf-chica">${on.letra}</div>
+      <div class="imp-centro tf-campo"><div class="tf-ficha tf-ficha-chica"><img src="${ARTE("ficha")}" alt="" draggable="false"><div class="tf-letra tf-final tf-chica">${on.letra}</div></div>
       <div class="tf-prog" id="tfProg"></div>
       <div id="tfEdit"><div class="imp-quien" id="tfCat"></div>
       <input id="tfInput" autocomplete="off" autocapitalize="words" enterkeyhint="next">
@@ -557,7 +561,7 @@ const TuttiFrutti=(()=>{
     ed.hidden=true;rv.hidden=false;
     q("tfProg").innerHTML=on.cats.map((c,j)=>`<i class="${on.mias[j]?"ok":""}" data-i="${j}"></i>`).join("");
     rv.innerHTML='<p class="imp-ayuda">¿Todo bien? Tocá una respuesta para corregirla.</p>'+
-      on.cats.map((c,j)=>`<button type="button" class="tf-rev-fila" data-i="${j}"><small>${esc(etiq(c))}</small><b>${esc(on.mias[j]||"—")}</b><span>✏️</span></button>`).join("")+
+      on.cats.map((c,j)=>`<button type="button" class="tf-rev-fila" data-i="${j}"><small>${icono(c)}${esc(etiq(c))}</small><b>${esc(on.mias[j]||"—")}</b><span>✏️</span></button>`).join("")+
       '<button type="button" class="bb-pasar mim-ok tf-rev-basta" id="tfBasta">✋ ¡BASTA!</button>';
     rv.onclick=e=>{const f=e.target.closest(".tf-rev-fila");if(f&&on&&on.fase==="jugando"&&!on.basta){irACampo(Number(f.dataset.i));return;}
       if(e.target.closest("#tfBasta")&&on&&on.fase==="jugando"&&!on.basta)mandar({t:"basta",n:on.n});};
@@ -565,7 +569,7 @@ const TuttiFrutti=(()=>{
   function pintarCampo(){
     if(!raiz||!on||!on.pend)return;if(!on.pend.length){revision();return;}const i=on.pend[0];
     {const ed=q("tfEdit"),rv=q("tfRev");if(ed)ed.hidden=false;if(rv)rv.hidden=true;}
-    q("tfCat").textContent=etiq(on.cats[i]);
+    q("tfCat").innerHTML=icono(on.cats[i])+esc(etiq(on.cats[i]));
     const inp=q("tfInput");inp.value=on.mias[i]||"";inp.placeholder="Empieza con "+on.letra+"…";try{inp.focus();}catch(e){}
     q("tfProg").innerHTML=on.cats.map((c,j)=>`<i class="${on.mias[j]?"ok":""}${j===i?" act":""}" data-i="${j}"></i>`).join("");
     q("tfMsg").textContent="";
@@ -603,7 +607,7 @@ const TuttiFrutti=(()=>{
     const nombre=(on.jug.find(j=>j.pid===quien)||{}).nombre;
     if(typeof sonidoErrorExt==="function"&&quien&&quien!==on.pid)sonidoErrorExt();
     if(typeof vibrar==="function")vibrar([80,50,80]);
-    pantalla(`<div class="imp-centro"><div class="imp-rol">${quien?"✋ ¡BASTA!":"⏰ ¡Tiempo!"}</div>
+    pantalla(`<div class="imp-centro">${quien?`<img class="tf-basta-img" src="${ARTE("basta")}" alt="¡BASTA!" draggable="false">`:`<div class="imp-rol">⏰ ¡Tiempo!</div>`}
       <p class="imp-ayuda">${quien?(quien===on.pid?"¡Completaste todo primero!":"<b>"+esc(nombre||"Alguien")+"</b> completó todo primero."):"Nadie llegó a completar todo."}</p>
       <p class="imp-ayuda">Juntando las respuestas…</p>
       ${on.host?`<button type="button" class="bb-pasar" id="tfYa">▶ Continuar</button>`:""}</div>`);
@@ -673,7 +677,7 @@ const TuttiFrutti=(()=>{
     if(!raiz||!on)return;on.fase="resultado";on.votos=on.votos||{};on.marcas=on.marcas||{};
     const g=on.ganador;
     const filas=on.jug.map(j=>{const r=on.resps[j.pid]||[];return`<li class="tf-jug${j.pid===g?" tf-gano":""}"><div class="tf-jug-cab"><b>${esc(j.nombre)}${j.pid===on.pid?" (vos)":""}</b>${j.pid===g?`<span class="tf-basta">🏁 BASTA</span>`:""}<span class="tf-sub" data-sub="${j.pid}"></span></div>
-      <div class="tf-tabla"><div class="tf-fila tf-titulos"><span>Categoría</span><span>Palabra</span><span>Pts</span><span></span></div>${on.cats.map((c,i)=>{const v=r[i]||"";const ok=marca(j.pid,i);return`<div class="tf-fila" data-a="${j.pid}" data-i="${i}"><span class="tf-cat">${esc(etiq(c))}</span><span class="tf-pal${v&&!ok?" tf-mal":""}" ${v&&!ok?`data-ver="1"`:""}>${esc(v||"—")}${v?(ok?" <i class=\"tf-marca ok\">✓</i>":" <i class=\"tf-marca mal\">⚠️</i><span class=\"tf-ver\">👆 ver error</span>"+((on.bots||j.pid!==on.pid)?"<span class=\"tf-sum\"><button type=\"button\" data-d=\"-5\" aria-label=\"Restar\">−</button><b>0</b><button type=\"button\" data-d=\"5\" aria-label=\"Sumar\">+</button></span>":"")):""}${v&&!ok&&j.pid===on.pid&&!on.bots?`<button type="button" class="tf-apelar">🙋 Apelar</button>`:""}</span><b class="tf-pts"></b>${v&&ok&&j.pid!==on.pid?`<button type="button" class="tf-votar" aria-label="Votar"></button>`:"<span></span>"}</div>`;}).join("")}</div></li>`;}).join("");
+      <div class="tf-tabla"><div class="tf-fila tf-titulos"><span>Categoría</span><span>Palabra</span><span>Pts</span><span></span></div>${on.cats.map((c,i)=>{const v=r[i]||"";const ok=marca(j.pid,i);return`<div class="tf-fila" data-a="${j.pid}" data-i="${i}"><span class="tf-cat">${icono(c)}${esc(etiq(c))}</span><span class="tf-pal${v&&!ok?" tf-mal":""}" ${v&&!ok?`data-ver="1"`:""}>${esc(v||"—")}${v?(ok?" <i class=\"tf-marca ok\">✓</i>":" <i class=\"tf-marca mal\">⚠️</i><span class=\"tf-ver\">👆 ver error</span>"+((on.bots||j.pid!==on.pid)?"<span class=\"tf-sum\"><button type=\"button\" data-d=\"-5\" aria-label=\"Restar\">−</button><b>0</b><button type=\"button\" data-d=\"5\" aria-label=\"Sumar\">+</button></span>":"")):""}${v&&!ok&&j.pid===on.pid&&!on.bots?`<button type="button" class="tf-apelar">🙋 Apelar</button>`:""}</span><b class="tf-pts"></b>${v&&ok&&j.pid!==on.pid?`<button type="button" class="tf-votar" aria-label="Votar"></button>`:"<span></span>"}</div>`;}).join("")}</div></li>`;}).join("");
     pantalla(`<div class="mg-panel imp-panel imp-fin"><h3 id="tfTitulo"></h3>
       <p class="imp-ayuda">Letra <b>${on.letra}</b> · <b>10</b> única · <b>5</b> repetida · <b>20</b> si sos el único · <b>0</b> si no vale.<br>⚠️ = dudosa (vale 0): tocá <b class="tf-ver-ej">👆 ver error</b> para ver por qué. Si en realidad está bien, sumale puntos con ➕ (5, 10 o 20). Con ❌ anulás una respuesta.</p>
       <ul class="tf-resps">${filas}</ul>
@@ -870,7 +874,7 @@ const TuttiFrutti=(()=>{
     const top=orden[0],ganan=orden.filter(o=>o[1]===top[1]&&o[2]===top[2]).map(o=>o[0].nombre);
     if(ganan.includes(yo())||orden[0][0].pid===on.pid){if(typeof bip==="function")[523,659,784,1047].forEach((f,i)=>setTimeout(()=>bip(f,.22,"triangle",.05),i*140));}
     if(on.host){partidas++;guardar();}
-    pantalla(`<div class="mg-panel imp-panel imp-fin"><div class="bb-icono">🏆</div><h3>${ganan.length>1?"¡Empate entre "+esc(ganan.join(" y "))+"!":"¡Ganó "+esc(ganan[0])+"!"}</h3>
+    pantalla(`<div class="mg-panel imp-panel imp-fin"><img class="tf-trofeo" src="${ARTE("trofeo")}" alt="" draggable="false"><h3>${ganan.length>1?"¡Empate entre "+esc(ganan.join(" y "))+"!":"¡Ganó "+esc(ganan[0])+"!"}</h3>
       <p class="imp-ayuda">${on.tot||RONDAS} rondas: gana el que ganó más rondas (si empatan, el de más puntos).</p>
       <ol class="kar-podio">${orden.map(([j,rg,p],k)=>`<li style="--c:#E5197C"><span>${k+1}</span><i>${esc((j.nombre||"?")[0].toUpperCase())}</i><b>${esc(j.nombre)}${j.pid===on.pid?" (vos)":""}</b><em>${rg} ${rg===1?"ronda":"rondas"} · ${p} pts</em></li>`).join("")}</ol>
       ${salieronHtml()}
