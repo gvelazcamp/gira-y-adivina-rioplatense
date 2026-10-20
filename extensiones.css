@@ -395,6 +395,11 @@ body.pf-activo #extAtras,body.pf-activo #extCerrar,body.pf-activo .ext-volver{vi
 .ps-game .ps-celda.presente,.ps-game .ps-ejemplo .presente{background:url(assets/palabra-secreta/amarilla.webp) center/100% 100% no-repeat;color:#3A2400}
 .ps-game .ps-celda.ausente,.ps-game .ps-ejemplo .ausente{background:url(assets/palabra-secreta/gris.webp) center/100% 100% no-repeat;color:#fff}
 .ps-game .ps-panel-dibujo{display:block;width:auto;height:auto;max-width:min(58vw,220px);max-height:26vh;margin:-6px auto 8px;filter:drop-shadow(0 8px 14px #0009)}.ps-game .ps-panel-dibujo.ps-chico{max-width:90px}
+.ps-game .ps-final{position:fixed;inset:0;z-index:2;display:grid;place-items:center;background:#0A0412D9;border:0;border-radius:0;margin:0;max-width:none;padding:max(18px,var(--safe-top)) max(18px,var(--safe-right)) max(18px,var(--safe-bottom)) max(18px,var(--safe-left));overflow-y:auto}.ps-game .ps-final[hidden]{display:none}
+.ps-game .ps-final-caja{position:relative;width:min(100%,360px);background:#2A1A3C;border:1px solid #F5B30177;border-radius:22px;padding:18px 14px 14px;box-shadow:0 18px 45px #0008;animation:sfRuleta .65s .35s cubic-bezier(.2,.8,.3,1) backwards}
+.ps-game .ps-final-caja p{font-weight:800;margin:3px 0 10px;font-size:1.05rem}.ps-game .ps-final-x{position:absolute;top:8px;right:8px;width:34px!important;height:34px;flex:none!important;padding:0!important;margin:0!important;border-radius:50%!important;background:#FFFFFF1A!important;font-size:1rem}
+.ps-game .ps-reabrir{background:#E5197C;color:#fff;border-radius:11px;padding:6px 14px;font-weight:900;font-size:.85rem}
+@media(prefers-reduced-motion:reduce){.ps-game .ps-final-caja{animation:sfAparecer .3s ease}}
 .ps-game .ps-final-dibujo{display:block;width:auto;height:auto;max-width:min(52vw,200px);max-height:22vh;margin:-4px auto 4px;filter:drop-shadow(0 8px 14px #0009)}
 .ps-game .ps-final button .ps-ico{width:1.3em;height:1.3em}
 .tf .tf-campo input{padding:10px 12px;margin:2px 0}.tf .tf-campo .imp-ayuda:empty{display:none}.tf .tf-campo .mim-btns .bb-pasar{min-height:52px}
