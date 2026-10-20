@@ -1071,3 +1071,7 @@ Fecha: 20/10/2026 — Impostor con dibujos. Gonzalo hizo con ChatGPT una hoja 3x
 ```text
 Fecha: 20/10/2026 — Tutti Frutti con dibujos. Hoja 4x4 de ChatGPT (prompt de Claude) recortada en assets/tutti/: logo, ficha (de la letra), basta, trofeo y c_<categoría> (12 íconos: nombre, apellido, pais, comida, animal, color, marca, fruta, cosa, profesion, famoso, pelicula; mapa ICONO en tutti-frutti.js). Logo en el panel; íconos en los botones de categorías, en la categoría que se escribe, en la revisión y en la tabla de resultados; la letra sorteada aparece sobre la ficha (también chica arriba mientras se escribe); el BASTA muestra el dibujo del chico gritando; el ganador final, el trofeo. Estilos bajo .tf en extensiones.css. tutti-frutti.js v64, extensiones.css v85, sw v337.
 ```
+
+```text
+Fecha: 20/10/2026 — Tutti Frutti: la letra quedaba corrida a la izquierda en la ficha (Gonzalo). Centrada sobre la parte crema (medida en la imagen: centro x 52 %, y 45 %). Además se le sacó a ficha.webp una gotita magenta suelta. extensiones.css v86, sw v338.
+```
