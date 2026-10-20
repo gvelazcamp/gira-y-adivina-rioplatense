@@ -330,6 +330,21 @@ body.pf-activo #extAtras,body.pf-activo #extCerrar,body.pf-activo .ext-volver{vi
 .imp-fin{text-align:center}.imp-tabla{list-style:none;padding:0;margin:0 0 10px;display:flex;flex-direction:column;gap:5px;max-height:30vh;overflow-y:auto}.imp-tabla li{display:flex;justify-content:space-between;background:#FFFFFF12;border-radius:10px;padding:7px 12px;font-weight:800}.imp-tabla li b{color:#FFD65C}
 .imp-panel p{margin-bottom:8px!important}.imp-panel .qs-sub{margin-top:8px}.imp-cats{display:flex!important;flex-wrap:wrap;gap:6px!important}.mg-panel .imp-cats button{width:auto;flex:1 1 auto;min-height:36px;padding:6px 10px;font-size:.8rem}.imp-nombres input{padding:7px 10px}.mg-panel .imp-dos button{min-height:38px}
 .imp-pista{margin-top:10px;font-weight:800;color:#FFD65C}
+/* Impostor con dibujos (assets/impostor/): todo bajo .imp para no tocar Mímica, que usa las mismas clases imp-* */
+.imp .imp-logo-h{margin:0 0 6px!important;line-height:0}.imp .imp-logo{display:block;width:min(86%,330px);height:auto;margin:0 auto;filter:drop-shadow(0 6px 10px #0009)}
+.imp .imp-arte{display:block;width:auto;height:auto;max-width:min(80vw,340px);max-height:24vh;object-fit:contain;margin:0 auto;filter:drop-shadow(0 8px 14px #0009);pointer-events:none;user-select:none;-webkit-user-select:none}
+.imp .imp-a-pasar{max-height:30vh}.imp .imp-a-ronda{max-height:26vh;max-width:min(88vw,380px)}.imp .imp-fin .imp-arte{max-height:20vh;margin-bottom:4px}
+.imp .imp-flip{width:min(64vw,290px,38vh);aspect-ratio:.73;perspective:1200px;margin:2px auto 0}
+.imp .imp-flip-in{position:relative;width:100%;height:100%;transform-style:preserve-3d;animation:impGira .75s .15s cubic-bezier(.3,.7,.3,1.15) both}
+@keyframes impGira{from{transform:rotateY(180deg) scale(.92)}to{transform:rotateY(0) scale(1)}}
+.imp .imp-cara{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}.imp .imp-dorso{transform:rotateY(180deg)}
+.imp .imp-cara>img{width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 10px 18px #000a);pointer-events:none}
+.imp .imp-en-carta{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.imp .imp-fr-civil .imp-en-carta{top:37%;bottom:10%;left:11%;right:11%}.imp .imp-fr-civil small{color:#6B4A86;font-weight:800}
+.imp .imp-fr-civil .imp-palabra{color:#3A1758;text-shadow:none;font-size:min(8.5vw,2.1rem,5vh);margin-top:2px}
+.imp .imp-fr-imp .imp-en-carta{left:9%;right:9%;bottom:7%;padding:8px 6px;border-radius:14px;background:#160B24D9;border:2px solid #E5197C}
+.imp .imp-fr-imp .imp-rol{color:#FF4D6D;font-size:min(6.5vw,1.6rem)}.imp .imp-fr-imp .imp-pista{margin-top:4px;font-size:.9rem}
+@media (prefers-reduced-motion:reduce){.imp .imp-flip-in{animation:none}}
 /* Que no se pueda seleccionar (resaltar) el texto grande al tocarlo. */
 .bb-silaba,.qs-palabra,.qns-num,.imp-palabra,.imp-nombre{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;pointer-events:none}
 /* Mímica, Canta la Canción, Tutti Frutti */
