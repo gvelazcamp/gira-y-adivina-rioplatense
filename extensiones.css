@@ -402,6 +402,18 @@ body.pf-activo #extAtras,body.pf-activo #extCerrar,body.pf-activo .ext-volver{vi
 @media(prefers-reduced-motion:reduce){.ps-game .ps-final-caja{animation:sfAparecer .3s ease}}
 .ps-game .ps-final-dibujo{display:block;width:auto;height:auto;max-width:min(52vw,200px);max-height:22vh;margin:-4px auto 4px;filter:drop-shadow(0 8px 14px #0009)}
 .ps-game .ps-final button .ps-ico{width:1.3em;height:1.3em}
+/* Frases en Giro con dibujos (assets/frases-giro/), todo bajo .fg-game. Las fichas usan border-image (9 partes) para que el borde dorado no se deforme con palabras largas o cortas */
+.fg-game .fg-logo-h{margin:0;line-height:0}.fg-game .fg-logo{height:clamp(52px,10vh,84px);width:auto;filter:drop-shadow(0 5px 8px #0009)}
+.fg-game .fg-ico{width:1.4em;height:1.4em;object-fit:contain;vertical-align:-.38em;margin-right:4px}.fg-game .fg-hud small .fg-ico{width:14px;height:14px;vertical-align:-3px;margin-right:2px}
+.fg-game .fg-ficha,.fg-game .fg-espacio.lleno{background:none;border:10px solid transparent;border-image:url(assets/frases-giro/ficha.webp) 38 fill/10px stretch;box-shadow:none;color:#241237;padding:0 6px;filter:drop-shadow(0 3px 2px #0006)}
+.fg-game .fg-espacio.vacio{background:none;border:10px solid transparent;border-image:url(assets/frases-giro/espacio.webp) 38 fill/10px stretch;box-shadow:none;color:#BFAFD1;padding:0 6px}
+.fg-game .fg-ficha:not(:disabled):active{transform:translateY(3px);box-shadow:none}
+.fg-game .fg-banco-caja{position:relative}
+.fg-game .fg-remolino{position:absolute;left:50%;top:50%;width:min(44%,170px);transform:translate(-50%,-50%) scale(.4);opacity:0;pointer-events:none;transition:opacity .25s,transform .45s;filter:drop-shadow(0 8px 16px #000a)}
+.fg-game .fg-banco.gira+.fg-remolino{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(-30deg)}
+.fg-game .fg-acciones button{display:flex;align-items:center;justify-content:center}
+.fg-game .fg-panel-dibujo{display:block;width:auto;height:auto;max-width:min(60vw,230px);max-height:28vh;margin:-6px auto 8px;filter:drop-shadow(0 8px 14px #0009)}
+@media(prefers-reduced-motion:reduce){.fg-game .fg-banco.gira+.fg-remolino{transform:translate(-50%,-50%)}}
 .tf .tf-campo input{padding:10px 12px;margin:2px 0}.tf .tf-campo .imp-ayuda:empty{display:none}.tf .tf-campo .mim-btns .bb-pasar{min-height:52px}
 .tf .tf-basta-img{display:block;width:min(78vw,330px);height:auto;margin:0 auto;filter:drop-shadow(0 10px 16px #000a);animation:bbNueva .35s}
 .tf .tf-trofeo{display:block;width:min(40vw,170px);height:auto;margin:0 auto 4px;filter:drop-shadow(0 8px 14px #0009)}
