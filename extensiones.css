@@ -373,6 +373,19 @@ body.pf-activo #extAtras,body.pf-activo #extCerrar,body.pf-activo .ext-volver{vi
 .sf-game .sf-panel-dibujo{display:block;width:auto;height:auto;max-width:min(70vw,260px);max-height:30vh;margin:-6px auto 8px;filter:drop-shadow(0 8px 14px #0009)}
 .sf-game .sf-acciones button.sf-con-dibujo{display:flex;align-items:center;justify-content:center;gap:8px;padding:6px 10px}.sf-game .sf-con-dibujo img{width:52px;height:auto}
 @media(prefers-reduced-motion:reduce){.sf-game .sf-estallido{animation:none;display:none}.sf-game .sf-grid-caja.mudando .sf-remolino{transform:translate(-50%,-50%)}}
+/* Rueda de Letras con dibujos (assets/rueda-letras/), todo bajo .rl-game */
+.rl-game .rl-logo-h{margin:0;line-height:0}.rl-game .rl-logo{height:clamp(52px,10vh,84px);width:auto;filter:drop-shadow(0 5px 8px #0009)}
+.rl-game .rl-ico{width:1.4em;height:1.4em;object-fit:contain;vertical-align:-.38em;margin-right:5px}
+.rl-game .rl-rango b .rl-ico{width:22px;height:22px;vertical-align:-6px;margin-right:4px}
+.rl-game .rl-cajon-icono{background:none}.rl-game .rl-cajon-icono .rl-ico{width:32px;height:32px;margin:0}
+.rl-game .rl-acciones button{display:flex;align-items:center;justify-content:center}
+.rl-game .rl-rueda{background:url(assets/rueda-letras/rueda.webp) center/100% 100% no-repeat;border:0;box-shadow:none;filter:drop-shadow(0 10px 18px #0009)}
+.rl-game .rl-letra{background:url(assets/rueda-letras/ficha.webp) center/100% 100% no-repeat;box-shadow:none;filter:drop-shadow(0 3px 3px #0007)}
+.rl-game .rl-letra.sel{background:radial-gradient(circle,#37D6C0 0 66%,#F5B301 68% 100%);border-radius:50%;box-shadow:0 0 14px #37D6C0AA}
+.rl-game .rl-letra.rl-centro{background:#160B24;box-shadow:0 3px 0 #A87516}.rl-game .rl-letra.rl-centro.sel{background:#37D6C0}
+.rl-game .rl-celda{background:url(assets/rueda-letras/casilla.webp) center/100% 100% no-repeat;border:0}
+.rl-game .rl-celda.ver{background:url(assets/rueda-letras/casilla_ok.webp) center/100% 100% no-repeat;border:0}
+.rl-game .rl-panel-dibujo{display:block;width:auto;height:auto;max-width:min(64vw,240px);max-height:30vh;margin:-6px auto 8px;filter:drop-shadow(0 8px 14px #0009)}
 .tf .tf-campo input{padding:10px 12px;margin:2px 0}.tf .tf-campo .imp-ayuda:empty{display:none}.tf .tf-campo .mim-btns .bb-pasar{min-height:52px}
 .tf .tf-basta-img{display:block;width:min(78vw,330px);height:auto;margin:0 auto;filter:drop-shadow(0 10px 16px #000a);animation:bbNueva .35s}
 .tf .tf-trofeo{display:block;width:min(40vw,170px);height:auto;margin:0 auto 4px;filter:drop-shadow(0 8px 14px #0009)}
