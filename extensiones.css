@@ -345,6 +345,17 @@ body.pf-activo #extAtras,body.pf-activo #extCerrar,body.pf-activo .ext-volver{vi
 .imp .imp-fr-imp .imp-en-carta{left:9%;right:9%;bottom:7%;padding:8px 6px;border-radius:14px;background:#160B24D9;border:2px solid #E5197C}
 .imp .imp-fr-imp .imp-rol{color:#FF4D6D;font-size:min(6.5vw,1.6rem)}.imp .imp-fr-imp .imp-pista{margin-top:4px;font-size:.9rem}
 @media (prefers-reduced-motion:reduce){.imp .imp-flip-in{animation:none}}
+/* Tutti Frutti con dibujos (assets/tutti/), todo bajo .tf */
+.tf .tf-logo-h{margin:0 0 6px!important;line-height:0}.tf .tf-logo{display:block;width:min(70%,260px);height:auto;margin:0 auto;filter:drop-shadow(0 6px 10px #0009)}
+.tf .tf-ico{width:1.5em;height:1.5em;vertical-align:-.45em;margin-right:5px;object-fit:contain;pointer-events:none}
+.tf .tf-catsel .tf-ico{width:22px;height:22px;vertical-align:-6px}.tf .tf-cat .tf-ico{width:18px;height:18px;vertical-align:-4px;margin-right:3px}
+.tf .tf-campo #tfCat .tf-ico{width:40px;height:40px;vertical-align:-13px;margin-right:8px}
+.tf .tf-ficha{position:relative;width:min(56vw,230px);margin:6px auto 0}.tf .tf-ficha>img{display:block;width:100%;height:auto;filter:drop-shadow(0 10px 16px #000a);pointer-events:none}
+.tf .tf-ficha .tf-letra{position:absolute;left:8%;right:15%;top:6%;bottom:16%;display:grid;place-items:center;color:#3A1758AA;text-shadow:none;transform:rotate(-8deg);font-size:min(30vw,8rem)}
+.tf .tf-ficha .tf-letra.tf-final{color:#E5197C;text-shadow:0 5px 0 #7A0E44}
+.tf .tf-ficha.tf-ficha-chica{width:min(30vw,120px);margin-top:0}.tf .tf-ficha .tf-letra.tf-chica{font-size:min(15vw,4rem)}
+.tf .tf-basta-img{display:block;width:min(78vw,330px);height:auto;margin:0 auto;filter:drop-shadow(0 10px 16px #000a);animation:bbNueva .35s}
+.tf .tf-trofeo{display:block;width:min(40vw,170px);height:auto;margin:0 auto 4px;filter:drop-shadow(0 8px 14px #0009)}
 /* Que no se pueda seleccionar (resaltar) el texto grande al tocarlo. */
 .bb-silaba,.qs-palabra,.qns-num,.imp-palabra,.imp-nombre{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;pointer-events:none}
 /* Mímica, Canta la Canción, Tutti Frutti */
