@@ -1075,3 +1075,7 @@ Fecha: 20/10/2026 — Tutti Frutti con dibujos. Hoja 4x4 de ChatGPT (prompt de C
 ```text
 Fecha: 20/10/2026 — Tutti Frutti: la letra quedaba corrida a la izquierda en la ficha (Gonzalo). Centrada sobre la parte crema (medida en la imagen: centro x 52 %, y 45 %). Además se le sacó a ficha.webp una gotita magenta suelta. extensiones.css v86, sw v338.
 ```
+
+```text
+Fecha: 20/10/2026 — Tutti Frutti: con el teclado abierto se tapaban los botones (video de Gonzalo). La pantalla de escribir va pegada arriba y compacta (ficha chica de 64 px, ícono de categoría 30 px, botones de 52 px, sin el renglón de aviso vacío): con 380 px de alto visibles entran letra, categoría, casilla y los 3 botones. extensiones.css v87, sw v339.
+```
