@@ -386,6 +386,17 @@ body.pf-activo #extAtras,body.pf-activo #extCerrar,body.pf-activo .ext-volver{vi
 .rl-game .rl-celda{background:url(assets/rueda-letras/casilla.webp) center/100% 100% no-repeat;border:0}
 .rl-game .rl-celda.ver{background:url(assets/rueda-letras/casilla_ok.webp) center/100% 100% no-repeat;border:0}
 .rl-game .rl-panel-dibujo{display:block;width:auto;height:auto;max-width:min(64vw,240px);max-height:30vh;margin:-6px auto 8px;filter:drop-shadow(0 8px 14px #0009)}
+/* Palabra Secreta con dibujos (assets/palabra-secreta/), todo bajo .ps-game */
+.ps-game .ps-logo-h{margin:0;line-height:0}.ps-game .ps-logo{height:clamp(44px,8vh,66px);width:auto;filter:drop-shadow(0 4px 7px #0009)}
+.ps-game .ps-ico{width:1.45em;height:1.45em;object-fit:contain;vertical-align:-.4em;margin-right:3px}
+.ps-game .ps-top button.ps-btn-img{background:none;padding:0;width:34px;height:34px}.ps-game .ps-btn-img .ps-ico{width:34px;height:34px;margin:0;vertical-align:0}
+.ps-game .ps-celda{background:url(assets/palabra-secreta/casilla.webp) center/100% 100% no-repeat;border:0;border-radius:9px}
+.ps-game .ps-celda.exacta,.ps-game .ps-ejemplo .exacta{background:url(assets/palabra-secreta/verde.webp) center/100% 100% no-repeat;color:#fff;text-shadow:0 2px 0 #0B5A3C}
+.ps-game .ps-celda.presente,.ps-game .ps-ejemplo .presente{background:url(assets/palabra-secreta/amarilla.webp) center/100% 100% no-repeat;color:#3A2400}
+.ps-game .ps-celda.ausente,.ps-game .ps-ejemplo .ausente{background:url(assets/palabra-secreta/gris.webp) center/100% 100% no-repeat;color:#fff}
+.ps-game .ps-panel-dibujo{display:block;width:auto;height:auto;max-width:min(58vw,220px);max-height:26vh;margin:-6px auto 8px;filter:drop-shadow(0 8px 14px #0009)}.ps-game .ps-panel-dibujo.ps-chico{max-width:90px}
+.ps-game .ps-final-dibujo{display:block;width:auto;height:auto;max-width:min(52vw,200px);max-height:22vh;margin:-4px auto 4px;filter:drop-shadow(0 8px 14px #0009)}
+.ps-game .ps-final button .ps-ico{width:1.3em;height:1.3em}
 .tf .tf-campo input{padding:10px 12px;margin:2px 0}.tf .tf-campo .imp-ayuda:empty{display:none}.tf .tf-campo .mim-btns .bb-pasar{min-height:52px}
 .tf .tf-basta-img{display:block;width:min(78vw,330px);height:auto;margin:0 auto;filter:drop-shadow(0 10px 16px #000a);animation:bbNueva .35s}
 .tf .tf-trofeo{display:block;width:min(40vw,170px);height:auto;margin:0 auto 4px;filter:drop-shadow(0 8px 14px #0009)}
