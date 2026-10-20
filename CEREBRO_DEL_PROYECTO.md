@@ -1091,3 +1091,7 @@ Fecha: 20/10/2026 — Rueda de Letras con dibujos. Gonzalo rechazó dos versione
 ```text
 Fecha: 20/10/2026 — Palabra Secreta con dibujos. Hoja 4x3 (mismo estilo aprobado) recortada en assets/palabra-secreta/: logo, personaje, casilla, verde, amarilla, gris, racha, stats, dia, gano, perdio, extra. Logo arriba; botón de estadísticas con su ícono; renglón "Palabra de hoy / Palabra extra · Racha" con íconos; casillas del tablero (y del ejemplo de la ayuda) con las imágenes por color (letra oscura sobre amarilla); ayuda = personaje; estadísticas = ícono; final = gano/perdio; "Jugar otra palabra" con el dado. El teclado sigue con colores planos. Estilos bajo .ps-game. Recorte: las manchas chicas van con el dibujo más cercano (distancia a sus píxeles). palabra-secreta.js v16, extensiones.css v90, sw v342.
 ```
+
+```text
+Fecha: 20/10/2026 — Palabra Secreta: el final ("¡La encontraste…!" / "La palabra era…") sale como popup en el medio, adelante del tablero (Gonzalo: abajo quedaba mal). ✕ o tocar afuera lo cierra para ver el tablero, y queda el botón "🏁 Ver resultado" para reabrirlo (compartir, jugar otra). En duelo no se cierra (después sale el resultado del duelo). palabra-secreta.js v17, extensiones.css v91, sw v343.
+```
