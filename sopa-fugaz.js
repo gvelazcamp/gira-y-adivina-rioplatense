@@ -21,6 +21,8 @@ const SopaFugaz=(()=>{
   const dirsIniciales=[[0,1],[1,0]];
   const dirsAvanzadas=[[0,1],[1,0],[1,1],[-1,1],[0,-1],[-1,0],[-1,-1],[1,-1]];
   const azar=n=>Math.floor(Math.random()*n);
+  /* Dibujos en assets/sopa/ (hoja de ChatGPT recortada). */
+  const ARTE=n=>"assets/sopa/"+n+".webp";
   let datos=cargar(),raiz=null,gridEl=null,chipsEl=null,celdas=[],tablero=[],objetivos=[],halladas=new Set();
   let nivel=1,puntaje=0,tiempoMs=0,duracionMs=0,mudanzaMs=0,proximaMudanza=0,ultimaMarca=0;
   let jugando=false,mudando=false,arrastre=null,camino=[],intervalo=null,trasladoTimer=null,token=0,ultimoTic=0,ocultoDesde=0,categoria="",repetirConocidas=false,duelo=false;
@@ -114,7 +116,7 @@ const SopaFugaz=(()=>{
   }
   function dibujarHistorial(){
     if(!raiz)return;
-    raiz.querySelector("#sfHistorialTitulo").textContent="📖 Mis palabras encontradas ("+datos.descubiertas.length+")";
+    raiz.querySelector("#sfHistorialTitulo").innerHTML='<img class="sf-ico" src="'+ARTE("libro")+'" alt="">Mis palabras encontradas ('+datos.descubiertas.length+")";
     const lista=raiz.querySelector("#sfHistorialLista");lista.replaceChildren();
     if(!datos.descubiertas.length){lista.textContent="Todavía no encontraste ninguna.";return;}
     [...datos.descubiertas].reverse().forEach(w=>{const chip=document.createElement("span");chip.className="sf-historial-chip";chip.textContent=w;lista.appendChild(chip);});
@@ -127,16 +129,19 @@ const SopaFugaz=(()=>{
     raiz.querySelector("#sfTiempo").textContent=Math.max(0,Math.ceil(tiempoMs/1000));
     raiz.querySelector("#sfTiempoBarra").style.width=Math.max(0,tiempoMs/duracionMs*100)+"%";
   }
-  function mostrarPanel(titulo,detalle,boton,accion,compartir=false,extra){
+  function mostrarPanel(titulo,detalle,boton,accion,compartir=false,extra,dibujo){
     const panel=raiz.querySelector("#sfPanel");
     panel.innerHTML="";panel.hidden=false;
     const tarjeta=document.createElement("div");tarjeta.className="sf-panel";
+    if(dibujo){const im=document.createElement("img");im.className="sf-panel-dibujo";im.src=ARTE(dibujo);im.alt="";im.draggable=false;tarjeta.appendChild(im);}
     const h=document.createElement("h3");h.textContent=titulo;
     const p=document.createElement("p");p.textContent=detalle;
     const acciones=document.createElement("div");acciones.className="sf-acciones";
     const principal=document.createElement("button");principal.className="sf-principal";principal.type="button";principal.textContent=boton;principal.onclick=accion;acciones.appendChild(principal);
     if(compartir){const b=document.createElement("button");b.type="button";b.textContent="📤 Compartir";b.onclick=()=>compartirResultado(b);acciones.appendChild(b);}
-    if(extra){const b=document.createElement("button");b.type="button";b.textContent=extra.texto;b.onclick=extra.accion;acciones.appendChild(b);}
+    if(extra){const b=document.createElement("button");b.type="button";b.textContent=extra.texto;b.onclick=extra.accion;
+      if(extra.dibujo){b.classList.add("sf-con-dibujo");const im=document.createElement("img");im.src=ARTE(extra.dibujo);im.alt="";b.prepend(im);}
+      acciones.appendChild(b);}
     tarjeta.append(h,p,acciones);panel.appendChild(tarjeta);
   }
   function guardarMejor(){if(puntaje>datos.mejor){datos.mejor=puntaje;guardar();}}
@@ -167,14 +172,14 @@ const SopaFugaz=(()=>{
       gano?"Siguiente ronda":"Jugar de nuevo",()=>{
         if(gano)nivel++;else{nivel=SOPA_CONFIG.primerNivel;puntaje=0;}
         iniciarRonda();
-      },true);
+      },true,null,gano?"gano":"tiempo");
   }
   function iniciarRonda(){
     duelo=false;
     token++;clearTimeout(trasladoTimer);mudando=false;arrastre=null;camino=[];halladas.clear();
     const c=configNivel(nivel);
     objetivos=elegirPalabras(c);
-    if(!objetivos.length){jugando=false;dibujarHistorial();mostrarPanel("¡Encontraste todas!","Ya descubriste todas las palabras disponibles para esta dificultad. Podés volver a jugarlas para practicar.","Rejugar conocidas",()=>{repetirConocidas=true;iniciarRonda();});return;}
+    if(!objetivos.length){jugando=false;dibujarHistorial();mostrarPanel("¡Encontraste todas!","Ya descubriste todas las palabras disponibles para esta dificultad. Podés volver a jugarlas para practicar.","Rejugar conocidas",()=>{repetirConocidas=true;iniciarRonda();},false,null,"record");return;}
     arrancarRonda(c);
   }
   function arrancarRonda(c){
@@ -204,11 +209,20 @@ const SopaFugaz=(()=>{
       }else Duelo.onRondaRecibida(datos=>{objetivos=datos.objetivos;categoria=datos.categoria;nivel=datos.nivel;arrancarRonda(configNivel(nivel));});
     }});
   }
+  /* Destello de "palabra encontrada" en el medio de la palabra marcada. */
+  function estallido(seleccion){
+    const caja=raiz&&raiz.querySelector("#sfGridCaja");if(!caja||!seleccion.length)return;
+    const cr=caja.getBoundingClientRect();let x=0,y=0;
+    seleccion.forEach(k=>{const r=celdas[k].getBoundingClientRect();x+=r.left+r.width/2;y+=r.top+r.height/2;});
+    const im=document.createElement("img");im.className="sf-estallido";im.src=ARTE("encontrada");im.alt="";
+    im.style.left=(x/seleccion.length-cr.left)+"px";im.style.top=(y/seleccion.length-cr.top)+"px";
+    caja.appendChild(im);setTimeout(()=>im.remove(),800);
+  }
   function cancelarArrastre(){arrastre=null;camino=[];pintarCamino();}
   function mudar(ahora){
     if(!jugando||mudando)return;
     mudando=true;cancelarArrastre();
-    sonarRuletaGiro();gridEl.classList.add("spin");
+    sonarRuletaGiro();gridEl.classList.add("spin");raiz.querySelector("#sfGridCaja").classList.add("mudando");
     celdas.forEach(c=>c.classList.add("gone"));
     const esteToken=token;
     trasladoTimer=setTimeout(()=>{
@@ -216,7 +230,7 @@ const SopaFugaz=(()=>{
       construir();
       trasladoTimer=setTimeout(()=>{
         if(esteToken!==token||!jugando)return;
-        gridEl.classList.remove("spin");mudando=false;
+        gridEl.classList.remove("spin");raiz.querySelector("#sfGridCaja").classList.remove("mudando");mudando=false;
         proximaMudanza=performance.now()+mudanzaMs;
       },SOPA_CONFIG.giroMs/2);
     },SOPA_CONFIG.giroMs/2);
@@ -294,6 +308,7 @@ const SopaFugaz=(()=>{
       ultimaMarca=ahora;guardar();
       dibujarChips();dibujarHistorial();actualizarHUD();
       seleccion.forEach(k=>celdas[k].classList.add("found"));
+      estallido(seleccion);
       tac();vibrar(35);objSumar("sopaPalabras",1);
       logroDesbloquear("sopaPrimera");
       if(datos.palabrasTotal>=10)logroDesbloquear("sopaDiez");
@@ -307,7 +322,7 @@ const SopaFugaz=(()=>{
   }
   function abrir(contenedor){
     salir();datos=cargar();nivel=SOPA_CONFIG.primerNivel;puntaje=0;repetirConocidas=false;raiz=document.createElement("div");raiz.className="sf-game";
-    raiz.innerHTML='<button type="button" class="ext-volver" id="sfVolver">⟵ Extensiones</button><h2>🔎 Sopa Fugaz</h2><p class="sf-sub">Categoría: <b id="sfCategoria">Sabores y lugares conocidos</b></p><div class="sf-hud"><div><small>Nivel</small><b id="sfNivel">1</b></div><div><small>Puntos</small><b id="sfPuntos">0</b></div><div><small>Mejor</small><b id="sfMejor">0</b></div><div><small>Tiempo</small><b id="sfTiempo">0</b></div></div><div class="sf-bar"><i id="sfTiempoBarra"></i></div><div class="sf-chips" id="sfChips"></div><div class="sf-grid" id="sfGrid" aria-label="Sopa de letras"></div><p class="sf-mudanza-texto" id="sfMudanzaTexto">Las letras se mudan cada pocos segundos</p><div class="sf-bar mudanza"><i id="sfMudanzaBarra"></i></div><details class="sf-historial"><summary id="sfHistorialTitulo">📖 Mis palabras encontradas (0)</summary><div class="sf-historial-lista" id="sfHistorialLista"></div></details><div class="sf-acciones"><button type="button" id="sfAyuda">¿Cómo se juega?</button></div><div class="sf-panel-capa" id="sfPanel"></div>';
+    raiz.innerHTML='<button type="button" class="ext-volver" id="sfVolver">⟵ Extensiones</button><h2 class="sf-logo-h"><img class="sf-logo" src="'+ARTE("logo")+'" alt="Sopa Fugaz" draggable="false"></h2><p class="sf-sub">Categoría: <b id="sfCategoria">Sabores y lugares conocidos</b></p><div class="sf-hud"><div><small>Nivel</small><b id="sfNivel">1</b></div><div><small>Puntos</small><b id="sfPuntos">0</b></div><div><small>Mejor</small><b id="sfMejor">0</b></div><div><small><img class="sf-ico" src="'+ARTE("reloj")+'" alt="">Tiempo</small><b id="sfTiempo">0</b></div></div><div class="sf-bar"><i id="sfTiempoBarra"></i></div><div class="sf-chips" id="sfChips"></div><div class="sf-grid-caja" id="sfGridCaja"><div class="sf-grid" id="sfGrid" aria-label="Sopa de letras"></div><img class="sf-remolino" src="'+ARTE("mudanza")+'" alt="" draggable="false"></div><p class="sf-mudanza-texto" id="sfMudanzaTexto">Las letras se mudan cada pocos segundos</p><div class="sf-bar mudanza"><i id="sfMudanzaBarra"></i></div><details class="sf-historial"><summary id="sfHistorialTitulo">📖 Mis palabras encontradas (0)</summary><div class="sf-historial-lista" id="sfHistorialLista"></div></details><div class="sf-acciones"><button type="button" id="sfAyuda">¿Cómo se juega?</button></div><div class="sf-panel-capa" id="sfPanel"></div>';
     contenedor.appendChild(raiz);gridEl=raiz.querySelector("#sfGrid");chipsEl=raiz.querySelector("#sfChips");
     gridEl.addEventListener("pointerdown",punteroAbajo);
     gridEl.addEventListener("pointermove",punteroMueve);
@@ -316,14 +331,14 @@ const SopaFugaz=(()=>{
     raiz.querySelector("#sfVolver").onclick=()=>Extensiones.abrirLobby();
     raiz.querySelector("#sfAyuda").onclick=()=>{
       if(jugando){mostrarToast("🔎","Marcá en línea recta: horizontal o vertical; desde el nivel 3, también diagonal y al revés.");return;}
-      mostrarPanel("¿Cómo se juega?","Arrastrá el dedo en línea recta sobre las letras para marcar las palabras de arriba. En niveles 1 y 2 aparecen horizontal o vertical; después también diagonal o al revés. Cada pocos segundos la sopa gira y las letras se mudan. Si estás marcando una palabra, espera hasta 2,5 segundos.","Jugar",iniciarRonda);
+      mostrarPanel("¿Cómo se juega?","Arrastrá el dedo en línea recta sobre las letras para marcar las palabras de arriba. En niveles 1 y 2 aparecen horizontal o vertical; después también diagonal o al revés. Cada pocos segundos la sopa gira y las letras se mudan. Si estás marcando una palabra, espera hasta 2,5 segundos.","Jugar",iniciarRonda,false,null,"mascota");
     };
     intervalo=setInterval(tic,SOPA_CONFIG.ticMs);
     document.addEventListener("visibilitychange",alVolver);
     iniciarMusicaJuego();
     raiz.querySelector("#sfMejor").textContent=datos.mejor;
     dibujarHistorial();
-    mostrarPanel("Sopa Fugaz","Encontrá las palabras arrastrando el dedo. Las letras giran y se mudan durante la ronda. Las que descubrís quedan en Mis palabras y no vuelven a salir mientras haya nuevas.","Jugar",iniciarRonda,false,{texto:"Jugar con un amigo 👥",accion:iniciarDuelo});
+    mostrarPanel("Sopa Fugaz","Encontrá las palabras arrastrando el dedo. Las letras giran y se mudan durante la ronda. Las que descubrís quedan en Mis palabras y no vuelven a salir mientras haya nuevas.","Jugar",iniciarRonda,false,{texto:"Jugar con un amigo",accion:iniciarDuelo,dibujo:"duelo"},"mascota");
   }
   function salir(){
     jugando=false;mudando=false;arrastre=null;token++;clearInterval(intervalo);clearTimeout(trasladoTimer);

@@ -358,6 +358,21 @@ body.pf-activo #extAtras,body.pf-activo #extCerrar,body.pf-activo .ext-volver{vi
 .tf .imp-juego>.tf-campo{margin-top:0!important;padding-top:46px;gap:6px;min-height:0}
 .tf .tf-campo .tf-ficha.tf-ficha-chica{width:min(17vw,64px)}.tf .tf-campo .tf-ficha .tf-letra.tf-chica{font-size:min(8vw,2.1rem)}
 .tf .tf-campo #tfCat{font-size:1.15rem}.tf .tf-campo #tfCat .tf-ico{width:30px;height:30px;vertical-align:-9px;margin-right:6px}
+/* Sopa Fugaz con dibujos (assets/sopa/), todo bajo .sf-game (sf-panel y sf-acciones también los usan otros juegos) */
+.sf-game .sf-logo-h{margin:0 0 2px;line-height:0}.sf-game .sf-logo{height:clamp(56px,11vh,92px);width:auto;max-width:70%;filter:drop-shadow(0 5px 8px #0009)}
+.sf-game .sf-ico{width:1.35em;height:1.35em;vertical-align:-.35em;margin-right:4px;object-fit:contain}
+.sf-game .sf-hud small .sf-ico{width:14px;height:14px;vertical-align:-3px;margin-right:2px}
+.sf-game .sf-grid-caja{position:relative}
+.sf-game .sf-celda{background:url(assets/sopa/ficha.webp) center/100% 100% no-repeat;border-radius:7px}
+.sf-game .sf-celda.found{background:url(assets/sopa/ficha_ok.webp) center/100% 100% no-repeat;color:#0B3D37}
+.sf-game .sf-celda.sel{background:#E5197C;color:#fff}
+.sf-game .sf-remolino{position:absolute;left:50%;top:50%;width:62%;max-width:260px;transform:translate(-50%,-50%) scale(.4);opacity:0;pointer-events:none;transition:opacity .3s,transform .5s;filter:drop-shadow(0 8px 16px #000a)}
+.sf-game .sf-grid-caja.mudando .sf-remolino{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(-25deg)}
+.sf-game .sf-estallido{position:absolute;width:120px;height:auto;pointer-events:none;transform:translate(-50%,-50%) scale(.3);opacity:0;animation:sfEstalla .75s ease-out forwards;z-index:2}
+@keyframes sfEstalla{30%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.4)}}
+.sf-game .sf-panel-dibujo{display:block;width:auto;height:auto;max-width:min(70vw,260px);max-height:30vh;margin:-6px auto 8px;filter:drop-shadow(0 8px 14px #0009)}
+.sf-game .sf-acciones button.sf-con-dibujo{display:flex;align-items:center;justify-content:center;gap:8px;padding:6px 10px}.sf-game .sf-con-dibujo img{width:52px;height:auto}
+@media(prefers-reduced-motion:reduce){.sf-game .sf-estallido{animation:none;display:none}.sf-game .sf-grid-caja.mudando .sf-remolino{transform:translate(-50%,-50%)}}
 .tf .tf-campo input{padding:10px 12px;margin:2px 0}.tf .tf-campo .imp-ayuda:empty{display:none}.tf .tf-campo .mim-btns .bb-pasar{min-height:52px}
 .tf .tf-basta-img{display:block;width:min(78vw,330px);height:auto;margin:0 auto;filter:drop-shadow(0 10px 16px #000a);animation:bbNueva .35s}
 .tf .tf-trofeo{display:block;width:min(40vw,170px);height:auto;margin:0 auto 4px;filter:drop-shadow(0 8px 14px #0009)}

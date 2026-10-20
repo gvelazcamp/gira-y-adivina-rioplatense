@@ -1079,3 +1079,7 @@ Fecha: 20/10/2026 — Tutti Frutti: la letra quedaba corrida a la izquierda en l
 ```text
 Fecha: 20/10/2026 — Tutti Frutti: con el teclado abierto se tapaban los botones (video de Gonzalo). La pantalla de escribir va pegada arriba y compacta (ficha chica de 64 px, ícono de categoría 30 px, botones de 52 px, sin el renglón de aviso vacío): con 380 px de alto visibles entran letra, categoría, casilla y los 3 botones. extensiones.css v87, sw v339.
 ```
+
+```text
+Fecha: 20/10/2026 — Sopa Fugaz con dibujos. Hoja 4x3 de ChatGPT (prompt de Claude; mascota: chica de rulos con gorra violeta y lupa) recortada en assets/sopa/: logo, mascota, ficha, ficha_ok (recortada al cuadrado sin destellos para llenar la celda), mudanza, reloj, libro, duelo, gano, tiempo, record, encontrada. Logo arriba; cada celda usa ficha.webp (encontradas ficha_ok); reloj en el HUD de Tiempo; libro en "Mis palabras"; remolino encima de la grilla mientras se mudan las letras; destello "encontrada" sobre la palabra marcada; paneles: inicio/cómo se juega = mascota (botón "Jugar con un amigo" con el dibujo del duelo), ronda superada = gano, se acabó el tiempo = tiempo, encontraste todas = record. Estilos bajo .sf-game (sf-panel/sf-acciones los comparten otros juegos). sopa-fugaz.js v8, extensiones.css v88, sw v340.
+```
