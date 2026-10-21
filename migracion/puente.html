@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Trasladando Girá y Adiviná</title>
+<style>body{font:18px system-ui;background:#160b24;color:#f6efe2;min-height:100vh;display:grid;place-items:center;margin:0;padding:24px;text-align:center}main{max-width:440px}a{color:#37d6c0}button{font:inherit;border:0;border-radius:12px;padding:12px 20px;background:#f5b301;color:#1a1024}</style>
+<main><h1>Girá y Adiviná</h1><p id="estado">Estamos trasladando tu partida al nuevo dominio…</p><p id="alternativa" hidden><button id="reintentar">Reintentar</button><br><br><a href="juego-anterior.html">Seguir jugando aquí</a></p></main>
+<script>
+/* Se publica como index.html SOLO en el sitio anterior, una vez que
+   girayadivina.com esté alojado por separado. La clave nunca va a Supabase:
+   viaja en el fragmento de la URL y la copia almacenada está cifrada. */
+const DESTINO="https://girayadivina.com/";
+const SUPA_URL="https://qfeubudlnoogwzozywph.supabase.co";
+const SUPA_KEY="sb_publishable_NHKQdADMpHSaSDW9WAlRGA_QLLJkeR7";
+const MARCA="dominio_migracion_v1";
+const estado=document.getElementById("estado"),alternativa=document.getElementById("alternativa");
+const base64url=bytes=>btoa(String.fromCharCode(...bytes)).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/g,"");
+function clavePermitida(k){return k.startsWith("gya_")||k.startsWith("larueda_")||["dispositivo_gya","regllave_priv","regllave_pub"].includes(k);}
+function leerPartida(){
+  const datos={};
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(k&&clavePermitida(k))datos[k]=localStorage.getItem(k);
+  }
+  return datos;
+}
+async function trasladar(){
+  alternativa.hidden=true;
+  estado.textContent="Estamos trasladando tu partida al nuevo dominio…";
+  try{
+    if(location.protocol!=="https:")throw Error("La dirección anterior todavía no usa HTTPS.");
+    const anterior=localStorage.getItem(MARCA);
+    if(anterior){location.replace(DESTINO+"migrar.html#"+anterior);return;}
+    const datos=leerPartida();
+    if(!Object.keys(datos).length){location.replace(DESTINO);return;}
+    if(!crypto.subtle)throw Error("Este navegador no permite cifrar la partida.");
+    const id=base64url(crypto.getRandomValues(new Uint8Array(18)));
+    const clave=crypto.getRandomValues(new Uint8Array(32));
+    const iv=crypto.getRandomValues(new Uint8Array(12));
+    const aes=await crypto.subtle.importKey("raw",clave,"AES-GCM",false,["encrypt"]);
+    const texto=new TextEncoder().encode(JSON.stringify({version:1,datos}));
+    const cifrado=base64url(new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM",iv},aes,texto)));
+    const fila={grupo:"migra",apodo:id,monedas_totales:0,ciudades_ganadas:0,mejor_racha:0,logros:0,
+      estado_juego:{version:1,iv:base64url(iv),cifrado},actualizado_en:new Date().toISOString()};
+    const res=await fetch(SUPA_URL+"/rest/v1/gya_ranking",{method:"POST",headers:{apikey:SUPA_KEY,Authorization:"Bearer "+SUPA_KEY,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify(fila)});
+    if(!res.ok)throw Error("No se pudo guardar la copia cifrada ("+res.status+").");
+    const enlace=id+"."+base64url(clave);
+    localStorage.setItem(MARCA,enlace);
+    location.replace(DESTINO+"migrar.html#"+enlace);
+  }catch(e){
+    estado.textContent=(e&&e.message||"No se pudo trasladar la partida.")+" Tu partida sigue en este teléfono.";
+    alternativa.hidden=false;
+  }
+}
+document.getElementById("reintentar").onclick=trasladar;
+trasladar();
+</script>
+</html>

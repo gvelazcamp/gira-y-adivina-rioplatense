@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Recuperando Girá y Adiviná</title>
+<style>body{font:18px system-ui;background:#160b24;color:#f6efe2;min-height:100vh;display:grid;place-items:center;margin:0;padding:24px;text-align:center}main{max-width:440px}a{color:#37d6c0}</style>
+<main><h1>Girá y Adiviná</h1><p id="estado">Recuperando tu partida…</p><p id="alternativa" hidden>Dejá esta pantalla abierta e intentá de nuevo cuando vuelva la conexión. Si persiste, pedile ayuda a Gonzalo. Tu partida anterior sigue guardada.</p></main>
+<script>
+/* Se publica como migrar.html en girayadivina.com. Esta página no carga el
+   juego hasta haber restaurado todos los datos, para evitar que una partida
+   nueva y vacía reemplace el respaldo existente. */
+const SUPA_URL="https://qfeubudlnoogwzozywph.supabase.co";
+const SUPA_KEY="sb_publishable_NHKQdADMpHSaSDW9WAlRGA_QLLJkeR7";
+const MARCA="dominio_migracion_v1";
+const estado=document.getElementById("estado"),alternativa=document.getElementById("alternativa");
+const bytes=s=>Uint8Array.from(atob(s.replace(/-/g,"+").replace(/_/g,"/").padEnd(Math.ceil(s.length/4)*4,"=")),c=>c.charCodeAt(0));
+function clavePermitida(k){return k.startsWith("gya_")||k.startsWith("larueda_")||["dispositivo_gya","regllave_priv","regllave_pub"].includes(k);}
+async function recibir(){
+  try{
+    if(location.protocol!=="https:")throw Error("Esperá a que este dominio tenga HTTPS.");
+    if(localStorage.getItem(MARCA)==="ok"){location.replace("./index.html");return;}
+    const enlace=location.hash.slice(1);
+    if(!/^[A-Za-z0-9_-]{24}\.[A-Za-z0-9_-]{43}$/.test(enlace))throw Error("El enlace de traslado no es válido.");
+    const [id,secreto]=enlace.split(".");
+    const url=SUPA_URL+"/rest/v1/gya_ranking?select=estado_juego&grupo=eq.migra&apodo=eq."+encodeURIComponent(id)+"&limit=1";
+    const res=await fetch(url,{headers:{apikey:SUPA_KEY,Authorization:"Bearer "+SUPA_KEY}});
+    if(!res.ok)throw Error("No se pudo descargar la copia cifrada ("+res.status+").");
+    const filas=await res.json(),copia=filas[0]&&filas[0].estado_juego;
+    if(!copia||copia.version!==1)throw Error("Todavía no se encontró la copia de la partida.");
+    const aes=await crypto.subtle.importKey("raw",bytes(secreto),"AES-GCM",false,["decrypt"]);
+    const plano=await crypto.subtle.decrypt({name:"AES-GCM",iv:bytes(copia.iv)},aes,bytes(copia.cifrado));
+    const contenido=JSON.parse(new TextDecoder().decode(plano));
+    const datos=contenido&&contenido.version===1&&contenido.datos;
+    if(!datos||typeof datos!=="object"||Array.isArray(datos)||!Object.keys(datos).length)throw Error("La copia no contiene una partida válida.");
+    const nombreNuevo=localStorage.getItem("gya_nombre");
+    if(nombreNuevo&&nombreNuevo!==datos.gya_nombre)throw Error("Este navegador ya tiene una partida de otra persona. No se reemplazó.");
+    const claves=Object.keys(datos).filter(clavePermitida);
+    if(claves.some(k=>typeof datos[k]!=="string"))throw Error("La copia tiene datos inválidos.");
+    const antes=new Map(claves.map(k=>[k,localStorage.getItem(k)]));
+    try{
+      for(const k of claves)localStorage.setItem(k,datos[k]);
+      localStorage.setItem(MARCA,"ok");
+    }catch(e){
+      for(const [k,v] of antes){try{if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v);}catch(_){}}
+      throw Error("El teléfono no pudo guardar la partida completa.");
+    }
+    history.replaceState(null,"",location.pathname);
+    location.replace("./index.html");
+  }catch(e){
+    estado.textContent=e&&e.message||"No se pudo recuperar la partida.";
+    alternativa.hidden=false;
+  }
+}
+recibir();
+</script>
+</html>

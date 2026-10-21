@@ -1,0 +1,77 @@
+<!doctype html><meta charset="utf-8"><title>Generar piezas del Estadio Futurista</title>
+<!-- Herramienta (no es parte del juego). Abrirla servida (python3 -m http.server) en
+     assets/puzzle/3d/generar-piezas.html y tocar "Generar": recorta las piezas del
+     Estadio Futurista (base gris + 6 capas) en el navegador y devuelve el atlas
+     (guardarlo como futurista-piezas.webp) y la lista F_PIEZAS para pegar en
+     ESTADIOS.futurista.piezas de puzzle.html. Se hace acá y no en el celular
+     porque recortar así en el teléfono se quedaba sin memoria. -->
+<button id="b">Generar</button><pre id="o" style="white-space:pre-wrap;font-size:11px"></pre>
+<script>
+const $=()=>null;
+  const IW=900,IH=900,K=900/1254,sc=p=>p.map(([x,y])=>[x*K,y*K]),TODO=[[0,0],[IW,0],[IW,IH],[0,IH]];
+  const lp=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];
+  const cuna=(c,a0,a1)=>{const R=2500;return[c,[c[0]+Math.cos(a0)*R,c[1]+Math.sin(a0)*R],[c[0]+Math.cos((a0+a1)/2)*R*1.5,c[1]+Math.sin((a0+a1)/2)*R*1.5],[c[0]+Math.cos(a1)*R,c[1]+Math.sin(a1)*R]]};
+  const banda=(pts,w)=>{const L=[],R=[];for(let i=0;i<pts.length;i++){const a=pts[Math.max(0,i-1)],b=pts[Math.min(pts.length-1,i+1)],dx=b[0]-a[0],dy=b[1]-a[1],n=Math.hypot(dx,dy)||1,nx=-dy/n*w/2,ny=dx/n*w/2;L.push([pts[i][0]+nx,pts[i][1]+ny]);R.push([pts[i][0]-nx,pts[i][1]-ny])}return L.concat(R.reverse())};
+
+function lienzo(){const c=document.createElement('canvas');c.width=IW;c.height=IH;return c}
+let IMG=null;
+function recorte(g,p){g.save();for(const grupo of p.clip){g.beginPath();for(const pl of grupo){pl.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.closePath()}g.clip('evenodd')}g.drawImage(p.src||IMG,0,0,IW,IH);g.restore()}
+  function sinFondo(img){const c=lienzo(),g=c.getContext('2d');g.drawImage(img,0,0,IW,IH);const id=g.getImageData(0,0,IW,IH),d=id.data;
+    const blanco=i=>{const r=d[i],gg=d[i+1],b=d[i+2];return r>238&&gg>238&&b>238&&Math.max(r,gg,b)-Math.min(r,gg,b)<10};
+    const vis=new Uint8Array(IW*IH),st=[];for(let x=0;x<IW;x++)st.push(x,(IH-1)*IW+x);for(let y=0;y<IH;y++)st.push(y*IW,y*IW+IW-1);
+    while(st.length){const p=st.pop();if(vis[p])continue;vis[p]=1;if(!blanco(p*4))continue;d[p*4+3]=0;const x=p%IW,y=(p/IW)|0;if(x>0)st.push(p-1);if(x<IW-1)st.push(p+1);if(y>0)st.push(p-IW);if(y<IH-1)st.push(p+IW)}
+    for(let p=0;p<IW*IH;p++)if(d[p*4+3]===255){const x=p%IW,y=(p/IW)|0;if((x>0&&d[(p-1)*4+3]===0)||(x<IW-1&&d[(p+1)*4+3]===0)||(y>0&&d[(p-IW)*4+3]===0)||(y<IH-1&&d[(p+IW)*4+3]===0))d[p*4+3]=140}
+    g.putImageData(id,0,0);return c}
+  function partirIslas(ps,noJuntar){const nuevas=[];const MIN=2600,CHICA=4500;
+    for(const p of ps){const c=lienzo(),g=c.getContext('2d');recorte(g,p);const d=g.getImageData(0,0,IW,IH).data;
+      const lab=new Int32Array(IW*IH).fill(-1),comps=[];
+      for(let s=0;s<IW*IH;s++){if(lab[s]!==-1||d[s*4+3]<25)continue;const id=comps.length,st=[s];lab[s]=id;let n=0,sx=0,sy=0;
+        while(st.length){const q=st.pop();n++;const x=q%IW,y=(q/IW)|0;sx+=x;sy+=y;
+          for(const r of[x>0?q-1:-1,x<IW-1?q+1:-1,y>0?q-IW:-1,y<IH-1?q+IW:-1])if(r>=0&&lab[r]===-1&&d[r*4+3]>=25){lab[r]=id;st.push(r)}}
+        comps.push({n,cx:sx/n,cy:sy/n})}
+      if(!comps.length)continue;
+      let grandes=comps.map((c,i)=>i).filter(i=>comps[i].n>=MIN);if(!grandes.length)grandes=[comps.reduce((m,c,i)=>c.n>comps[m].n?i:m,0)];
+      const dueno=comps.map((c,i)=>{if(grandes.includes(i))return i;let mej=grandes[0],md=1e18;for(const j of grandes){const dd=(comps[j].cx-c.cx)**2+(comps[j].cy-c.cy)**2;if(dd<md){md=dd;mej=j}}return mej});
+      for(const j of grandes){const sel=new Uint8Array(IW*IH);let n=0,sx=0,sy=0;for(let s=0;s<IW*IH;s++)if(lab[s]>=0&&dueno[lab[s]]===j){sel[s]=1;n++;sx+=s%IW;sy+=(s/IW)|0}
+        nuevas.push({capa:p.capa,sel,n,cx:sx/n,cy:sy/n})}}
+    let cambio=true;while(cambio){cambio=false;nuevas.sort((a,b)=>a.n-b.n);const p=nuevas.find(q=>!noJuntar.includes(q.capa)&&q.n<CHICA&&nuevas.some(o=>o!==q&&o.capa===q.capa));
+      if(p){let mej=null,md=1e18;for(const o of nuevas)if(o!==p&&o.capa===p.capa){const dd=(o.cx-p.cx)**2+(o.cy-p.cy)**2;if(dd<md){md=dd;mej=o}}
+        for(let s=0;s<IW*IH;s++)if(p.sel[s])mej.sel[s]=1;mej.cx=(mej.cx*mej.n+p.cx*p.n)/(mej.n+p.n);mej.cy=(mej.cy*mej.n+p.cy*p.n)/(mej.n+p.n);mej.n+=p.n;nuevas.splice(nuevas.indexOf(p),1);cambio=true}}
+    nuevas.sort((a,b)=>a.capa-b.capa||a.cy-b.cy||a.cx-b.cx);
+    return nuevas.map(q=>{const m=lienzo(),mg=m.getContext('2d'),md=mg.createImageData(IW,IH);for(let s=0;s<IW*IH;s++)if(q.sel[s])md.data[s*4+3]=255;mg.putImageData(md,0,0);return{capa:q.capa,mask:m,clip:[[TODO]]}})}
+
+function definirFut(){const STADIUM=sc([[330,280],[380,190],[420,130],[520,82],[700,62],[880,82],[1045,140],[1150,235],[1175,350],[1160,480],[1110,560],[1105,600],[985,640],[845,648],[800,600],[600,535],[460,470],[420,445],[335,410]]);
+        const ROOF=sc([[380,215],[410,140],[520,88],[700,68],[880,88],[1040,150],[1140,240],[1162,340],[1120,430],[1020,452],[880,440],[720,385],[520,305]]);
+        const BOWL=sc([[560,140],[720,128],[820,138],[960,168],[1040,220],[1085,300],[1060,370],[975,400],[880,425],[820,410],[560,305],[530,250],[540,190]]);
+        const FIELD=sc([[610,275],[695,260],[910,310],[965,370],[940,405],[875,405],[610,315]]);
+        const ARCO1=sc(banda([[515,292],[540,230],[575,165],[620,110],[655,88],[690,80]],40));
+        const ARCO2=sc(banda([[898,445],[920,385],[958,315],[1000,250],[1035,205],[1062,185]],44));
+        const EX=[ARCO1,ARCO2],ps=[],an=(i,n,d)=>[i/n*Math.PI*2+d,(i+1)/n*Math.PI*2+d];
+        for(let i=0;i<8;i++){const[a0,a1]=an(i,8,.3);ps.push({capa:6,clip:[[cuna([620*K,800*K],a0,a1)],[TODO,STADIUM]]})}
+        for(let i=0;i<4;i++){const[a0,a1]=an(i,4,.27);ps.push({capa:1,clip:[[cuna([790*K,335*K],a0,a1)],[FIELD],[TODO,...EX]]})}
+        for(let i=0;i<5;i++){const[a0,a1]=an(i,5,.2);ps.push({capa:2,clip:[[cuna([790*K,300*K],a0,a1)],[BOWL,FIELD],[TODO,...EX]]})}
+        for(let i=0;i<6;i++){const[a0,a1]=an(i,6,.4);ps.push({capa:3,clip:[[cuna([760*K,330*K],a0,a1)],[STADIUM,ROOF],[TODO,...EX]]})}
+        for(let i=0;i<6;i++){const[a0,a1]=an(i,6,.1);ps.push({capa:4,clip:[[cuna([780*K,280*K],a0,a1)],[ROOF,BOWL],[TODO,...EX]]})}
+ps.push({capa:5,clip:[[ARCO1]]});ps.push({capa:5,clip:[[ARCO2]]});return ps}
+function cortar(p){const c=lienzo(),g=c.getContext('2d');recorte(g,p);if(p.mask){g.globalCompositeOperation='destination-in';g.drawImage(p.mask,0,0)}
+  const d=g.getImageData(0,0,IW,IH).data;let x0=IW,y0=IH,x1=0,y1=0;for(let y=0;y<IH;y++)for(let x=0;x<IW;x++)if(d[(y*IW+x)*4+3]>20){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
+  if(x1<x0)return null;x0=Math.max(0,x0-2);y0=Math.max(0,y0-2);x1=Math.min(IW,x1+3);y1=Math.min(IH,y1+3);
+  const r=document.createElement('canvas');r.width=x1-x0;r.height=y1-y0;r.getContext('2d').drawImage(c,-x0,-y0);return{capa:p.capa,r,bx:x0,by:y0,w:r.width,h:r.height}}
+const ld=s=>new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.src=s});
+window.gen=async(R,NB)=>{const im=await ld('futurista.webp'),bi=await ld('futurista-base.webp');IMG=sinFondo(im);
+  /* base gris: imagen de Gonzalo (fondo blanco fuera) puesta bajo el estadio y recortada a la silueta de la maqueta */
+  const bc=document.createElement('canvas');bc.width=bi.width;bc.height=bi.height;const bg=bc.getContext('2d');bg.drawImage(bi,0,0);
+  const BI=(()=>{const t=lienzo(),tg=t.getContext('2d');tg.drawImage(sinFondoGen(bc),9,152,882,675,R[0],R[1],R[2]-R[0],R[3]-R[1]);tg.globalCompositeOperation='destination-in';tg.drawImage(IMG,0,0);return t})();
+  let ps=partirIslas(definirFut(),[1,5]).map(p=>({...p,capa:p.capa+1}));
+  const C=[(R[0]+R[2])/2,(R[1]+R[3])/2],bs=[];for(let i=0;i<NB;i++){const a0=i/NB*Math.PI*2+.4,a1=(i+1)/NB*Math.PI*2+.4;bs.push({capa:1,src:BI,clip:[[cuna(C,a0,a1)]]})}
+  const todas=[...bs,...ps].map(cortar).filter(Boolean);
+  /* atlas: estantes */
+  const W=1400,PAD=4;const ord=todas.map((p,i)=>i).sort((a,b)=>todas[b].h-todas[a].h);let x=PAD,y=PAD,fh=0;
+  for(const i of ord){const p=todas[i];if(x+p.w+PAD>W){x=PAD;y+=fh+PAD;fh=0}p.ax=x;p.ay=y;x+=p.w+PAD;fh=Math.max(fh,p.h)}
+  const H=y+fh+PAD,A=document.createElement('canvas');A.width=W;A.height=H;const ag=A.getContext('2d');for(const p of todas)ag.drawImage(p.r,p.ax,p.ay);
+  return{atlas:A.toDataURL('image/png'),meta:todas.map(p=>[p.capa,p.bx,p.by,p.w,p.h,p.ax,p.ay]),W,H}};
+function sinFondoGen(c0){const c=document.createElement('canvas');c.width=c0.width;c.height=c0.height;const g=c.getContext('2d');g.drawImage(c0,0,0);const W=c.width,H=c.height,id=g.getImageData(0,0,W,H),d=id.data;
+  const blanco=i=>d[i]>235&&d[i+1]>235&&d[i+2]>235;const vis=new Uint8Array(W*H),st=[];for(let x=0;x<W;x++)st.push(x,(H-1)*W+x);for(let y=0;y<H;y++)st.push(y*W,y*W+W-1);
+  while(st.length){const p=st.pop();if(vis[p])continue;vis[p]=1;if(!blanco(p*4))continue;d[p*4+3]=0;const x=p%W,y=(p/W)|0;if(x>0)st.push(p-1);if(x<W-1)st.push(p+1);if(y>0)st.push(p-W);if(y<H-1)st.push(p+W)}
+  g.putImageData(id,0,0);return c}
+</script><script>document.getElementById('b').onclick=async()=>{const r=await gen([222,110,852,478],6);const a=document.createElement('a');a.href=r.atlas;a.download='futurista-piezas.png';a.click();document.getElementById('o').textContent=JSON.stringify(r.meta)}</script>

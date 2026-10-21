@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Silabario Rioplatense">
+<rect width="512" height="512" rx="112" fill="#160B24"/>
+<rect x="76" y="76" width="160" height="160" rx="28" fill="#F5B301"/>
+<rect x="276" y="76" width="160" height="160" rx="28" fill="#E5197C"/>
+<rect x="76" y="276" width="160" height="160" rx="28" fill="#37D6C0"/>
+<rect x="276" y="276" width="160" height="160" rx="28" fill="#F6EFE2"/>
+<text x="156" y="178" text-anchor="middle" font-family="'Arial Black',Impact,sans-serif" font-size="62" fill="#160B24">MA</text>
+<text x="356" y="178" text-anchor="middle" font-family="'Arial Black',Impact,sans-serif" font-size="62" fill="#fff">TE</text>
+<text x="156" y="378" text-anchor="middle" font-family="'Arial Black',Impact,sans-serif" font-size="62" fill="#160B24">RI</text>
+<text x="356" y="378" text-anchor="middle" font-family="'Arial Black',Impact,sans-serif" font-size="62" fill="#160B24">O</text>
+</svg>

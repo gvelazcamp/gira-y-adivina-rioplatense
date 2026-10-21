@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
+<title>Probar poder Lodo</title>
+<style>
+  html,body{margin:0;padding:0;height:100%;background:#160B24;color:#EFE7F7;
+   font-family:system-ui,sans-serif;overflow:hidden;touch-action:none;user-select:none}
+  #panel{position:fixed;top:0;left:0;right:0;padding:14px 16px;z-index:5;text-align:center}
+  #panel button{background:#F5B301;color:#160B24;border:none;border-radius:10px;
+   padding:10px 18px;font-weight:800;font-size:.95rem}
+  #ok{position:fixed;inset:0;display:none;place-items:center;background:#000000CC;z-index:80;
+   flex-direction:column;gap:14px;text-align:center}
+  #ok.ver{display:flex;align-items:center;justify-content:center}
+  #ok b{font-size:1.6rem;color:#37D6C0}
+  #zona{position:fixed;inset:0;z-index:1;display:flex;flex-direction:column;align-items:center;
+   justify-content:flex-end;gap:14px;padding:0 16px 44px;touch-action:none}
+  #zona p{position:relative;z-index:1;margin:0;font-weight:700;font-size:1rem;
+   text-shadow:0 2px 6px #000;background:#000000AA;padding:9px 18px;border-radius:99px}
+  #mancha{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+</style>
+</head>
+<body>
+<div id="panel"><button id="bReiniciar">🔄 Ensuciar de nuevo</button></div>
+<div id="zona">
+  <canvas id="mancha"></canvas>
+  <p>🧹 Deslizá el dedo para limpiar el lodo</p>
+</div>
+<div id="ok"><b>💧 ¡Limpio!</b><button id="bOtraVez">Ensuciar de nuevo</button></div>
+<script>
+const imgLodo=new Image();
+imgLodo.src="assets/powers/lodo-mancha.webp";
+const UMBRAL_LIMPIO=.8;
+const zona=document.getElementById("zona"),canvas=document.getElementById("mancha"),ctx=canvas.getContext("2d");
+const chk=document.createElement("canvas"),chkCtx=chk.getContext("2d",{willReadFrequently:true});
+chk.width=48;chk.height=64;
+let limpiando=false,radioBorrado=60,terminado=false;
+
+function manchon(cx,cy,r){
+  ctx.fillStyle="#4a3018";
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill();
+}
+function manchonImg(cx,cy,size,ang){
+  ctx.save();ctx.translate(cx,cy);ctx.rotate(ang);
+  ctx.drawImage(imgLodo,-size/2,-size/2,size,size);ctx.restore();
+}
+function dibujar(cx,cy,size,ang,sx,sy){
+  if(imgLodo.complete&&imgLodo.naturalWidth)manchonImg(cx,cy,size,ang);
+  else manchon(cx,cy,size/2);
+  chkCtx.fillStyle="#4a3018";
+  chkCtx.beginPath();chkCtx.arc(cx*sx,cy*sy,(size/2)*((sx+sy)/2),0,Math.PI*2);chkCtx.fill();
+}
+function pintarLodo(){
+  document.getElementById("ok").classList.remove("ver");
+  const w=Math.ceil(window.innerWidth||1),h=Math.ceil(window.innerHeight||1);
+  canvas.width=w;canvas.height=h;
+  const diag=Math.hypot(w,h);
+  radioBorrado=diag*.1;
+  terminado=false;
+  ctx.globalCompositeOperation="source-over";ctx.clearRect(0,0,w,h);
+  chkCtx.globalCompositeOperation="source-over";chkCtx.clearRect(0,0,chk.width,chk.height);
+  const sx=chk.width/w,sy=chk.height/h;
+  const nGrandes=6+Math.floor(Math.random()*3);
+  for(let i=0;i<nGrandes;i++)dibujar(Math.random()*w,Math.random()*h,diag*(.32+Math.random()*.2),Math.random()*Math.PI*2,sx,sy);
+  const nChicas=6+Math.floor(Math.random()*4);
+  for(let i=0;i<nChicas;i++)dibujar(Math.random()*w,Math.random()*h,diag*(.13+Math.random()*.1),Math.random()*Math.PI*2,sx,sy);
+}
+function cobertura(){
+  const d=chkCtx.getImageData(0,0,chk.width,chk.height).data;
+  let suma=0;
+  for(let i=3;i<d.length;i+=4)suma+=d[i];
+  return 1-suma/(255*chk.width*chk.height);
+}
+function limpiarEn(x,y){
+  const sx=chk.width/canvas.width,sy=chk.height/canvas.height;
+  ctx.globalCompositeOperation="destination-out";
+  ctx.beginPath();ctx.arc(x,y,radioBorrado,0,Math.PI*2);ctx.fill();
+  chkCtx.globalCompositeOperation="destination-out";
+  chkCtx.beginPath();chkCtx.arc(x*sx,y*sy,radioBorrado*((sx+sy)/2),0,Math.PI*2);chkCtx.fill();
+  if(!terminado&&cobertura()>=UMBRAL_LIMPIO){
+    terminado=true;limpiando=false;
+    document.getElementById("ok").classList.add("ver");
+  }
+}
+zona.addEventListener("pointerdown",e=>{limpiando=true;limpiarEn(e.clientX,e.clientY);try{zona.setPointerCapture(e.pointerId);}catch(err){}});
+zona.addEventListener("pointermove",e=>{if(limpiando)limpiarEn(e.clientX,e.clientY);});
+zona.addEventListener("pointerup",()=>limpiando=false);
+zona.addEventListener("pointercancel",()=>limpiando=false);
+imgLodo.onload=pintarLodo;
+document.getElementById("bReiniciar").onclick=pintarLodo;
+document.getElementById("bOtraVez").onclick=pintarLodo;
+pintarLodo();
+</script>
+</body>
+</html>

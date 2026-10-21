@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sopa Fugaz</title>
+<link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#16237a;--tile:#f6f0dc;--ink:#16237a;--sel:#e8337a;--ok:#ffd23f;--txt:#fff;--mut:#b9c2ff;--bar:#2f43c9;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1852;--tile:#e9e2c8;--bar:#22339f}}
+:root[data-theme="dark"]{--bg:#0f1852;--tile:#e9e2c8;--bar:#22339f}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:Nunito,system-ui,sans-serif;display:flex;justify-content:center;min-height:100vh}
+.app{width:100%;max-width:520px;padding:14px}
+h1{font-family:'Bowlby One',Impact,sans-serif;font-weight:400;font-size:clamp(26px,8vw,38px);margin:4px 0 10px;letter-spacing:.5px}
+.hud{display:flex;gap:8px;margin-bottom:10px}
+.hud div{flex:1;background:var(--bar);border-radius:10px;padding:6px 10px}
+.hud small{display:block;color:var(--mut);font-weight:600;font-size:12px}
+.hud b{font-family:'Bowlby One',Impact,sans-serif;font-weight:400;font-size:20px}
+.bar{height:10px;background:var(--bar);border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;width:100%;background:var(--ok)}
+.bar.s i{background:var(--sel)}
+#chips{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.chip{background:var(--tile);color:var(--ink);font-family:'Bowlby One',Impact,sans-serif;font-size:14px;padding:5px 10px;border-radius:999px}
+.chip.done{background:transparent;color:var(--mut);text-decoration:line-through;outline:2px solid var(--bar)}
+#grid{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;touch-action:none;user-select:none;-webkit-user-select:none;margin-bottom:12px}
+.c{aspect-ratio:1;background:var(--tile);color:var(--ink);border-radius:6px;display:grid;place-items:center;font-family:'Bowlby One',Impact,sans-serif;font-size:clamp(13px,4.6vw,24px);transition:opacity .25s,transform .25s,background .15s}
+.c.gone{opacity:0;transform:scale(.3)}
+.c.sel{background:var(--sel);color:#fff}
+.c.found{background:var(--ok)}
+.lab{color:var(--mut);font-size:13px;font-weight:600;margin:0 0 4px}
+.ov{position:fixed;inset:0;background:rgba(8,12,50,.88);display:flex;align-items:center;justify-content:center;padding:20px}
+.ov.h{display:none}
+.card{background:var(--tile);color:var(--ink);border-radius:16px;padding:24px;max-width:380px;text-align:center}
+.card h2{font-family:'Bowlby One',Impact,sans-serif;font-weight:400;margin:0 0 8px;font-size:28px}
+.card p{margin:0 0 16px;font-weight:600;line-height:1.4}
+button{font:inherit;font-family:'Bowlby One',Impact,sans-serif;background:var(--sel);color:#fff;border:0;border-radius:10px;padding:12px 22px;font-size:18px;cursor:pointer}
+button:focus-visible{outline:3px solid var(--ok);outline-offset:2px}
+@keyframes giro{0%{transform:rotate(0) scale(1)}50%{transform:rotate(180deg) scale(.88)}100%{transform:rotate(360deg) scale(1)}}
+@keyframes ruleta{0%{transform:rotate(-270deg) scale(.2);opacity:0}100%{transform:rotate(0) scale(1);opacity:1}}
+#grid.spin{animation:giro 1.1s ease-in-out}
+.ov:not(.h) .card{animation:ruleta .7s cubic-bezier(.2,.8,.3,1)}
+@media (prefers-reduced-motion:reduce){.c{transition:none}#grid.spin,.ov:not(.h) .card{animation:none}}
+</style>
+</head>
+<body>
+<main class="app">
+  <h1>Sopa Fugaz</h1>
+  <div class="hud">
+    <div><small>Ronda</small><b id="rn">1</b></div>
+    <div><small>Puntos</small><b id="sc">0</b></div>
+    <div><small>Mejor</small><b id="bs">0</b></div>
+    <div><small>Tiempo</small><b id="tt">45</b></div>
+  </div>
+  <div class="bar"><i id="tb"></i></div>
+  <div id="chips"></div>
+  <div id="grid"></div>
+  <p class="lab">Las letras se mudan en...</p>
+  <div class="bar s"><i id="sb"></i></div>
+</main>
+<div class="ov" id="ov"><div class="card"><h2 id="ot">Sopa Fugaz</h2><p id="op">Encontrá las palabras arrastrando el dedo sobre las letras. Ojo: cada tanto las letras desaparecen y aparecen en otro lado.</p><button id="ob">Jugar</button></div></div>
+<script>
+const N=10,GRACIA=2500; // ms que la mudanza espera si hay un arrastre en curso
+const WORDS=["MATE","ASADO","TANGO","CANDOMBE","CHIVITO","MURGA","PLAYA","ROCHA","CARNAVAL","TAMBOR","GAUCHO","BIZCOCHO","FRITAS","PASCUALINA","TORTAS","CHORIZO","EMPANADA","PARRILLA","LLAMADAS","BOMBILLA","DURAZNO","COLONIA","SALTO","PUNTA","CUERDA"];
+const DIRS=[[0,1],[1,0],[1,1],[-1,1]];
+const $=s=>document.querySelector(s), rnd=n=>Math.random()*n|0;
+const grid=$('#grid'); let cells=[],g=[],targets=[],found=new Set();
+let round=1,score=0,best=0,tl=0,tmax=45,relMs=7000,relAt=0,last=performance.now(),playing=false,busy=false,s0=null,path=[];
+try{best=+localStorage.getItem('sopa-best')||0}catch(e){}
+$('#bs').textContent=best;
+for(let i=0;i<N*N;i++){const d=document.createElement('div');d.className='c';d.dataset.k=i;grid.appendChild(d);cells.push(d)}
+
+function place(w){
+  for(let t=0;t<400;t++){
+    const [dr,dc]=DIRS[rnd(4)],L=w.length;
+    const r=dr<0?L-1+rnd(N-L+1):dr>0?rnd(N-L+1):rnd(N), c=dc?rnd(N-L+1):rnd(N);
+    let ok=true;
+    for(let i=0;i<L;i++){const k=(r+dr*i)*N+c+dc*i;if(g[k]&&g[k]!==w[i]){ok=false;break}}
+    if(ok){for(let i=0;i<L;i++)g[(r+dr*i)*N+c+dc*i]=w[i];return}
+  }
+}
+function build(){
+  g=Array(N*N).fill('');
+  const rest=targets.filter(w=>!found.has(w));
+  rest.forEach(place);
+  const pool=("AAEEIIOOUUBCDFGLMNPRSTVZ"+rest.join('')).split('');
+  for(let i=0;i<N*N;i++){if(!g[i])g[i]=pool[rnd(pool.length)]}
+  cells.forEach((c,i)=>{c.textContent=g[i];c.className='c'});
+}
+function relocate(){
+  if(busy||!playing)return;
+  busy=true;s0=null;path=[];
+  grid.classList.add('spin');
+  cells.forEach(c=>{c.style.transitionDelay=rnd(200)+'ms';c.className='c gone'});
+  setTimeout(()=>{
+    build();
+    cells.forEach(c=>c.style.transitionDelay=rnd(200)+'ms');
+    setTimeout(()=>{grid.classList.remove('spin');busy=false;relAt=performance.now()+relMs;cells.forEach(c=>c.style.transitionDelay='0ms')},300);
+  },550);
+}
+function pick(n){
+  const out=[];
+  for(const w of [...WORDS].sort(()=>Math.random()-.5)){
+    if(out.some(o=>o.includes(w)||w.includes(o)))continue;
+    out.push(w);if(out.length===n)break;
+  }
+  return out;
+}
+function chips(){
+  $('#chips').innerHTML=targets.map(w=>`<span class="chip${found.has(w)?' done':''}">${w}</span>`).join('');
+}
+function startRound(){
+  const n=Math.min(5,3+((round-1)>>1));
+  tmax=Math.max(25,45-4*(round-1));relMs=Math.max(3500,7000-600*(round-1));
+  targets=pick(n);found.clear();tl=tmax;busy=false;
+  build();chips();$('#rn').textContent=round;$('#sc').textContent=score;
+  relAt=performance.now()+relMs;playing=true;$('#ov').classList.add('h');
+}
+function overlay(t,p,b){$('#ot').textContent=t;$('#op').textContent=p;$('#ob').textContent=b;$('#ov').classList.remove('h')}
+function saveBest(){if(score>best){best=score;$('#bs').textContent=best;try{localStorage.setItem('sopa-best',best)}catch(e){}}}
+
+function tick(){
+  const now=performance.now(),dt=(now-last)/1000;last=now;
+  if(!playing)return;
+  tl-=dt;
+  $('#tt').textContent=Math.max(0,Math.ceil(tl));
+  $('#tb').style.width=Math.max(0,tl/tmax*100)+'%';
+  $('#sb').style.width=busy?'0%':Math.max(0,(relAt-now)/relMs*100)+'%';
+  if(tl<=0){
+    playing=false;s0=null;path=[];saveBest();
+    const miss=targets.filter(w=>!found.has(w)).join(', ');
+    overlay('Se acabó el tiempo',`Te faltaron: ${miss}. Puntos: ${score}.`,'Jugar de nuevo');
+    round=1;score=0;return;
+  }
+  if(!busy&&now>=relAt&&(s0===null||now>=relAt+GRACIA))relocate();
+}
+setInterval(tick,100);
+
+function idx(e){const el=document.elementFromPoint(e.clientX,e.clientY);return el&&el.dataset&&el.dataset.k!==undefined?+el.dataset.k:-1}
+function paint(){cells.forEach((c,i)=>{if(!c.classList.contains('found')&&!c.classList.contains('gone'))c.className='c'+(path.includes(i)?' sel':'')})}
+function extend(k){
+  const r0=s0/N|0,c0=s0%N,dr=(k/N|0)-r0,dc=k%N-c0;
+  if(!dr&&!dc)path=[s0];
+  else if(!dr||!dc||Math.abs(dr)===Math.abs(dc)){
+    const n=Math.max(Math.abs(dr),Math.abs(dc)),sr=Math.sign(dr),sc=Math.sign(dc);
+    path=Array.from({length:n+1},(_,i)=>(r0+sr*i)*N+c0+sc*i);
+  }
+  paint();
+}
+grid.addEventListener('pointerdown',e=>{
+  const k=idx(e);if(k<0||!playing||busy)return;
+  s0=k;path=[k];paint();grid.setPointerCapture(e.pointerId);
+});
+grid.addEventListener('pointermove',e=>{if(s0===null||busy)return;const k=idx(e);if(k>=0)extend(k)});
+grid.addEventListener('pointercancel',()=>{s0=null;path=[];paint()});
+grid.addEventListener('pointerup',()=>{
+  if(s0===null)return;
+  const word=path.map(k=>g[k]).join(''),rev=[...word].reverse().join('');
+  const hit=targets.find(w=>!found.has(w)&&(w===word||w===rev));
+  const p=path;s0=null;path=[];
+  if(hit&&playing){
+    found.add(hit);score+=100;$('#sc').textContent=score;chips();
+    cells.forEach((c,i)=>c.className='c'+(p.includes(i)?' found':''));
+    if(targets.every(w=>found.has(w))){
+      playing=false;score+=Math.ceil(tl)*5;saveBest();$('#sc').textContent=score;round++;
+      setTimeout(()=>overlay('¡Ronda superada!',`Llevás ${score} puntos. La próxima viene más rápida.`,'Siguiente ronda'),500);
+    }
+  } else paint();
+});
+$('#ob').addEventListener('click',startRound);
+</script>
+</body>
+</html>

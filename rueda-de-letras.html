@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rueda de Letras</title>
+<style>
+:root{--bg:#160B24;--tile:#f6f0dc;--ink:#160B24;--sel:#e8337a;--ok:#ffd23f;--mut:#b9a6d9;--bar:#2a1646;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:#fff;font-family:'Arial Black',Impact,system-ui,sans-serif;display:flex;justify-content:center;min-height:100vh}
+.app{width:100%;max-width:480px;padding:14px;text-align:center}
+h1{font-size:clamp(26px,8vw,36px);margin:4px 0 10px}
+.hud{display:flex;gap:8px;margin-bottom:10px}
+.hud div{flex:1;background:var(--bar);border-radius:10px;padding:6px}
+.hud small{display:block;color:var(--mut);font:600 12px system-ui}
+.hud b{font-size:20px}
+.bar{height:10px;background:var(--bar);border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;width:100%;background:var(--ok)}
+#words{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:12px 0}
+.w{background:var(--bar);color:var(--mut);border-radius:999px;padding:5px 10px;font-size:14px;letter-spacing:2px}
+.w.f{background:var(--ok);color:var(--ink);letter-spacing:0}
+#cur{height:34px;font-size:26px;color:var(--ok);letter-spacing:3px}
+#wheel{position:relative;width:min(84vw,320px);aspect-ratio:1;margin:0 auto 12px;border-radius:50%;background:var(--bar);touch-action:none;user-select:none;-webkit-user-select:none}
+#wheel svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#wheel polyline{fill:none;stroke:var(--sel);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;opacity:.8}
+.l{position:absolute;width:16%;aspect-ratio:1;transform:translate(-50%,-50%);background:var(--tile);color:var(--ink);border-radius:50%;display:grid;place-items:center;font-size:clamp(18px,6vw,26px);pointer-events:none}
+.l.sel{background:var(--sel);color:#fff}
+#wheel.spin{animation:giro .75s ease-in-out}
+#wheel.no{animation:no .3s}
+@keyframes giro{to{transform:rotate(360deg)}}
+@keyframes no{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+button{font:inherit;background:var(--sel);color:#fff;border:0;border-radius:10px;padding:12px 22px;font-size:18px;cursor:pointer}
+button:focus-visible{outline:3px solid var(--ok);outline-offset:2px}
+.ov{position:fixed;inset:0;background:rgba(10,4,20,.9);display:flex;align-items:center;justify-content:center;padding:20px}
+.ov.h{display:none}
+.card{background:var(--tile);color:var(--ink);border-radius:16px;padding:24px;max-width:380px}
+.card h2{margin:0 0 8px;font-size:26px}
+.card p{margin:0 0 16px;font:600 16px/1.4 system-ui}
+.ov:not(.h) .card{animation:ruleta .7s cubic-bezier(.2,.8,.3,1)}
+@keyframes ruleta{0%{transform:rotate(-270deg) scale(.2);opacity:0}100%{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){#wheel.spin,#wheel.no,.ov:not(.h) .card{animation:none}}
+</style>
+</head>
+<body>
+<main class="app">
+  <h1>Rueda de Letras</h1>
+  <div class="hud"><div><small>Ronda</small><b id="rn">1</b></div><div><small>Puntos</small><b id="sc">0</b></div><div><small>Mejor</small><b id="bs">0</b></div><div><small>Tiempo</small><b id="tt">60</b></div></div>
+  <div class="bar"><i id="tb"></i></div>
+  <div id="words"></div>
+  <div id="cur"></div>
+  <div id="wheel"><svg viewBox="0 0 100 100"><polyline id="pl"/></svg></div>
+  <button id="gir">Girar</button>
+</main>
+<div class="ov" id="ov"><div class="card"><h2 id="ot">Rueda de Letras</h2><p id="op">Arrastrá el dedo por las letras para armar palabras y soltá para mandarla. Encontrá todas las que se esconden antes de que se acabe el tiempo. Con "Girar" se mezclan las letras.</p><button id="ob">Jugar</button></div></div>
+<script>
+const RUEDA_CONFIG={tiempo:60,puntosLetra:10,bonoPangrama:100,bonoSegundo:3};
+const ROUNDS=[
+ {base:"DURAZNO",words:["DURAZNO","NUDO","DURO","RUDO","ZURDO","DONAR","ZONA","DUNA","RAZON","NADO"]},
+ {base:"COLONIA",words:["COLONIA","COLA","LONA","LINO","ONCA","COLINA","LOCION"]},
+ {base:"CAMPERA",words:["CAMPERA","PERA","CAMA","MAPA","CAPA","PACA","CARPA","CREMA"]}];
+const $=s=>document.querySelector(s),wheel=$('#wheel');
+let ri=0,round,order=[],slots=[],found=new Set(),path=[],drag=false,tl=0,score=0,best=0,playing=false,last=performance.now();
+try{best=+localStorage.getItem('rueda-best')||0}catch(e){}
+$('#bs').textContent=best;
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+function layout(){
+  wheel.querySelectorAll('.l').forEach(e=>e.remove());
+  slots=order.map((ch,i)=>{const a=i*2*Math.PI/order.length-Math.PI/2,x=50+37*Math.cos(a),y=50+37*Math.sin(a),d=document.createElement('div');
+    d.className='l';d.textContent=ch;d.style.left=x+'%';d.style.top=y+'%';wheel.appendChild(d);return{ch,x,y,d}});
+}
+function words(){
+  $('#words').innerHTML=[...round.words].sort((a,b)=>a.length-b.length||a.localeCompare(b))
+   .map(w=>`<span class="w${found.has(w)?' f':''}">${found.has(w)?w:'•'.repeat(w.length)}</span>`).join('');
+}
+function startRound(){
+  round=ROUNDS[ri%ROUNDS.length];found.clear();path=[];tl=RUEDA_CONFIG.tiempo;
+  order=shuffle(round.base.split(''));layout();words();draw();
+  $('#rn').textContent=ri+1;$('#sc').textContent=score;playing=true;$('#ov').classList.add('h');
+}
+function overlay(t,p,b){$('#ot').textContent=t;$('#op').textContent=p;$('#ob').textContent=b;$('#ov').classList.remove('h')}
+function saveBest(){if(score>best){best=score;$('#bs').textContent=best;try{localStorage.setItem('rueda-best',best)}catch(e){}}}
+function draw(){
+  slots.forEach((s,i)=>s.d.classList.toggle('sel',path.includes(i)));
+  $('#pl').setAttribute('points',path.map(i=>slots[i].x+','+slots[i].y).join(' '));
+  $('#cur').textContent=path.map(i=>slots[i].ch).join('');
+}
+function hit(e){
+  const r=wheel.getBoundingClientRect(),px=(e.clientX-r.left)/r.width*100,py=(e.clientY-r.top)/r.height*100;
+  return slots.findIndex(s=>Math.hypot(s.x-px,s.y-py)<10);
+}
+function add(e){
+  const k=hit(e);if(k<0)return;
+  if(path.length>1&&path[path.length-2]===k)path.pop();
+  else if(!path.includes(k))path.push(k);
+  draw();
+}
+wheel.addEventListener('pointerdown',e=>{if(!playing)return;drag=true;path=[];wheel.setPointerCapture(e.pointerId);add(e)});
+wheel.addEventListener('pointermove',e=>{if(drag)add(e)});
+wheel.addEventListener('pointercancel',()=>{drag=false;path=[];draw()});
+wheel.addEventListener('pointerup',()=>{
+  if(!drag)return;drag=false;
+  const w=path.map(i=>slots[i].ch).join('');
+  if(round.words.includes(w)&&!found.has(w)){
+    found.add(w);score+=w.length*RUEDA_CONFIG.puntosLetra+(w.length===round.base.length?RUEDA_CONFIG.bonoPangrama:0);
+    $('#sc').textContent=score;words();
+    if(found.size===round.words.length){
+      playing=false;score+=Math.ceil(tl)*RUEDA_CONFIG.bonoSegundo;saveBest();$('#sc').textContent=score;ri++;
+      setTimeout(()=>overlay('¡Rueda completa!',`Llevás ${score} puntos. Sigue otra rueda.`,'Siguiente rueda'),500);
+    }
+  }else if(w.length>1){wheel.classList.add('no');setTimeout(()=>wheel.classList.remove('no'),300)}
+  path=[];draw();
+});
+$('#gir').addEventListener('click',()=>{
+  if(!playing)return;path=[];drag=false;wheel.classList.add('spin');
+  setTimeout(()=>{shuffle(order);layout();draw()},350);
+  setTimeout(()=>wheel.classList.remove('spin'),750);
+});
+setInterval(()=>{
+  const now=performance.now(),dt=(now-last)/1000;last=now;if(!playing)return;
+  tl-=dt;$('#tt').textContent=Math.max(0,Math.ceil(tl));$('#tb').style.width=Math.max(0,tl/RUEDA_CONFIG.tiempo*100)+'%';
+  if(tl<=0){playing=false;drag=false;path=[];draw();saveBest();
+    overlay('Se acabó el tiempo',`Te faltaron ${round.words.length-found.size} palabras. Puntos: ${score}.`,'Jugar de nuevo');ri=0;score=0}
+},100);
+$('#ob').addEventListener('click',startRound);
+</script>
+</body>
+</html>
