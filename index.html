@@ -43,7 +43,7 @@ async function trasladar(){
     const anterior=localStorage.getItem(MARCA);
     if(anterior){location.replace(DESTINO+"migrar.html#"+anterior);return;}
     const datos=leerPartida();
-    if(!Object.keys(datos).length){location.replace(DESTINO);return;}
+    if(!Object.keys(datos).length){location.replace(DESTINO+"?sin_partida_anterior=1");return;}
     if(!crypto.subtle)throw Error("Este navegador no permite cifrar la partida.");
     const id=base64url(crypto.getRandomValues(new Uint8Array(18)));
     const clave=crypto.getRandomValues(new Uint8Array(32));
