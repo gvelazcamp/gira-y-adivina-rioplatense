@@ -3,13 +3,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <script>
+var APP_Q=(document.referrer||"").indexOf("android-app://")===0?"?app=16":"";   /* abierto por la app vieja de Play Store (v16): el juego le avisa que actualice */
 // Quien ya trasladó su partida entra sin volver a ver el aviso de traslado.
 // Pasamos por migrar.html para poder restaurarla si se borró el almacenamiento nuevo.
 try {
   const enlace=localStorage.getItem("dominio_migracion_v1");
   if(enlace){
     
-    location.replace("https://girayadivina.com/migrar.html#"+enlace);
+    location.replace("https://girayadivina.com/migrar.html"+APP_Q+"#"+enlace);
   }
 } catch (_) {}
 </script>
@@ -41,9 +42,9 @@ async function trasladar(){
   try{
     if(location.protocol!=="https:")throw Error("La dirección anterior todavía no usa HTTPS.");
     const anterior=localStorage.getItem(MARCA);
-    if(anterior){location.replace(DESTINO+"migrar.html#"+anterior);return;}
+    if(anterior){location.replace(DESTINO+"migrar.html"+APP_Q+"#"+anterior);return;}
     const datos=leerPartida();
-    if(!Object.keys(datos).length){location.replace(DESTINO+"?sin_partida_anterior=1");return;}
+    if(!Object.keys(datos).length){location.replace(DESTINO+"?sin_partida_anterior=1"+APP_Q.replace("?","&"));return;}
     if(!crypto.subtle)throw Error("Este navegador no permite cifrar la partida.");
     const id=base64url(crypto.getRandomValues(new Uint8Array(18)));
     const clave=crypto.getRandomValues(new Uint8Array(32));
@@ -57,7 +58,7 @@ async function trasladar(){
     if(!res.ok)throw Error("No se pudo guardar la copia cifrada ("+res.status+").");
     const enlace=id+"."+base64url(clave);
     localStorage.setItem(MARCA,enlace);
-    location.replace(DESTINO+"migrar.html#"+enlace);
+    location.replace(DESTINO+"migrar.html"+APP_Q+"#"+enlace);
   }catch(e){
     estado.textContent=(e&&e.message||"No se pudo trasladar la partida.")+" Tu partida sigue en este teléfono.";
     alternativa.hidden=false;
