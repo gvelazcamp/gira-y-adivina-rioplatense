@@ -10,7 +10,7 @@ const RoscoRioplatense=(()=>{
   let datos=cargar(),raiz=null,shell=null,items=[],estados=[],respuestas=[],actual=-1,destino=-1,angulo=0;
   let nivel=1,config=null,fase="inicio",tiempo=0,espera=0,ultimo=0,intervalo=null,ultimoTac=0,duelo=false,usadasSesion=new Set();
   let audioMusica=null;
-  let modoVoz=false,reconocimiento=null,vozActiva=false,vozIniciando=false,vozLeyendo=false,vozUtter=null,vozReinicio=null;
+  let modoVoz=false,reconocimiento=null,vozActiva=false,vozIniciando=false,vozLeyendo=false,vozUtter=null,vozReinicio=null,vozPistaPendiente=false;
   /* Dibujos en assets/rosco/ (hoja de ChatGPT recortada). */
   const ARTE=n=>"assets/rosco/"+n+".webp",ico=n=>'<img class="rr-ico" src="'+ARTE(n)+'" alt="" draggable="false">';
   function iniciarMusicaJuego(){
@@ -81,6 +81,7 @@ const RoscoRioplatense=(()=>{
     if(!raiz)return;
     const entrada=$("#rrEntrada");if(!entrada)return;
     const propio=tecladoPropio();
+    if((modoVoz||propio)&&document.activeElement===entrada)entrada.blur();
     entrada.readOnly=modoVoz||propio;
     entrada.inputMode=modoVoz||propio?"none":"text";
     raiz.dataset.modo=modoVoz?"voz":"escribir";
@@ -129,8 +130,9 @@ const RoscoRioplatense=(()=>{
     vozActiva=false;vozIniciando=false;
   }
   function apagarVoz(){
-    modoVoz=false;vozLeyendo=false;
+    modoVoz=false;vozLeyendo=false;vozPistaPendiente=false;
     suspenderReconocimiento();
+    iniciarMusicaJuego();
     if(vozUtter&&"speechSynthesis" in window){try{speechSynthesis.cancel();}catch(e){}}
     vozUtter=null;
     actualizarModo();
@@ -142,7 +144,7 @@ const RoscoRioplatense=(()=>{
     }else mensaje(texto,"error");
   }
   function escucharVoz(){
-    if(!modoVoz||vozLeyendo||fase!=="resolver"||!reconocimiento||vozActiva||vozIniciando||document.hidden)return;
+    if(!modoVoz||vozLeyendo||(fase!=="resolver"&&fase!=="inicio")||!reconocimiento||vozActiva||vozIniciando||document.hidden)return;
     try{vozIniciando=true;reconocimiento.start();}
     catch(e){
       vozIniciando=false;
@@ -185,7 +187,7 @@ const RoscoRioplatense=(()=>{
         vozIniciando=false;vozActiva=true;actualizarModo();
         if(!modoVoz)return;
         if(fase==="inicio")iniciar(true);
-        else if(fase==="resolver"&&actual>=0)leerPistaVoz();
+        else if(vozPistaPendiente&&fase==="resolver"&&actual>=0){vozPistaPendiente=false;leerPistaVoz();}
       };
       reconocimiento.onresult=e=>{
         if(!modoVoz||fase!=="resolver"||vozLeyendo)return;
@@ -217,6 +219,7 @@ const RoscoRioplatense=(()=>{
           clearTimeout(vozReinicio);vozReinicio=setTimeout(escucharVoz,400);
         }
       };
+      vozPistaPendiente=fase==="resolver"&&actual>=0;
       modoVoz=true;actualizarModo();
       /* start() desde el toque dispara la solicitud de permiso del navegador. */
       escucharVoz();
