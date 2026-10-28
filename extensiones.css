@@ -542,3 +542,42 @@ body.pf-activo #extAtras,body.pf-activo #extCerrar,body.pf-activo .ext-volver{vi
 @media(prefers-reduced-motion:reduce){.rl-celda.nueva{animation:none}}
 .tf-prog i[data-i]{cursor:pointer;width:16px;height:16px}.tf-rev{display:flex;flex-direction:column;gap:6px;width:100%;max-width:360px;margin:6px auto 0}.tf-rev[hidden]{display:none}.tf-rev-fila{display:flex;align-items:center;gap:8px;text-align:left;background:#FFFFFF12;border:1px solid #FFFFFF26;border-radius:12px;padding:8px 12px;color:#fff}.tf-rev-fila small{flex:0 0 42%;font-size:.72rem;color:#D7C8E5}.tf-rev-fila b{flex:1;font-size:.95rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tf-rev-fila span{font-size:.85rem}.tf-rev-basta{margin-top:6px;font-size:1.1rem}#tfEdit[hidden]{display:none}
 .rl-rango{display:flex;align-items:center;justify-content:center;gap:8px;margin:2px auto 4px;font-size:.78rem}.rl-rango b{color:#F5B301}.rl-rango span{display:flex;gap:4px}.rl-rango i{width:9px;height:9px;border-radius:50%;background:#FFFFFF2E}.rl-rango i.ok{background:#F5B301}.rl-rango small{color:#BFAFD1}.rl-letra.rl-centro{background:#160B24;color:#F5B301;border:3px solid #F5B301;box-shadow:0 3px 0 #A87516}.rl-letra.rl-centro.sel{background:#37D6C0;color:#160B24}#rlTema{color:#F6EFE2;font-weight:700}
+
+/* El Rosco: escritura apaisada sin teclado del sistema y modo de voz. */
+.rr-game .rr-modos{display:flex;gap:7px;margin:7px 0}
+.rr-game .rr-modos button{flex:1;min-height:40px;padding:7px 10px;border:1px solid #F5B30177;background:#302044;border-radius:12px;color:#F6EFE2;font:900 .86rem 'Nunito',sans-serif}
+.rr-game .rr-modos button[aria-pressed="true"]{background:#F5B301;color:#160B24}
+.rr-game .rr-estado-voz{margin:0 0 8px;min-height:18px;color:#D7C8E5;font-size:.75rem;font-weight:700}
+.rr-game .rr-teclado{display:none}
+.rr-game[data-modo="voz"] #rrForm{display:none}
+.rr-game[data-modo="voz"] .rr-teclado{display:none}
+@media (orientation:landscape) and (min-width:600px){
+  .rr-game{max-width:min(96vw,1180px)}
+  .rr-game .rr-titulo-arte{margin:0 0 4px}
+  .rr-game .rr-logo{height:clamp(35px,7vh,58px)}
+  .rr-game .rr-titulo p{display:none}
+  .rr-game .rr-layout{display:grid;grid-template-columns:minmax(0,.98fr) minmax(0,1.02fr);align-items:start;gap:clamp(8px,1.5vw,18px);text-align:center}
+  .rr-game .rr-izquierda,.rr-game .rr-derecha{min-width:0}
+  .rr-game .rr-rueda{width:min(42vh,27vw,258px);margin:15px auto 8px}
+  .rr-game #rrGrande{font-size:clamp(32px,11vh,58px)}
+  .rr-game .rr-pista{min-height:63px;padding:8px 10px}
+  .rr-game .rr-pista p{font-size:clamp(.78rem,1.55vw,.94rem);line-height:1.25;margin-top:3px}
+  .rr-game .rr-mensaje{margin:2px 0 4px;min-height:22px}
+  .rr-game .rr-fila input{min-height:42px;padding:6px 10px}
+  .rr-game .rr-teclado{display:grid;gap:5px;margin-top:8px;padding:8px;background:#29193D;border:1px solid #F5B30155;border-radius:14px}
+  .rr-game .rr-teclado-fila{display:flex;justify-content:center;gap:clamp(3px,.45vw,7px)}
+  .rr-game .rr-tecla{flex:1;min-width:0;min-height:clamp(32px,6.5vh,44px);padding:3px 1px;border:1px solid #A58FBF66;border-radius:8px;color:#FFF9F0;background:#56406D;font:900 clamp(11px,1.8vw,17px) 'Nunito',sans-serif}
+  .rr-game .rr-tecla:active{background:#E5197C}
+  .rr-game .rr-tecla-accion{background:#352146;font-size:clamp(11px,1.6vw,14px)}
+  .rr-game[data-modo="voz"] .rr-layout{grid-template-columns:1fr}
+  .rr-game[data-modo="voz"] .rr-izquierda,.rr-game[data-modo="voz"] .rr-derecha{width:min(100%,620px);margin:0 auto}
+  .rr-game[data-modo="voz"] .rr-rueda{width:min(47vh,290px)}
+}
+@media (orientation:landscape) and (max-height:430px) and (min-width:600px){
+  .rr-game .rr-logo{height:28px}
+  .rr-game .rr-rueda{width:min(37vh,230px);margin:8px auto 4px}
+  .rr-game .rr-pista{min-height:52px;padding:6px 9px}
+  .rr-game .rr-modos button{min-height:32px;padding:4px 6px}
+  .rr-game .rr-teclado{gap:3px;padding:5px}
+  .rr-game .rr-tecla{min-height:29px}
+}
