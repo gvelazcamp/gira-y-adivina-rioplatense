@@ -1190,7 +1190,7 @@ const RoscoRioplatense=(()=>{
     }else if(fase==="respuesta"){espera-=dt;if(espera<=0)siguiente();}
     hud();
   }
-  function visibilidad(){if(document.hidden)detenerMusicaJuego();else iniciarMusicaJuego();ultimo=performance.now();}
+  function visibilidad(){if(document.hidden){detenerMusicaJuego();suspenderReconocimiento();}else{iniciarMusicaJuego();if(modoVoz&&!vozLeyendo&&fase==="resolver")escucharVoz();}ultimo=performance.now();}
   function abrir(contenedor){
     salir();datos=cargar();nivel=datos.nivelMax;config=configNivel(nivel);fase="inicio";usadasSesion=new Set();
     raiz=document.createElement("div");raiz.className="rr-game";
