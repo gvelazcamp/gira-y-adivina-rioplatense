@@ -10,6 +10,7 @@ const RoscoRioplatense=(()=>{
   let datos=cargar(),raiz=null,shell=null,items=[],estados=[],respuestas=[],actual=-1,destino=-1,angulo=0;
   let nivel=1,config=null,fase="inicio",tiempo=0,espera=0,ultimo=0,intervalo=null,ultimoTac=0,duelo=false,usadasSesion=new Set();
   let audioMusica=null;
+  let modoVoz=false,reconocimiento=null,vozActiva=false,vozIniciando=false,vozLeyendo=false,vozUtter=null,vozReinicio=null;
   /* Dibujos en assets/rosco/ (hoja de ChatGPT recortada). */
   const ARTE=n=>"assets/rosco/"+n+".webp",ico=n=>'<img class="rr-ico" src="'+ARTE(n)+'" alt="" draggable="false">';
   function iniciarMusicaJuego(){
@@ -69,14 +70,163 @@ const RoscoRioplatense=(()=>{
     if(acierto){bip(660,.2,"sine",.065);bip(990,.3,"triangle",.04);}
     if(typeof vibrar==="function")vibrar(acierto?25:[45,40,45]);
   }
-  function enfocar(){if(raiz&&!document.hidden){$("#rrEntrada").focus({preventScroll:true});ajustarPantalla();}}
+
+  /* Entrada horizontal sin teclado de Android; el input original conserva
+     el envío, la puntuación y las comprobaciones del Rosco. */
+  function tecladoPropio(){
+    return window.matchMedia("(orientation: landscape) and (min-width: 600px)").matches
+      &&(window.matchMedia("(pointer: coarse)").matches||navigator.maxTouchPoints>0);
+  }
+  function actualizarModo(){
+    if(!raiz)return;
+    const entrada=$("#rrEntrada");if(!entrada)return;
+    const propio=tecladoPropio();
+    entrada.readOnly=modoVoz||propio;
+    entrada.inputMode=modoVoz||propio?"none":"text";
+    raiz.dataset.modo=modoVoz?"voz":"escribir";
+    $("#rrHablar").textContent=modoVoz?"🎙 Apagar micrófono":"🎙 Hablar";
+    $("#rrHablar").setAttribute("aria-pressed",String(modoVoz));
+    $("#rrEscribir").setAttribute("aria-pressed",String(!modoVoz));
+    $("#rrEstadoVoz").textContent=modoVoz?(vozLeyendo?"Leyendo la pista…":vozActiva?"Micrófono activo · Decí la palabra o Pasapalabra":"Activando micrófono…"):(propio?"Escribí usando las letras de la derecha.":"Podés escribir con el teclado.");
+  }
+  function crearTeclado(){
+    const cont=$("#rrTeclado");cont.replaceChildren();
+    for(const fila of ["QWERTYUIOP","ASDFGHJKLÑ","ZXCVBNM"]){
+      const linea=document.createElement("div");linea.className="rr-teclado-fila";
+      for(const letra of fila){
+        const boton=document.createElement("button");
+        boton.type="button";boton.className="rr-tecla";boton.textContent=letra;
+        boton.setAttribute("aria-label","Letra "+letra);
+        boton.onclick=()=>{if(fase!=="resolver"||modoVoz)return;const input=$("#rrEntrada");input.value=(input.value+letra).slice(0,30);};
+        linea.appendChild(boton);
+      }
+      cont.appendChild(linea);
+    }
+    const acciones=document.createElement("div");acciones.className="rr-teclado-fila";
+    for(const [texto,fn] of [["⌫ Borrar",()=>$("#rrEntrada").value=$("#rrEntrada").value.slice(0,-1)],["Limpiar",()=>$("#rrEntrada").value=""]]){
+      const boton=document.createElement("button");boton.type="button";boton.className="rr-tecla rr-tecla-accion";boton.textContent=texto;
+      boton.onclick=()=>{if(fase==="resolver"&&!modoVoz)fn();};acciones.appendChild(boton);
+    }
+    cont.appendChild(acciones);
+  }
+  function enfocar(){
+    if(!raiz||document.hidden||modoVoz||tecladoPropio())return;
+    $("#rrEntrada").focus({preventScroll:true});ajustarPantalla();
+  }
   function ajustarPantalla(){
     if(!raiz||!shell)return;
-    if(document.activeElement===$("#rrEntrada"))$("#rrForm").scrollIntoView({block:"nearest"});
+    actualizarModo();
+    if(document.activeElement===$("#rrEntrada")&&!$("#rrEntrada").readOnly)
+      $("#rrForm").scrollIntoView({block:"nearest"});
   }
+  /* Chrome Android puede cerrar el reconocimiento entre frases. Se intenta
+     reabrir mientras el jugador mantenga el modo voz encendido. */
+  function suspenderReconocimiento(){
+    clearTimeout(vozReinicio);vozReinicio=null;
+    if(reconocimiento&&(vozActiva||vozIniciando)){
+      try{reconocimiento.abort();}catch(e){}
+    }
+    vozActiva=false;vozIniciando=false;
+  }
+  function apagarVoz(){
+    modoVoz=false;vozLeyendo=false;
+    suspenderReconocimiento();
+    if(vozUtter&&"speechSynthesis" in window){try{speechSynthesis.cancel();}catch(e){}}
+    vozUtter=null;
+    actualizarModo();
+  }
+  function falloVoz(texto){
+    apagarVoz();
+    if(fase==="inicio"){
+      panel("No se pudo activar el micrófono",texto,[["Jugar escribiendo",iniciar],["Volver a intentar",activarVoz]],"personaje");
+    }else mensaje(texto,"error");
+  }
+  function escucharVoz(){
+    if(!modoVoz||vozLeyendo||fase!=="resolver"||!reconocimiento||vozActiva||vozIniciando||document.hidden)return;
+    try{vozIniciando=true;reconocimiento.start();}
+    catch(e){
+      vozIniciando=false;
+      if(e.name==="InvalidStateError"){
+        clearTimeout(vozReinicio);vozReinicio=setTimeout(escucharVoz,380);
+      }else falloVoz("El navegador no pudo iniciar el micrófono. Podés seguir escribiendo.");
+    }
+    actualizarModo();
+  }
+  function leerPistaVoz(){
+    if(!modoVoz||fase!=="resolver"||actual<0)return;
+    vozLeyendo=true;suspenderReconocimiento();actualizarModo();
+    if(!("speechSynthesis" in window)){vozLeyendo=false;escucharVoz();return;}
+    try{
+      speechSynthesis.cancel();
+      const u=new SpeechSynthesisUtterance(items[actual].definicion);
+      u.lang="es-UY";u.rate=.97;
+      if(typeof obtenerVozMasculina==="function"){const voz=obtenerVozMasculina();if(voz)u.voice=voz;}
+      vozUtter=u;detenerMusicaJuego();
+      const terminarLectura=()=>{
+        if(vozUtter!==u)return;
+        vozUtter=null;vozLeyendo=false;ultimo=performance.now();
+        if(modoVoz&&fase==="resolver"){iniciarMusicaJuego();escucharVoz();}
+      };
+      u.onend=terminarLectura;u.onerror=terminarLectura;
+      speechSynthesis.speak(u);
+      /* Respaldo para motores Android que no avisan el fin del TTS. */
+      setTimeout(()=>{if(vozUtter===u){try{speechSynthesis.cancel();}catch(e){}terminarLectura();}},11000);
+    }catch(e){vozUtter=null;vozLeyendo=false;ultimo=performance.now();escucharVoz();}
+  }
+  function activarVoz(){
+    if(modoVoz)return;
+    const API=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!API){falloVoz("El reconocimiento de voz no está disponible en este navegador. Probá con Chrome en Android.");return;}
+    try{
+      reconocimiento=new API();
+      reconocimiento.lang="es-UY";reconocimiento.continuous=true;
+      reconocimiento.interimResults=false;reconocimiento.maxAlternatives=4;
+      reconocimiento.onstart=()=>{
+        vozIniciando=false;vozActiva=true;actualizarModo();
+        if(!modoVoz)return;
+        if(fase==="inicio")iniciar(true);
+        else if(fase==="resolver"&&actual>=0)leerPistaVoz();
+      };
+      reconocimiento.onresult=e=>{
+        if(!modoVoz||fase!=="resolver"||vozLeyendo)return;
+        for(let i=e.resultIndex;i<e.results.length;i++){
+          const resultado=e.results[i];if(!resultado.isFinal)continue;
+          const alternativas=Array.from(resultado).map(x=>x.transcript.trim().replace(/^[¿¡\s]+|[.!?;:,\s]+$/g,"")).filter(Boolean);
+          if(!alternativas.length)continue;
+          const comando=alternativas.find(t=>/^(PASAPALABRA|PASAR|PASO|PASO PALABRA)$/i.test(normalizar(t)));
+          suspenderReconocimiento();
+          if(comando){pasar();return;}
+          const palabras=[items[actual].palabra,...(items[actual].alternativas||[])].map(normalizar);
+          const transcrito=alternativas.find(t=>palabras.includes(normalizar(t)))||alternativas[0];
+          $("#rrEntrada").value=transcrito;enviar();return;
+        }
+      };
+      reconocimiento.onerror=e=>{
+        vozActiva=false;vozIniciando=false;
+        if(!modoVoz)return;
+        if(["not-allowed","service-not-allowed","audio-capture"].includes(e.error)){
+          falloVoz("Habilitá el permiso de micrófono de Chrome para jugar hablando.");
+          return;
+        }
+        if(e.error==="network")mensaje("El reconocimiento de Chrome necesita conexión. Intentando recuperar la escucha…");
+        actualizarModo();
+      };
+      reconocimiento.onend=()=>{
+        vozActiva=false;vozIniciando=false;actualizarModo();
+        if(modoVoz&&!vozLeyendo&&fase==="resolver"){
+          clearTimeout(vozReinicio);vozReinicio=setTimeout(escucharVoz,400);
+        }
+      };
+      modoVoz=true;actualizarModo();
+      /* start() desde el toque dispara la solicitud de permiso del navegador. */
+      escucharVoz();
+    }catch(e){falloVoz("No fue posible abrir el micrófono. Podés jugar escribiendo.");}
+  }
+
   function siguiente(){
     const p=pendientes();if(!p.length){terminar();return;}
     const opciones=p.length>1?p.filter(i=>i!==actual):p;
+    suspenderReconocimiento();
     destino=opciones[Math.floor(Math.random()*opciones.length)];actual=-1;fase="giro";
     $("#rrGrande").textContent="✦";$("#rrRegla").textContent="La rueda está girando";
     $("#rrDefinicion").textContent="El reloj está en pausa. Prepará tu próxima respuesta.";mensaje("");
@@ -93,9 +243,10 @@ const RoscoRioplatense=(()=>{
     actual=destino;fase="resolver";const d=items[actual];
     $("#rrGrande").textContent=d.letra;$("#rrRegla").textContent=(d.contiene?"Contiene la ":"Empieza con ")+d.letra;
     $("#rrDefinicion").textContent=d.definicion;hud();enfocar();
-    if(typeof hablar==="function")hablar(d.definicion,audioMusica);
+    if(modoVoz)leerPistaVoz();
+    else if(typeof hablar==="function")hablar(d.definicion,audioMusica);
   }
-  function iniciar(){duelo=false;config=configNivel(nivel);items=armarRonda();guardar();arrancarRonda();}
+  function iniciar(mantenerVoz){if(mantenerVoz!==true)apagarVoz();duelo=false;config=configNivel(nivel);items=armarRonda();guardar();arrancarRonda();}
   function arrancarRonda(){
     estados=items.map(()=>"pendiente");respuestas=items.map(()=>"");
     actual=-1;destino=-1;angulo=0;tiempo=config.segundos*1000;ultimo=performance.now();
@@ -106,7 +257,7 @@ const RoscoRioplatense=(()=>{
       el.className="rr-letra";el.style.left=(50+42*Math.sin(a))+"%";el.style.top=(50-42*Math.cos(a))+"%";
       span.textContent=d.letra;el.appendChild(span);disco.appendChild(el);
     });
-    void disco.offsetWidth;disco.style.transition="";enfocar();siguiente();
+    void disco.offsetWidth;disco.style.transition="";actualizarModo();enfocar();siguiente();
     if(duelo){
       Duelo.mostrarBadge();Duelo.actualizarBadge("0/"+items.length);
       Duelo.onProgresoRival(p=>Duelo.actualizarBadge(p.aciertos+"/"+p.total));
@@ -126,6 +277,7 @@ const RoscoRioplatense=(()=>{
     const crudo=$("#rrEntrada").value.trim().slice(0,30);
     const valor=normalizar($("#rrEntrada").value);if(!valor){mensaje("Escribí una palabra o tocá Pasapalabra.");enfocar();return;}
     const d=items[actual],ok=[d.palabra,...(d.alternativas||[])].some(p=>normalizar(p)===valor);
+    suspenderReconocimiento();
     estados[actual]=ok?"acierto":"error";respuestas[actual]=crudo;fase="respuesta";espera=ROSCO_CONFIG.pausaMs;
     $("#rrEntrada").value="";sonido(ok);mensaje(ok?"¡Bien! +100 puntos · "+d.palabra:"Era "+d.palabra,ok?"acierto":"error");
     if(typeof objSumar==="function")objSumar("roscoLetras",1);
@@ -160,7 +312,7 @@ const RoscoRioplatense=(()=>{
     }).join("")+'</div>';
   }
   function terminar(){
-    if(fase==="fin")return;fase="fin";actual=-1;$("#rrEntrada").blur();
+    if(fase==="fin")return;fase="fin";actual=-1;apagarVoz();$("#rrEntrada").blur();
     const aciertos=conteo("acierto"),errores=conteo("error"),faltan=pendientes().length;
     const bonus=faltan===0&&aciertos>0?Math.max(0,Math.ceil(tiempo/1000))*ROSCO_CONFIG.bonoSegundo:0;
     const puntos=aciertos*ROSCO_CONFIG.puntosAcierto+bonus;
@@ -201,7 +353,7 @@ const RoscoRioplatense=(()=>{
   function tic(){
     const ahora=performance.now(),dt=Math.max(0,ahora-ultimo);ultimo=ahora;
     if(!raiz||document.hidden||fase==="inicio"||fase==="fin")return;
-    if(fase==="resolver"||fase==="respuesta"){
+    if((fase==="resolver"||fase==="respuesta")&&!vozLeyendo){
       tiempo=Math.max(0,tiempo-dt);if(tiempo===0){terminar();return;}
     }
     if(fase==="giro"){
@@ -215,20 +367,24 @@ const RoscoRioplatense=(()=>{
   function abrir(contenedor){
     salir();datos=cargar();nivel=datos.nivelMax;config=configNivel(nivel);fase="inicio";usadasSesion=new Set();
     raiz=document.createElement("div");raiz.className="rr-game";
-    raiz.innerHTML='<button type="button" class="ext-volver" id="rrVolver">⟵ Extensiones</button><div class="rr-titulo rr-titulo-arte"><h2 class="rr-logo-h"><img class="rr-logo" src="'+ARTE("logo")+'" alt="El Rosco" draggable="false"></h2><p>Una vuelta, muchas palabras nuestras.</p></div><div id="rrJuego" hidden><div class="sf-hud"><div><small>Nivel</small><b id="rrNivel"></b></div><div><small>'+ico("aciertos")+'Aciertos</small><b id="rrAciertos"></b></div><div><small>'+ico("errores")+'Errores</small><b id="rrErrores"></b></div><div><small>'+ico("reloj")+'Tiempo</small><b id="rrTiempo"></b></div></div><div class="sf-bar"><i id="rrBarra"></i></div><div class="rr-rueda"><div id="rrDisco"></div><b id="rrGrande"></b></div><div class="rr-pista" role="status" aria-live="polite"><div class="voz-fila"><span class="rr-pista-ico">'+ico("pista")+'</span><small id="rrRegla"></small><button type="button" class="voz-btn rr-escuchar" id="rrEscuchar" aria-label="Escuchar la pista">'+ico("escuchar")+'</button></div><p id="rrDefinicion"></p></div><p id="rrMensaje" class="rr-mensaje" role="status"></p><form id="rrForm" autocomplete="off"><label class="rr-sr" for="rrEntrada">Tu respuesta</label><div class="rr-fila"><input id="rrEntrada" placeholder="Escribí la palabra" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="send" maxlength="60"><button id="rrEnviar" type="submit">Enviar</button></div><button id="rrPasar" type="button">'+ico("pasapalabra")+'Pasapalabra</button></form></div><div id="rrPanel" class="rr-panel-capa"></div>';
+    raiz.innerHTML='<button type="button" class="ext-volver" id="rrVolver">⟵ Extensiones</button><div class="rr-titulo rr-titulo-arte"><h2 class="rr-logo-h"><img class="rr-logo" src="'+ARTE("logo")+'" alt="El Rosco" draggable="false"></h2><p>Una vuelta, muchas palabras nuestras.</p></div><div id="rrJuego" hidden><div class="rr-layout"><section class="rr-izquierda"><div class="sf-hud"><div><small>Nivel</small><b id="rrNivel"></b></div><div><small>'+ico("aciertos")+'Aciertos</small><b id="rrAciertos"></b></div><div><small>'+ico("errores")+'Errores</small><b id="rrErrores"></b></div><div><small>'+ico("reloj")+'Tiempo</small><b id="rrTiempo"></b></div></div><div class="sf-bar"><i id="rrBarra"></i></div><div class="rr-rueda"><div id="rrDisco"></div><b id="rrGrande"></b></div><div class="rr-pista" role="status" aria-live="polite"><div class="voz-fila"><span class="rr-pista-ico">'+ico("pista")+'</span><small id="rrRegla"></small><button type="button" class="voz-btn rr-escuchar" id="rrEscuchar" aria-label="Escuchar la pista">'+ico("escuchar")+'</button></div><p id="rrDefinicion"></p></div></section><section class="rr-derecha"><p id="rrMensaje" class="rr-mensaje" role="status"></p><div class="rr-modos"><button type="button" id="rrEscribir">✍ Escribir</button><button type="button" id="rrHablar">🎙 Hablar</button></div><p id="rrEstadoVoz" class="rr-estado-voz" aria-live="polite"></p><form id="rrForm" autocomplete="off"><label class="rr-sr" for="rrEntrada">Tu respuesta</label><div class="rr-fila"><input id="rrEntrada" placeholder="Escribí la palabra" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="send" maxlength="60"><button id="rrEnviar" type="submit">Enviar</button></div><button id="rrPasar" type="button">'+ico("pasapalabra")+'Pasapalabra</button></form><div id="rrTeclado" class="rr-teclado" aria-label="Teclado del Rosco"></div></section></div></div><div id="rrPanel" class="rr-panel-capa"></div>';
     contenedor.appendChild(raiz);shell=raiz.closest(".ext-shell");shell?.classList.add("rr-abierta");
     $("#rrVolver").onclick=()=>Extensiones.abrirLobby();
     $("#rrForm").onsubmit=e=>{e.preventDefault();enviar();};$("#rrPasar").onclick=pasar;
-    $("#rrEscuchar").onclick=()=>{if(actual>=0&&typeof hablar==="function")hablar(items[actual].definicion,audioMusica);};
+    $("#rrEscuchar").onclick=()=>{if(actual>=0){if(modoVoz)leerPistaVoz();else if(typeof hablar==="function")hablar(items[actual].definicion,audioMusica);}};
+    $("#rrHablar").onclick=()=>{if(modoVoz)apagarVoz();else activarVoz();};
+    $("#rrEscribir").onclick=()=>{apagarVoz();enfocar();};
+    crearTeclado();actualizarModo();
     for(const b of raiz.querySelectorAll("#rrForm button"))b.onpointerdown=e=>e.preventDefault();
     $("#rrEntrada").onbeforeinput=e=>{if(fase!=="resolver")e.preventDefault();};
     window.visualViewport?.addEventListener("resize",ajustarPantalla);window.visualViewport?.addEventListener("scroll",ajustarPantalla);window.addEventListener("resize",ajustarPantalla);
     document.addEventListener("visibilitychange",visibilidad);ultimo=performance.now();intervalo=setInterval(tic,ROSCO_CONFIG.ticMs);iniciarMusicaJuego();
-    const acciones=[["Jugar nivel "+nivel,iniciar]];if(nivel>1)acciones.push(["Practicar desde el nivel 1",()=>{nivel=1;iniciar();}]);
+    const acciones=[["Jugar nivel "+nivel,iniciar],["Jugar hablando 🎙",activarVoz]];if(nivel>1)acciones.push(["Practicar desde el nivel 1",()=>{nivel=1;iniciar();}]);
     acciones.push(["Jugar con un amigo 👥",iniciarDuelo]);
     panel("El Rosco Rioplatense",config.letras+" letras y "+config.segundos+" segundos. Leé cada pista y escribí la palabra: tenés un intento por letra. Pasapalabra la deja para después. El reloj se pausa al girar. Acertá al menos "+Math.ceil(config.letras*ROSCO_CONFIG.proporcionAvance)+" y respondé todas para avanzar. Jugás gratis, sin gastar vidas ni monedas. Mejor: "+datos.mejor+" puntos.",acciones,"personaje");ajustarPantalla();
   }
   function salir(){
+    apagarVoz();reconocimiento=null;
     clearInterval(intervalo);intervalo=null;document.removeEventListener("visibilitychange",visibilidad);
     window.visualViewport?.removeEventListener("resize",ajustarPantalla);window.visualViewport?.removeEventListener("scroll",ajustarPantalla);window.removeEventListener("resize",ajustarPantalla);
     shell?.classList.remove("rr-abierta");
