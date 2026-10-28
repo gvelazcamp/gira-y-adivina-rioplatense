@@ -601,10 +601,76 @@ body.pf-activo #extAtras,body.pf-activo #extCerrar,body.pf-activo .ext-volver{vi
   .rr-game .rr-tecla{min-height:29px}
 }
 
+
+
+/* Giro manual SOLO para esta prueba: Android puede mantener la pantalla fija
+   en vertical aun cuando el usuario coloque el celular en horizontal. */
+.rr-voltear{
+ position:sticky;top:4px;z-index:1002;float:right;clear:right;
+ background:#F5B301;color:#160B24;border:1px solid #FFE394;border-radius:12px;
+ padding:8px 12px;margin:0 0 3px 6px;font:900 13px system-ui,sans-serif;
+ box-shadow:0 3px 10px #0009;max-width:50%;
+}
+@media (orientation:landscape){
+  .rr-voltear:not(.rr-mostrando){display:none}
+}
+@media (orientation:portrait){
+  body.rr-forzado{width:100vw;height:100dvh;overflow:hidden}
+  body.rr-forzado #rosco-escenario{
+    position:fixed;top:0;left:100vw;width:100dvh;height:100vw!important;
+    max-height:100vw!important;
+    transform:rotate(90deg);transform-origin:top left;
+    overflow-y:auto;-webkit-overflow-scrolling:touch;
+    background:radial-gradient(ellipse at 50% 0%,#34184D,#160B24 75%);
+    padding:4px 8px;
+  }
+  body.rr-forzado #rosco-root{padding:0 5px 10px}
+  body.rr-forzado .rr-game{max-width:100%;margin:0 auto}
+  body.rr-forzado .rr-game .rr-titulo-arte{margin:0 0 3px}
+  body.rr-forzado .rr-game .rr-logo{height:clamp(24px,8vw,40px)}
+  body.rr-forzado .rr-game .rr-titulo p{display:none}
+  body.rr-forzado .rr-game .rr-layout{
+    display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    align-items:start;gap:7px;
+  }
+  body.rr-forzado .rr-game .rr-izquierda,body.rr-forzado .rr-game .rr-derecha{min-width:0}
+  body.rr-forzado .rr-game .rr-rueda{
+    width:min(41vw,190px);margin:10px auto 5px;
+  }
+  body.rr-forzado .rr-game #rrGrande{font-size:clamp(30px,11vw,54px)}
+  body.rr-forzado .rr-game .rr-pista{min-height:54px;padding:6px 8px;border-radius:10px}
+  body.rr-forzado .rr-game .rr-pista p{font-size:clamp(11px,3.1vw,14px);line-height:1.25;margin:2px 0 0}
+  body.rr-forzado .rr-game .sf-hud{gap:3px;margin:0 0 4px}
+  body.rr-forzado .rr-game .sf-hud>div{padding:3px 1px}
+  body.rr-forzado .rr-game .sf-hud small{font-size:9px}
+  body.rr-forzado .rr-game .sf-hud b{font-size:12px}
+  body.rr-forzado .rr-game .rr-mensaje{min-height:17px;margin:1px 0 3px}
+  body.rr-forzado .rr-game .rr-modos{margin:1px 0 3px}
+  body.rr-forzado .rr-game .rr-modos button{min-height:30px;padding:3px 6px;font-size:12px}
+  body.rr-forzado .rr-game .rr-estado-voz{font-size:10px;min-height:15px;margin:0 0 3px}
+  body.rr-forzado .rr-game .rr-fila input{min-height:33px;padding:4px 6px;font-size:14px}
+  body.rr-forzado .rr-game #rrForm button{min-height:34px;padding:5px 7px;font-size:12px}
+  body.rr-forzado .rr-game #rrPasar{margin-top:5px}
+  body.rr-forzado .rr-game .rr-teclado{display:grid;gap:3px;padding:5px;margin-top:5px;background:#29193D;border:1px solid #F5B30155;border-radius:12px}
+  body.rr-forzado .rr-game .rr-teclado-fila{display:flex;justify-content:center;gap:3px}
+  body.rr-forzado .rr-game .rr-tecla{
+    flex:1;min-width:0;min-height:30px;padding:3px 0;
+    background:#56406D;color:white;border:1px solid #A58FBF66;
+    border-radius:6px;font:900 11px system-ui,sans-serif;
+  }
+  body.rr-forzado .rr-game .rr-tecla-accion{background:#352146}
+  body.rr-forzado .rr-game[data-modo="voz"] .rr-layout{grid-template-columns:1fr}
+  body.rr-forzado .rr-game[data-modo="voz"] .rr-izquierda,body.rr-forzado .rr-game[data-modo="voz"] .rr-derecha{
+    width:min(100%,520px);margin:0 auto;
+  }
+  body.rr-forzado .rr-game[data-modo="voz"] .rr-rueda{width:min(45vw,200px)}
+}
+
 </style>
 </head>
 <body>
-<main class="ext-shell">
+<main class="ext-shell" id="rosco-escenario">
+  <button id="rrGirar" class="rr-voltear" type="button" aria-label="Girar el Rosco a horizontal">↔ Girar a horizontal</button>
   <div id="rosco-root"></div>
 </main>
 <script>
@@ -898,7 +964,7 @@ const RoscoRioplatense=(()=>{
   /* Entrada horizontal sin teclado de Android; el input original conserva
      el envío, la puntuación y las comprobaciones del Rosco. */
   function tecladoPropio(){
-    return window.matchMedia("(orientation: landscape) and (min-width: 600px)").matches
+    return (window.matchMedia("(orientation: landscape) and (min-width: 600px)").matches||document.body.classList.contains("rr-forzado"))
       &&(window.matchMedia("(pointer: coarse)").matches||navigator.maxTouchPoints>0);
   }
   function actualizarModo(){
@@ -1226,6 +1292,48 @@ const RoscoRioplatense=(()=>{
 window.RoscoRioplatense=RoscoRioplatense;
 
 RoscoRioplatense.abrir(document.getElementById("rosco-root"));
+
+(function(){
+ const boton=document.getElementById("rrGirar");
+ let horizontalSolicitada=false,fullscreenPropio=false;
+ const esHorizontal=()=>window.matchMedia("(orientation: landscape)").matches;
+ function actualizarVista(){
+   const forzar=horizontalSolicitada&&!esHorizontal();
+   const antes=document.body.classList.contains("rr-forzado");
+   document.body.classList.toggle("rr-forzado",forzar);
+   boton.textContent=horizontalSolicitada?"↶ Volver a vertical":"↔ Girar a horizontal";
+   boton.classList.toggle("rr-mostrando",horizontalSolicitada);
+   boton.setAttribute("aria-pressed",String(horizontalSolicitada));
+   if(antes!==forzar)window.dispatchEvent(new Event("resize"));
+ }
+ boton.addEventListener("click",async function(){
+   if(horizontalSolicitada){
+     horizontalSolicitada=false;actualizarVista();
+     try{screen.orientation?.unlock?.();}catch(e){}
+     if(fullscreenPropio&&document.fullscreenElement){
+       try{await document.exitFullscreen();}catch(e){}
+     }
+     fullscreenPropio=false;return;
+   }
+   horizontalSolicitada=true;
+   /* Primero intentar la rotación física del navegador; si Chrome o
+      Android no la permiten, la vista se rota con CSS. */
+   try{
+     if(!document.fullscreenElement&&document.documentElement.requestFullscreen){
+       await document.documentElement.requestFullscreen();
+       fullscreenPropio=true;
+     }
+     if(screen.orientation&&typeof screen.orientation.lock==="function"){
+       await screen.orientation.lock("landscape");
+     }
+   }catch(e){}
+   actualizarVista();
+ });
+ window.addEventListener("resize",actualizarVista);
+ screen.orientation?.addEventListener?.("change",actualizarVista);
+ actualizarVista();
+})();
+
 </script>
 </body>
 </html>
